@@ -1,0 +1,19 @@
+.product-count-button{
+    color: red;
+    width: 24px;
+    height: 24px;
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.product-count-button.disabled{
+    background: #aaa;
+    opacity:0.4;
+}
+.product-delete-button{
+    color: #0094D4;
+    background:none; 
+    width:30px;
+    height:30px;
+}

@@ -1,0 +1,40 @@
+.home-circle{
+    background: radial-gradient(50% 50% at 50% 50%, #D2B620 0%, #C17E30 100%);
+    width:18px;
+    height:18px;
+    border-radius:100%;
+}
+
+.content-slider-container{
+    width:100%;
+    user-select:none;
+    -webkit-user-select:none;
+}
+.content-slider-item{
+    height: 160px;
+    width:100vw
+}
+.content-slider-title{
+    font-size:20px;
+    font-weight:bold;
+}
+.content-slider-subtitle{
+    font-size:12px;
+}
+
+.my-near button{
+    height:32px;
+    border:none;
+    border-radius:5px;
+    background:#0094D4;
+    color:#fff;
+    width:100%;
+    font-family:inherit;
+    font-size:14px;
+}
+.go-to-awards{
+    background: linear-gradient(266.55deg, #DAA520 1.91%, #FFD700 128.5%);
+    color:#fff;
+    border-radius: 24px;
+    padding:0 12px;
+}

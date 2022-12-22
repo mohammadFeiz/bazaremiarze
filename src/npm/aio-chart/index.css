@@ -1,0 +1,331 @@
+
+.r-chart{
+    width:100%;
+    min-height:300px;
+    display:flex;
+    font-size:14px;
+    font-family:inherit;
+    color:#777;
+    box-sizing: border-box;
+    flex-direction:column;
+    overflow: hidden;
+    position: relative;
+    padding:12px;
+  }
+  .r-chart .labelSlider{
+    position:absolute;
+    left:0;top:0;
+    width:100%;
+    height:100%;
+    padding:0;
+  }
+  .r-chart-container{
+    position:relative;
+    display:grid;
+    flex:1;
+  }
+  .r-chart-title{
+    width:100%;
+    display:flex;
+    align-items:center;
+    padding:0 12px;
+    box-sizing:border-box;
+    -webkit-uset-select:none;
+    user-select:none;
+  }
+  .r-chart-title-item{
+    height:36px;
+    display:flex;
+    align-items:center;
+    font-size:100%;
+    padding:0 12px;
+    box-sizing: border-box;
+    cursor:pointer;
+  }
+  .r-chart-title-color{
+    width:12px;
+    height:12px;
+    margin:3px;
+  }
+  
+  .r-chart-axis{
+    position:relative;
+    -webkit-uset-select:none;
+    user-select: none; 
+  }
+  
+  .r-chart-canvas{
+    position:relative;
+  }
+  .r-chart-canvas canvas{
+    position: absolute;
+    border:1px solid #ddd;
+    border-radius:12px;
+    width:calc(100% - 2px);
+    height:100%;
+    left:0;
+    top:0;
+  }
+  .r-chart-popup-container{
+    position: absolute;
+    display:flex;
+    justify-content: center;
+    align-items:center;
+    width:0;
+    height:0;
+    z-index:10000;
+    pointer-events: none;
+  }
+  .r-chart-popup{
+    background:#fff;
+    border:1px solid #ddd;
+    padding:6px 12px;
+    box-shadow: 5px 5px 10px 0 rgba(0,0,0,0.1);
+    border-radius:6px;
+    position:absolute;
+    font-size:11px;
+    bottom:calc(100% + 10px);
+    display:flex;
+    color:#777;
+    flex-direction:column;
+  }
+  
+  .r-chart-popup:before{
+    content:'';
+    position: absolute;
+    top:calc(100% - 5px);
+    left:calc(50% - 5px);
+    width:10px;
+    height:10px;
+    background:#fff;
+    transform:rotate(45deg);
+    border-right:1px solid #ddd;
+    border-bottom:1px solid #ddd;
+    
+  }
+  
+  .r-chart-edit{
+    position:absolute;
+    left:calc(50% - 120px);
+    top:30px;
+    width:240px;
+    background:rgba(255,255,255,.95);
+    border-radius:5px;
+    padding:12px;
+    color:#777;
+    display:flex;
+    flex-direction:column;
+    border:1px solid #eee;
+    z-index:1000;
+    box-shadow: 5px 5px 10px 0 rgba(0,0,0,0.1);
+  }
+  
+  .r-chart-edit-header{
+    height:24px;
+    border-bottom:1px solid #ddd;
+    padding:0 6px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:12px;
+    z-index:10;
+    position:relative;
+    -webkit-uset-select:none;
+    user-select: none;
+  }
+  .r-chart-edit-close{
+    width:24px;
+    height:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+  }
+  .r-chart-edit-close:after{
+    content:'\2716';
+  }
+  
+  .r-chart-edit-data-list{
+    height:36px;
+    border: none;
+    flex:1;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .r-chart-edit-data-list-item{
+    border:2px solid;
+    width:16px;
+    height:16px;
+    margin:0 3px;
+    border-radius:3px;
+    font-size:16px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    
+  }
+  
+  .r-chart-edit-data-list-item.active:after{
+    content:'\2714';
+    color:#fff;
+    
+  }
+  
+  
+  option{
+    border:2px solid red
+  }
+  .r-chart-edit-body{
+    font-size:11px;
+    justify-content: space-around;
+    position:relative;
+    padding:0 12px;
+  }
+  .r-chart-edit-item{
+    position:relative;
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    height:48px;
+    border-bottom: 1px solid #ddd;
+  }
+  .r-chart-edit-item:last-child{
+    border-bottom:none;
+  }
+  .r-chart-edit-tag{
+    height:24px;
+    margin:0 4px;
+    border:1px solid #ddd;
+    border-radius:4px;
+    background:none;
+    color:inherit;
+    width:70px;
+    outline:none;
+    text-align: center;
+  }
+  .r-chart-edit-tag option{
+    color:#000;
+  }
+  .r-chart-detail-value{
+    height:20px;
+    border-radius:4px;
+    border:none;
+    margin:0 4px;
+    width:80px;
+    line-height:20px;
+    text-align: center;
+  }
+  
+  .r-chart-edit-label{
+    height:24px;
+    display:flex;
+    white-space: nowrap;
+    flex:1;
+    align-items:center;
+    overflow:hidden;
+    margin-right:12px;
+    -webkit-uset-select:none;
+    user-select: none;
+  }
+  .r-chart-edit-button{
+    background:none;
+    color:inherit;
+    border:1px solid #ddd;
+    border-radius:3px;
+    flex:1;
+    margin:0 3px;
+    font-size:10px;
+  }
+  .r-chart-edit-footer{
+    height:28px;
+    display:flex;
+    width: 100%;
+    margin-top:16px;
+    background:none;
+    cursor:pointer;
+    z-index:100;
+    justify-content: center;
+  }
+  
+  
+  .r-chart-edit-backdrop{
+    position: fixed;
+      width: 100%;
+      height: 100%;
+      left: 0;
+      top: 0;
+  }
+  
+  .add-indicator{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    width:16px;
+    height:16px;
+    position:absolute;
+    right:-6px;
+    top:-6px;
+    font-size:16px;
+    color:#fff;
+    border-radius:100%;
+  }
+  
+  .r-chart-multiselect{
+    position:absolute;
+    background:#eee;
+  }
+  
+  .r-chart-filterSlider-button{
+    width:10px;
+    height:10px;
+    background:#fff;
+    border:1px solid #999;
+    border-radius:0;
+    transition:.2s;
+  }
+  .r-chart-filterSlider-button.active,.r-chart-filterSlider-button:hover{
+    width:26px;
+    height:26px;
+    background:#fff;
+    border:2px solid #999;
+    border-radius:100%;
+    transition:.2s;
+  }
+  .r-chart-line{
+    position:absolute;
+    display:none;
+    z-index:1000;
+    pointer-events: none;
+  }
+  .r-chart-line div{
+    position:absolute;
+    height:20px;
+    line-height:20px;
+    color:#fff;
+    background:#ccc;
+    border-radius:4px;
+  }
+  .r-chart-horizontal-line{
+    height:0;
+    border-bottom:1px dashed #aaa;
+    right:0;
+    
+  }
+  .r-chart-horizontal-line div{
+    right:100%;
+   
+    padding-left:3px;
+    top:-10px;
+  }
+  .r-chart-vertical-line{
+    width:0;
+    border-left:1px dashed #aaa;
+    top:0;
+    justify-content: center;
+  }
+  .r-chart-vertical-line div{
+    width:fit-content;
+    padding:0 3px;
+    
+  }

@@ -1,0 +1,248 @@
+
+.award-page{
+  max-width:600px;
+  position:fixed !important;
+  width:100%;
+  height:100%;
+  color:#fff;
+  left:0;
+  z-index:10;
+  top:0;
+  direction:rtl;
+  box-sizing: border-box;
+}
+.award-page-header{
+  padding:0 16px;
+}
+.award-page-close{
+  color:#fff;
+  width:36px;
+  height:36px;
+  display:flex;
+  align-items: center;
+  justify-content: center;
+}
+.award-page-body{
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+}
+.award-page-title{
+  color:#fff;
+  font-size:36px;
+}
+.award-page-subtitle{
+  color:#fff;
+  font-size:13px;
+  height:36px;
+  line-height:36px;
+}
+
+.award-page .r-layout-item{
+  overflow: visible;
+}
+
+.r-drag-list-container{
+  background:#eee;
+  
+}
+.award-card{
+  flex:none !important;
+  width:100%;
+  border-radius:12px;
+  height:124px;
+  padding:30px;
+  color:#000;
+  box-shadow:3px 3px 8px 0 rgba(0,0,0,.3);
+  border:1px solid #16a1c1;
+}
+.award-page-popup-container{
+  background: rgba(0,0,0,.5);
+  position: fixed;
+  width:100%;
+  height:100%;
+  left:0;
+  top:0;
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  z-index:100;
+  direction:rtl;
+}
+.award-page-popup{
+  border-radius:24px;
+  flex:none !important;
+  background:#fff;
+  width:300px;
+}
+
+.award-page-popup button{
+  width:100%;
+  color:#0094D4;
+  background:#fff;
+  border:1px solid #0094D4;
+}
+.award-page-popup button:last-child{
+  width:100%;
+  margin:4px 24px;
+  font-size:14px;
+  font-weight:bold;
+  height:42px;
+  background:#0094D4;
+  color:#fff;
+  border-radius:4px;
+  border:none;
+  
+}
+.user-rewards{
+  background:#fff;
+  position: fixed !important;
+  height:100%;
+  width:100%;
+  max-width:600px;
+  left:0;
+  top:0;
+  z-index:10;
+}
+.user-reward-item{
+  border:1px dashed #00B5A5;
+  overflow:unset !important;
+  margin:0 12px;
+  font-size:11px;
+  border-radius:0px 6px 6px 0px;
+}
+.user-reward-item.used{
+  border:1px dashed #c4c4c4;
+  margin:0 12px;
+  border-radius:0px 6px 6px 0px;
+}
+.user-reward-item:before{
+  content:'';
+  position:absolute;
+  width:20px;
+  height:20px;
+  z-index:10;
+  background:#fff;
+  left:56px;
+  top:-10px;
+  border-radius:100%;
+  border:1px dashed #00B5A5;
+  
+}
+.user-reward-item.used:before{
+  border:1px dashed #c4c4c4; 
+}
+.user-reward-item .user-reward-item-label{
+  background:#00B5A5;
+  color:#fff;
+  border-radius:6px 0px 0px 6px;
+}
+.user-reward-item.used .user-reward-item-label{
+  background:#c4c4c4;
+  color:#fff;
+  border-radius:6px 0px 0px 6px;
+}
+
+
+.anime-bg-container{
+  background:rgb(0, 0, 0);
+  position:fixed;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+} 
+.anime-bg-1{
+  position:absolute;
+  left:60%;
+  top:40%;
+  animation:anime-bg-n 38s infinite; 
+  animation-delay:1s;
+  animation-timing-function: linear;
+   
+  filter:blur(38px);
+}
+.anime-bg-2{
+  position:absolute;
+  left:40%;
+  top:60%;
+  animation:anime-bg 40s infinite;  
+  animation-delay:7s;
+  animation-timing-function: linear;
+  filter:blur(38px); 
+} 
+.anime-bg-3{
+  position:absolute;
+  left:40%;
+  top:60%;
+  animation:anime-bg-n 51s ease-in-out infinite;   
+  animation-delay:3s;
+  animation-timing-function: linear;
+  filter:blur(38px); 
+}
+.anime-bg-4{
+  position:absolute;
+  left:40%;
+  top:40%;
+  animation:anime-bg 46s infinite;  
+  animation-delay:6s;
+  filter:blur(38px); 
+}
+.anime-bg-item-1{
+  width:120px;
+  height:120px;
+  border-radius:100%;
+  background:rgb(255, 153, 0);
+  position:absolute;
+  top:-100px;
+  left:60px;
+
+}
+.anime-bg-item-2{
+  width:120px;
+  height:120px;
+  border-radius:100%;
+  background:rgb(255, 0, 119);
+  position:absolute;
+  top:50px;
+  left:40px
+
+}
+.anime-bg-item-3{
+  width:120px;
+  height:120px;
+  border-radius:100%;
+  background:rgb(255, 153, 0);
+  position:absolute;
+  top:100px;
+  left:-70px
+}
+.anime-bg-item-4{
+  width:120px;
+  height:120px;
+  border-radius:100%;
+  background:rgb(0, 255, 234);
+  position:absolute;
+  top:-60px;
+  left:-110px;
+
+}
+.anime-bg-gloss{
+  background:rgba(0, 0, 0, 0.514);
+  position: fixed;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+}
+@keyframes anime-bg {
+  0%   {transform:rotate(0deg) scale(1) translateX(0px); filter:blur(38px)}
+  50% {transform:rotate(180deg) scale(1.4) translateX(50px); filter:blur(24px);}
+  100% {transform:rotate(360deg) scale(1) translateX(0px); filter:blur(38px)}
+}
+
+@keyframes anime-bg-n {
+  0%   {transform:rotate(0deg) scale(1); filter:blur(38px)}
+  50% {transform:rotate(-180deg) scale(1.4); filter:blur(24px)}
+  100% {transform:rotate(-360deg) scale(1); filter:blur(38px)}
+}

@@ -1,0 +1,188 @@
+
+  .gah-rangepicker{
+    display:flex;
+    width:100%;
+  }
+  .gah-rangepicker .gah{
+    flex:1;
+  }
+  .gah{
+      border:1px solid #ddd;
+      color:#777;
+      stroke:#777;
+      height:36px;
+      cursor:pointer;
+      background:none;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .gah-today{
+      display:flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position:relative;
+      background:dodgerblue;
+      color:#fff;
+    }
+    .gah-calendar{
+      user-select:none;
+      -webkit-user-select:none;
+      direction: ltr;
+      display:flex;
+      flex-direction: column;
+      stroke:#333;
+    }
+      .gah-header{
+        display:flex;
+        align-items: center;
+        justify-content: center;
+        position:relative;
+        direction:ltr;
+      }
+        .gah-arrow{
+          display:flex;
+          align-items: center;
+          z-index:1;
+          justify-content: center;
+          border-radius:100%;
+          stroke:inherit;
+        }
+.gah-footer{
+  display:flex;
+  justify-content: flex-end;
+  direction:ltr;
+}
+.gah-button{
+  background:none;
+  font-weight: bold;
+  border:none;
+  font-size:inherit;
+  cursor:pointer;
+  outline:none;
+  flex:1;
+  margin:0 1px;
+  color:inherit;
+}
+    .gah-calendar option{
+      font-size:16px;
+      padding:6px 0;
+    }
+    .gah-today div{
+      display:flex;
+      align-items: center;
+      
+    }
+    .gah-calendar svg{
+      cursor:pointer;
+    }
+    .gah-list-item{
+      display:flex;
+      flex:1;
+      width:100%;
+      align-items: center;
+    }
+    .gah-select{
+      flex:1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index:1;
+      cursor:pointer;
+    }
+    .gah-select .aio-button{
+      background:none;
+      color:inherit;
+      font-size:inherit;
+      padding:0 3px;
+    }
+    .gah-body{
+      display:grid;
+      flex:1 1;
+      position: relative;
+      box-sizing: border-box;
+      padding-bottom:0;
+      overflow-y:auto;
+      overflow-x: hidden;
+    }
+    /* custom scrollbar */
+      .gah-calendar select::-webkit-scrollbar {
+        width: 10px !important;
+        height:10px !important;
+      }
+      
+      .gah-calendar select::-webkit-scrollbar-track {
+        background-color: transparent;
+      }
+      
+      .gah-calendar select::-webkit-scrollbar-thumb {
+        background-color: #e6e7e9;
+        border-radius: 20px;
+        border: 3px solid transparent;
+        background-clip: content-box;
+      }
+      
+      .gah-calendar select::-webkit-scrollbar-thumb:hover {
+        background-color: #a8bbbf; 
+      }
+    .gah-cell{
+      display:flex;
+      align-items: center;
+      justify-content: center;
+      position: relative; 
+      outline:none;
+      background:#fff;
+    }
+    .gah-cell.gah-disabled{
+      box-shadow:none;
+      border-radius:0;
+      background:rgba(128,128,128,.2);
+      color:#fff;
+      cursor:not-allowed !important;
+    }
+    .gah-cell.gah-active{
+      background:dodgerblue;
+      color:#fff;
+    }
+    .gah-cell.today{
+      border:1px solid dodgerblue;
+    }
+    .gah-weekday{
+      font-weight:bold;
+      font-size:110%;
+    }
+    .gah-multiselect-select{
+      position:absolute;
+      top:0;
+      height:36px;
+      width:100%;
+      white-space: nowrap;
+    }
+    .gah-multiselect-icon{
+      width:10px;
+      height:10px;
+      border-radius:100%;
+      margin-right:6px;
+      flex-shrink:0;
+    }
+    .gah-popup-container .aio-button-popup{
+      border:1px solid #ddd;
+    }
+    .gah-popup{
+      width:fit-content;
+      height:fit-content;
+      background:#fff;
+      box-shadow:1px 1px 6px 0 rgba(0,0,0,.1)
+    }
+    .gah-popup button{
+        width:unset !important; 
+        border:none !important;
+        background:none !important;
+    }
+  .gah-cell:not(.gah-weekday):not(.gah-space):not(.gah-disabled):hover{
+    position: relative;
+    transform: scale(1.2);
+    box-shadow:2px 2px 5px 0 rgba(0,0,0,.3);
+    cursor: pointer;
+    z-index:100;
+  }

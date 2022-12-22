@@ -1,0 +1,11 @@
+.wallet-button{
+    background:#3980a7;
+    border-radius:12px;
+    width:108px;
+    border:1px solid rgba(217,217,217,0.3);
+    box-shadow:inset 0 0 5px #aad3ff94;
+}
+.wallet-button.disabled{
+    opacity:0.3;
+    background:#aaa;
+}

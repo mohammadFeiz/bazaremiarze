@@ -131,6 +131,12 @@ body{
 	background-image:url(./images/ep.jpg);
 	background-size: cover;
 }
+.rsa-bottom-menu{
+	height:48px;
+	margin:6px;
+	border-radius:8px;
+}
+
 .otp-code{
 	height:36px;
 	background:#eee;

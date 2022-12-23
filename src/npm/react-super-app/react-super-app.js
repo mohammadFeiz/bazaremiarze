@@ -123,19 +123,39 @@ export default class ReactSuperApp extends Component {
             if(nav.navs){this.getNavById_req(nav.navs,id);}
         }
     }
-    render() {
-      let {confirm,popups,removePopup,touch,sideOpen,navId,splash} = this.state;
-      let {navs,sides = [],sideId,rtl,sideHeader,style,popupConfig = {}} = this.props;
+    getMainClassName(){
+      let {confirm,popups,sideOpen} = this.state;
+      let {rtl} = this.props;
+      let className = 'rsa';
+      className += rtl?' rtl':' ltr';
+      if(popups.length){className += ' has-opened-popup'}
+      if(confirm || popups.length || sideOpen){className += ' rsa-blur'}
+      return className;
+    }
+    renderMain(){
+      let {touch,navId} = this.state;
+      let {navs,style} = this.props;
       let nav = navs?this.getNavById(navId):false;
+      let layout = {style,className: this.getMainClassName()}
+      if(touch){layout.column = [this.page_layout(nav),this.navigation_layout()]}
+      else{layout.row = [this.navigation_layout(),this.page_layout(nav)]}
+      return (<RVD layout={layout}/>)
+    }
+    renderPopups(){
+      let {popups,removePopup} = this.state;
+      let {rtl,popupConfig = {}} = this.props;
+      if(!popups.length){return null}
+      return popups.map((o,i)=>{
+        return <Popup key={i} blur={i === popups.length - 2} {...popupConfig} {...o} index={i} removePopup={()=>removePopup()} rtl={rtl}/>
+      })
+    }
+    render() {
+      let {confirm,popups,removePopup,sideOpen,splash} = this.state;
+      let {sides = [],sideId,rtl,sideHeader,popupConfig = {}} = this.props;
       return (
         <>
-          {touch && <RVD layout={{style,className: 'rsa' + (rtl?' rtl':' ltr') + (popups.length?' has-opened-popup':''),column: [this.page_layout(nav),this.navigation_layout()]}}/>}
-          {!touch && <RVD layout={{style,className: 'rsa' + (rtl?' rtl':' ltr') + (popups.length?' has-opened-popup':''),row: [this.navigation_layout(),this.page_layout(nav)]}}/>}
-          {
-            popups.length && 
-            popups.map((o,i)=>{
-              return <Popup key={i} {...popupConfig} {...o} index={i} removePopup={()=>removePopup()} rtl={rtl}/>
-            })}
+          {this.renderMain()},
+          {this.renderPopups()}
           {confirm && <Confirm {...confirm} onClose={()=>this.setState({confirm:false})}/>}
           {sides.length && <SideMenu sideHeader={sideHeader} sides={sides} sideId={sideId} sideOpen={sideOpen} rtl={rtl} onClose={()=>this.setState({sideOpen:false})}/>}
           {splash && splash()}
@@ -325,8 +345,9 @@ class Popup extends Component{
       return {flex:1,html:<div className='rsa-popup-body'>{Content}</div>}
     }
     getClassName(){
-      let {type} = this.props;
+      let {type,blur} = this.props;
       let className = 'rsa-popup-container';
+      if(blur){className += ' rsa-blur'}
       if(type === 'fullscreen'){className += ' fullscreen'}
       if(type === 'bottom'){className += ' bottom-popup'}
       return className

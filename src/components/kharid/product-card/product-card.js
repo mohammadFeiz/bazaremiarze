@@ -184,7 +184,7 @@ export default class ProductCard extends Component{
             <RVD
                 layout={{
                     style:{height:270,width:180,borderRadius:12,fontSize:14,overflow:'visible',...style},
-                    className:'bgFFF borderDDD',
+                    className:'bgFFF borderEEE',
                     attrs:{onClick:()=>this.onClick()},
                     column:[
                         {size:140,align:'vh',html:<img src={srcs[0] || NoSrc} width={'100%'} style={{width:'calc(100% - 24px)',height:'100%',borderRadius:8}} alt=''/>,style:{padding:6,paddingBottom:0}},

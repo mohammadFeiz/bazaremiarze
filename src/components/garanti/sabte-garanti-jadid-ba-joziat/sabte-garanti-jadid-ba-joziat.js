@@ -118,8 +118,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
         return (
             <RVD
                 layout={{
-                    className: "main-bg",
-                    style:{height:'100%'},
+                    className: "popup-bg",
                     column: [
                         {size:12},
                         this.panel_layout(

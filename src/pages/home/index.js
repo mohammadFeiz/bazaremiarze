@@ -227,7 +227,7 @@ export default class Home extends Component {
         let {testedChance} = this.state;
         return {
             flex: 1,
-            className:'home-page main-bg',style:{width:'100%'},
+            className:'page-bg',style:{width:'100%'},
             column: [
                 {
                     flex:1,scroll:'v',

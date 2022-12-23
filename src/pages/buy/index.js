@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 import RVD from "./../../interfaces/react-virtual-dom/react-virtual-dom";
 import appContext from "../../app-context";
-import Tabs from "../../components/tabs/tabs";
 import CategorySlider from "./../../components/kharid/category-slider/category-slider";
-import SearchBox from "../../components/search-box/index";
+import AIOButton from "../../interfaces/aio-button/aio-button";
 import FamilyCard from './../../components/family-card/family-card';
 import "./index.css";
 import Billboard from "../../components/billboard/billboard";
@@ -17,8 +16,8 @@ export default class Buy extends Component {
       searchValue: "",
       view, //main,category,product
       tabs: [
-        { title: "نمایشگاه", id: "1", flex: 1 },
-        { title: "دسته بندی کالاها", id: "2", flex: 1 },
+        { text: "نمایشگاه", value: "1" },
+        { text: "دسته بندی کالاها", value: "2"},
       ],
       activeTabId: "1",
       activeCartTabId:'regular',
@@ -80,7 +79,7 @@ export default class Buy extends Component {
     return {
       flex: 1,style:{overflow:'hidden'},show:view.type === 'main',
       column: [
-        {html:<Tabs tabs={tabs} activeTabId={activeTabId} onChange={(activeTabId)=>this.setState({activeTabId})}/>},
+        {html:<AIOButton type='tabs' options={tabs} value={activeTabId} onChange={(activeTabId)=>this.setState({activeTabId})} optionStyle={{flex:1}}/>},
         {size:12},
         this['tab' + activeTabId]()
       ],
@@ -88,7 +87,7 @@ export default class Buy extends Component {
   }
   tab1(){
     return {
-      flex: 1,scroll: "v",className:'buy-tab-1',gap: 12,
+      flex: 1,scroll: "v",gap: 12,
       column: [
         this.billboard_layout(),
         //this.families(),
@@ -100,7 +99,7 @@ export default class Buy extends Component {
     let {openPopup} = this.context;
     let {categories = []} = this.state;
     return {
-      flex: 1,className:'box gap-no-color padding-12',scroll:'v',gap: 24,
+      flex: 1,className:'padding-12',scroll:'v',gap: 24,
       column:categories.map((o)=>{
         return {
           attrs:{onClick:()=>openPopup('category',{name:o.name,category:{products:o.products,name:o.name}})},
@@ -135,10 +134,12 @@ export default class Buy extends Component {
     let sliders = [['newOrders','جدید ترین محصولات'],['bestSellings','پر فروش ترین محصولات'],['recommendeds','پیشنهاد سفارش']]
     return {
       gap:12,className:'margin-0-12',
+      style:{overflow:'visible'},
       column:sliders.map(([key,name])=>{
         let products = this.state[key] || [];
         return {
           style:{overflow:'visible'},
+          className:'box gap-no-color',
           html:()=>(
             <CategorySlider 
               title={name} products={this.state[key]} 
@@ -152,7 +153,7 @@ export default class Buy extends Component {
   render() {
     return (
       <RVD layout={{
-        flex: 1,className: "buy-page main-bg",style: { width: "100%" },
+        flex: 1,className: "page-bg",style: { width: "100%" },
         column: [
           this.tabs(),
           {size:12}

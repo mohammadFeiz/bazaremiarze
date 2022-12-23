@@ -5,6 +5,8 @@ import Form from './../../interfaces/aio-form-react/aio-form-react';
 import Axios from 'axios';
 import Map from './../map/map';
 import getSvg from '../../utils/getSvg';
+import {Icon} from '@mdi/react';
+import {mdiInformation} from '@mdi/js';
 import allCities from './cities';
 import provinces from './provinces';
 import $ from 'jquery';
@@ -26,7 +28,8 @@ export default class Register extends Component{
         this.state = {
             prevProvince:userProvince,
             model:{latitude,cardCode,longitude,firstName,lastName,phoneNumber,storeName,address,userProvince,userCity,landline,password,re_password:password},
-            showMap:false
+            showMap:false,
+            errors:[]
         }
     }
     onClose(){
@@ -86,16 +89,21 @@ export default class Register extends Component{
         let {model} = this.state;
         let {mode} = this.props;
         return {
+            style:{overflow:'visible'},
             html:(
                 <Form
                     lang={'fa'}
                     model={model}
-                    bodyStyle={{background:'#fff'}}
-                    inputStyle={{height:30,background:'#f5f5f5',border:'none'}}
+                    style={{margin:12,borderRadius:12}}
+                    theme={{
+                        inlineLabel:false,
+                        bodyStyle:{background:'#fff',padding:12},
+                        inputStyle:{height:30,background:'#f5f5f5',border:'none'}
+                    }}
+                    showErrors={false}
+                    getErrors={(errors)=>this.setState({errors})}
+                    className='box-shadow'
                     labelAttrs={{className:'size14 color605E5C'}}
-                    onSubmit={()=>this.onSubmit()}
-                    submitText={mode === 'edit'?'ثبت حساب کاربری':'ایجاد حساب کاربری'}
-                    footerAttrs={{className:'main-bg padding-0-24'}}
                     onChange={(model)=>this.change(model)}
                     inputs={[
                         {label:'کد مشتری',type:'text',field:'model.cardCode',disabled:true,show:mode === 'edit'},
@@ -149,7 +157,8 @@ export default class Register extends Component{
         }, 300);
     }
     render(){
-        let {showMap,model,prevProvince} = this.state;
+        let {showMap,model,prevProvince,errors} = this.state;
+        let {mode} = this.props;
         if(prevProvince !== model.userProvince){
             setTimeout(()=>{
                 this.cities = allCities.filter(({province})=>province === model.userProvince);
@@ -157,13 +166,13 @@ export default class Register extends Component{
                 this.setState({prevProvince:model.userProvince,model});
             },0)
         }
+        console.log(errors)
         return (
             <>
                 <RVD
                     layout={{
-                        className:'main-bg',
                         attrs:{ref:this.dom},
-                        style:{width:'100%',height:'100%',overflow:'hidden',position:'fixed',left:'50%',top:'100%',height:'0%',width:'0%',opacity:0},
+                        style:{width:'100%',height:'100%',overflow:'hidden',position:'fixed',left:'50%',top:'100%',height:'0%',width:'0%',opacity:0,background:'#f8f8f8'},
                         column:[
                             this.header_layout(),
                             {size:12},
@@ -171,14 +180,33 @@ export default class Register extends Component{
                                 scroll:'v',flex:1,
                                 column:[
                                     this.logo_layout(),
-                                    {size:18},
                                     this.text_layout(),
                                     {size:6},
                                     this.subtext_layout(),
-                                    {size:24},
                                     this.form_layout(),
                                     {size:300}       
                                 ]
+                            },
+                            {
+                                column:[
+                                    {size:12},
+                                    {
+                                        className:'colorA4262C size10 padding-0-12',
+                                        column:errors.map((e)=>{
+                                            return {
+                                                row:[
+                                                    {html:<Icon path={mdiInformation} size={0.6}/>,align:'v'},
+                                                    {size:6},
+                                                    {html:e,align:'v'}
+                                                ]
+                                            }
+                                        })
+                                    }
+                                ]
+                            },
+                            {
+                                className:'margin-12',
+                                html:<button disabled={!!errors.length} onClick={()=>this.onSubmit()} className='button-2'>{mode === 'edit'?'ویرایش حساب کاربری':'ایجاد حساب کاربری'}</button>
                             }
                         ]
                     }}

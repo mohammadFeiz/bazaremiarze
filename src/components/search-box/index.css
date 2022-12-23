@@ -1,13 +1,15 @@
 .search-box{
     height:48px;
+    color:#666;
+    background:rgba(255,255,255,0.5)
 }
 .search-box input{
     height:100%;
     font-size:14px;
-    color:#333;   
     font-family: inherit;
     width:100%;
     border:none;
     outline: none;
+    color:inherit;
     background:none;
 }

@@ -254,7 +254,7 @@ export default class Bazargah extends Component{
             return (
                 <RVD
                     layout={{
-                        className:'main-bg',style:{width:'100%'},
+                        className:'page-bg',style:{width:'100%'},
                         column:[
                             {html:'بازارگاه',className:'size24 bold',align:'vh',size:96},
                             {html:<img src={bazargahCommingSoon} alt={''} width={300} height={240}/>,align:'vh'},
@@ -270,7 +270,7 @@ export default class Bazargah extends Component{
         return (
             <RVD
                 layout={{
-                    className:'main-bg',style:{width:'100%'},
+                    className:'page-bg',style:{width:'100%'},
                     column:[
                         this.bazargahPower_layout(),
                         this.tabs_layout(),
@@ -871,8 +871,8 @@ class JoziateSefaresheBazargah extends Component{
         return (
             <RVD
                 layout={{
-                    style:{width:'100%',height:'100%'},
-                    className:'main-bg',
+                    style:{width:'100%'},
+                    className:'popup-bg',
                     column:[
                         this.header_layout(),
                         {

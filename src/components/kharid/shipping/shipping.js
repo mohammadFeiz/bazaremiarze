@@ -265,8 +265,7 @@ export default class Shipping extends Component{
         <>
           <RVD
           layout={{
-            className:'main-bg',
-            style:{height:'100%'},
+            className:'popup-bg',
             flex:1,
             column:[
               {

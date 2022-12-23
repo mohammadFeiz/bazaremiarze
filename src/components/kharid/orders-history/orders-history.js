@@ -56,7 +56,7 @@ export default class OrdersHistory extends Component {
     }
     render() {
       return (
-          <RVD layout={{className: "main-bg",style:{width:'100%',height:'100%'},column: [this.tabs_layout(),{size:12},this.orders_layout()]}}/>
+          <RVD layout={{className: "popup-bg",column: [this.tabs_layout(),{size:12},this.orders_layout()]}}/>
       );
     }
   }

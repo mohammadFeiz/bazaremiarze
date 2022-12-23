@@ -1,26 +1,14 @@
-import React,{Component,createRef} from 'react';
+import React,{Component} from 'react';
 import appContext from './../../../app-context';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
-import Tabs from './../../../components/tabs/tabs';
 import ProductCard from './../product-card/product-card';
 import AIOButton from '../../../interfaces/aio-button/aio-button';
 import noItemSrc from './../../../images/not-found.png';
-import $ from 'jquery';
 export default class Cart extends Component{
     static contextType = appContext;
     constructor(props){
       super(props);
-      this.dom = createRef();
       this.state = {activeTabId:'regular'}
-    }
-    componentDidMount(){
-      $(this.dom.current).animate({
-          height: '100%',
-          width: '100%',
-          left:'0%',
-          top:'0%',
-          opacity:1
-      }, 300);
     }
     splitPrice(price){
       if(!price){return price}
@@ -107,6 +95,7 @@ export default class Cart extends Component{
             type='tabs' 
             options={this.tabs}  
             optionStyle={{flex:this.tabs.length <= 3?1:undefined}}
+            style={{marginBottom:12}}
             value={this.state.activeTabId} 
             optionAfter={(option)=><div className='tab-badge'>{option.badge}</div>}
             optionText='option.title'
@@ -166,9 +155,8 @@ export default class Cart extends Component{
         return (
             <RVD 
               layout={{
-                attrs:{ref:this.dom},
-                flex: 1,className:'main-bg',
-                column: [this.tabs_layout(),{size:12},this.products_layout(),this.payment_layout()]
+                flex: 1,className:'popup-bg',
+                column: [this.tabs_layout(),this.products_layout(),this.payment_layout()]
               }}
             />
         )

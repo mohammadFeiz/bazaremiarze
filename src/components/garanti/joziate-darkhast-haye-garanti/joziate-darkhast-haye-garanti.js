@@ -94,8 +94,7 @@ export default class JoziateDarkhastHayeGaranti extends Component{
         return (
             <RVD
                 layout={{
-                    className:'main-bg',
-                    style:{height:'100%'},
+                    className:'popup-bg',
                     attrs:{ref:this.dom},
                     column:[
                         {size:12},

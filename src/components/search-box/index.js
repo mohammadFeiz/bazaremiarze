@@ -1,6 +1,8 @@
 import React,{Component} from 'react';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import getSvg from '../../utils/getSvg';
+import {Icon} from '@mdi/react';
+import { mdiMagnify } from '@mdi/js';
 import './index.css';
 export default class SearchBox extends Component{
     constructor(props){
@@ -24,7 +26,7 @@ export default class SearchBox extends Component{
                 layout={{
                     className:'search-box',
                     row: [
-                        { size: 48, html: getSvg(26), align: 'vh' },
+                        { size: 48, html: <Icon path={mdiMagnify} size={1}/>, align: 'vh' },
                         {
                             flex: 1, html: (
                                 <input

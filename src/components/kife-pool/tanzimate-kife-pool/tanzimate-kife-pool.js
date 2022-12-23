@@ -76,8 +76,7 @@ export default class TanzimateKifePool extends Component{
         return (
             <RVD
                 layout={{
-                    className:'main-bg',
-                    style:{height:'100%'},
+                    className:'popup-bg',
                     column:[
                         this.cards_layout()
                     ]

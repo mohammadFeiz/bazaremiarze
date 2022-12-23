@@ -57,7 +57,7 @@ export default class MyBurux extends Component{
             slpcode = 'تایین نشده';
         }
         return {
-            scroll:'v',flex:1,className:'my-burux-page main-bg',
+            scroll:'v',flex:1,className:'page-bg',
             column:[
                 {
                     className:'my-burux-header',
@@ -84,7 +84,7 @@ export default class MyBurux extends Component{
                     className:'margin-0-12',style:{overflow:'visible'},
                     html:(
                         <Card
-                            type='card3' footer='مشاهده کامل اطلاعات کاربری'
+                            type='card3' footer='مشاهده و ویرایش اطلاعات کاربری'
                             rows={[
                                 [['کد مشتری',userInfo.cardCode],['نام فروشگاه',userInfo.storeName]],
                                 [['نام ویزیتور',slpname],['کد ویزیتور',slpcode]],

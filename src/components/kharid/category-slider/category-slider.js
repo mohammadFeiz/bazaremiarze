@@ -11,7 +11,7 @@ export default class CategorySlider extends Component{
       let {products} = this.props;
       if(!products){return this.productsLoading_layout()}
       return {
-        gap: 16,scroll:'h',
+        gap: 16,scroll:'h',style:{overflowY:'visible'},
         row: products.map((product,i) =>{
             return {
               html:(
@@ -58,7 +58,7 @@ export default class CategorySlider extends Component{
       return (
         <RVD
           layout={{
-            className: "box gap-no-color",style: { padding: 12 },scroll:'v',
+            style: { padding: 12 },scroll:'v',
             column: [
               {
                 size:36,

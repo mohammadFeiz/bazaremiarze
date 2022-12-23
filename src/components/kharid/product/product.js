@@ -156,7 +156,7 @@ export default class Product extends Component {
                     align: 'v', className: 'padding-12',
                     html: (
                         <AIOButton
-                            type='select' className='product-exist-options main-bg'
+                            type='select' className='product-exist-options'
                             style={{width:'100%'}}
                             popupAttrs={{ style: { maxHeight: 400 } }}
                             options={this.options}
@@ -336,8 +336,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         return (
             <RVD
                 layout={{
-                    className: "main-bg",
-                    style:{height:'100%'},
+                    className: "popup-bg",
                     column: [
                         {size:12},
                         this.body_layout(),

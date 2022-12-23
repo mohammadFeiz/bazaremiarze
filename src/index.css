@@ -66,11 +66,12 @@ body{
 	width: 92%;
   }
   .rsa-sidemenu {
-    background: #fff;
-    color: #666;
-    width: 240px;
     box-shadow: -7px 0px 20px 0px rgb(0 0 0 / 15%);
     border-left: 1px solid #a4a4a542;
+	background:#3b55a5c2;
+}
+.rsa-sidemenu-item{
+	color:#fff;
 }
 .rsa-sidemenu-item svg{
 	opacity:0.7;
@@ -183,7 +184,11 @@ body{
 	box-shadow:0px 7px 13px 0px #00000070;
 
 }
-.main-bg{
+.popup-bg{
+	background:#f8f8f888;
+	height:100%;
+}
+.page-bg{
 	background:#f8f8f8;
 }
 
@@ -197,7 +202,7 @@ body{
 
 .box{
     border-radius:14px;
-    background:#fff;
+    background:rgba(255, 255, 255, 0.9);
 	box-shadow:0px 2px 8px 0px rgb(153 153 153 / 21%);
 }
 
@@ -215,7 +220,7 @@ button{
 	background:#fff;
 }
 .box-shadow{
-	box-shadow:0px 3px 3px 0 rgba(0,0,0,.1);
+	box-shadow:0px 0px 12px 0px rgb(137 137 137 / 41%);
 }
 .box-shadow-up{
 	box-shadow:0 0px 6px 0 rgb(0 0 0 / 20%);
@@ -286,6 +291,9 @@ button{
 }
 .borderDDD{
 	border:1px solid #ddd;
+}
+.borderEEE{
+	border:1px solid #eee;
 }
 
 .size10{

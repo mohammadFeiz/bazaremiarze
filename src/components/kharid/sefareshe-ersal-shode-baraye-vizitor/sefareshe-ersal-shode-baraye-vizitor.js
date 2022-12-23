@@ -39,8 +39,7 @@ export default class Sefareshe_Ersal_Shode_Baraye_Vizitor extends Component{
         return (
             <RVD
                 layout={{
-                    style:{width:'100%',height:'100%'},
-                    className:'main-bg',
+                    className:'popup-bg',
                     column:[
                     {flex:1},
                     this.icon_layout(),

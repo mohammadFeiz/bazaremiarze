@@ -10,16 +10,28 @@ export default function StorageClass(key){
         this.obj = obj;
         localStorage.setItem('storageClass' + key,JSON.stringify(obj));
       },
-      save(o,name,confirm){
-        o = JSON.parse(JSON.stringify(o))
+      getParentAndTarget(name){
+        let arr = name.split('.');
+        let target = arr[arr.length - 1];
+        arr.pop();
+        let parent = this.obj.list;
+        for(let i = 0; i < arr.length; i++){
+          parent[arr[i]] = parent[arr[i]] || {};
+          parent = parent[arr[i]];
+        }
+        return {parent,target};
+      },
+      save(value,name,confirm){
+        value = JSON.parse(JSON.stringify(value))
         if(!this.obj){this.init()}
         if(!name){name = window.prompt('Save As');}
         if(!name || name === null){return}
-        if(confirm && this.obj.list[name] !== undefined){
-          let res = window.confirm('Replace ' + name + ' ?');
-          if(!res){this.save(o); return;}
+        let {parent,target} = this.getParentAndTarget(name);
+        if(confirm && parent[target] !== undefined){
+          let res = window.confirm('Replace ' + target + ' ?');
+          if(!res){this.save(value); return;}
         }
-        this.obj.list[name] = o;
+        parent[target] = value;
         this.obj.time = this.obj.time || {}
         this.obj.time[name] = new Date().getTime()
         this.set();
@@ -34,11 +46,15 @@ export default function StorageClass(key){
         this.obj.time = time;
         this.set();
       },
-      getList(){return Object.keys(this.obj.list)},
+      getList(name = ''){
+        let {parent} = this.getParentAndTarget(name)
+        return Object.keys(parent)
+      },
       getTime(name){return this.obj.time[name]},
       load(name,def){
         if(!this.obj){this.init()}
-        let res = this.obj.list[name];
+        let {parent,target} = this.getParentAndTarget(name)
+        let res = parent[target];
         if(res === undefined && def !== undefined){
           this.save(def,name);
           res = def;

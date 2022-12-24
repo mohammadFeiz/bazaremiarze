@@ -25,7 +25,7 @@ export default class FamilyCard extends Component{
                             name:'خانواده ی ' + title,
                             category:{
                                 name:'خانواده ی ' + title,
-                                products:await kharidApis({type:'familyProducts',parameter:{id},cache:12 * 60,cacheName:`products-of-family-with-id-${id}`}) 
+                                products:await kharidApis({api:'familyProducts',parameter:{id},cache:12 * 60,cacheName:`products-of-family-with-id-${id}`}) 
                             }
                         })
                     }},

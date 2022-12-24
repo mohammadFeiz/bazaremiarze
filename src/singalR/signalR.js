@@ -22,7 +22,7 @@ export default function SignalR(getState) {
                 if(order.status === 'Pending' || order.status===1){type = 'wait_to_get'}
                 else if(order.status === 'Taken'  || order.status===2){type = 'wait_to_send'}
                 else {return}
-                order = await bazargahApis({type:'bazargahItem',parameter:{order,type}})
+                order = await bazargahApis({api:'bazargahItem',parameter:{order,type}})
                 if(order === false){return;}
                 if(type === 'wait_to_get'){
                     bazargah.wait_to_get = bazargah.wait_to_get || [];

@@ -296,7 +296,7 @@ class JoziateSefaresheBazargah extends Component{
     }
     async get_deliverers(){
         let {bazargahApis} = this.context;
-        let deliverers = await bazargahApis({type:'get_deliverers'});
+        let deliverers = await bazargahApis({api:'get_deliverers'});
         this.setState({deliverers})
     }
     async componentDidMount(){
@@ -308,7 +308,7 @@ class JoziateSefaresheBazargah extends Component{
         let {sendStatus} = this.state;
         sendStatus = JSON.parse(JSON.stringify(sendStatus));
         sendStatus[key] = value;
-        let res = await bazargahApis({type:'taghire_vaziate_ersale_sefaresh',parameter:{orderId,sendStatus}})
+        let res = await bazargahApis({api:'taghire_vaziate_ersale_sefaresh',parameter:{orderId,sendStatus}})
         if(!res){
             alert('تغییرات موفقیت آمیز نبود')
         }
@@ -332,7 +332,7 @@ class JoziateSefaresheBazargah extends Component{
         if(type === 'wait_to_get'){
             let {bazargahApis} = this.context;
             let {orderId} = this.props;
-            let res = await bazargahApis({type:'akhze_sefaresh',parameter:{orderId}})
+            let res = await bazargahApis({api:'akhze_sefaresh',parameter:{orderId}})
             let {showMessage} = this.context;
             if(res){showMessage('سفارش با موفقیت اخذ شد'); this.props.onClose()}
             else{showMessage('اخذ سفارش با خطا روبرو شد')}   
@@ -810,7 +810,7 @@ class JoziateSefaresheBazargah extends Component{
                             onClick={async ()=>{
                                 if(disabled){return}
                                 let {bazargahApis,showMessage} = this.context;
-                                let res = await bazargahApis({type:'taide_code_tahvil',parameter:{staticCode,orderId:this.props.orderId,dynamicCode:`${code0}${code1}${code2}`}})
+                                let res = await bazargahApis({api:'taide_code_tahvil',parameter:{staticCode,orderId:this.props.orderId,dynamicCode:`${code0}${code1}${code2}`}})
                                 if(res){
                                     showMessage('کالا تحویل شد.');
                                     setNavId('khane')
@@ -960,7 +960,7 @@ class AddDeliverer extends Component{
                 onChange={(model)=>this.setState({model})}
                 onSubmit={async ()=>{
                     let {bazargahApis,showMessage} = this.context;
-                    let res = await bazargahApis({type:'add_deliverer',parameter:model});
+                    let res = await bazargahApis({api:'add_deliverer',parameter:model});
                     if(res){
                         showMessage('افزودن پیک با موفقیت انجام شد')
                         onSuccess({...model})

@@ -45,7 +45,7 @@ function AIOServiceShowAlert(obj = {}){
       $('.' + dui).remove()
   }})
 }
-export default function services({getState,apis,token,validations = {},defaults = {},loader,baseUrl}) {
+export default function services({getState,apis,token,loader,baseUrl}) {
   function getDateAndTime(value){
     let dateCalculator = AIODate();
     let adate,atime;
@@ -66,7 +66,7 @@ export default function services({getState,apis,token,validations = {},defaults 
   if(token){
     Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
-  return Service(apis({Axios,getState,getDateAndTime,arabicToFarsi,token,AIOServiceShowAlert,baseUrl}),validations,defaults,loader)
+  return Service(apis({Axios,getState,getDateAndTime,arabicToFarsi,token,AIOServiceShowAlert,baseUrl}),loader)
 }
 
 function AIOServiceLoading(){
@@ -85,7 +85,7 @@ function AIOServiceLoading(){
   `)
 }
 
-function Service(services,validations,defaults,loader) {
+function Service(services,loader) {
   function getFromCache(key, minutes) {
     if (minutes === true) { minutes = Infinity }
     let storage = localStorage.getItem(key);
@@ -98,33 +98,31 @@ function Service(services,validations,defaults,loader) {
     let time = new Date().getTime();
     localStorage.setItem(key, JSON.stringify({ time, data }))
   }
-  return async ({ type, parameter, loading = true, cache, cacheName }) => {
+  return async ({ api,callback, parameter, loading = true, cache, cacheName,def,validation }) => {
     if (loading) {$("body").append(typeof loader === 'function'?loader():AIOServiceLoading()); }
     if (cache) {
-      let a = getFromCache(cacheName ? 'storage-' + cacheName : 'storage-' + type, cache);
+      let a = getFromCache(cacheName ? 'storage-' + cacheName : 'storage-' + api, cache);
       if (a !== false) {
         $(".aio-service-loading").remove();
         return a
       }
-      if (!services[type]) {debugger;}
-      let result = await services[type](parameter);
+      if (!services[api]) {debugger;}
+      let result = await services[api](parameter);
       $(".aio-service-loading").remove();
-      setToCache(cacheName ? 'storage-' + cacheName : 'storage-' + type, result);
+      setToCache(cacheName ? 'storage-' + cacheName : 'storage-' + api, result);
       return result;
     }
-    if (!services[type]) {alert('services.' + type + ' is not define')}
-    let result;
-    try{result = await services[type](parameter);}
-    catch{result = defaults[type];} 
+    if (!services[api]) {alert('services.' + api + ' is not define')}
+    let result = await services[api](parameter);
     $(".aio-service-loading").remove();
-    let validation = validations[type];
     if(validation){
       let message = validation(result);
       if(typeof message === 'string'){
-        AIOServiceShowAlert({type:'error',text:`apis().${type}`,subtext:message});
-        result = defaults[type] === undefined?result:defaults[type];
+        AIOServiceShowAlert({type:'error',text:`apis().${api}`,subtext:message});
+        result = def === undefined?result:def;
       }
     }
+    if(callback){callback(result)}
     return result;
   }
 }

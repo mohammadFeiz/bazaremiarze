@@ -23,7 +23,7 @@ export default class Search extends Component {
         return 
       }
       this.setState({loading:true})
-      let res = await kharidApis({type:"getTaxonProducts", parameter:{Name:searchValue},loading:false});
+      let res = await kharidApis({api:"getTaxonProducts", parameter:{Name:searchValue},loading:false});
       this.setState({loading:false})
       console.log(res)
       this.setState({ result: res });

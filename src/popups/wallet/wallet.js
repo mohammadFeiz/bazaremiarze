@@ -36,9 +36,9 @@ export default class Wallet extends Component{
     async componentDidMount(){
         let {walletApis,showMessage} = this.context;
         let {fromDate}=this.state;
-        let items = await walletApis({type:'items',parameter:fromDate,loading:false});
+        let items = await walletApis({api:'items',parameter:fromDate,loading:false});
         let cards = []; 
-        let res = await walletApis({type:'ettelaate_banki'})
+        let res = await walletApis({api:'ettelaate_banki'})
         if(typeof res === 'string'){showMessage(res);}
         else{cards = res;}
         this.setState({items,cards})
@@ -158,13 +158,13 @@ export default class Wallet extends Component{
                             calendarType='jalali'
                             onChange={async ({gregorian,dateString})=>{
                                 this.setState({fromDate:dateString});
-                                let items = await walletApis({type:'items',parameter:`${gregorian[0]}/${gregorian[1]}/${gregorian[2]}`});
+                                let items = await walletApis({api:'items',parameter:`${gregorian[0]}/${gregorian[1]}/${gregorian[2]}`});
                                 this.setState({items});
                             }}
                             theme={['#0d436e','#fff']}
                             onClear={async ()=>{
                                 this.setState({fromDate:''});
-                                let items = await walletApis({type:'items',parameter:''});
+                                let items = await walletApis({api:'items',parameter:''});
                                 this.setState({items});
                             }}
                         />
@@ -277,7 +277,7 @@ class BardashtPopup extends Component{
         let {walletApis,showMessage} = this.context;
         let {onClose} = this.props;
         let {model} = this.state;
-        let res = await walletApis({type:'bardasht',parameter:model})
+        let res = await walletApis({api:'bardasht',parameter:model})
         if(typeof res === 'string'){showMessage(res); onClose()}
         else if(res === true){
             onClose()
@@ -333,7 +333,7 @@ class VarizPopup extends Component{
         let {walletApis,showMessage} = this.context;
         let {onClose} = this.props;
         let {model} = this.state;
-        let res = await walletApis({type:'variz',parameter:model})
+        let res = await walletApis({api:'variz',parameter:model})
         if(typeof res === 'string'){showMessage(res); onClose()}
         else if(res === true){
             onClose()

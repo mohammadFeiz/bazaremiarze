@@ -57,7 +57,7 @@ export default class TanzimateKifePool extends Component{
                                     attrs:{
                                         onClick:async ()=>{
                                             let {walletApis,showMessage} = this.context;
-                                            let res = await walletApis({type:'hazfe_cart',parameter:id})
+                                            let res = await walletApis({api:'hazfe_cart',parameter:id})
                                             if(typeof res === 'string'){showMessage(res);}
                                             else if(res === true){
                                              onChange(cards.filter((o)=>o.id !== id))
@@ -96,7 +96,7 @@ class AddCard extends Component{
         let {walletApis,showMessage} = this.context;
         let {onClose,onAdd} = this.props;
         let {model} = this.state;
-        let res = await walletApis({type:'afzoozane_cart',parameter:model})
+        let res = await walletApis({api:'afzoozane_cart',parameter:model})
         if(typeof res === 'string'){showMessage(res); onClose()}
         else if(res === true){
             onAdd(model);

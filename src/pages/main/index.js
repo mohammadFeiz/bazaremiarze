@@ -84,7 +84,7 @@ export default class Main extends Component {
       bazargah:{
         setActivity:async (state)=>{
           let {bazargahApis,bazargah} = this.state;
-          let res = await bazargahApis({type:'activity',parameter:state})
+          let res = await bazargahApis({api:'activity',parameter:state})
           this.setState({bazargah:{...bazargah,active:res}})
         },
         // active:this.props.userInfo.isBazargahActive,
@@ -150,7 +150,7 @@ export default class Main extends Component {
       }
     }
     clearTimeout(this.cartTimeout);
-    this.cartTimeout = setTimeout(async ()=>await kharidApis({type:'setCart',parameter:newCart,loading:false}),2000)
+    this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
     this.setState({cart:newCart});
   }
   getCartCountByVariantId(variantId) {
@@ -173,7 +173,7 @@ export default class Main extends Component {
         itemCodes.push(Code);
       }
     }
-    let res = await guarantiApis({type:'getImages',parameter:itemCodes,loading:false});
+    let res = await guarantiApis({api:'getImages',parameter:itemCodes,loading:false});
     for(let i = 0; i < res.length; i++){
       images[res.ItemCode] = res.ImagesUrl;
     }
@@ -181,14 +181,14 @@ export default class Main extends Component {
   }
   async getGuaranteeItems(){
     let {guarantiApis} = this.state;
-    let res = await guarantiApis({type:"items",loading:false});
+    let res = await guarantiApis({api:"items",loading:false});
     if(res === false){
       this.props.logout();
       return;
     }
     let {items,total} = res
     //this.getGuaranteeImages(items);
-    let guaranteeExistItems = await guarantiApis({type:"kalahaye_mojood",loading:false});
+    let guaranteeExistItems = await guarantiApis({api:"kalahaye_mojood",loading:false});
     this.setState({
       guaranteeItems:items,
       totalGuaranteeItems:total,
@@ -197,13 +197,13 @@ export default class Main extends Component {
   }
   async getCampaignsData() {
     let {kharidApis} = this.state;
-    let campaigns = await kharidApis({type:"getCampaigns",loading:false});
+    let campaigns = await kharidApis({api:"getCampaigns",loading:false});
     this.setState({ campaigns});
   }
   async getBazargahOrders(){
     let {bazargah,bazargahApis} = this.state;
-    bazargah.wait_to_get = await bazargahApis({type:'orders',parameter:{type:'wait_to_get'},loading:false});
-    bazargah.wait_to_send = await bazargahApis({type:'orders',parameter:{type:'wait_to_send'},loading:false});
+    bazargah.wait_to_get = await bazargahApis({api:'orders',parameter:{type:'wait_to_get'},loading:false});
+    bazargah.wait_to_send = await bazargahApis({api:'orders',parameter:{type:'wait_to_send'},loading:false});
     this.setState({bazargah})
   }
   showMessage(message){
@@ -281,7 +281,7 @@ export default class Main extends Component {
           return newObj
       })
     }
-    let cart = await kharidApis({type:'getCart',loading:false});
+    let cart = await kharidApis({api:'getCart',loading:false});
     this.setState({
       cart,
       fixPrice,
@@ -370,7 +370,7 @@ export default class Main extends Component {
     let {shipping,kharidApis,cart,rsa_actions} = this.state;
     let {cartItems} = shipping;
     let orderNumber = await kharidApis({
-      type:"sendToVisitor",
+      api:"sendToVisitor",
       parameter:{address,SettleType,PaymentTime,DeliveryType,PayDueDate}
     })
     if(orderNumber){
@@ -423,7 +423,7 @@ export default class Main extends Component {
             //     let {kharidApis} = this.context;
             //     let amount = window.prompt('مبلغ را وارد کنید');
             //     let url = window.prompt('آدرس بازگشت را وارد کنید');
-            //     kharidApis({type:'dargah',parameter:{amount,url}})
+            //     kharidApis({api:'dargah',parameter:{amount,url}})
             // }},
           ]}
           sideHeader={()=><div style={{padding:'24px 0'}}>{getSvg('mybrxlogo')}</div>}

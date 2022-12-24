@@ -27,7 +27,7 @@ export default class Home extends Component {
     }
     async getPreOrders() {
         let {kharidApis} = this.context;
-        let preOrders = await kharidApis({type:"preOrders",loading:false});
+        let preOrders = await kharidApis({api:"preOrders",loading:false});
         this.setState({ preOrders });
     }
     

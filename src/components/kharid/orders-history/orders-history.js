@@ -12,7 +12,7 @@ export default class OrdersHistory extends Component {
     async componentDidMount() {
       let {kharidApis} = this.context;
       let {activeTab} = this.props;
-      let tabs = await kharidApis({type:"ordersHistory"});
+      let tabs = await kharidApis({api:"ordersHistory"});
       try{this.setState({tabs,activeTab:activeTab || tabs[0].text});}
       catch{return}
     }
@@ -29,7 +29,7 @@ export default class OrdersHistory extends Component {
     }
     async getDetails(o){
       let { SetState,kharidApis } = this.context;
-      let res = await kharidApis({type:"joziatepeygiriyesefareshekharid", parameter:o});
+      let res = await kharidApis({api:"joziatepeygiriyesefareshekharid", parameter:o});
       SetState({popup: {mode: "joziate-sefareshe-kharid",order: res}})
     }
     orders_layout(){

@@ -32,7 +32,7 @@ export default class MyBurux extends Component{
                 {after:getSvg('chevronLeft'),text:'حساب ها',icon:getSvg(14),onClick:()=>{}},
                 {after:getSvg('chevronLeft'),text:'جزییات درخواست های گارانتی',icon:getSvg(14),onClick:async ()=>{
                     let {SetState,guarantiApis,openPopup} = this.context;
-                    let {items,total} = await guarantiApis({type:'items'});
+                    let {items,total} = await guarantiApis({api:'items'});
                     SetState({guaranteeItems:items,totalGuaranteeItems:total});
                     openPopup('joziate-darkhast-haye-garanti'); 
                 }},

@@ -12,7 +12,7 @@ export default class Billboard extends Component{
     svgs = [harajestan_svg(),cheraghe_khatti_svg(),burux_dey_svg()]
     async onClick(campaign){
         let {kharidApis,openPopup} = this.context;
-        let products = await kharidApis({type:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.id});
+        let products = await kharidApis({api:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.id});
         openPopup('category',{category:{products,name:campaign.name,src:campaign.src},name:campaign.name})
     }
     billboard_layout(){

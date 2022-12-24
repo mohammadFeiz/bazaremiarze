@@ -9,7 +9,7 @@ export default class SabteGarantiJadid extends Component {
     static contextType = appContext;
     async continueWithoutSubmit(){
         let { openPopup, guarantiApis,rsa_actions } = this.context;
-        let res = await guarantiApis({ type: "sabte_kala" });
+        let res = await guarantiApis({ api: "sabte_kala" });
         if (!res) { alert("error"); return; }
         rsa_actions.removePopup();
         openPopup('payame-sabte-garanti',{

@@ -98,9 +98,7 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
 
       let result = await Axios.get(`${baseUrl}/Deliverer`);
       if(!result.data.isSuccess) return;
-      return result.data.data.map(x=>{
-        return {name:x.fullName,id:x.id,mobile:x.phoneNumber};
-      });
+      return result.data.data;
 
       // return [
       //   {name:'عباس حسنی',id:'0',mobile:'09123434568'},
@@ -114,8 +112,9 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
         phoneNumber:mobile,
         fullName:name
       });
-
-      return result.data.isSuccess;
+      if(result.data.isSuccess){
+        return result.data.data
+      }
     },
     async taide_code_tahvil({dynamicCode,staticCode,orderId}){
       let result = await Axios.get(`${baseUrl}/OS/DeliveredCodeValidation?code=${staticCode+dynamicCode}&id=${orderId}`);

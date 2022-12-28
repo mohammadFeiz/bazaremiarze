@@ -531,7 +531,9 @@ class Popup extends Component{
     this.exact = exact;
     return result;
   }
-  renderPopOver(){return this.context.popOver?this.context.popOver(this.context,()=>this.context.toggle(false)):null}
+  renderPopOver(){
+    return this.context.popOver?this.context.popOver(this.context,()=>this.context.toggle(false)):null
+  }
   renderOptions(){
     let {popOver,searchText = 'Search',addText ='Add',search,popupHeader,popupFooter,onAdd} = this.context;
     let {searchValue} = this.state;

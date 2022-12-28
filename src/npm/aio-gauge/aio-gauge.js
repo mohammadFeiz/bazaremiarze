@@ -59,6 +59,7 @@ export default class RGauger extends Component{
   }
   getLabels(){
     var {start,end,label,radius,thickness,angle:mainAngle} = this.props;
+    if(!label){return []}
     if(!Array.isArray(label)){label = [label]}
     if(!label.length){return []}
     var labels = {};
@@ -205,4 +206,4 @@ export default class RGauger extends Component{
     )
   }
 }
-RGauger.defaultProps = {angle:180,rotate:0,start:0,end:100,thickness:10,radius:70,label:{},scale:{},direction:'clock',position:[0,0],customShapes:[]}
+RGauger.defaultProps = {angle:180,rotate:0,start:0,end:100,thickness:10,radius:70,scale:{},direction:'clock',position:[0,0],customShapes:[]}

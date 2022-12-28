@@ -35,7 +35,7 @@ export default class TimerGauge extends Component{
         else {timeColor = 'green'}
         return (
             <Gauge
-                style={{width:100,height:120}} rotate={180} direction='clockwise'
+                style={{width:100,height:100}} rotate={180} direction='clockwise'
                 start={0} radius={32} angle={360} end={totalTime} thickness={4}
                 text={[
                     {value:remainingTime,top:-10,fontSize:16,color:timeColor},

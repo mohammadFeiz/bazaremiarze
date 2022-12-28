@@ -129,7 +129,7 @@ export default class MyBurux extends Component{
                                         <AIOButton 
                                             type='button' caret={false} position='bottom' text='درخواست گارانتی جدید'
                                             style={{background:'none',color:'inherit',fontWeight:'inherit',fontSize:'inherit'}}
-                                            popOver={()=><SabteGarantiJadid close={false}/>}
+                                            onClick={()=>openPopup('sabte-garanti-jadid')}
                                         />        
                                     }
                                 />

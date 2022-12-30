@@ -116,8 +116,8 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
         return result.data.data
       }
     },
-    async taide_code_tahvil({dynamicCode,staticCode,orderId}){
-      let result = await Axios.get(`${baseUrl}/OS/DeliveredCodeValidation?code=${staticCode+dynamicCode}&id=${orderId}`);
+    async taide_code_tahvil({dynamicCode,deliveredCode,orderId}){
+      let result = await Axios.get(`${baseUrl}/OS/DeliveredCodeValidation?code=${deliveredCode+dynamicCode}&id=${orderId}`);
       if(!result.data.isSuccess) return false;
       return result.data.data;
     },

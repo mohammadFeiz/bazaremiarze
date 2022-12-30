@@ -8,7 +8,7 @@ export default class Cart extends Component{
     static contextType = appContext;
     constructor(props){
       super(props);
-      this.state = {activeTabId:'regular'}
+      this.state = {activeTabId:'regular',continued:false}
     }
     splitPrice(price){
       if(!price){return price}
@@ -123,6 +123,7 @@ export default class Cart extends Component{
     payment_layout(){
       if(!this.tab){return false}
       let total = this.tab.factorDetails.DocumentTotal;
+      let {continued} = this.state;
       return {
         size: 72,className: "bgFFF padding-0-12 box-shadow-up",
         row: [
@@ -142,12 +143,13 @@ export default class Cart extends Component{
               { flex: 1 },
             ],
           },
-          {html: <button onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
+          {html: <button disabled={continued} onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
         ],
       }
     }
     continue(){
       let {openPopup} = this.context;
+      this.setState({continued:true})
       openPopup('shipping',{...this.tab})
     }
     render(){

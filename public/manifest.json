@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "بازار می ارزه",
+  "name": "سامانه دریافت و ارسال سفارشات الکتریکی",
   "icons": [
     {
       "src": "favicon.ico",

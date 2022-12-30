@@ -6,9 +6,10 @@ import Axios from 'axios';
 import Map from './../map/map';
 import getSvg from '../../utils/getSvg';
 import {Icon} from '@mdi/react';
-import {mdiInformation} from '@mdi/js';
+import {mdiInformation,mdiLoading} from '@mdi/js';
 import allCities from './cities';
 import provinces from './provinces';
+import './index.css';
 import $ from 'jquery';
 
 export default class Register extends Component{
@@ -21,7 +22,6 @@ export default class Register extends Component{
             phoneNumber,//دیفالت ندارد و همیشه باید مقدارش ارسال بشه
             storeName = '',address = '',userProvince = '',userCity = '',landline = '',password = ''
         } = model;
-        latitude = 35.699739;
         latitude = isNaN(parseFloat(latitude))?35.699739:parseFloat(latitude);
         longitude = isNaN(parseFloat(longitude))?35.699739:parseFloat(longitude);
         this.cities = allCities.filter(({province})=>province === userProvince)
@@ -29,6 +29,7 @@ export default class Register extends Component{
             prevProvince:userProvince,
             model:{latitude,cardCode,longitude,firstName,lastName,phoneNumber,storeName,address,userProvince,userCity,landline,password,re_password:password},
             showMap:false,
+            loading:false,
             errors:[]
         }
     }
@@ -70,8 +71,16 @@ export default class Register extends Component{
             'register':`${baseUrl}/Users/NewUser`,
             'edit':`${baseUrl}/Users/UpdateUser`
         }[mode];
-        model.landlineNumber = model.landline
-        let res = await Axios.post(url, model);
+        model.landlineNumber = model.landline;
+        this.setState({loading:true})
+        let res;
+        try{
+            res = await Axios.post(url, model);
+        }
+        catch(err){
+            alert(err.message)
+        }
+        this.setState({loading:false})
         let result = false;
         try{result = res.data.isSuccess || false}
         catch{result = false}
@@ -107,16 +116,16 @@ export default class Register extends Component{
                     onChange={(model)=>this.change(model)}
                     inputs={[
                         {label:'کد مشتری',type:'text',field:'model.cardCode',disabled:true,show:mode === 'edit'},
-                        {label:'نام',type:'text',field:'model.firstName',rowKey:'1',validations:[['required']]},
+                        {label:'نام',type:'text',field:'model.firstName',rowKey:'1',validations:[['required']],disabled:mode === 'edit'},
                         {type:'html',html:()=>'',rowKey:'1',rowWidth:12},
-                        {label:'نام خانوادگی',type:'text',field:'model.lastName',rowKey:'1',validations:[['required']]},
+                        {label:'نام خانوادگی',type:'text',field:'model.lastName',rowKey:'1',validations:[['required']],disabled:mode === 'edit'},
                         {label:'رمز عبور',type:'password',field:'model.password',validations:[['required'],['length>',5]],show:mode === 'register'},
                         {
                             label:'تکرار رمز عبور',type:'password',field:'model.re_password',
                             validations:[['=','model.password',{message:'تکرار رمز عبور با رمز عبور مطابقت ندارد'}]],
                             show:mode === 'register'
                         },
-                        {label:'تلفن همراه',type:'text',field:'model.phoneNumber',rowKey:'3',disabled:mode === 'edit'},
+                        {label:'تلفن همراه',type:'text',field:'model.phoneNumber',rowKey:'3',disabled:true},
                         {type:'html',html:()=>'',rowKey:'3',rowWidth:12},
                         {label:'تلفن ثابت',type:'text',field:'model.landline',rowKey:'3'},
                         {label:'نام فروشگاه',type:'text',field:'model.storeName',validations:[['required']]},
@@ -137,7 +146,7 @@ export default class Register extends Component{
                         {label:'استان',type:'select',field:'model.userProvince',rowKey:'2',options:provinces,optionText:'option',optionValue:'option',validations:[['required']]},
                         {type:'html',html:()=>'',rowKey:'2',rowWidth:12},
                         {label:'شهر',type:'select',field:'model.userCity',options:this.cities,optionValue:'option.text',rowKey:'2',validations:[['required']]},
-                        {label:'آدرس',type:'textarea',field:'model.address',validations:[['required']]},
+                        {label:'آدرس',type:'textarea',field:'model.address',validations:[['required']],disabled:mode === 'edit'},
                         // {label:'شماره شبا',type:'text',field:'model.sheba'},
                         // {label:'شماره کارت بانکی',type:'number',field:'model.cardBankNumber'},
                         // {label:'نام دارنده کارت بانکی',type:'text',field:'model.cardBankName'},
@@ -157,7 +166,7 @@ export default class Register extends Component{
         }, 300);
     }
     render(){
-        let {showMap,model,prevProvince,errors} = this.state;
+        let {showMap,model,prevProvince,errors,loading} = this.state;
         let {mode} = this.props;
         if(prevProvince !== model.userProvince){
             setTimeout(()=>{
@@ -206,7 +215,19 @@ export default class Register extends Component{
                             },
                             {
                                 className:'margin-12',
-                                html:<button disabled={!!errors.length} onClick={()=>this.onSubmit()} className='button-2'>{mode === 'edit'?'ویرایش حساب کاربری':'ایجاد حساب کاربری'}</button>
+                                
+                                html:(
+                                    <button 
+                                        disabled={!!errors.length} 
+                                        onClick={()=>this.onSubmit()} 
+                                        className='button-2'
+                                    >
+                                        <>
+                                            {loading && <Icon path={mdiLoading} size={1} spin={0.2} style={{margin:'0 6px'}}/>}
+                                            {mode === 'edit'?'ویرایش حساب کاربری':'ایجاد حساب کاربری'}
+                                        </>
+                                    </button>
+                                )
                             }
                         ]
                     }}
@@ -217,6 +238,7 @@ export default class Register extends Component{
                     model.longitude = longitude;
                     this.setState({model,showMap:false})
                 }}/>}
+                {loading && <div style={{zIndex:1000000000,position:'fixed',left:0,top:0,width:'100%',height:'100%'}}></div>}
             </>
         )
     }

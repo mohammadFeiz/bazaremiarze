@@ -113,7 +113,13 @@ function Service(services,loader) {
       return result;
     }
     if (!services[api]) {alert('services.' + api + ' is not define')}
-    let result = await services[api](parameter);
+    let result;
+    try{
+      result = await services[api](parameter);
+    }
+    catch(err){
+      AIOServiceShowAlert({type:'error',text:`apis().${api}`,subtext:err.message});
+    }
     $(".aio-service-loading").remove();
     if(validation){
       let message = validation(result);

@@ -167,7 +167,7 @@ class App extends Component {
           <Register
             baseUrl={this.apiBaseUrl}
             mode='register'
-            model={{PhoneNumber:userInfo.phoneNumber}}
+            model={{phoneNumber:userInfo.phoneNumber}}
             onClose={()=>this.setState({ isAutenticated: false })}
             onSubmit={(userInfo)=>this.setState({ userInfo, registered: true })}
           />

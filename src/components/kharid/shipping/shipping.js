@@ -42,8 +42,8 @@ export default class Shipping extends Component{
         PaymentTime:'ByOnlineOrder',
         PaymentTime_options:[
           {value:'ByOnlineOrder',text:'اینترنتی'},
-          {value:'ByOrder',text:'واریز قبل ارسال'},
-          {value:'ByDelivery',text:'واریز پای بار'},
+          {value:'ByOrder',text:'واریز قبل ارسال - نقد'},
+          {value:'ByDelivery',text:'واریز پای بار - نقد'},
         ],
         PaymentTime_map:{
             ByOrder:1,
@@ -56,8 +56,7 @@ export default class Shipping extends Component{
         SettleType:'ByDelivery',
         SettleType_options:[
           {value:'ByDelivery',text:'نقد'},
-          {value:'Cheque',text:'چک'},
-
+          {value:'Cheque',text:'چک'}
         ],
         SettleType_map:{
           ByDelivery:1,
@@ -281,8 +280,8 @@ export default class Shipping extends Component{
                   this.options_layout('DeliveryType','نحوه ارسال'),
                   {size:12},
                   this.options_layout('PaymentTime','زمان پرداخت',),
-                  {size:12},
-                  this.options_layout('PayDueDate','مهلت تسویه',PaymentTime !== 'ByOnlineOrder'),
+                  // {size:12},
+                  // this.options_layout('PayDueDate','مهلت تسویه',PaymentTime !== 'ByOnlineOrder'),
                   {size:12},
                   this.products_layout(),
                   {size:12},

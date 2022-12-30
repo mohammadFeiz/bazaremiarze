@@ -29,7 +29,6 @@ export default class MyBurux extends Component{
                     openPopup('peygiriye-sefareshe-kharid')
                 }},
                 //{after:getSvg('chevronLeft'),text:'جایزه ها',icon:getSvg(15),onClick:()=>{}},
-                {after:getSvg('chevronLeft'),text:'حساب ها',icon:getSvg(14),onClick:()=>{}},
                 {after:getSvg('chevronLeft'),text:'جزییات درخواست های گارانتی',icon:getSvg(14),onClick:async ()=>{
                     let {SetState,guarantiApis,openPopup} = this.context;
                     let {items,total} = await guarantiApis({api:'items'});
@@ -143,17 +142,17 @@ export default class MyBurux extends Component{
                 {html:(
                     <AIOButton position='bottom' className='color605E5C size14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
                         return (
-                            <>
-                            <div style={{height:60,display:'flex',alignItems:'center'}} className='color323130 size16 bold padding-0-24'>موارد اضافه شده به این نسخه</div>
-                            <ul>
-                                <li>تکمیل بازارگاه تا تحویل به مشتری</li>
-                                <li>بهبود گرافیک</li>
-                                <li>بهبود تجربه کاربری  در خرید</li>
-                                <li>اتصال به بک آفیس</li>
-                                <li>افزایش سرعت دریافت داده ها از سرور</li>
+                            <div style={{background:'#fff'}}>
+                                <div style={{height:60,display:'flex',alignItems:'center'}} className='color323130 size16 bold padding-0-24'>موارد اضافه شده به این نسخه</div>
+                                <ul>
+                                    <li>تکمیل بازارگاه تا تحویل به مشتری</li>
+                                    <li>بهبود گرافیک</li>
+                                    <li>بهبود تجربه کاربری  در خرید</li>
+                                    <li>اتصال به بک آفیس</li>
+                                    <li>افزایش سرعت دریافت داده ها از سرور</li>
 
-                            </ul>
-                            </>
+                                </ul>
+                            </div>
                         )
                     }}/>
                 ),align:'vh'},

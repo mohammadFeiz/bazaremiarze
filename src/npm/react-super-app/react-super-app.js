@@ -10,6 +10,9 @@ export default class ReactSuperApp extends Component {
     constructor(props){
       super(props);
       let {touch = 'ontouchstart' in document.documentElement,splash,splashTime = 7000} = props;
+      window.addEventListener('load', function() {
+        window.history.pushState({}, '')
+      })
       this.state = {
         navId:this.getNavId(),
         splash,

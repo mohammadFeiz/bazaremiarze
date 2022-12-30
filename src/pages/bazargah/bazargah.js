@@ -6,6 +6,8 @@ import bulbSrc from './../../images/10w-bulb.png';
 import Tabs from '../../components/tabs/tabs';
 import getSvg from '../../utils/getSvg';
 import AIOButton from './../../npm/aio-button/aio-button';
+import AIOButtonInterface from './../../interfaces/aio-button/aio-button';
+
 import AIOContentSlider from './../../npm/aio-content-slider/aio-content-slider';
 import {Icon} from '@mdi/react';
 import Form from './../../interfaces/aio-form-react/aio-form-react';
@@ -31,7 +33,16 @@ export default class Bazargah extends Component{
         let {rsa_actions} = this.context;
         rsa_actions.addPopup({
             type:'fullscreen',header:false,
-            content:()=><JoziateSefaresheBazargah {...o} onClose={()=>rsa_actions.removePopup()}/>
+            content:()=><JoziateSefaresheBazargah order={o} onClose={(openOrder)=>{
+                rsa_actions.removePopup()
+                if(openOrder){
+                    let {bazargah} = this.context;
+                    let {wait_to_send = []} = bazargah;
+                    let order = wait_to_send.find((x)=>x.orderId === o.orderId);
+                    if(order){this.openDetails(order)}
+                }
+                
+            }}/>
         })
     }
     wait_to_get_layout(){
@@ -275,7 +286,9 @@ class JoziateSefaresheBazargah extends Component{
     static contextType=appContext;
     constructor(props){
         super(props);
-        this.state = {sendStep:0,sendStatus:props.sendStatus,deliverers:[],code0:'',code1:'',code2:'',staticCode:props.deliveredCode}
+        let {order} = props;
+        let {sendStatus,deliveredCode} = order;
+        this.state = {sendStep:0,sendStatus,deliverers:[],code0:'',code1:'',code2:'',deliveredCode}
     }
     async get_deliverers(){
         let {bazargahApis} = this.context;
@@ -287,7 +300,8 @@ class JoziateSefaresheBazargah extends Component{
     }
     async changeSendStatus(key,value){
         let {bazargahApis} = this.context;
-        let {orderId} = this.props;
+        let {order} = this.props;
+        let {orderId} = order;
         let {sendStatus} = this.state;
         sendStatus = JSON.parse(JSON.stringify(sendStatus));
         sendStatus[key] = value;
@@ -300,7 +314,8 @@ class JoziateSefaresheBazargah extends Component{
         //}
     }
     getVisibility(key){
-        let {type} = this.props;
+        let {order} = this.props;
+        let {type} = order;
         let {sendStep} = this.state;
         if(key === 'timer'){return type === 'wait_to_get' || sendStep === 0}
         if(key === 'items'){return type === 'wait_to_get' || [0,1,3].indexOf(sendStep) !== -1}
@@ -313,13 +328,13 @@ class JoziateSefaresheBazargah extends Component{
         if(key === 'submit'){return type === 'wait_to_get' || sendStep < 3}
     }
     async onSubmit(){
-        let {type} = this.props;
+        let {order} = this.props;
+        let {type,orderId} = order;
         if(type === 'wait_to_get'){
             let {bazargahApis} = this.context;
-            let {orderId} = this.props;
             let res = await bazargahApis({api:'akhze_sefaresh',parameter:{orderId}})
             let {showMessage} = this.context;
-            if(res){showMessage('سفارش با موفقیت اخذ شد'); this.props.onClose()}
+            if(res){showMessage('سفارش با موفقیت اخذ شد'); this.props.onClose(order)}
             else{showMessage('اخذ سفارش با خطا روبرو شد')}   
         }
         if(type === 'wait_to_send'){
@@ -328,7 +343,8 @@ class JoziateSefaresheBazargah extends Component{
         }
     }
     getHints(){
-        let {type} = this.props;
+        let {order} = this.props;
+        let {type} = order;
         if(type === 'wait_to_get'){
             return {
                 title:'اخذ سفارش',
@@ -376,7 +392,8 @@ class JoziateSefaresheBazargah extends Component{
         }
     }
     getInfo(key){
-        let {type} = this.props;
+        let {order} = this.props;
+        let {type,items} = order;
         if(type === 'wait_to_get'){
             if(key === 'onBack'){return ()=>this.props.onClose()}
             if(key === 'isCheckable'){return false}
@@ -404,7 +421,7 @@ class JoziateSefaresheBazargah extends Component{
                 let {itemsChecked = {},delivererId} = sendStatus;
                 if(sendStep === 0){return false}
                 if(sendStep === 1){
-                    return Object.keys(itemsChecked).filter((o)=>!!itemsChecked[o]).length !== this.props.items.length
+                    return Object.keys(itemsChecked).filter((o)=>!!itemsChecked[o]).length !== items.length
                 }
                 if(sendStep === 2){return !delivererId}
             }
@@ -433,7 +450,8 @@ class JoziateSefaresheBazargah extends Component{
     }
     details_layout(){
         if(!this.getVisibility('details')){return false}
-        let {orderId,createdDate,receiverName,receiverNumber,shippingAddress,amount,benefit} = this.props;
+        let {order} = this.props;
+        let {orderId,createdDate,receiverName,receiverNumber,shippingAddress,amount,benefit} = order;
         return {
             column:[
                 {
@@ -443,7 +461,7 @@ class JoziateSefaresheBazargah extends Component{
                         this.detailRow_layout('کد سفارش',orderId),
                         this.detailRow_layout('تاریخ ثبت',createdDate),
                         this.detailRow_layout('تحویل گیرنده',receiverName),
-                        this.detailRow_layout('موبایل',receiverNumber),
+                        //this.detailRow_layout('موبایل',receiverNumber),
                         {
                             column:[
                                 {html:'آدرس',className:'colorA19F9D size12 padding-0-24'},
@@ -469,12 +487,13 @@ class JoziateSefaresheBazargah extends Component{
     }
     time_layout(){
         if(!this.getVisibility('timer')){return false}
-        let {totalTime,orderDate} = this.props;
+        let {order} = this.props;
+        let {totalTime,orderDate,id} = order;
         let timeTitle = this.getInfo('timeTitle');
         return {
             className:'bgFFF',
             row:[
-                {size:110,html:<TimerGauge key={this.props.id} {...{totalTime,startTime:orderDate}}/>,align:'vh'},
+                {size:110,html:<TimerGauge key={id} {...{totalTime,startTime:orderDate}}/>,align:'vh'},
                 {align:'v',html:timeTitle,className:'color605E5C size14'},
                 {flex:1}
             ]
@@ -507,7 +526,8 @@ class JoziateSefaresheBazargah extends Component{
         }
     }
     items_layout(){
-        let {items} = this.props;
+        let {order} = this.props;
+        let {items} = order;
         if(!items){return false}
         if(!this.getVisibility('items')){return false}
         let isCheckable = this.getInfo('isCheckable')
@@ -572,7 +592,8 @@ class JoziateSefaresheBazargah extends Component{
     }
     address_layout(){
         if(!this.getVisibility('address')){return false}
-        let {latitude,longitude,shippingAddress} = this.props;
+        let {order} = this.props;
+        let {latitude,longitude,shippingAddress} = order;
         return {
             className:'bgFFF',
             column:[
@@ -612,7 +633,7 @@ class JoziateSefaresheBazargah extends Component{
                         {flex:1,html:'انتخاب پیک',align:'v'},
                         {
                             html:(
-                                <AIOButton
+                                <AIOButtonInterface
                                     type='button'
                                     style={{background:'none'}}
                                     className='color3B55A5 bold size14'
@@ -743,7 +764,7 @@ class JoziateSefaresheBazargah extends Component{
         if(!this.getVisibility('code')){return false}
         let {rsa_actions} = this.context;
         let {setNavId} = rsa_actions;
-        let {staticCode = '1234',code0,code1,code2} = this.state;
+        let {deliveredCode = '1234',code0,code1,code2} = this.state;
         let disabled = code0 === '' || code1 === '' || code2 === '';
         console.log(code0.code1,code2)
         return {
@@ -769,7 +790,7 @@ class JoziateSefaresheBazargah extends Component{
                     row:[
                         {flex:1},
                         {
-                            row:staticCode.split('').map((o)=>{
+                            row:deliveredCode.split('').map((o)=>{
                                 return {size:30,html:o,align:'vh',className:'bold size24'}
                             })
                         },
@@ -783,7 +804,6 @@ class JoziateSefaresheBazargah extends Component{
                                     }} 
                                     type='button' caret={false}
                                     text={`${isNaN(code0)?'':code0}${isNaN(code1)?'':code1}${isNaN(code2)?'':code2}`}
-                                    position='bottom'
                                     popOver={(obj)=>(
                                         <InlineNumberKeyboard 
                                             onClick={(v)=>{
@@ -829,13 +849,15 @@ class JoziateSefaresheBazargah extends Component{
                             onClick={async ()=>{
                                 if(disabled){return}
                                 let {bazargahApis,showMessage} = this.context;
-                                let res = await bazargahApis({api:'taide_code_tahvil',parameter:{staticCode,orderId:this.props.orderId,dynamicCode:`${code0}${code1}${code2}`}})
+                                let {order} = this.props;
+                                let {orderId} = order;
+                                let res = await bazargahApis({api:'taide_code_tahvil',parameter:{deliveredCode,orderId,dynamicCode:`${code0}${code1}${code2}`}})
                                 if(res){
-                                    showMessage('کالا تحویل شد.');
+                                    rsa_actions.setConfirm({type:'success',text:'سفارش با موفقیت تحویل داده شد',subtext:'مبلغ ارسال این سفارش به کیف پول شما واریز می گردد'});
                                     setNavId('khane')
                                 }
                                 else{
-                                    showMessage('کد معتبر نیست')
+                                    rsa_actions.setConfirm({type:'error',text:'کد معتبر نیست'})
                                 }
                             }}
                         >تایید</button>

@@ -19,7 +19,7 @@ export default class Billboard extends Component{
         let {campaigns,openPopup} = this.context,{renderIn} = this.props;
         let items = campaigns.map((o)=><img src={o.src} width='100%' onClick={async ()=>this.onClick(o)}/>)
         if(renderIn === 'home'){
-            items.push(<img src={HomeSlide2} alt="" width='100%'/>)
+            // items.push(<img src={HomeSlide2} alt="" width='100%'/>)
             items.push(<img src={Sookhte} alt="" width='100%' className='sookhte' onClick={()=>{
                 openPopup('sabte-garanti-jadid')
             }}/>)

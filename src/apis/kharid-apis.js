@@ -269,7 +269,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       return res
     },
     async getCampaigns() {
-      let res = await Axios.get(`${baseUrl}/Spree/GetAllCampaigns?ids=10931,10930,10929`);
+      let res = await Axios.get(`${baseUrl}/Spree/GetAllCampaigns?ids=10947,10945`);
       let dataResult = res.data.data.data;
       let includedResult = res.data.data.included;
 
@@ -913,8 +913,8 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         "IsDraft":order.mainDocisDraft,
         "DocNum":order.mainDocNum,
         "DocEntry":order.code,
-        "CallbackUrl":"https://bazar.miarze."+"com/"
-        // "CallbackUrl":"https://retailerapp.bbeta."+"ir/"
+        // "CallbackUrl":"https://bazar.miarze."+"com/"
+        "CallbackUrl":"https://retailerapp.bbeta."+"ir/"
         // "CallbackUrl":"http://localhost:3000/"
       });
       

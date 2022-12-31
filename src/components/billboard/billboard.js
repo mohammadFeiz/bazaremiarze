@@ -1,15 +1,13 @@
 import React ,{Component} from 'react';
 import ACS from './../../npm/aio-content-slider/aio-content-slider';
-import HomeSlide2 from './../../images/home-slide-2.png';
 import Sookhte from './../../images/banner1111.png';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
-import harajestan_svg from './../../svgs/harajestan';
-import cheraghe_khatti_svg from './../../svgs/cheraghe-khatti';
-import burux_dey_svg from './../../svgs/burux-dey';
+import yaldaye_roshanayi from './../../images/yaldaye-roshanayi.png';
+import yaldaye_batri from './../../images/yaldaye-batri.png';
 import appContext from '../../app-context';
 export default class Billboard extends Component{
     static contextType = appContext;
-    svgs = [harajestan_svg(),cheraghe_khatti_svg(),burux_dey_svg()]
+    svgs = [<img src={yaldaye_batri} width={54} height={54} alt=''/>,<img src={yaldaye_roshanayi} width={54} height={54} alt=''/>]
     async onClick(campaign){
         let {kharidApis,openPopup} = this.context;
         let products = await kharidApis({api:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.id});

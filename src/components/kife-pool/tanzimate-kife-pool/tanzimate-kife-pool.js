@@ -3,9 +3,7 @@ import appContext from "../../../app-context";
 import AIOButton from "../../../interfaces/aio-button/aio-button";
 import Form from './../../../interfaces/aio-form-react/aio-form-react';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
-import {Icon} from '@mdi/react';
-import {mdiClose} from '@mdi/js';
-import getCardDetail from "./get-card-detail";
+import CreaditCard,{ getCardDetail } from "./../credit-card/credit-card";
 import './index.css';
 
 export default class TanzimateKifePool extends Component{
@@ -72,61 +70,7 @@ export default class TanzimateKifePool extends Component{
         )
     }
 }
-class CreaditCard extends Component{
-    state = {mounted:false}
-    componentDidMount(){
-        let {index} = this.props;
-        setTimeout(()=>{
-            this.setState({mounted:true})
-        },index * 200)
-    }
-    render(){
-        let {number = '',onRemove,id,name} = this.props;
-        let {mounted} = this.state;
-        let {className,bankName} = getCardDetail(number)
-        let split1 = number.slice(0,4);
-        let split2 = number.slice(4,8);
-        let split3 = number.slice(8,12);
-        let split4 = number.slice(12,16);
-        return (
-            <RVD
-                layout={{
-                    className:'credit-card' + (mounted?' mounted':''),
-                    style:{maxWidth:300,width:'100%',overflow:'visible',transform:`rotateX(180deg)`,height:160,flex:'none'},
-                    column:[
-                        {size:12},
-                        {
-                            row:[
-                                {size:12},
-                                {size:60,html:'',className:'card-logo' + (className?' ' + className:''),style:{height:60}},
-                                {show:!!bankName,html:'بانک ' + bankName,className:'size16',align:'v'},
-                                {flex:1},
-                                {size:60,html:<Icon path={mdiClose} size={1}/>,align:'vh',attrs:{onClick:()=>onRemove(id)}}
-                            ]
-                        },
-                        {
-                            style:{direction:'ltr'},
-                            size:48,align:'v',
-                            row:[
-                                {flex:1},
-                                {html:split1,className:'size14 credit-card-number'},
-                                {size:12},
-                                {html:split2,className:'size14 credit-card-number'},
-                                {size:12},
-                                {html:split3,className:'size14 credit-card-number'},
-                                {size:12},
-                                {html:split4,className:'size14 credit-card-number'},
-                                {flex:1}
-                            ]
-                        },
-                        {flex:1,html:name,align:'v',className:'padding-0-24'},
-                        {size:12}
-                    ]
-                }}
-            />
-        )
-    }
-}
+
 class AddCard extends Component{
     static contextType = appContext;
     constructor(props){
@@ -146,7 +90,6 @@ class AddCard extends Component{
     }
     render(){
         let {model} = this.state;
-        let {getCardDetail} = this.props;
         let {className} = getCardDetail(model.number || '')
         let cls = 'affix-logo card-logo' + (className?' ' + className:'')
         return (

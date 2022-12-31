@@ -848,12 +848,15 @@ class JoziateSefaresheBazargah extends Component{
                             className='button-2 margin-0-12' disabled={disabled} style={{height:36}}
                             onClick={async ()=>{
                                 if(disabled){return}
-                                let {bazargahApis,showMessage} = this.context;
+                                let {bazargahApis,showMessage,SetState} = this.context;
                                 let {order} = this.props;
                                 let {orderId} = order;
                                 let res = await bazargahApis({api:'taide_code_tahvil',parameter:{deliveredCode,orderId,dynamicCode:`${code0}${code1}${code2}`}})
                                 if(res){
                                     rsa_actions.setConfirm({type:'success',text:'سفارش با موفقیت تحویل داده شد',subtext:'مبلغ ارسال این سفارش به کیف پول شما واریز می گردد'});
+                                    let {bazargah} = this.context;
+                                    bazargah.wait_to_send = bazargah.wait_to_send.filter((o)=>o.orderId !== orderId);
+                                    SetState({bazargah})
                                     setNavId('khane')
                                 }
                                 else{

@@ -31,7 +31,9 @@
 	url('./iransans/woff/IRANSansWeb(FaNum)_Medium.woff') format('woff'), 
 	url('./iransans/ttf/IRANSansWeb(FaNum)_Medium.ttf') format('truetype');
 }
-
+* {
+  -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+}
 .rsa{
   font-family:IRANSans-light;
   position:fixed;

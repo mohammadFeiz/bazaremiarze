@@ -1,4 +1,57 @@
-export default function getCardDetail(number = ''){
+import React,{Component} from "react";
+import RVD from './../../../npm/react-virtual-dom/react-virtual-dom';
+import {Icon} from '@mdi/react';
+import {mdiClose} from '@mdi/js';
+import './credit-card.css';
+export default class CreaditCard extends Component{
+    state = {mounted:false}
+    componentDidMount(){
+        let {index = 0} = this.props;
+        setTimeout(()=>{
+            this.setState({mounted:true})
+        },index * 200)
+    }
+    render(){
+        let {number = '',onRemove,id,name} = this.props;
+        let {mounted} = this.state;
+        let {className,bankName} = getCardDetail(number)
+        let split1 = number.slice(0,4);
+        let split2 = number.slice(4,8);
+        let split3 = number.slice(8,12);
+        let split4 = number.slice(12,16);
+        return (
+            <RVD
+                layout={{
+                    className:'credit-card' + (mounted?' mounted':''),
+                    column:[
+                        {size:12},
+                        {
+                            row:[
+                                {className:'credit-card-logo' + (className?' ' + className:'')},
+                                {show:!!bankName,html:'بانک ' + bankName,className:'credit-card-bank-name',align:'v'},
+                                {flex:1},
+                                {show:!!onRemove,size:60,html:<Icon path={mdiClose} size={1}/>,align:'vh',attrs:{onClick:()=>onRemove(id)}}
+                            ]
+                        },
+                        {
+                            className:'credit-card-number',
+                            row:[
+                                {flex:1},
+                                {html:split1,className:'credit-card-number-split'},
+                                {html:split2,className:'credit-card-number-split'},
+                                {html:split3,className:'credit-card-number-split'},
+                                {html:split4,className:'credit-card-number-split'},
+                                {flex:1}
+                            ]
+                        },
+                        {flex:1,html:name,align:'v',className:'credit-card-name'}
+                    ]
+                }}
+            />
+        )
+    }
+}
+export function getCardDetail(number = ''){
     if(number.length < 6){
         return {className:'',bankName:''}
     }

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import RVD from "./../../../interfaces/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
 import AIOButton from './../../../interfaces/aio-button/aio-button';
-import OrderPopup from "./../order-popup/order-popup";
+import './index.css';
 export default class OrdersHistory extends Component {
     static contextType = appContext;
     constructor(props) {
@@ -42,15 +42,15 @@ export default class OrdersHistory extends Component {
           flex:1,html:'سفارشی موجود نیست',className:'size16 color605E5C bold',align:'vh'
         }
       }
-      let column = orders.map((o)=>this.order_layout(o))
+      let column = orders.map((o,i)=>this.order_layout(o,i))
       column.push({size:300})
       return {flex: 1,gap: 12,scroll:'v',column}
     }
-    order_layout(order){
+    order_layout(order,index){
       let {openPopup} = this.context;
       return {
         style:{overflow:'visible'},
-        html:<OrderCard order={order}/>,
+        html:<OrderCard order={order} index={index}/>,
         attrs:{onClick:()=>openPopup('joziate-sefareshe-kharid',order)}
       }
     }
@@ -62,7 +62,13 @@ export default class OrdersHistory extends Component {
   }
 
   class OrderCard extends Component {
-    unit = 'ریال';
+    state = {unit:'ریال',mounted:false}
+    componentDidMount(){
+      let {index = 0} = this.props;
+        setTimeout(()=>{
+            this.setState({mounted:true})
+        },index * 100 + 100)
+    }
     splitPrice(price){
       if(!price){return price}
       let str = price.toString(),dotIndex = str.indexOf('.');
@@ -90,6 +96,7 @@ export default class OrdersHistory extends Component {
       }
     }
     footer_layout(){
+      let {unit} = this.state;
       let {order} = this.props;
       let {total} = order;
       return {
@@ -99,15 +106,16 @@ export default class OrdersHistory extends Component {
           {flex:1},
           {html:this.splitPrice(total),className: "size14 color323130"},
           {size:6},
-          {html:this.unit,className: "size12 color605E5C"},
+          {html:unit,className: "size12 color605E5C"},
         ],
       }
     }
     render() {
+      let {mounted} = this.state;
       return (
         <RVD
           layout={{
-            className: "box gap-no-color margin-0-12 padding-12",
+            className: "box gap-no-color order-card" + (mounted?' mounted':''),
             column: [this.header_layout(),this.footer_layout(),],
           }}
         />

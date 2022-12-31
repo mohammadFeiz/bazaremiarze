@@ -163,10 +163,10 @@ export default class AIOForm extends Component {
       optionBefore:input.optionBefore,optionAfter:input.optionAfter,optionStyle:input.optionStyle,
       text,before:input.before,optionSubtext:input.optionSubtext
     }
-    let {defaults = {}} = this.props;
+    let {defaults = {},rtl} = this.props;
     let select = defaults.select || {};
     this.setByDefaults(select,props);
-    return (<AIOButton {...props} type='select' popupWidth='fit' popupAttrs={{style:{maxHeight: 400 }}}/>);
+    return (<AIOButton {...props} type='select' popupWidth='fit' popupAttrs={{style:{maxHeight: 400 }}} rtl={rtl}/>);
   }
   getInput_multiselect({className,value,onChange,options,disabled,style,text,subtext,theme}, input) {
     let props = {className,value,onChange,options,text,subtext,disabled,search:input.search,style,popupWidth:'fit',
@@ -289,7 +289,7 @@ export default class AIOForm extends Component {
     let inlineLabel = this.getTheme(input,'inlineLabel','boolean');
     if (inlineLabel) {
       return {
-        className: 'aio-form-item',style:{overflow:'visible'},
+        className: 'aio-form-item' + (error?' has-error':''),style:{overflow:'visible'},
         row: [
           this.getLabelLayout(label,input,inlineLabel),
           {size:6,show: label !== undefined},
@@ -311,7 +311,7 @@ export default class AIOForm extends Component {
       };
     } else {
       return {
-        className: 'aio-form-item',
+        className: 'aio-form-item' + (error?' has-error':''),
         style:{overflow:'visible'},
         column: [
           this.getLabelLayout(label,input,inlineLabel),
@@ -378,7 +378,8 @@ export default class AIOForm extends Component {
   }
   getInputs(inputs){
     if(!inputs.length){return []}
-    let {onSwap,rowStyle} = this.props; 
+    let {onSwap,theme = {}} = this.props; 
+    let {rowStyle = {}} = theme;
     let rows = this.sortByRows(this.handleGroups(inputs));
     return rows.map((row,i)=>{
       let style = {...rowStyle,overflow:'visible'};

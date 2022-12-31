@@ -1,0 +1,11 @@
+.order-card{
+    margin:0 12px;
+    padding:12px;
+    transform:rotateX(180deg);
+    opacity:0;
+}
+.order-card.mounted{
+    transform: rotateX(0deg) !important;
+    opacity:1;
+    transition: 0.8s;
+}

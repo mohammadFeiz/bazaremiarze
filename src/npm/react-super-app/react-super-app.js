@@ -10,9 +10,6 @@ export default class ReactSuperApp extends Component {
     constructor(props){
       super(props);
       let {touch = 'ontouchstart' in document.documentElement,splash,splashTime = 7000} = props;
-      window.addEventListener('load', function() {
-        window.history.pushState({}, '')
-      })
       this.state = {
         navId:this.getNavId(),
         splash,
@@ -69,7 +66,7 @@ export default class ReactSuperApp extends Component {
             }}
           />
         )
-        confirm = {text:body,style:{background:'#fff',height:'fit-content',width:360},buttons:[{text:'بستن'}],backClose:true}
+        confirm = {text:body,style:{height:'fit-content',width:360},buttons:[{text:'بستن'}],backClose:true}
       }
       else{confirm = obj;}
       this.setState({confirm})
@@ -145,11 +142,11 @@ export default class ReactSuperApp extends Component {
       return (<RVD layout={layout}/>)
     }
     renderPopups(){
-      let {popups,removePopup} = this.state;
+      let {popups,removePopup,confirm} = this.state;
       let {rtl,popupConfig = {}} = this.props;
       if(!popups.length){return null}
       return popups.map((o,i)=>{
-        return <Popup key={i} blur={i === popups.length - 2} {...popupConfig} {...o} index={i} removePopup={()=>removePopup()} rtl={rtl}/>
+        return <Popup key={i} blur={confirm || i === popups.length - 2} {...popupConfig} {...o} index={i} removePopup={()=>removePopup()} rtl={rtl}/>
       })
     }
     render() {
@@ -159,7 +156,7 @@ export default class ReactSuperApp extends Component {
         <>
           {this.renderMain()},
           {this.renderPopups()}
-          {confirm && <Confirm {...confirm} onClose={()=>this.setState({confirm:false})}/>}
+          {confirm && <Confirm {...confirm} rtl={rtl} onClose={()=>this.setState({confirm:false})}/>}
           {sides.length && <SideMenu sideHeader={sideHeader} sides={sides} sideId={sideId} sideOpen={sideOpen} rtl={rtl} onClose={()=>this.setState({sideOpen:false})}/>}
           {splash && splash()}
         </>
@@ -419,6 +416,7 @@ class Popup extends Component{
         size:48,
         align:'v',
         style:{padding:'0 12px'},
+        className:'rsa-confirm-footer',
         row:buttons.map(({text,onClick = ()=>{}})=>{
           return {html:(
             <button 
@@ -440,10 +438,10 @@ class Popup extends Component{
       onClose();
     }
     render(){
-      let {style = {width:400,height:300}} = this.props;
+      let {style = {width:400,height:300},rtl} = this.props;
       return (  
         <div className='rsa-popup-container' onClick={(e)=>this.backClick(e)}>
-          <RVD layout={{className:'rsa-popup rsa-confirm' + (' ' + this.dui),style:{flex:'none',...style},column:[this.header_layout(),this.body_layout(),this.footer_layout()]}}/>  
+          <RVD layout={{className:'rsa-popup rsa-confirm' + (' ' + this.dui),style:{flex:'none',direction:rtl?'rtl':'ltr',...style},column:[this.header_layout(),this.body_layout(),this.footer_layout()]}}/>  
         </div>
       )
     }

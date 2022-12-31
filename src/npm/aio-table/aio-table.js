@@ -117,7 +117,7 @@ export default class Table extends Component {
         let {_show} = this.getRowDetailById(id);
         if(_show === false){return null}
         if(!this.isRowOpen(id)){return null}
-        let {width,flex,minWidth = 36,dataColumnId} = column;
+        let {width,flex,minWidth = 3,dataColumnId} = column;
         if(width === undefined && flex === undefined){flex = 1;}
         return {html:<Cell striped={striped} key={id + dataColumnId + column.freeze} colId={j} rowId={id} column={column} value={value}/>,size:width,flex,minWidth,attrs:{'data-column-id':dataColumnId}}
       };
@@ -496,7 +496,7 @@ class TableUnit extends Component{
     if(column.show === false){return false}
     let resizable = column.resizable !== false && column.width && !column.flex;
     let {rowHeight,headerHeight} = this.context;
-    let {width,flex,minWidth = 36,titleAttrs = {}} = column;
+    let {width,flex,minWidth = 3,titleAttrs = {}} = column;
     if(setFlex){width = undefined; flex = 1}
     if(width === undefined && flex === undefined){flex = 1;}
     return {
@@ -589,7 +589,7 @@ class TableUnit extends Component{
     let {groupHeight,rowHeight,indent,rtl,editGroupName = (o)=>o} = this.context;
     let {cellsType} = this.props;
     return {
-      style:{position:'sticky',[rtl?'right':'left']:0,height:groupHeight || rowHeight},
+      style:{[rtl?'right':'left']:0,height:groupHeight || rowHeight},
       className:TableCLS.groupRow,
       row:cellsType === 'unfreezeCells'?[{flex:1}]:[
         {size:12},
@@ -649,7 +649,7 @@ class TableUnit extends Component{
       style:{overflow:'visible'},
       row:cells.map((cell,i)=>{
         let res = cell(striped);
-        let {html,size,flex,minWidth = 36,attrs} = res;
+        let {html,size,flex,minWidth = 3,attrs} = res;
         if(size === undefined && flex === undefined){flex = 1;}
         if(flex !== undefined){isThereAnyFlex = true}
         if(i === cells.length - 1 && !isThereAnyFlex){
@@ -1128,15 +1128,16 @@ class AIOfilterItem extends Component{
     this.state = {value,prevValue:value}
   }
   operator_layout(){
-    let {onChange,operator,operatorOptions,add,title} = this.props;
+    let {onChange,operator,operatorOptions,add,translate} = this.props;
     if(add === false){return false}
-    if(operatorOptions.filter(({show})=>show !== false).length === 1){
+    let operators = operatorOptions.filter(({show})=>show !== false);
+    if(operators.length === 1){
       return {
         size:90,
         html:(
           <AIOButton 
             style={{width:'100%'}}
-            type='button' className={TableCLS.filterOperator} text={operator}
+            type='button' className={TableCLS.filterOperator} text={operators[0].text}
           />
         )
       }  
@@ -1521,7 +1522,7 @@ let functions = {
     var {client,width,column,type} = this.resizeDetails;
     var offset = (Client[0] - client[0]) * (type === 'start'?-1:1);
     let newWidth = (width + offset * (rtl?-1:1));
-    if(newWidth < parseInt(column.minWidth || 36)){newWidth = parseInt(column.minWidth || 36)}
+    if(newWidth < parseInt(column.minWidth || 3)){newWidth = parseInt(column.minWidth || 3)}
     this.resizeDetails.newWidth = newWidth;
     if(newWidth % 10 !== 0){return}
     $(`[data-column-id='${column.dataColumnId}']`).css({width:newWidth})

@@ -81,10 +81,8 @@ body.aio-button-open {
 }
 
 .aio-button-icon {
-  width: 30px;
+  width: 24px;
   height: 30px;
-  position: absolute;
-  right: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;

@@ -47,7 +47,7 @@ export default class AIOButtonInterface extends Component{
                 <AIOButton {...props}/>
                 {
                     showPopover && 
-                    <div style={{position:'fixed',background:'rgba(0,0,0,0.6)',height:'100%',width:'100%',left:0,top:0,display:'flex',flexDirection:'column',zIndex:10000000000000}}>
+                    <div className='fullscreen' style={{background:'rgba(0,0,0,0.6)',display:'flex',flexDirection:'column',zIndex:10000000000000}}>
                         {position === 'bottom' && <div onClick={()=>this.setState({showPopover:false})} style={{flex:1}}></div>}
                         {popOver({toggle:()=>this.setState({showPopover:false})})}
                         {position === 'top' && <div onClick={()=>this.setState({showPopover:false})} style={{flex:1}}></div>} 

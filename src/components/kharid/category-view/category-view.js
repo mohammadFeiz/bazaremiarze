@@ -15,14 +15,12 @@ export default class CategoryView extends Component {
         let {category} = this.props;
         let {src} = category;
         if(!src){return false}
-        return {style:{marginBottom:12},html:<img src={src} alt='' width='100%' />}
+        return {html:<img src={src} alt='' width='100%' />}
     }
     product_layout(product,index){
-        let {category} = this.props;
-        let {products} = category;
         let {searchValue} = this.state;
         if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
-        return {html:<ProductCard product={product} isFirst={true} isLast={true} type='horizontal' />,style:{overflow:'visible'}}
+        return {html:<ProductCard index={index} product={product} isFirst={true} isLast={true} type='horizontal' />,of:'visible'}
     }
     render() {
         let {category} = this.props;
@@ -34,9 +32,10 @@ export default class CategoryView extends Component {
                     column: [
                         this.search_layout(),
                         {
-                            flex:1,scroll: "v",
+                            flex:1,className:'ofy-auto',
                             column:[
                                 this.banner_layout(),
+                                {size:12},
                                 {
                                     gap: 12,
                                     column: products.map((product,index)=>this.product_layout(product,index))

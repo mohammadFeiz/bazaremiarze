@@ -10,7 +10,7 @@ export default class Tabs extends Component{
         if(typeof badge === 'function'){badge = badge()}
         let active = id === activeTabId;
         return {
-            align: 'vh', size, flex, className: 'size12',
+            align: 'vh', size, flex, className: 'fs-12',
             attrs: { onClick: () => onChange(id) },
             style:active?{borderBottom:'2px solid',color:'dodgerblue'}:{},
             row: [
@@ -23,7 +23,7 @@ export default class Tabs extends Component{
         let {tabs = []} = this.props;
         if(!tabs.length){return null}
         return (
-            <RVD layout={{gap: 12,scroll:'h',style:{height:36},className: 'tabs-container padding-0-24 bgFFF',row: tabs.map((o)=>this.tab_layout({...o}))}}/>
+            <RVD layout={{gap: 12,ofx:'auto',style:{height:36},className: 'tabs-container p-h-24 bg-fff',row: tabs.map((o)=>this.tab_layout({...o}))}}/>
         )
     }
 }

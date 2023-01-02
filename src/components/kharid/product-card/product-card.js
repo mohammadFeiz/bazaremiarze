@@ -4,6 +4,7 @@ import ProductCount from './../product-count/product-count';
 import NoSrc from './../../../images/no-src.png';
 import appContext from './../../../app-context';
 import AIOButton from './../../../interfaces/aio-button/aio-button';
+import './product-card.css';
 //props
 //1 - product {name = '',variants = [{id}],price = 0,discountPrice = 0,discountPercent = 0,inStock = false,srcs = ['...']}
 //3 - details = [[title = '',value = '']]
@@ -15,6 +16,7 @@ import AIOButton from './../../../interfaces/aio-button/aio-button';
 export default class ProductCard extends Component{
     static contextType = appContext;
     debuggerMode = false;
+    state = {mounted:false}
     isInCart(){
         let {cart} = this.context;
         let {product} = this.props;
@@ -57,7 +59,7 @@ export default class ProductCard extends Component{
     title_layout(){
         let {product} = this.props;
         if(!product.campaign){return false}
-        return {html:product.campaign.name,className:'size10',style:{color:'rgb(253, 185, 19)'}}
+        return {html:product.campaign.name,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}
     }
     name_layout(){
         let {product} = this.props;
@@ -75,17 +77,17 @@ export default class ProductCard extends Component{
                     )
                 }}
             />
-        ):name,className:'size14 color575756 bold',style:{whiteSpace:'normal'}}
+        ):name,className:'fs-14 color575756 bold',style:{whiteSpace:'normal'}}
     }
     discount_layout(){
         let {product,count = 1} = this.props;
         let {inStock,Price,B1Dscnt = 0,CmpgnDscnt = 0,PymntDscnt = 0,FinalPrice} = product;
         if(!Price || !inStock){return false}
         return {
-            childsAttrs:{align:'v'},gap:4,className:'padding-0-12',
+            childsAttrs:{align:'v'},gap:4,className:'p-h-12',
             row:[
                 {flex:1},
-                {show:!!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt,html:<del>{this.splitPrice(Price)}</del>,className:'size14 colorA19F9D'},
+                {show:!!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt,html:<del>{this.splitPrice(Price)}</del>,className:'fs-14 colorA19F9D'},
                 {
                     gap:3,
                     row:[
@@ -102,7 +104,7 @@ export default class ProductCard extends Component{
         if(!details.length){return false}
         return {
             column:details.map(([title,value])=>{
-                return {size:20,html:`${title} : ${value}`,align:'v',className:'size10 colorA19F9D'}
+                return {size:20,html:`${title} : ${value}`,align:'v',className:'fs-10 colorA19F9D'}
             })
         }
     }
@@ -110,12 +112,12 @@ export default class ProductCard extends Component{
         let {product} = this.props;
         let {inStock} = product;
         if(inStock){return false}
-        return {row:[{flex:1},{html:'نا موجود',className:'colorD83B01 bold size12'},{size:12}]}
+        return {row:[{flex:1},{html:'نا موجود',className:'colorD83B01 bold fs-12'},{size:12}]}
     }
     isInCart_layout(){
         let {showIsInCart = true} = this.props;
         if(!this.isInCart() || !showIsInCart){return {flex:1}}
-        return {flex:1,align:'v',html:'موجود در سبد خرید شما',className:'colorD83B01 bold size10 padding-0-12'}
+        return {flex:1,align:'v',html:'موجود در سبد خرید شما',className:'colorD83B01 bold fs-10 p-h-12'}
     }
     price_layout(){
         let {product} = this.props;
@@ -124,7 +126,7 @@ export default class ProductCard extends Component{
         return {
             row:[
                 {flex:1},
-                {html:this.splitPrice(FinalPrice) + ' ریال',className:'size12 color404040 bold padding-0-12'}
+                {html:this.splitPrice(FinalPrice) + ' ریال',className:'fs-12 color404040 bold p-h-12'}
             ]
         }
     }
@@ -138,15 +140,23 @@ export default class ProductCard extends Component{
         }
         openPopup('product',product)
     }
+    componentDidMount(){
+        let {index = 0} = this.props;
+        setTimeout(()=>{
+            this.setState({mounted:true})
+        },index * 100 + 100)
+    }
     horizontal_layout(){
         let {isLast,isFirst} = this.props;
+        let {mounted} = this.state;
         return (
             <RVD
                 layout={{
-                    className:'box gap-no-color margin-0-12',
+                    className:'box gap-no-color m-h-12 product-card-horizontal' + (mounted?' mounted':''),
                     attrs:{onClick:()=>this.onClick()},
+                    of:'visible',
                     style:{
-                        padding:6,height:130,overflow:'visible',
+                        padding:6,height:130,
                         borderBottomLeftRadius:!isLast?0:undefined,
                         borderBottomRightRadius:!isLast?0:undefined,
                         borderTopLeftRadius:!isFirst?0:undefined,
@@ -183,12 +193,11 @@ export default class ProductCard extends Component{
         return (
             <RVD
                 layout={{
-                    style:{height:270,width:180,borderRadius:12,fontSize:14,overflow:'visible',...style},
-                    className:'bgFFF borderEEE',
+                    style:{...style},of:'visible',className:'bg-fff border-eee w-168 h-288 fs-14 br-12',
                     attrs:{onClick:()=>this.onClick()},
                     column:[
                         {size:140,align:'vh',html:<img src={srcs[0] || NoSrc} width={'100%'} style={{width:'calc(100% - 24px)',height:'100%',borderRadius:8}} alt=''/>,style:{padding:6,paddingBottom:0}},
-                        {html:name,className:'size12 padding-6-12 color575756 bold',style:{whiteSpace:'normal'}},
+                        {html:name,className:'fs-12 p-v-6 p-h-12 color575756 bold',style:{whiteSpace:'normal'}},
                         //this.name_layout(),
                         {flex:1},
                         this.isInCart_layout(),

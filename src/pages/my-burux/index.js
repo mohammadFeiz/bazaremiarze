@@ -29,7 +29,7 @@ export default class MyBurux extends Component{
                     openPopup('peygiriye-sefareshe-kharid')
                 }},
                 //{after:getSvg('chevronLeft'),text:'جایزه ها',icon:getSvg(15),onClick:()=>{}},
-                {after:getSvg('chevronLeft'),text:'جزییات درخواست های گارانتی',icon:getSvg(14),onClick:async ()=>{
+                {after:getSvg('chevronLeft'),text:'جزییات درخواست های گارانتی',icon:getSvg(14),show:()=>this.context.showGaranti !== false,onClick:async ()=>{
                     let {SetState,guarantiApis,openPopup} = this.context;
                     let {items,total} = await guarantiApis({api:'items'});
                     SetState({guaranteeItems:items,totalGuaranteeItems:total});
@@ -42,10 +42,10 @@ export default class MyBurux extends Component{
     }
     parts_layout(){
         let {parts} = this.state;
-        return {className:'margin-0-12',style:{overflow:'visible'},html:<Card type='card4' items={parts}/>}
+        return {className:'m-h-12',of:'visible',html:<Card type='card4' items={parts}/>}
     }
     getContent(){
-        let {totalGuaranteeItems,userInfo,openPopup} = this.context;
+        let {totalGuaranteeItems,userInfo,openPopup,showGaranti} = this.context;
         let slpname,slpcode;
         try{
             slpname = userInfo.slpname || 'تایین نشده';
@@ -56,14 +56,14 @@ export default class MyBurux extends Component{
             slpcode = 'تایین نشده';
         }
         return {
-            scroll:'v',flex:1,className:'page-bg',
+            ofy:'auto',flex:1,className:'page-bg',
             column:[
                 {
                     className:'my-burux-header',
                     html:headerSvg()
                 },
                 {
-                    size:100,style:{overflow:'visible'},
+                    size:100,of:'visible',
                     html:(
                         <div style={{background:'rgba(255,255,255,0.4)',boxShadow:'rgb(0 0 0 / 25%) 0px 4px 12px 1px',color:'#ccc',width:132,height:132,left:'calc(50% - 66px)',position:'absolute',top:-32,borderRadius:'100%',display:'flex',alignItems:'center',justifyContent:'center'}}>
                             <Icon path={mdiAccountCircle} size={6}/>
@@ -74,13 +74,13 @@ export default class MyBurux extends Component{
                     size:36,
                     row:[
                         {flex:1},
-                        {className:'color323130 size20 bold',html:userInfo.cardName,align:'vh'},
+                        {className:'color323130 fs-20 bold',html:userInfo.cardName,align:'vh'},
                         {flex:1}
                     ]
                 },
                 {size:6},
                 {
-                    className:'margin-0-12',style:{overflow:'visible'},
+                    className:'m-h-12',of:'visible',            
                     html:(
                         <Card
                             type='card3' footer='مشاهده و ویرایش اطلاعات کاربری'
@@ -104,23 +104,22 @@ export default class MyBurux extends Component{
                 },
                 {size:16},
                 {
-                    style:{overflow:'visible'},
-                    className:'margin-0-12',
+                    of:'visible',className:'m-h-12',
+                    gap:12,
                     row:[
                         {
-                            flex:1,style:{overflow:'visible'},
+                            flex:1,of:'visible', 
                             html:(
                                 <Card
                                     type='card3' footer='جزییات کیف پول'
-                                    rows={[[['کیف پول',functions.splitPrice(userInfo.ballance) + ' ریال']]]}
+                                    rows={[[['کیف پول',functions.splitPrice(Math.max(userInfo.ballance,0)) + ' ریال']]]}
                                     onClick={()=>this.setState({showWallet:true})}
                                 />
                             )
                         },
-                        {size:12},
                         {
-                            flex:1,style:{overflow:'visible'},
-                            html:(
+                            flex:1,of:'visible',show:showGaranti !== false,          
+                            html:()=>(
                                 <Card
                                     type='card3'
                                     rows={[[['کالا های گارانتی شده',totalGuaranteeItems + ' عدد']]]}
@@ -140,10 +139,10 @@ export default class MyBurux extends Component{
                 this.parts_layout(),
                 {size:120,html:footerSvg(),align:'vh'},
                 {html:(
-                    <AIOButton position='bottom' className='color605E5C size14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
+                    <AIOButton position='bottom' className='color605E5C fs-14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
                         return (
                             <div style={{background:'#fff'}}>
-                                <div style={{height:60,display:'flex',alignItems:'center'}} className='color323130 size16 bold padding-0-24'>موارد اضافه شده به این نسخه</div>
+                                <div style={{height:60,display:'flex',alignItems:'center'}} className='color323130 fs-16 bold p-h-24'>موارد اضافه شده به این نسخه</div>
                                 <ul>
                                     <li>تکمیل بازارگاه تا تحویل به مشتری</li>
                                     <li>بهبود گرافیک</li>

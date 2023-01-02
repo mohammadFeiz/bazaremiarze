@@ -39,17 +39,17 @@ export default class OrdersHistory extends Component {
       let orders = tab.orders;
       if(!orders.length){
         return {
-          flex:1,html:'سفارشی موجود نیست',className:'size16 color605E5C bold',align:'vh'
+          flex:1,html:'سفارشی موجود نیست',className:'fs-16 color605E5C bold',align:'vh'
         }
       }
       let column = orders.map((o,i)=>this.order_layout(o,i))
       column.push({size:300})
-      return {flex: 1,gap: 12,scroll:'v',column}
+      return {flex: 1,gap: 12,ofy:'auto',column}
     }
     order_layout(order,index){
       let {openPopup} = this.context;
       return {
-        style:{overflow:'visible'},
+        of:'visible',
         html:<OrderCard order={order} index={index}/>,
         attrs:{onClick:()=>openPopup('joziate-sefareshe-kharid',order)}
       }
@@ -87,11 +87,11 @@ export default class OrdersHistory extends Component {
       return {
         align:"v",size:36,
         row: [
-          {html:"پیش سفارش:",className:"colorA19F9D size12"},
+          {html:"پیش سفارش:",className:"colorA19F9D fs-12"},
           {size:4},
-          {html:mainDocNum, className: "color605E5C size14"},
+          {html:mainDocNum, className: "color605E5C fs-14"},
           {flex:1},
-          {html:date,className:"colorA19F9D size12"},
+          {html:date,className:"colorA19F9D fs-12"},
         ],
       }
     }
@@ -102,11 +102,11 @@ export default class OrdersHistory extends Component {
       return {
         size: 36,childsProps: { align: "v" },
         row: [
-          {html:order.translate,className:'size12 color323130'},
+          {html:order.translate,className:'fs-12 color323130'},
           {flex:1},
-          {html:this.splitPrice(total),className: "size14 color323130"},
+          {html:this.splitPrice(total),className: "fs-14 color323130"},
           {size:6},
-          {html:unit,className: "size12 color605E5C"},
+          {html:unit,className: "fs-12 color605E5C"},
         ],
       }
     }

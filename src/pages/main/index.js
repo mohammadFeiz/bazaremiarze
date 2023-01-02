@@ -114,6 +114,7 @@ export default class Main extends Component {
       totalGuaranteeItems:0,
       guaranteeExistItems: [],
       popup: {},
+      showGaranti:false,
       peygiriyeSefaresheKharid_tab:undefined,
       buy_view:undefined,//temporary state
     };
@@ -127,7 +128,6 @@ export default class Main extends Component {
   }
   
   changeCart(count,variantId,product){
-    debugger;
     let {cart,kharidApis} = this.state;
     let newCart;
     if(typeof count === 'object'){
@@ -417,7 +417,7 @@ export default class Main extends Component {
           sides={[
             { text: 'بازارگاه', icon: ()=> <Icon path={mdiCellphoneMarker} size={0.8}/>,onClick:()=>this.state.rsa_actions.setNavId('bazargah')},
             { text: 'پیگیری سفارش خرید', icon: ()=> <Icon path={mdiClipboardList} size={0.8} />,onClick:()=>this.openPopup('peygiriye-sefareshe-kharid')},
-            { text: 'درخواست گارانتی', icon: ()=> <Icon path={mdiShieldCheck} size={0.8} />,onClick:()=>this.openPopup('sabte-garanti-jadid')},
+            { text: 'درخواست گارانتی', icon: ()=> <Icon path={mdiShieldCheck} size={0.8} />,onClick:()=>this.openPopup('sabte-garanti-jadid'),show:()=>this.state.showGaranti !== false},
             { text: 'خروج از حساب کاربری', icon: ()=> <Icon path={mdiExitToApp} size={0.8} />,className:'colorFDB913',onClick:()=>logout() },
             // { text: 'تست درگاه', icon: 17,fill:'#A4262c',onClick:()=>{
             //     let {kharidApis} = this.context;

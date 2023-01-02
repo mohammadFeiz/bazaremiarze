@@ -1,0 +1,9 @@
+.product-card-horizontal{
+    transform:rotateX(180deg);
+    opacity:0;
+}
+.product-card-horizontal.mounted{
+    transform: rotateX(0deg) !important;
+    opacity:1;
+    transition: 0.8s;
+}

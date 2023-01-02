@@ -11,9 +11,9 @@ export default class OrderPopup extends Component {
       return {
         align: "v",
         row: [
-          { size: 110, html: key + " : ", className: "size10 bold" },
+          { size: 110, html: key + " : ", className: "fs-10 bold" },
           {flex:1},
-          { html: value, className: "size12" },
+          { html: value, className: "fs-12" },
         ],
       };
     }
@@ -30,7 +30,7 @@ export default class OrderPopup extends Component {
         style: { padding: "0 24px" },className: "box",
         column: [
           { size: 16 },
-          {size: 24,html: obj.title,style: { color: obj.color },className: "size14 bold"},
+          {size: 24,html: obj.title,style: { color: obj.color },className: "fs-14 bold"},
           {
             html: (
               <div style={{height: 12,display: "flex",width: "100%",borderRadius: 3,overflow: "hidden"}}>
@@ -68,7 +68,7 @@ export default class OrderPopup extends Component {
       let {details = {}} = this.state;
       details.basePrice = details.basePrice || 0
       return {
-        className: "box gap-no-color margin-0-12 padding-12",gap: 12,
+        className: "box gap-no-color m-h-12 p-12",gap: 12,
         column: [
           this.getRow("پیش فاکتور", order.mainDocNum),
           this.getRow("تاریخ ثبت", order.date),
@@ -98,7 +98,7 @@ export default class OrderPopup extends Component {
       let {nahve_pardakht} = details;
       if(docStatus !== 'WaitingForPayment' || nahve_pardakht !== 'اینترنتی'){return false}
       return {
-        className:'padding-12',
+        className:'p-12',
         html:(<button className="button-2" onClick={()=>this.pardakht()}>پرداخت</button>)
       }
     }
@@ -106,12 +106,12 @@ export default class OrderPopup extends Component {
       let {details = {}} = this.state;
       let {products = []} = details;
       return {
-        gap: 2,className:'margin-0-12',style:{overflow:'visible'},
+        gap: 2,className:'m-h-12',of:'visible',
         column: products.map((o, i) => {
           return {
-            style:{overflow:'visible'},
+            of:'visible',
             html:(
-              <ProductCard {...o}
+              <ProductCard {...o} index={i}
                 isFirst={i === 0} isLast={i === products.length - 1}
               />
             )
@@ -127,7 +127,7 @@ export default class OrderPopup extends Component {
             column: [
               {size:12},
               {
-                flex: 1,scroll: "v",gap: 12,
+                flex: 1,ofy: "auto",gap: 12,
                 column: [
                   this.details_layout(),
                   this.products_layout(),
@@ -163,18 +163,18 @@ export default class OrderPopup extends Component {
     campaign_layout(){
       let {campaign} = this.props;
       if(!campaign){return false}
-      return {html:campaign.name,className:'size10',style:{color:'rgb(253, 185, 19)'}}
+      return {html:campaign.name,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}
     }
     name_layout(){
       let {itemName} = this.props;
-      return {html:itemName,className:'size12 color575756 bold'}
+      return {html:itemName,className:'fs-12 color575756 bold'}
     }
     details_layout(){
       let {details = []} = this.props;
       if(!details.length){return false}
       return {
         column:details.map((d)=>{
-            return {size:20,align:'v',html:`${d[0]} : ${d[1]}`,className:'size10 colorA19F9D'}
+            return {size:20,align:'v',html:`${d[0]} : ${d[1]}`,className:'fs-10 colorA19F9D'}
         })
       }
     }
@@ -185,7 +185,7 @@ export default class OrderPopup extends Component {
         gap:4,
         row:[
             {flex:1},
-            {html:<del>{functions.splitPrice(priceAfterVat)}</del>,className:'size14 colorA19F9D',align:'v'},
+            {html:<del>{functions.splitPrice(priceAfterVat)}</del>,className:'fs-14 colorA19F9D',align:'v'},
             {html:<div style={{background:'#FFD335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{discountPercent + '%'}</div>,align:'v'},
         ]  
       }
@@ -195,7 +195,7 @@ export default class OrderPopup extends Component {
       return {
         row:[
             {flex:1},
-            {html:functions.splitPrice(price) + ' ریال',className:'size12 color404040 bold',align:'v'}
+            {html:functions.splitPrice(price) + ' ریال',className:'fs-12 color404040 bold',align:'v'}
         ]
       }
     }

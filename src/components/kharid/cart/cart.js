@@ -64,7 +64,7 @@ export default class Cart extends Component{
             parentZIndex:cartZIndex,
             changeCount:(count) => changeCart(count,variant.id,product)
           }
-          return <ProductCard {...props} showIsInCart={false}/>
+          return <ProductCard {...props} index={i} showIsInCart={false}/>
         })
         let items = tab.cartItems.map((o)=>{
           return { ItemCode: o.variant.code, ItemQty: o.count }
@@ -108,7 +108,7 @@ export default class Cart extends Component{
     products_layout(){
       if(this.tab){
         let {cards} = this.tab;
-        return {flex: 1,scroll:'v',gap:12,column:cards.map((card) => {return {html:card}})}
+        return {flex: 1,ofy:'auto',gap:12,column:cards.map((card) => {return {html:card}})}
       }
       return {
         style:{background:'#eee',opacity:0.5},
@@ -125,19 +125,19 @@ export default class Cart extends Component{
       let total = this.tab.factorDetails.DocumentTotal;
       let {continued} = this.state;
       return {
-        size: 72,className: "bgFFF padding-0-12 box-shadow-up",
+        size: 72,className: "bgFFF p-h-12 box-shadow-up",
         row: [
           {
             flex: 1,
             column: [
               { flex: 1 },
-              {align: "v",html: "مبلغ قابل پرداخت",className: "color5757656 size12"},
+              {align: "v",html: "مبلغ قابل پرداخت",className: "color5757656 fs-12"},
               {size:3},
               {
                 row:[
-                  {align: "v",html: this.splitPrice(total),className: "color323130 size14 bold"},
+                  {align: "v",html: this.splitPrice(total),className: "color323130 fs-14 bold"},
                   {size:4},
-                  {align: "v",html: " ریال",className: "color323130 size12"}
+                  {align: "v",html: " ریال",className: "color323130 fs-12"}
                 ]
               },
               { flex: 1 },

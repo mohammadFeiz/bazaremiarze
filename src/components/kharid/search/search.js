@@ -46,9 +46,9 @@ export default class Search extends Component {
         return false
       }
       return {
-        flex: 1,scroll:'v',
+        flex: 1,ofy:'auto',
         column: result.map((o, i) => {
-          return {html:<ProductCard isFirst={i === 0} isLast={i === result.length - 1} product={o} type='horizontal'/>}
+          return {html:<ProductCard index={i} isFirst={i === 0} isLast={i === result.length - 1} product={o} type='horizontal'/>}
         }),
       }
     }
@@ -59,8 +59,8 @@ export default class Search extends Component {
               className: "popup-bg",
               column: [
                 {html:<SearchBox onChange={async (searchValue)=>await this.changeSearch(searchValue)}/>},
-                {size: 200,align: "vh",className: "size20 color323130 bold",show: false,html: "در میان ان کالا جستجو"},
-                {size: 48,align: "v",className: "size14 color323130 bold padding-0-24",html: "محصولات"},
+                {size: 200,align: "vh",className: "fs-20 color323130 bold",show: false,html: "در میان ان کالا جستجو"},
+                {size: 48,align: "v",className: "fs-14 color323130 bold p-h-24",html: "محصولات"},
                 { size: 24 },
                 this.result_layout()
               ],

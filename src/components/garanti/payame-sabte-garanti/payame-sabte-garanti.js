@@ -28,16 +28,16 @@ export default class PayameSabteGaranti extends Component {
     }
     text_layout(){
         let { text } = this.props;
-        return { html: text, className: "color107C10 size20 bold", align: "h",style:{textAlign:'center'} }
+        return { html: text, className: "color107C10 fs-20 bold", align: "h",style:{textAlign:'center'} }
     }
     subtext_layout(){
         let { subtext } = this.props;
-        return {html: subtext,className: "size14 color605E5C",align: "h"}
+        return {html: subtext,className: "fs-14 color605E5C",align: "h"}
     }
     time_layout(){
         let today = this.today;
         return {
-            size: 60,className: "size12 bold color605E5C",align: "v",
+            size: 60,className: "fs-12 bold color605E5C",align: "v",
             html: `ثبت درخواست در ${`${today[3]}:${today[4]} ${today[0]}/${today[1]}/${today[2]}`}`
         }
     }
@@ -50,7 +50,7 @@ export default class PayameSabteGaranti extends Component {
         return (
             <RVD
                 layout={{
-                    className: "padding-24 bgFFF round-24 box-shadow",
+                    className: "p-24 bgFFF br-24 box-shadow",
                     style: { width: '100%', height: '100%', boxSizing: 'border-box' },
                     column: [
                         this.header_layout(),
@@ -61,7 +61,7 @@ export default class PayameSabteGaranti extends Component {
                         { size: 24 },
                         this.subtext_layout(),
                         { size: 24 },
-                        {html:'مشاهده در لیست درخواست های گارانتی',align:'v',className:'color006F9E size10 bold',attrs:{onClick:()=>{
+                        {html:'مشاهده در لیست درخواست های گارانتی',align:'v',className:'color006F9E fs-10 bold',attrs:{onClick:()=>{
                             rsa_actions.removePopup();
                             openPopup('joziate-darkhast-haye-garanti')
                         }}},

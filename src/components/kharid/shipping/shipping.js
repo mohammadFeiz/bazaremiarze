@@ -82,26 +82,26 @@ export default class Shipping extends Component{
     details_layout(){
       let {name,code,campaign,basePrice,customerGroup} = this.state;
       return {
-        className:'box padding-12 margin-0-12',
+        className:'box p-12 m-h-12',
         column:[
           {
             size:36,childsProps:{align:'v'},
             row:[
-              {html:'نام مشتری:',className:'colorA19F9D size14'},
-              {html:name,className:'size14'},
+              {html:'نام مشتری:',className:'colorA19F9D fs-14'},
+              {html:name,className:'fs-14'},
               {flex:1},
-              {html:'نام کمپین:',className:'colorA19F9D size14'},
-              {html:campaign,className:'size14'}
+              {html:'نام کمپین:',className:'colorA19F9D fs-14'},
+              {html:campaign,className:'fs-14'}
             ]
           },
           {
             size:36,childsProps:{align:'v'},
             row:[
-              {html:'کد مشتری:',className:'colorA19F9D size14'},
-              {html:code,className:'size14'},
+              {html:'کد مشتری:',className:'colorA19F9D fs-14'},
+              {html:code,className:'fs-14'},
               {flex:1},
-              {html:'گروه مشتری:',className:'colorA19F9D size14'},
-              {html:customerGroup,className:'size14'},
+              {html:'گروه مشتری:',className:'colorA19F9D fs-14'},
+              {html:customerGroup,className:'fs-14'},
             ]
           },
           
@@ -122,11 +122,11 @@ export default class Shipping extends Component{
     address_layout(){
       let {address} = this.state;
       return {
-        className:'box padding-12 margin-0-12',
+        className:'box p-12 m-h-12',
         column:[
-          {size:36,align:'v',className:'color605E5C size12 bold',html:'آدرس تحویل'},
+          {size:36,align:'v',className:'color605E5C fs-12 bold',html:'آدرس تحویل'},
           {
-            className:'size14 color575756 bgF1F1F1 padding-12 round-6',html:address,size:72
+            className:'fs-14 color575756 bgF1F1F1 p-12 br-4',html:address,size:72
           }
         ]
       }
@@ -137,15 +137,15 @@ export default class Shipping extends Component{
       let value = this.state[key];
       if(!cond){return false}
       return {
-        className:'box padding-12 margin-0-12',
+        className:'box p-12 m-h-12',
         column:[
-          {size:36,align:'v',className:'color605E5C size12 bold',html:title},
+          {size:36,align:'v',className:'color605E5C fs-12 bold',html:title},
           {
             html:(
               <AIOButton
                 type='radio'
-                optionStyle='{width:"100%"}'
                 options={options}
+                optionClassName='"w-100 h-36"'
                 value={value}
                 onChange={(newValue)=>this.setState({[key]:newValue})}
               />
@@ -157,11 +157,11 @@ export default class Shipping extends Component{
     phone_layout(){
       let {phone} = this.state;
       return {
-        className:'box padding-12 margin-0-12',
+        className:'box p-12 m-h-12',
         column:[
-          {size:36,align:'v',className:'color605E5C size12 bold',html:'شماره تلفن'},
+          {size:36,align:'v',className:'color605E5C fs-12 bold',html:'شماره تلفن'},
           {
-            className:'size14 color575756 bgF1F1F1 padding-12 round-6',html:phone,style:{minHeight:36}
+            className:'fs-14 color575756 bgF1F1F1 p-12 br-4',html:phone,style:{minHeight:36}
           }
         ]
       }
@@ -170,12 +170,9 @@ export default class Shipping extends Component{
       let {shipping} = this.context;
       let {cards} = shipping;
       return {
-        styke:{overflow:'visible'},
         column:[
-          {size:36,align:'v',className:'color605E5C size14 bold padding-0-12',html:'محصولات'},
-          {
-            style:{overflow:'visible'},column:cards.map((card)=>{return {html:card,style:{overflow:'visible'}}})
-          },
+          {size:36,align:'v',className:'color605E5C fs-14 bold p-h-12',html:'محصولات'},
+          {of:'visible',column:cards.map((card)=>{return {html:card,of:'visible'}})},
           {size:12}
         ]
       }
@@ -207,46 +204,46 @@ export default class Shipping extends Component{
       mablaghe_ghabele_pardakht = mablaghe_ghabele_pardakht - mablaghe_takhfife_pardakhte_online;
       
       return {
-        className:'padding-0-12 bgFFF box-shadow-up',
+        className:'p-h-12 bg-fff box-shadow-up',
         style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
         column:[
           {
             size:28,childsProps:{align:'v'},
             row:[
-              {html:'تخفیف:',className:'colorFDB913 size14'},
+              {html:'تخفیف:',className:'colorFDB913 fs-14'},
               {flex:1},
-              {html:functions.splitPrice(discount) + ' ریال',className:'colorFDB913 size14'}
+              {html:functions.splitPrice(discount) + ' ریال',className:'colorFDB913 fs-14'}
             ]
           },
           {
             size:28,childsProps:{align:'v'},
             row:[
-              {html:'تخفیف نحوه پرداخت:',className:'color00B5A5 size14'},
+              {html:'تخفیف نحوه پرداخت:',className:'color00B5A5 fs-14'},
               {flex:1},
-              {html:`(${darsade_takhfife_pardakhte_online} %)`,className:'color00B5A5 size14'},
+              {html:`(${darsade_takhfife_pardakhte_online} %)`,className:'color00B5A5 fs-14'},
               {size:6},
-              {html:functions.splitPrice(this.fix(mablaghe_takhfife_pardakhte_online)) + ' ریال',className:'color00B5A5 size14'},
+              {html:functions.splitPrice(this.fix(mablaghe_takhfife_pardakhte_online)) + ' ریال',className:'color00B5A5 fs-14'},
             ]
           },
           {
             size:28,childsProps:{align:'v'},
             row:[
-              {html:'قیمت کالاها:',className:'color605E5C size14'},
+              {html:'قیمت کالاها:',className:'color605E5C fs-14'},
               {flex:1},
-              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht + discount + mablaghe_takhfife_pardakhte_online)) + ' ریال',className:'color605E5C size14'}
+              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht + discount + mablaghe_takhfife_pardakhte_online)) + ' ریال',className:'color605E5C fs-14'}
             ]
           },
           {
             size:28,childsProps:{align:'v'},
             row:[
-              {html:'مبلغ قابل پرداخت:',className:'color323130 bold size16'},
+              {html:'مبلغ قابل پرداخت:',className:'color323130 bold fs-16'},
               {flex:1},
-              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال',className:'color323130 bold size16'}
+              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال',className:'color323130 bold fs-16'}
             ]
           },
           {size:6},
           {
-            size:36,align:'vh',className:'color605E5C size14 bold',
+            size:36,align:'vh',className:'color605E5C fs-14 bold',
             html:(
               <button 
                 className="button-2" 
@@ -268,7 +265,7 @@ export default class Shipping extends Component{
             flex:1,
             column:[
               {
-                flex:1,scroll:'v',
+                flex:1,ofy:'auto',
                 column:[
                   {size:12},
                   this.details_layout(),

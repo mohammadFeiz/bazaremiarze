@@ -61,7 +61,7 @@ export default class ReactSuperApp extends Component {
                 {size:12},
                 {html:text,style:{color},align:'vh'},
                 {size:12},
-                {html:subtext,align:'vh',className:'size10'}
+                {html:subtext,align:'vh',className:'fs-10'}
               ]
             }}
           />
@@ -86,7 +86,7 @@ export default class ReactSuperApp extends Component {
       if(!navs.length){return false}
       let {touch,navId} = this.state;
       let props = {navs,navHeader,navId,onChange:(navId)=>this.setState({navId}),touch,rtl}
-      return {style:{overflow:'visible'},html: (<Navigation {...props}/>)};
+      return {of:'visible',html: (<Navigation {...props}/>)};
     }
     page_layout(nav){
       let {body = ()=>''} = this.props;
@@ -172,7 +172,7 @@ export default class ReactSuperApp extends Component {
     }
     items_layout(navs,level){
       return {
-        flex:1,scroll:'v',
+        flex:1,ofy:'auto',
         column:navs.filter(({show = ()=>true})=>show()).map((o,i)=>{
           if(o.navs){
             let {openDic} = this.state;
@@ -240,10 +240,11 @@ export default class ReactSuperApp extends Component {
       return {
         gap:12,
         column:sides.map((o,i)=>{
-          let {icon = ()=><div style={{width:12}}></div>,text,id,className,onClick = ()=>{}} = o;
+          let {icon = ()=><div style={{width:12}}></div>,text,id,className,onClick = ()=>{},show = ()=>true} = o;
+          let Show = show();
           let active = id === sideId;
           return {
-            size:36,className:'rsa-sidemenu-item' + (active?' active':'') + (className?' ' + className:''),attrs:{onClick:()=>{onClick(o); onClose()}},
+            show:Show !== false,size:36,className:'rsa-sidemenu-item' + (active?' active':'') + (className?' ' + className:''),attrs:{onClick:()=>{onClick(o); onClose()}},
             row:[
               {size:48,html:icon(active),align:'vh'},
               {html:text,align:'v'}
@@ -402,7 +403,7 @@ class Popup extends Component{
     }
     body_layout(){
       let {text} = this.props;
-      return {flex:1,html:text,scroll:'v',className:'rsa-popup-body'}
+      return {flex:1,html:text,ofy:'auto',className:'rsa-popup-body'}
     }
     onSubmit(){
       let {onClose,onSubmit} = this.props;

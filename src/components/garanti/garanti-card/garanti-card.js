@@ -17,7 +17,7 @@ export default class GarantiCard extends Component{
             color = types[StatusCode.toString()].color;
         }
         catch{color = '#000000'}
-        return <div style={{padding:'0 12px',borderRadius:24,color,background:color + '30'}} className='size12'>{StatusText}</div>
+        return <div style={{color,background:color + '30'}} className='fs-12 br-24 p-h-12'>{StatusText}</div>
     }
     detail_layout(index){
         let size = 36;
@@ -30,11 +30,11 @@ export default class GarantiCard extends Component{
         else {height = size; top = 0;}
         return {
             size,childsProps:{align:'v'},gap:12,
-            childsAttrs:{className:'size12 color605E5C'},
+            childsAttrs:{className:'fs-12 color605E5C'},
             row:[
                 {
                     html:(
-                        <div style={{positon:'relative',width:size / 3,height:size / 3,background:'#0094D4',borderRadius:'100%'}}>
+                        <div className='br-100' style={{positon:'relative',width:size / 3,height:size / 3,background:'#0094D4'}}>
                             <div style={{width:2,height,top,position:'absolute',left:'calc(50% - 1px)',background:'#0094D4'}}></div>
                         </div>
                     )
@@ -50,7 +50,7 @@ export default class GarantiCard extends Component{
             return (
                 <RVD
                     layout={{
-                        className:'box gap-no-color padding-12 margin-0-12',
+                        className:'box gap-no-color p-12 m-h-12',
                         style:{
                             borderBottomLeftRadius:!isLast?0:undefined,
                             borderBottomRightRadius:!isLast?0:undefined,
@@ -61,12 +61,12 @@ export default class GarantiCard extends Component{
                             {
                                 size:48,childsProps:{align:'v'},
                                 row:[
-                                    {html:'شماره درخواست :',className:'size14 color605E5C bold'},
-                                    {html:RequestID,className:'size14 color605E5C bold'},
+                                    {html:'شماره درخواست :',className:'fs-14 color605E5C bold'},
+                                    {html:RequestID,className:'fs-14 color605E5C bold'},
                                     {flex:1},
-                                    {html:_time,className:'size12 colorA19F9D'},
+                                    {html:_time,className:'fs-12 colorA19F9D'},
                                     {size:6},
-                                    {html:CreateTime,className:'size12 colorA19F9D'}
+                                    {html:CreateTime,className:'fs-12 colorA19F9D'}
                                 ]
                             },
                             {html:this.getStatus()},
@@ -80,20 +80,19 @@ export default class GarantiCard extends Component{
             return (
                 <RVD
                     layout={{
-                        className:'box gap-no-color padding-12',
+                        className:'box gap-no-color p-12 ofx-hidden',
                         style:{
                             borderBottomLeftRadius:!isLast?0:undefined,
                             borderBottomRightRadius:!isLast?0:undefined,
                             borderTopLeftRadius:!isFirst?0:undefined,
                             borderTopRightRadius:!isFirst?0:undefined,
-                            overflowX:'hidden'
                         },
                         column:[
                             {
                                 childsProps:{align:'v'},
                                 row:[
-                                    {html:'شماره گارانتی :',className:'size14 color323130 bold'},
-                                    {html:RequestID,className:'size14 color323130 bold'},
+                                    {html:'شماره گارانتی :',className:'fs-14 color323130 bold'},
+                                    {html:RequestID,className:'fs-14 color323130 bold'},
                                     {flex:1},
                                     {html:this.getStatus()}
                                 ]
@@ -101,13 +100,12 @@ export default class GarantiCard extends Component{
                             {
                                 childsProps:{align:'v'},
                                 row:[
-                                    {html:'تاریخ ثبت :',className:'size12 color605E5C'},
-                                    {html:_time + ' - ' + CreateTime,className:'size12 color605E5C'},
+                                    {html:'تاریخ ثبت :',className:'fs-12 color605E5C'},
+                                    {html:_time + ' - ' + CreateTime,className:'fs-12 color605E5C'},
                                 ]
                             },
                             {size:12},
                             {
-                                scroll:'h',gap:12,
                                 row:[
                                     {
                                         gap:6,
@@ -115,13 +113,14 @@ export default class GarantiCard extends Component{
                                             let {images} = this.context;
                                             let src = images[o.Code] || bulb10w;
                                             return {
-                                                size:36,gap:12,
-                                                html:<img src={src} style={{width:36,height:36,border:'1px solid #ddd',borderRadius:6}}/>
+                                                size:38,gap:12,
+                                                html:<img src={src} className='w-36 h-36 border-ddd br-6'/>
                                             }
                                         })
                                     },
+                                    {size:12},
                                     {
-                                        show:Details.length > 5,className:'color605E5C size12',align:'v',
+                                        show:Details.length > 5,className:'color605E5C fs-12',align:'v',
                                         html:'+' + (Details.length - 5)
                                     }
                                 ]

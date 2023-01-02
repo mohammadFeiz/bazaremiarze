@@ -11,6 +11,7 @@ import logo from './images/logo5.png';
 import {OTPLogin} from './npm/aio-login/aio-login';
 import $ from 'jquery';
 import './index.css';
+import EPSrc from './images/ep.jpg';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 
@@ -161,6 +162,37 @@ class App extends Component {
   render() {
     if (!this.mounted) { return <Loading/> }
     let { isAutenticated, userInfo, token, registered ,pageError} = this.state;
+    if(pageError){
+      return (
+        <>
+        <RVD
+          layout={{
+            className:'page-error fullscreen',
+            row:[
+              {flex:1},
+              {
+                className:'page-error-image',
+                column:[
+                  {flex:3},
+                  {html:<img src={EPSrc} width='100%'/>},
+                  {size:24},
+                  {html:<Icon path={mdiAlert} size={4}/>,align:'h'},
+                  {html:pageError.text,align:'h'},
+                  {html:pageError.subtext,align:'h'},
+                  {size:36},
+                  {html:'بارگزاری مجدد',className:'bm-reload',attrs:{onClick:()=>window.location.reload()}},
+                  {flex:2}
+                ]
+              },
+              {flex:1}
+
+            ]
+          }}
+        />
+      </>
+        
+      )
+    }
     if (isAutenticated) {
       if (!registered) {
         return (
@@ -188,40 +220,11 @@ class App extends Component {
         
       )
     }
-    if(pageError){
-      return (
-        <>
-        <RVD
-          layout={{
-            className:'page-error',style:{overflow:'visible'},
-            row:[
-              {flex:1},
-              {
-                className:'page-error-image',
-                column:[
-                  {flex:3},
-                  {html:<Icon path={mdiAlert} size={4}/>,align:'h'},
-                  {html:pageError.text,align:'h'},
-                  {html:pageError.subtext,align:'h'},
-                  {size:36},
-                  {html:'بارگزاری مجدد',className:'bm-reload',attrs:{onClick:()=>window.location.reload()}},
-                  {flex:2}
-                ]
-              },
-              {flex:1}
-
-            ]
-          }}
-        />
-      </>
-        
-      )
-    }
+    
     return (
       <RVD
         layout={{
-          style:{position:'fixed',left:0,top:0,width:'100%',height:'100%',overflowY:'auto'},
-          className:'bg3B55A5',
+          className:'bg3B55A5 ofy-auto fullscreen',
           column:[
             {size:48},
             this.header_layout(),

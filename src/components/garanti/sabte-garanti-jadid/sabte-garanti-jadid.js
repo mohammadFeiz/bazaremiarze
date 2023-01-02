@@ -28,22 +28,22 @@ export default class SabteGarantiJadid extends Component {
         }
     }
     title_layout(){
-        return {size: 60, html: "درخواست مرجوع کالای سوخته", className: "size16 bold color323130", align: "vh"}
+        return {size: 60, html: "درخواست مرجوع کالای سوخته", className: "fs-16 bold color323130", align: "vh"}
     }
     subtitle_layout(){
-        return {size: 60, html: "برای درخواست مرجوعی کالا های سوخته یکی از دو حالت زیر را انتخاب کنید. مدت زمان بررسی درخواست شما بسته به انتخاب شما متغیر خواهد بود.", className: "size12 color323130 padding-24", align: "vh"}
+        return {size: 60, html: "برای درخواست مرجوعی کالا های سوخته یکی از دو حالت زیر را انتخاب کنید. مدت زمان بررسی درخواست شما بسته به انتخاب شما متغیر خواهد بود.", className: "fs-12 color323130 p-24", align: "vh"}
     }
     panel_layout(title,text,onClick){
         return {
             attrs:{onClick},
             style:{background:'#EFF0FF',paddingLeft:0},
-            className:'padding-12 margin-0-12 round-8 box-shadow',
+            className:'p-12 m-h-12 br-8 box-shadow',
             row:[
                 {
                     flex:1,
                     column:[
-                        {html:title,size:36,align:'v',className:'color3B55A5 size16 bold'},
-                        {html:text,className:'size12 color605E5C'}
+                        {html:title,size:36,align:'v',className:'color3B55A5 fs-16 bold'},
+                        {html:text,className:'fs-12 color605E5C'}
                     ]
                 },
                 {size:36,align:'vh',html:<Icon path={mdiChevronLeft} size={1}/>}

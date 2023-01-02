@@ -43,7 +43,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
             flex: 1,
             html: (
                 <Table
-                    className='margin-12'
+                    className='m-12'
                     style={{padding:0}}
                     headerHeight={36}
                     rowHeight={48}
@@ -93,7 +93,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
     submit_layout(){
         let { items } = this.state;
         return {
-            show: !!items.length,className:'padding-12', 
+            show: !!items.length,className:'p-12', 
             html: <button disabled={!items.length} className='button-2' onClick={() => this.onSubmit()}>ثبت درخواست</button>, 
         }
     }
@@ -101,13 +101,13 @@ export default class SabteGarantiJadidBaJoziat extends Component {
         return {
             attrs:{onClick},
             style:{background:'#EFF0FF',paddingLeft:0},
-            className:'padding-12 margin-0-12 round-8 box-shadow',
+            className:'p-12 m-h-12 br-8 box-shadow',
             row:[
                 {
                     flex:1,
                     column:[
-                        {html:title,size:36,align:'v',className:'color3B55A5 size16 bold'},
-                        {html:text,className:'size12 color605E5C'}
+                        {html:title,size:36,align:'v',className:'color3B55A5 fs-16 bold'},
+                        {html:text,className:'fs-12 color605E5C'}
                     ]
                 },
                 {show:!!onClick,size:36,align:'vh',html:<Icon path={mdiChevronLeft} size={1}/>}

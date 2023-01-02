@@ -4,7 +4,7 @@ import ProductCount from './../product-count/product-count';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import appContext from './../../../app-context';
 import getSvg from './../../../utils/getSvg';
-import { mdiChevronLeft } from '@mdi/js';
+import { mdiChevronDown, mdiChevronLeft } from '@mdi/js';
 import {Icon} from '@mdi/react';
 import functions from './../../../functions';
 export default class Product extends Component {
@@ -105,7 +105,7 @@ export default class Product extends Component {
         let { srcIndex,selectedVariant } = this.state;
         return {
             flex: 1,
-            scroll: "v",
+            ofy: "auto",
             gap: 12,
             column: [
                 this.image_layout(name, selectedVariant.code, srcs[srcIndex]),
@@ -119,7 +119,7 @@ export default class Product extends Component {
     image_layout(name, code, src) {
         let { product } = this.props, { srcIndex } = this.state;
         return {
-            size: 346, className: "box margin-0-12",
+            size: 346, className: "box m-h-12",
             column: [
                 { size: 24 },
                 {
@@ -132,10 +132,9 @@ export default class Product extends Component {
                     ],
                 },
                 { size: 12 },
-                { size: 36, html: name, className: "size16 color323130 bold padding-0-12" },
-                { size: 36, html: "کد کالا : " + (code || ""), className: "size14 color605E5C padding-0-12" },
-                { size: 12 },
-            ],
+                { size: 36, html: name, className: "fs-14 color323130 bold p-h-12" },
+                { size: 36, html: "کد کالا : " + (code || ""), className: "fs-12 color605E5C p-h-12" },
+            ]
         };
     }
     options_layout() {
@@ -143,17 +142,17 @@ export default class Product extends Component {
         if (product.optionTypes.length < 2) { return false }
         let {selectedVariant} = this.state;
         return {
-            className: 'box margin-0-12',hide_xs:true,
+            className: 'box m-h-12',hide_xs:true,
             column: [
                 {size:12},
                 {
                     row:[
-                        {html:`(${this.options.length}) انتخاب اقلام موجود`,align:'v',className:'padding-0-12 color605E5C size14 bold',style:{direction:'ltr'}},
+                        {html:`(${this.options.length}) انتخاب اقلام موجود`,align:'v',className:'p-h-12 color605E5C fs-14 bold',style:{direction:'ltr'}},
                         {flex:1}
                     ]
                 },
                 {
-                    align: 'v', className: 'padding-12',
+                    align: 'v', className: 'p-12',
                     html: (
                         <AIOButton
                             type='select' className='product-exist-options'
@@ -177,18 +176,18 @@ export default class Product extends Component {
         let { optionValues, selectedVariant } = this.state;
         if (!optionValues || !optionTypes) { return { html: '' } }
         return {
-            className: "box gap-no-color margin-0-12",
+            className: "box gap-no-color m-h-12 p-12",
             column: [
                 {
+                    gap:6,
                     column: optionTypes.map(({ name, id, items = {} }, i) => {
                         if(name === 'brand'){return false}
                         return {
                             column: [
-                                { size: 12 },
-                                { size: 36, html: name, align: "v", className: "size14 color605E5C padding-0-12" },
-                                { size: 6 },
+                                { html: name, align: "v", className: "fs-12 color605E5C bold h-24" },
+                                {size:6},
                                 {
-                                    className: "padding-0-12", scroll: 'h', gap: 12,
+                                    className: "ofx-auto", gap: 12,
                                     row: Object.keys(items).filter((o)=>{
                                         return this.ovs.indexOf(items[o]) !== -1
                                     }).map((o) => {
@@ -202,40 +201,39 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
                                         else{
                                             active = optionValues[id].toString() === itemId;
                                         }
-                                        let className = 'size14 padding-3-12 product-option-value';
+                                        let className = 'fs-12 p-v-3 p-h-12 br-4 product-option-value';
                                         if (active) { className += ' active'; }
-                                        return { html: items[itemId], align: "vh", className, style, attrs: { onClick: () => this.changeOptionType({ [id]: itemId }), } };
-                                    }),
-                                },
-                            ],
+                                        return { html: items[itemId], align: "vh", className, style,onClick: () => this.changeOptionType({ [id]: itemId })};
+                                    })
+                                }
+                            ]
                         };
-                    }),
-                },
-                { size: 12 },
-            ],
+                    })
+                }
+            ]
         };
     }
     details_layout(details) {
         let { showDetails } = this.state;
         return {
-            className: "box margin-0-12",
-            style: { padding: 12 },
+            className: "box p-12 m-h-12",
             column: [
                 {
                     size: 36, childsProps: { align: 'v' },
-                    attrs: { onClick: (() => this.setState({ showDetails: !showDetails })) },
+                    onClick: (() => this.setState({ showDetails: !showDetails })),
+                    className:'color605E5C',
                     row: [
-                        { size: 24, align: 'vh', html: getSvg('chevronLeft', { width: 12, height: 12, rotate: showDetails ? -90 : 0 }) },
-                        { html: 'مشخصات', className: "size14 color605E5C" }
+                        { size: 24, align: 'vh', html: <Icon path={showDetails?mdiChevronDown:mdiChevronLeft} size={0.8}/> },
+                        { html: 'مشخصات', className: "fs-14 bold" }
                     ]
                 },
                 {
                     show: !!showDetails,
                     html: () => (
-                        <div style={{ display: "grid", gridTemplateColumns: "auto auto", gridGap: 1, width: "100%", background: "#DADADA" }}>
+                        <div className='w-100 br-4 of-hidden' style={{ display: "grid", gridTemplateColumns: "auto auto", gridGap: 1}}>
                             {details.map((o, i) => {
                                 if(o[0] === undefined || o[1] === undefined){return null}
-                                let props = { className: "size12 color605E5C padding-6-12", style: { background: "#F4F4F4" } };
+                                let props = { className: "fs-12 color605E5C p-v-6 p-h-12", style: { background: "#F4F4F4" } };
                                 return (<Fragment key={i}><div {...props}>{o[0]}</div><div {...props}>{o[1]}</div></Fragment>);
                             })}
                         </div>
@@ -248,11 +246,11 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         let { cart,openPopup } = this.context;
         if(!Object.keys(cart).length){return false}
         return {
-            className:'padding-0-12 bgFFF',size:36,align:'v',
+            className:'p-h-12 bgFFF',size:36,align:'v',
             row:[
-                {html:'مشاهده',className:'colorA19F9D size12 bold',align:'v'},
+                {html:'مشاهده',className:'colorA19F9D fs-12 bold',align:'v'},
                 {size:4},
-                {html:'سبد خرید',className:'color3B55A5 size12 bold',align:'v',attrs:{onClick:()=>openPopup('cart')}},
+                {html:'سبد خرید',className:'color3B55A5 fs-12 bold',align:'v',attrs:{onClick:()=>openPopup('cart')}},
                 {size:4},
                 {html:<Icon path={mdiChevronLeft} size={0.8} color={'#0094D4'}/>,align:'vh'}
             ]
@@ -260,7 +258,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
     }
     footer_layout() {
         return {
-            size: 80, style: { background: "#fff",boxShadow:'0 0px 6px 1px rgba(0,0,0,.1)' }, className: "padding-0-24",
+            size: 80, style: { boxShadow:'0 0px 6px 1px rgba(0,0,0,.1)' }, className: "p-h-24 bg-fff",
             row: [
                 this.addToCart_layout(), 
                 { flex: 1 }, 
@@ -289,7 +287,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
     price_layout() {
         let { selectedVariant } = this.state;
         if (!selectedVariant || !selectedVariant.inStock || selectedVariant.inStock === null) {
-            return { column: [{ flex: 1 }, { html: "ناموجود", className: "colorD83B01 bold size14" }, { flex: 1 }] };
+            return { column: [{ flex: 1 }, { html: "ناموجود", className: "colorD83B01 bold fs-14" }, { flex: 1 }] };
         }
         let { getCartCountByVariantId } = this.context;
         //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده

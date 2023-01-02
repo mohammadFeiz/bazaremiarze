@@ -23,14 +23,14 @@ export default class TanzimateKifePool extends Component{
             flex:1,
             column:[
                 {
-                    size:48,className:'margin-0-12',
+                    size:48,className:'m-h-12',
                     row:[
                         {flex:1,html:'کارت ها',align:'v'},
                         {
                             html:(
                                 <AIOButton
                                     type='button' style={{background:'none'}} caret={false}
-                                    className='color3B55A5 size12 bold'
+                                    className='color3B55A5 fs-12 bold'
                                     text='افزودن کارت جدید'
                                     position='bottom'
                                     popOver={({toggle})=>{
@@ -48,10 +48,10 @@ export default class TanzimateKifePool extends Component{
                 },
                 {
                     gap:12,flex:1,
-                    className:'padding-0-12',
-                    scroll:'v',
+                    className:'p-h-12',
+                    ofy:'auto',
                     column:cards.map((card,i)=>{
-                        return {style:{width:'100%',overflow:'visible'},align:'h',html:<CreaditCard index={i} {...card} onRemove={(id)=>this.removeCard(id)}/>}
+                        return {of:'visible',style:{width:'100%'},align:'h',html:<CreaditCard index={i} {...card} onRemove={(id)=>this.removeCard(id)}/>}
                     })
                 }
             ]

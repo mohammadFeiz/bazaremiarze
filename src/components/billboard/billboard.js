@@ -29,7 +29,7 @@ export default class Billboard extends Component{
         if(renderIn !== 'buy'){return false}
         return {
             column:[
-                {html:'جشنواره ها',className:'size14 bold padding-0-24',size:36,align:'v'},
+                {html:'جشنواره ها',className:'fs-14 bold p-h-24',size:36,align:'v'},
                 {row:campaigns.map((campaign,i)=>this.campaign_layout(campaign,i))},
                 {size:12}
             ]
@@ -42,7 +42,7 @@ export default class Billboard extends Component{
             column:[
                 {html:this.svgs[index]},
                 {size:3},
-                {html:campaign.name,className:'size12 bold'}
+                {html:campaign.name,className:'fs-12 bold'}
             ]
         }
     }

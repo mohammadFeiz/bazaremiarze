@@ -11,7 +11,7 @@ export default class CategorySlider extends Component{
       let {products} = this.props;
       if(!products){return this.productsLoading_layout()}
       return {
-        gap: 16,scroll:'h',style:{overflowY:'visible'},
+        gap: 16,className:'ofx-auto ofy-visible',
         row: products.map((product,i) =>{
             return {
               html:(
@@ -26,24 +26,24 @@ export default class CategorySlider extends Component{
     }
     productsLoading_layout(){
       return {
-        gap: 16,scroll:'h',
+        gap: 16,className:'ofx-auto',
         row: new Array(3).fill(0).map(() =>{
             return {
               html:(
                 <RVD
                   layout={{
-                      style:{height:256,width:140,borderRadius:12,opacity:0.5},
-                      className:'content-loading',
+                      style:{opacity:0.5},
+                      className:'content-loading br-12 w-168 h-288',
                       column:[
-                          {size:128,align:'vh',html:<div style={{width:'100%',height:'100%',borderRadius:8,background:'#fff'}}></div>,style:{padding:6,paddingBottom:0}},
+                          {size:128,align:'vh',className:'p-12 p-b-0',html:<div className='w-100 h-100 br-8 bg-fff'></div>},
                           {size:12},
-                          {html:<div style={{height:12,width:'100%',background:'#fff',margin:'0 12px'}}></div>},
+                          {html:<div className='w-100 h-12 bg-fff m-h-12'></div>},
                           {size:12},
-                          {html:<div style={{height:12,width:'100%',background:'#fff',margin:'0 12px',marginLeft:36}}></div>},
+                          {html:<div className='w-100 h-12 bg-fff m-r-12 m-l-36'></div>},
                           {size:12},
-                          {html:<div style={{height:12,width:'100%',background:'#fff',margin:'0 12px',marginLeft:36}}></div>},
+                          {html:<div className='w-100 h-12 bg-fff m-r-12 m-l-36'></div>},
                           {flex:1},
-                          {html:<div style={{height:12,width:'100%',background:'#fff',margin:'0 12px',marginRight:48}}></div>},
+                          {html:<div className='w-100 h-12 bg-fff m-l-12 m-r-48'></div>},
                           {size:12}
                       ]
                   }}
@@ -58,14 +58,14 @@ export default class CategorySlider extends Component{
       return (
         <RVD
           layout={{
-            style: { padding: 12 },scroll:'v',
+            style: { padding: 12 },ofy:'auto',
             column: [
               {
                 size:36,
                 row:[
-                  {html:title,className: "size14 color323130 bold",align: "v"},
+                  {html:title,className: "fs-14 color323130 bold",align: "v"},
                   {flex:1},
-                  {show:showAll !== undefined && products !== undefined,html: "مشاهده همه",className: "size12 color3B55A5 bold",align: "v",attrs:{onClick:()=>showAll()}}
+                  {show:showAll !== undefined && products !== undefined,html: "مشاهده همه",className: "fs-12 color3B55A5 bold",align: "v",onClick:()=>showAll()}
                 ]
               },
               this.products_layout(),

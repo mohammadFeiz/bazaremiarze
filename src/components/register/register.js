@@ -23,33 +23,34 @@ export default class Register extends Component{
             storeName = '',address = '',userProvince = '',userCity = '',landline = '',password = ''
         } = model;
         latitude = isNaN(parseFloat(latitude))?35.699739:parseFloat(latitude);
-        longitude = isNaN(parseFloat(longitude))?35.699739:parseFloat(longitude);
+        longitude = isNaN(parseFloat(longitude))?51.338097:parseFloat(longitude);
         this.cities = allCities.filter(({province})=>province === userProvince)
         this.state = {
             prevProvince:userProvince,
             model:{latitude,cardCode,longitude,firstName,lastName,phoneNumber,storeName,address,userProvince,userCity,landline,password,re_password:password},
             showMap:false,
             loading:false,
-            errors:[]
         }
     }
     onClose(){
-        let {onClose} = this.props;
+        let {onClose,mode} = this.props;
         $(this.dom.current).animate({
             height: '0%',
             width: '0%',
             left:'50%',
             top:'100%',
             opacity:0
-        }, 300,()=>onClose());
+        }, 300,()=>{
+            if(mode === 'edit'){onClose()}
+        });
     }
     header_layout(){
         let {mode} = this.props;
         return {
-            className:'box-shadow',size:60,style:{overflow:'visible',marginBottom:12,background:'#fff'},
+            className:'box-shadow',size:60,of:'visible',style:{marginBottom:12,background:'#fff'},
             row:[
                 {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>this.onClose()}},
-                {flex:1,html:mode === 'edit'?'ویرایش اطلاعات کاربری':'ثبت نام',className:'size16 color605E5C',align:'v'}
+                {flex:1,html:mode === 'edit'?'ویرایش اطلاعات کاربری':'ثبت نام',className:'fs-16 color605E5C',align:'v'}
             ]
         }
     }
@@ -57,14 +58,15 @@ export default class Register extends Component{
     text_layout(){
         let {mode} = this.props;
         if(mode === 'edit'){return false}
-        return {html:'به خانواده بزرگ بروکس بپیوندید',align:'h',className:'size20 color323130 bold'}
+        return {html:'به خانواده بزرگ بروکس بپیوندید',align:'h',className:'fs-20 color323130 bold'}
     }
     subtext_layout(){
         let {mode} = this.props;
         if(mode === 'edit'){return false}
-        return {html:'بیش از 8000 فروشگاه در سطح کشور عضو این خانواده هستند',align:'vh',className:'size14 color605E5C'}
+        return {html:'بیش از 8000 فروشگاه در سطح کشور عضو این خانواده هستند',align:'vh',className:'fs-14 color605E5C'}
     }
     async onSubmit(){
+        if($('.aio-form-error').length){alert('موارد ضروری را پر کنید'); return;}
         let {model} = this.state;
         let {mode,baseUrl} = this.props;
         let url = {
@@ -98,7 +100,7 @@ export default class Register extends Component{
         let {model} = this.state;
         let {mode} = this.props;
         return {
-            style:{overflow:'visible'},
+            of:'visible',
             html:(
                 <Form
                     lang={'fa'}
@@ -109,10 +111,8 @@ export default class Register extends Component{
                         bodyStyle:{background:'#fff',padding:12},
                         inputStyle:{height:30,background:'#f5f5f5',border:'none'}
                     }}
-                    showErrors={false}
-                    getErrors={(errors)=>this.setState({errors})}
                     className='box-shadow'
-                    labelAttrs={{className:'size14 color605E5C'}}
+                    labelAttrs={{className:'fs-14 color605E5C'}}
                     onChange={(model)=>this.change(model)}
                     inputs={[
                         {label:'کد مشتری',type:'text',field:'model.cardCode',disabled:true,show:mode === 'edit'},
@@ -166,7 +166,7 @@ export default class Register extends Component{
         }, 300);
     }
     render(){
-        let {showMap,model,prevProvince,errors,loading} = this.state;
+        let {showMap,model,prevProvince,loading} = this.state;
         let {mode} = this.props;
         if(prevProvince !== model.userProvince){
             setTimeout(()=>{
@@ -175,7 +175,6 @@ export default class Register extends Component{
                 this.setState({prevProvince:model.userProvince,model});
             },0)
         }
-        console.log(errors)
         return (
             <>
                 <RVD
@@ -186,7 +185,7 @@ export default class Register extends Component{
                             this.header_layout(),
                             {size:12},
                             {
-                                scroll:'v',flex:1,
+                                ofy:'auto',flex:1,
                                 column:[
                                     this.logo_layout(),
                                     this.text_layout(),
@@ -197,28 +196,10 @@ export default class Register extends Component{
                                 ]
                             },
                             {
-                                column:[
-                                    {size:12},
-                                    {
-                                        className:'colorA4262C size10 padding-0-12',
-                                        column:errors.map((e)=>{
-                                            return {
-                                                row:[
-                                                    {html:<Icon path={mdiInformation} size={0.6}/>,align:'v'},
-                                                    {size:6},
-                                                    {html:e,align:'v'}
-                                                ]
-                                            }
-                                        })
-                                    }
-                                ]
-                            },
-                            {
-                                className:'margin-12',
+                                className:'m-12',
                                 
                                 html:(
                                     <button 
-                                        disabled={!!errors.length} 
                                         onClick={()=>this.onSubmit()} 
                                         className='button-2'
                                     >
@@ -254,10 +235,10 @@ class ShowMap extends Component{
     header_layout(){
         let {onClose} = this.props;
         return {
-            className:'box-shadow',size:60,style:{overflow:'visible',marginBottom:12,background:'#fff'},
+            of:'visible',className:'box-shadow',size:60,style:{marginBottom:12,background:'#fff'},
             row:[
                 {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>onClose()}},
-                {flex:1,html:'انتخاب موقعیت فروشگاه',className:'size16 color605E5C',align:'v'}
+                {flex:1,html:'انتخاب موقعیت فروشگاه',className:'fs-16 color605E5C',align:'v'}
             ]
         }
     }
@@ -278,8 +259,8 @@ class ShowMap extends Component{
         let {onChange} = this.props;
         let {latitude,longitude} = this.state;
         return {
-            size:72,style:{position:'absolute',bottom:12,left:12,width:'calc(100% - 24px)',overflow:'visible',zIndex:100000000000},
-            className:'box-shadow',align:'vh',
+            size:72,style:{position:'absolute',bottom:12,left:12,width:'calc(100% - 24px)',zIndex:100000000000},
+            of:'visible',className:'box-shadow',align:'vh',
             column:[
                 {html:`latitude:${latitude.toFixed(6)} - Lonitude:${longitude.toFixed(6)}`,style:{width:'100%',background:'rgba(255,255,255,.8)',fontSize:12,borderRadius:5},align:'h',className:'color3B55A5'},
                 {size:6},

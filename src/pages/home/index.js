@@ -11,6 +11,8 @@ import Billboard from '../../components/billboard/billboard';
 import blankGuarantee from './../../images/blank-guarantee.png';
 import Bazargah from '../bazargah/bazargah';
 import './index.css';
+import Icon from '@mdi/react';
+import { mdiPlusBox } from '@mdi/js';
 
 export default class Home extends Component {
     static contextType = appContext;
@@ -40,11 +42,11 @@ export default class Home extends Component {
                 {
                     align:'h',row: [
                         { size: 36, align: 'vh', html: getSvg(icon) ,show:!!icon},
-                        { html: title, align: 'vh',className: 'color605E5C bold size14' },
+                        { html: title, align: 'vh',className: 'color605E5C bold fs-14' },
                     ]
                 },
                 { size: 12 },
-                { html: value, className: 'color605E5C bold size14',align:'h' },
+                { html: value, className: 'color605E5C bold fs-14',align:'h' },
                 {size:12}
             ]
         }
@@ -55,11 +57,11 @@ export default class Home extends Component {
     cartAndWallet_layout(){
         let {userInfo,cart,openPopup} = this.context;
         return {
-            style:{overflow:'visible'},
-            className:'padding-0-12',
+            of:'visible',
+            className:'p-h-12',
             row: [
                 {
-                    style:{overflow:'visible'},flex:1,
+                    of:'visible',flex:1,
                     html:(
                         <Card
                             type='card1' title='کیف پول' value={functions.splitPrice(Math.max(userInfo.ballance,0))} unit='ریال'
@@ -69,7 +71,7 @@ export default class Home extends Component {
                 },
                 {size:12},
                 {
-                    style:{overflow:'visible'},flex:1,
+                    of:'visible',flex:1,
                     html:(
                         <Card
                             type='card1' title='سبد خرید' value={Object.keys(cart).length} unit='کالا'
@@ -85,14 +87,14 @@ export default class Home extends Component {
         let {preOrders} = this.state;
         if(!preOrders){return false}
         return {
-            className:'padding-0-12',style:{overflow:'visible'},
+            className:'p-h-12',of:'visible',
             column:[
-                //{html: "پیش سفارشات",className: "size14 color323130 bold padding-0-12",size: 48,align: "v"},
+                //{html: "پیش سفارشات",className: "fs-14 color323130 bold p-h-12",size: 48,align: "v"},
                 {
-                    size:72,style:{overflow:'visible'},
+                    size:72,of:'visible',
                     row: [
                         {
-                            flex:1,style:{overflow:'visible'},
+                            flex:1,of:'visible',
                             html:(
                                 <Card
                                     type='card2' icon={getSvg('paperRocket')} title='پیگیری سفارشات'
@@ -104,57 +106,29 @@ export default class Home extends Component {
                 },
             ]
         }
-        // return {
-        //     className:'padding-0-12',style:{overflow:'visible'},
-        //     column:[
-        //         {html: "پیش سفارشات",className: "size14 color323130 bold padding-0-12",size: 48,align: "v"},
-        //         {
-        //             size:72,style:{overflow:'visible'},
-        //             row: [
-        //                 {
-        //                     flex:1,style:{overflow:'visible'},
-        //                     html:(
-        //                         <Card
-        //                             type='card2' icon={getSvg('paperRocket')} title='در حال بررسی' value={preOrders.waitOfVisitor}
-        //                             unit='سفارش' onClick={()=>openPopup('peygiriye-sefareshe-kharid','در حال بررسی')}
-        //                         />
-        //                     )
-        //                 },
-        //                 {size:12},
-        //                 {
-        //                     flex:1,style:{overflow:'visible'},
-        //                     html:(
-        //                         <Card
-        //                             type='card2' icon={getSvg('pending')} title='در انتظار پرداخت' value={preOrders.waitOfPey}
-        //                             unit='سفارش' onClick={()=>openPopup('peygiriye-sefareshe-kharid','در انتظار پرداخت')}
-        //                         />
-        //                     )
-        //                 }
-        //             ]
-        //         },
-        //     ]
-        // }
     }
     garanti_layout(){
-        let {guaranteeItems = [],openPopup} = this.context;
+        let {guaranteeItems = [],openPopup,showGaranti} = this.context;
+        if(showGaranti === false){return false}
         return {
-            className:'padding-0-12',
-            style:{marginTop:12},
+            className:'p-h-12 m-t-12',
+            of:'visible',
             column:[
                 {
-                    className:'padding-0-12',size:48,style:{borderRadius:guaranteeItems.length > 0 ?'14px 14px 0 0':'14px'},
+                    className:'p-h-12',size:48,style:{borderRadius:guaranteeItems.length > 0 ?'14px 14px 0 0':'14px'},
                     row:[
-                        {html: "مرجوع کالای سوخته",className: "size14 color323130 bold",align: "v"},
+                        {html: "مرجوع کالای سوخته",className: "fs-14 color323130 bold",align: "v"},
                         {flex:1},
                         {
+                            align:'v',
                             html:(
                                 <AIOButton
                                     text='ثبت درخواست جدید'
                                     caret={false}
-                                    className='color3B55A5 size12 bold'
-                                    before={getSvg('plusBox')}
-                                    type='button'
+                                    className='color3B55A5 bold'
                                     style={{background:'none'}}
+                                    before={<Icon path={mdiPlusBox} size={0.8}/>}
+                                    type='button'
                                     position='bottom'
                                     onClick={()=>openPopup('sabte-garanti-jadid')}
                                 />
@@ -183,7 +157,7 @@ export default class Home extends Component {
                         {
                             html:'با ثبت درخواست مرجوع کالاهای سوخته خود سریع تر ازهر زمان کالای خود را مرجوع کنید',
                             align:'vh',
-                            className:'size14 color605E5C',
+                            className:'fs-14 color605E5C',
                             style:{textAlign:'center'}
                         },
                         {size:24},
@@ -195,7 +169,7 @@ export default class Home extends Component {
                 {
                     show:guaranteeItems.length > 0,
                     attrs:{onClick:()=>openPopup('joziate-darkhast-haye-garanti')},
-                    size:48,html:'مشاهده جزییات درخواست های گارانتی ها',className:'box color3B55A5 size12 bold',align:'vh',style:{borderRadius:'0 0 14px 14px'}
+                    size:48,html:'مشاهده جزییات درخواست های گارانتی ها',className:'box color3B55A5 fs-12 bold',align:'vh',style:{borderRadius:'0 0 14px 14px'}
                 }
             ]
         }
@@ -209,8 +183,8 @@ export default class Home extends Component {
                     flex: 1,
                     column: [
                         {size:12},
-                        { align:'v',row: [{ html: '5',className: 'color3B55A5 size28 bold', align: 'v' }, { size: 6 }, { html: 'الماس', align: 'v',className: 'color323130 size18 bold'}]},
-                        { html: 'به ازای اخذ هر سفارش از بازارگاه',className: 'color605E5C bold size14',align:'v' },
+                        { align:'v',row: [{ html: '5',className: 'color3B55A5 fs-28 bold', align: 'v' }, { size: 6 }, { html: 'الماس', align: 'v',className: 'color323130 fs-18 bold'}]},
+                        { html: 'به ازای اخذ هر سفارش از بازارگاه',className: 'color605E5C bold fs-14',align:'v' },
                         {size:12},
                         
                     ]
@@ -221,7 +195,7 @@ export default class Home extends Component {
         }
     }
     bazargah_layout(){
-        return {html:<Bazargah renderInHome={true}/>}
+        return {of:'visible',html:<Bazargah renderInHome={true}/>}
     }
     getContent() {
         let {testedChance} = this.state;
@@ -230,7 +204,7 @@ export default class Home extends Component {
             className:'page-bg',style:{width:'100%'},
             column: [
                 {
-                    flex:1,scroll:'v',
+                    flex:1,ofy:'auto',
                     column: [
                         this.billboard_layout(),
                         this.cartAndWallet_layout(),
@@ -319,8 +293,8 @@ class Call extends Component{
                                 {size:12},
                                 {
                                     column:[
-                                        {html:'تماس با ویزیتور',align:'v',style:{color:'#fff'},className:'size14'},
-                                        {html:userInfo.slpphone,align:'v',style:{color:'#fff'},className:'size12'}
+                                        {html:'تماس با ویزیتور',align:'v',style:{color:'#fff'},className:'fs-14'},
+                                        {html:userInfo.slpphone,align:'v',style:{color:'#fff'},className:'fs-12'}
                                     ]
                                 }
                             ]
@@ -334,8 +308,8 @@ class Call extends Component{
                                 {size:12},
                                 {
                                     column:[
-                                        {html:'تماس با پشتیبانی',align:'v',style:{color:'#fff'},className:'size14'},
-                                        {html:'02175116',align:'v',style:{color:'#fff'},className:'size12'}
+                                        {html:'تماس با پشتیبانی',align:'v',style:{color:'#fff'},className:'fs-14'},
+                                        {html:'02175116',align:'v',style:{color:'#fff'},className:'fs-12'}
                                     ]
                                 }
                             ]
@@ -364,14 +338,14 @@ class Help extends Component{
         return (
             <RVD
                 layout={{
-                    className:'padding-0-12',
+                    className:'p-h-12',
                     column:[
-                        {size:60,html:'راهنما',className:'size18 bold',align:'vh'},
-                        {size:48,html:'درحال بررسی',className:'color323130 size16 bold',align:'v'},
-                        {html:'سفارش هایی هستند که شما ثبت کرده اید و ویزیتور شما درحال بررسی کالاهای سفارش شما هست.',className:'color605E5C size14'},
+                        {size:60,html:'راهنما',className:'fs-18 bold',align:'vh'},
+                        {size:48,html:'درحال بررسی',className:'color323130 fs-16 bold',align:'v'},
+                        {html:'سفارش هایی هستند که شما ثبت کرده اید و ویزیتور شما درحال بررسی کالاهای سفارش شما هست.',className:'color605E5C fs-14'},
                         {size:12},
-                        {size:48,html:'در انتظار تایید',className:'color323130 size16 bold',align:'v'},
-                        {html:'سفارش هایی هستند که بعد از بررسی ویزیتور برای تایید و پرداخت به سمت شما برگشته است. سفارش هایی که ویزیتور مستقیما برای شما ثبت میکند نیز در این قسمت نمایش داده میشود',className:'color605E5C size14'},
+                        {size:48,html:'در انتظار تایید',className:'color323130 fs-16 bold',align:'v'},
+                        {html:'سفارش هایی هستند که بعد از بررسی ویزیتور برای تایید و پرداخت به سمت شما برگشته است. سفارش هایی که ویزیتور مستقیما برای شما ثبت میکند نیز در این قسمت نمایش داده میشود',className:'color605E5C fs-14'},
                         {size:24}
                     ]
                 }}

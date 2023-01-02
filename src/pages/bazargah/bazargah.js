@@ -14,7 +14,7 @@ import Form from './../../interfaces/aio-form-react/aio-form-react';
 import {mdiBackspace, mdiCheck, mdiChevronDoubleRight, mdiChevronRight} from '@mdi/js';
 import Slider from './../../npm/aio-slider/aio-slider';
 import Map from '../../components/map/map';
-import bazargahBlankSrc from './../../images/blank-bazargah.png';
+import bazargahBlankSrc from './../../images/bazargah-no-order.png';
 //import functions from '../../../functions';
 import functions from '../../functions';
 import TimerGauge from '../../components/timer-gauge/timer-gauge';
@@ -51,7 +51,7 @@ export default class Bazargah extends Component{
         if(activeTabId !== 0 || !bazargah.active){return false}
         if(!bazargah.wait_to_get){
             return {
-                size:400,html:'در حال بارگزاری',className:'size12 color605E5C',align:'vh'
+                size:400,html:'در حال بارگزاری',className:'fs-12 color605E5C',align:'vh'
             }
         }
         if(bazargah.wait_to_get.length === 0){
@@ -60,10 +60,10 @@ export default class Bazargah extends Component{
             }
         }
         return {
-            gap:12,flex:1,scroll:'v',
+            gap:12,flex:1,ofy:'auto',
             column:bazargah.wait_to_get.map((o,i)=>{
                 return {
-                    style:{overflow:'visible'},
+                    of:'visible',
                     html:(
                         <BazargahCard key={o.orderId} {...o} 
                             onExpired={()=>{
@@ -124,10 +124,10 @@ export default class Bazargah extends Component{
         if(!wait_to_send){return {size:96,align:'vh',html:'در حال بارگزاری'}}
         if(wait_to_send.length === 0){return {size:96,align:'vh',html:'موردی وجود ندارد'}}
         return {
-            gap:12,flex:1,scroll:'v',
+            gap:12,flex:1,ofy:'auto',
             column:wait_to_send.map((o,i)=>{
                 return {
-                    style:{overflow:'visible'},
+                    of:'visible',
                     html:(<BazargahCard key={o.orderId} {...o} onSend={()=>this.openDetails(o)}/>)
                 }
             })
@@ -143,10 +143,10 @@ export default class Bazargah extends Component{
         if(!wait_to_send){return {size:96,align:'vh',html:'در حال بارگزاری'}}
         if(wait_to_send.length === 0){return {size:96,align:'vh',html:'موردی وجود ندارد'}}
         return {
-            gap:12,flex:1,scroll:'v',
+            gap:12,flex:1,ofy:'auto',
             column:wait_to_send.map((o,i)=>{
                 return {
-                    style:{overflow:'visible'},
+                    of:'visible',
                     html:(
                         <BazargahCard 
                             {...o} 
@@ -183,23 +183,24 @@ export default class Bazargah extends Component{
             <RVD
                 layout={{
                     style:{flex:'none',width:'100%'},
+                    of:'visible',
                     column:[
                         {
-                            size:48,className:'padding-0-12',
+                            size:48,className:'p-h-12',
                             row:[
-                                {html: "بازارگاه",className: "size14 color323130 bold padding-0-12",size: 48,align: "v"},
+                                {html: "بازارگاه",className: "fs-14 color323130 bold p-h-12",size: 48,align: "v"},
                                 {size:6},
                                 {html:<div className='my-burux-badge bg3B55A5'>{bazargah.wait_to_get.length}</div>,align:'vh'},
                                 {flex:1},
-                                {html:'مشاهده همه',align:'v',className:'color3B55A5 size12 bold',show:!!bazargah.wait_to_get.length,attrs:{onClick:()=>setNavId('bazargah')}}
+                                {html:'مشاهده همه',align:'v',className:'color3B55A5 fs-12 bold',show:!!bazargah.wait_to_get.length,attrs:{onClick:()=>setNavId('bazargah')}}
                             ]
                         },
                         {
-                            className:'box margin-0-12 padding-0-12 size14 color605E5C',show:bazargah.wait_to_get.length === 0,
+                            className:'box m-h-12 p-h-12 fs-14 color605E5C',show:bazargah.wait_to_get.length === 0,
                             column:[
                                 {size:12},
                                 {
-                                    html:<img src={bazargahBlankSrc}/>,align:'vh'
+                                    html:<img src={bazargahBlankSrc} height={120}/>,align:'vh'
                                 },
                                 {
                                     size:48,align:'vh',style:{marginBottom:12},
@@ -248,12 +249,12 @@ export default class Bazargah extends Component{
                 layout={{
                     className:'page-bg',style:{width:'100%'},
                     column:[
-                        {html:'بازارگاه',className:'size24 bold',align:'vh',size:96},
+                        {html:'بازارگاه',className:'fs-24 bold',align:'vh',size:96},
                         {html:<img src={bazargahCommingSoon} alt={''} width={300} height={240}/>,align:'vh'},
                         {size:24},
-                        {html:'محلی برای اخذ و ارسال سفارش های مردمی',className:'size16 color605E5C',align:'vh'},
+                        {html:'محلی برای اخذ و ارسال سفارش های مردمی',className:'fs-16 color605E5C',align:'vh'},
                         {size:24},
-                        {html:'بزودی',className:'size18 colorA19F9D',align:'vh'}
+                        {html:'بزودی',className:'fs-18 colorA19F9D',align:'vh'}
                     ]
                 }}
             />
@@ -430,21 +431,21 @@ class JoziateSefaresheBazargah extends Component{
     }
     header_layout(){
         return {
-            style:{height:60,overflow:'visible'},
+            style:{height:60},of:'visible',
             className:'box-shadow bgFFF',
             row:[
                 {size:60,html:<Icon path={mdiChevronRight} size={1}/>,align:'vh',attrs:{onClick:()=>this.getInfo('onBack')()}},
-                {html: this.getInfo('title'),className: "size16 color605E5C",align:'v'}
+                {html: this.getInfo('title'),className: "fs-16 color605E5C",align:'v'}
             ]
         }
     }
     detailRow_layout(label,value){
         return {
-            size:28,className:'padding-0-24',
+            size:28,className:'p-h-24',
             row:[
-                {html:label,className:'colorA19F9D size12',align:'v'},
+                {html:label,className:'colorA19F9D fs-12',align:'v'},
                 {flex:1},
-                {html:value,className:'color323130 size12 bold',align:'v'}
+                {html:value,className:'color323130 fs-12 bold',align:'v'}
             ]
         }
     }
@@ -464,8 +465,8 @@ class JoziateSefaresheBazargah extends Component{
                         //this.detailRow_layout('موبایل',receiverNumber),
                         {
                             column:[
-                                {html:'آدرس',className:'colorA19F9D size12 padding-0-24'},
-                                {html:shippingAddress,className:'color323130 size12 bold padding-0-24'},
+                                {html:'آدرس',className:'colorA19F9D fs-12 p-h-24'},
+                                {html:shippingAddress,className:'color323130 fs-12 bold p-h-24'},
                                 {size:12}
                             ]
                         },
@@ -494,7 +495,7 @@ class JoziateSefaresheBazargah extends Component{
             className:'bgFFF',
             row:[
                 {size:110,html:<TimerGauge key={id} {...{totalTime,startTime:orderDate}}/>,align:'vh'},
-                {align:'v',html:timeTitle,className:'color605E5C size14'},
+                {align:'v',html:timeTitle,className:'color605E5C fs-14'},
                 {flex:1}
             ]
         }
@@ -505,7 +506,7 @@ class JoziateSefaresheBazargah extends Component{
             style:{minHeight:30},
             row:[
                 {size:48,align:'vh',html:<div style={style}>{number}</div>},
-                {html:text,className:'color605E5C size10 bold',align:'v',flex:1}
+                {html:text,className:'color605E5C fs-10 bold',align:'v',flex:1}
             ]
         }
     }
@@ -516,9 +517,9 @@ class JoziateSefaresheBazargah extends Component{
             className:'bgFFF',
             column:[
                 {size:6},
-                {show:!!title,html:title,className:'size16 bold margin-0-12',size:36},
+                {show:!!title,html:title,className:'fs-16 bold m-h-12',size:36},
                 {
-                    className:'margin-0-12 padding-12-0 round-8',style:{border:'2px dotted #2BA4D8'},
+                    className:'m-h-12 p-v-12 br-8',style:{border:'2px dotted #2BA4D8'},
                     column:hints.map((o,i)=>this.hintItem_layout(colors[i],o,i + 1))
                 },
                 {size:6}
@@ -534,7 +535,7 @@ class JoziateSefaresheBazargah extends Component{
         return {
             className:'bgFFF',gap:1,
             column:items.map((o,i)=>{
-                return {className:'margin-0-12',html:this.item_layout({...o,isFirst:i === 0,isLast:i === items.length - 1,isCheckable})}
+                return {className:'m-h-12',html:this.item_layout({...o,isFirst:i === 0,isLast:i === items.length - 1,isCheckable})}
             })
         }
     }
@@ -566,8 +567,8 @@ class JoziateSefaresheBazargah extends Component{
                             flex:1,
                             column:[
                                 {flex:1},
-                                {html:name,className:'color605E5C size12 bold'},
-                                {html:detail,className:'color605E5C size12'},
+                                {html:name,className:'color605E5C fs-12 bold'},
+                                {html:detail,className:'color605E5C fs-12'},
                                 {flex:1}
                             ]
                         },
@@ -611,8 +612,8 @@ class JoziateSefaresheBazargah extends Component{
                 {
                     column:[
                         {size:6},
-                        {html:'آدرس تحویل',className:'colorA19F9D size12 padding-0-24'},
-                        {html:shippingAddress,className:'color323130 size12 bold padding-0-24'},
+                        {html:'آدرس تحویل',className:'colorA19F9D fs-12 p-h-24'},
+                        {html:shippingAddress,className:'color323130 fs-12 bold p-h-24'},
                         {size:6}
                     ]
                 },
@@ -628,7 +629,7 @@ class JoziateSefaresheBazargah extends Component{
             column:[
                 {size:16},
                 {
-                    size:36,className:'size16 color323130 bold margin-0-12',
+                    size:36,className:'fs-16 color323130 bold m-h-12',
                     row:[
                         {flex:1,html:'انتخاب پیک',align:'v'},
                         {
@@ -636,7 +637,7 @@ class JoziateSefaresheBazargah extends Component{
                                 <AIOButtonInterface
                                     type='button'
                                     style={{background:'none'}}
-                                    className='color3B55A5 bold size14'
+                                    className='color3B55A5 bold fs-14'
                                     text='افزودن پیک جدید'
                                     position='bottom'
                                     popOver={(obj)=>{
@@ -666,7 +667,7 @@ class JoziateSefaresheBazargah extends Component{
                             optionValue='option.id'
                             optionStyle='{width:"100%",borderBottom:"1px solid #ddd"}'
                             optionSubtext='option.phoneNumber'
-                            optionClassName='size14 color605E5C'
+                            optionClassName='fs-14 color605E5C'
                             //optionAfter='"A"'
                             value={sendStatus.delivererId}
                             onChange={(value)=>this.changeSendStatus('delivererId',value)}
@@ -728,7 +729,7 @@ class JoziateSefaresheBazargah extends Component{
                 {
                     html:(
                         <Slider
-                            attrs={{className:'margin-0-36'}}
+                            attrs={{className:'m-h-36'}}
                             start={1}
                             direction='left'
                             end={4}
@@ -768,7 +769,7 @@ class JoziateSefaresheBazargah extends Component{
         let disabled = code0 === '' || code1 === '' || code2 === '';
         console.log(code0.code1,code2)
         return {
-            className:'bgFFF padding-0-12',
+            className:'bg-fff p-h-12',
             column:[
                 {size:6},
                 {
@@ -778,8 +779,8 @@ class JoziateSefaresheBazargah extends Component{
                         {size:12},
                         {
                             column:[
-                                {html:'کد تحویل',className:'size16 bold color323130'},
-                                {html:'سه رقم پایانی را وارد کنید',className:'size14 color605E5C'}
+                                {html:'کد تحویل',className:'fs-16 bold color323130'},
+                                {html:'سه رقم پایانی را وارد کنید',className:'fs-14 color605E5C'}
                             ]
                         }
                     ]
@@ -791,11 +792,11 @@ class JoziateSefaresheBazargah extends Component{
                         {flex:1},
                         {
                             row:deliveredCode.split('').map((o)=>{
-                                return {size:30,html:o,align:'vh',className:'bold size24'}
+                                return {size:30,html:o,align:'vh',className:'bold fs-24'}
                             })
                         },
                         {
-                            align:'vh',className:'bold size24',
+                            align:'vh',className:'bold fs-24',
                             html:(
                                 <AIOButton 
                                     style={{
@@ -845,7 +846,7 @@ class JoziateSefaresheBazargah extends Component{
                     align:'vh',
                     html:(
                         <button 
-                            className='button-2 margin-0-12' disabled={disabled} style={{height:36}}
+                            className='button-2 m-h-12' disabled={disabled} style={{height:36}}
                             onClick={async ()=>{
                                 if(disabled){return}
                                 let {bazargahApis,showMessage,SetState} = this.context;
@@ -875,7 +876,7 @@ class JoziateSefaresheBazargah extends Component{
         let {sendStatus,deliverers} = this.state;
         let deliverer = deliverers.find((o)=>o.id === sendStatus.delivererId)
         return {
-            className:'bgFFF padding-0-12',
+            className:'bg-fff p-h-12',
             column:[
                 {size:6},
                 {
@@ -885,8 +886,8 @@ class JoziateSefaresheBazargah extends Component{
                         {size:12},
                         {
                             column:[
-                                {html:deliverer.fullName,className:'size16 bold color323130'},
-                                {html:deliverer.phoneNumber,className:'size14 color605E5C'}
+                                {html:deliverer.fullName,className:'fs-16 bold color323130'},
+                                {html:deliverer.phoneNumber,className:'fs-14 color605E5C'}
                             ]
                         },
                         {flex:1},
@@ -895,7 +896,7 @@ class JoziateSefaresheBazargah extends Component{
                             html:(
                                 <a href={`tel:${deliverer.phoneNumber}`} style={{display:'flex',alignItems:'center'}}>
                                     {getSvg('phone',{style:{transform:'scale(0.6)'}})}
-                                    <span className='color3B55A5 size14 bold'>تماس</span>
+                                    <span className='color3B55A5 fs-14 bold'>تماس</span>
                                 </a>
                             )
                         }
@@ -908,7 +909,7 @@ class JoziateSefaresheBazargah extends Component{
     submit_layout(){
         if(!this.getVisibility('submit')){return false}
         return {
-            className:'padding-0-12',align:'v',
+            className:'p-h-12',align:'v',
             size:60,html:<button className='button-2' disabled={this.getInfo('buttonDisabled')} onClick={()=>this.onSubmit()}>{this.getInfo('buttonTitle')}</button>
         }
     }
@@ -922,7 +923,7 @@ class JoziateSefaresheBazargah extends Component{
                         this.header_layout(),
                         {size:6},
                         {
-                            flex:1,scroll:'v',gap:6,
+                            flex:1,ofy:'auto',gap:6,
                             column:[
                                 this.wizard_layout(),
                                 this.hint_layout(),
@@ -1057,9 +1058,9 @@ class BazargahCard extends Component{
             gap:4,
             row:[
                 {html:getSvg('cash'),size:36,align:'vh'},
-                {html:'مبلغ سفارش:',className:'size14 color605E5C',align:'v'},
-                {html:functions.splitPrice(amount),align:'v',className:'bold color323130 size14'},
-                {html:'ریال',align:'v',className:'colorA19F9D size12'}
+                {html:'مبلغ سفارش:',className:'fs-14 color605E5C',align:'v'},
+                {html:functions.splitPrice(amount),align:'v',className:'bold color323130 fs-14'},
+                {html:'ریال',align:'v',className:'colorA19F9D fs-12'}
             ]
         }
     }
@@ -1069,9 +1070,9 @@ class BazargahCard extends Component{
             gap:4,
             row:[
                 {html:getSvg('location'),size:36,align:'vh'},
-                {html:'فاصله:',className:'size14 color605E5C',align:'v'},
-                {html:distanceValue,align:'v',className:'bold color323130 size14'},
-                {html:distanceUnit,align:'v',className:'colorA19F9D size12'}
+                {html:'فاصله:',className:'fs-14 color605E5C',align:'v'},
+                {html:distanceValue,align:'v',className:'bold color323130 fs-14'},
+                {html:distanceUnit,align:'v',className:'colorA19F9D fs-12'}
             ]
         }
     }
@@ -1081,8 +1082,8 @@ class BazargahCard extends Component{
             gap:4,
             row:[
                 {html:getSvg('address'),size:36,align:'vh'},
-                {html:'آدرس:',className:'size14 color605E5C',align:'v'},
-                {html:address,align:'v',className:'colorA19F9D size12'}
+                {html:'آدرس:',className:'fs-14 color605E5C',align:'v'},
+                {html:address,align:'v',className:'colorA19F9D fs-12'}
             ]
         }
     }
@@ -1093,9 +1094,9 @@ class BazargahCard extends Component{
             gap:4,
             row:[
                 {html:getSvg('benefit'),size:36,align:'vh'},
-                {html:'سود:',className:'size14 colorF15A29',align:'v'},
-                {html:functions.splitPrice(benefit),align:'v',className:'bold colorF15A29 size14'},
-                {html:'ریال',align:'v',className:'colorF15A29 size12'}
+                {html:'سود:',className:'fs-14 colorF15A29',align:'v'},
+                {html:functions.splitPrice(benefit),align:'v',className:'bold colorF15A29 fs-14'},
+                {html:'ریال',align:'v',className:'colorF15A29 fs-12'}
             ]
         }
     }
@@ -1106,7 +1107,7 @@ class BazargahCard extends Component{
     items_layout(items){
         if(!items){return false}
         return {
-            flex:1,scroll:'h',gap:12,className:'margin-0-12',style:{boxSizing:'border-box',width:'calc(100% - 24px)'},
+            flex:1,ofx:'auto',gap:12,className:'m-h-12',style:{boxSizing:'border-box',width:'calc(100% - 24px)'},
             row:items.map((o)=>{
                 return {html:this.item_layout(o)}
             })
@@ -1122,8 +1123,8 @@ class BazargahCard extends Component{
                         {
                             column:[
                                 {flex:1},
-                                {html:name,className:'color605E5C size12 bold'},
-                                {html:detail,className:'color605E5C size12'},
+                                {html:name,className:'color605E5C fs-12 bold'},
+                                {html:detail,className:'color605E5C fs-12'},
                                 {flex:1}
                             ]
                         }
@@ -1137,7 +1138,7 @@ class BazargahCard extends Component{
         return (
             <RVD
                 layout={{
-                    className:'box gap-no-color margin-0-12',
+                    className:'box gap-no-color m-h-12',
                     style:{direction:'rtl',overflow:'hidden'},
                     column:[
                         {

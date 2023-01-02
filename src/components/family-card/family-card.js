@@ -18,8 +18,8 @@ export default class FamilyCard extends Component{
         return (
             <RVD
                 layout={{
-                    style:{height:180,width:140,borderRadius:12,fontSize:14,...style},
-                    className:'bgFFF bold borderDDD',
+                    style:{height:180,width:140,...style},
+                    className:'bg-fff bold border-ddd br-12 fs-14',
                     attrs:{onClick:async ()=>{
                         openPopup('category',{
                             name:'خانواده ی ' + title,
@@ -30,8 +30,8 @@ export default class FamilyCard extends Component{
                         })
                     }},
                     column:[
-                        {size:128,align:'vh',html:<img src={this.getSrc(title) || NoSrc} width={'100%'} style={{width:'100%',height:'100%'}} alt=''/>,style:{padding:6,paddingBottom:0}},
-                        {align:'vh',html:title,className:'size12 padding-6-12 color575756 bold',style:{whiteSpace:'normal'}},
+                        {size:128,align:'vh',html:<img src={this.getSrc(title) || NoSrc} width={'100%'} className='w-100 h-100' alt=''/>,style:{padding:6,paddingBottom:0}},
+                        {align:'vh',html:title,className:'fs-12 p-v-6 p-h-12 color575756 bold',style:{whiteSpace:'normal'}},
                         {flex:1},
                         {size:12}
                     ]

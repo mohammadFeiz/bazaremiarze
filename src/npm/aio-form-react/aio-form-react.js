@@ -289,17 +289,18 @@ export default class AIOForm extends Component {
     let inlineLabel = this.getTheme(input,'inlineLabel','boolean');
     if (inlineLabel) {
       return {
-        className: 'aio-form-item' + (error?' has-error':''),style:{overflow:'visible'},
+        className: 'aio-form-item' + (error?' has-error':''),of:'visible',
         row: [
           this.getLabelLayout(label,input,inlineLabel),
           {size:6,show: label !== undefined},
           {
-            flex:1,style:{overflow:'visible'},
+            flex:1,
+            of:'visible',
             column:[
               {
                 row:[
                   {show:!!input.prefix,html:()=>this.getFix(input,rtl,'prefix')},
-                  { flex:1,style:{overflow:'visible'},html: ()=>this['getInput_' + input.type](props,input) },
+                  { flex:1,of:'visible',html: ()=>this['getInput_' + input.type](props,input) },
                   {show:!!input.affix,html:()=>this.getFix(input,rtl,'affix')}
                 ]
               },
@@ -312,13 +313,13 @@ export default class AIOForm extends Component {
     } else {
       return {
         className: 'aio-form-item' + (error?' has-error':''),
-        style:{overflow:'visible'},
+        of:'visible',
         column: [
           this.getLabelLayout(label,input,inlineLabel),
           {
             row:[
               {show:!!input.prefix,html:()=>this.getFix(input,rtl,'prefix')},
-              { style:{overflow:'visible'},flex:1,html: ()=>this['getInput_' + input.type](props,input) },
+              { of:'visible',flex:1,html: ()=>this['getInput_' + input.type](props,input) },
               {show:!!input.affix,html:()=>this.getFix(input,rtl,'affix')}
             ]
           },
@@ -382,9 +383,10 @@ export default class AIOForm extends Component {
     let {rowStyle = {}} = theme;
     let rows = this.sortByRows(this.handleGroups(inputs));
     return rows.map((row,i)=>{
-      let style = {...rowStyle,overflow:'visible'};
+      let style = {...rowStyle};
       if(i === rows.length - 1){style.marginBottom = 0}
       return {
+        of:'visible',
         swapId:onSwap?row._index.toString():undefined,
         style,
         className:'aio-form-row',
@@ -451,7 +453,7 @@ export default class AIOForm extends Component {
   body_layout(show = true){
     if(!show){return false}
     let {inputs = [],theme = {}} = this.props;
-    return {className: 'aio-form-body',style:theme.bodyStyle,scroll: 'v',flex: 1,column:()=>this.getInputs(inputs)}
+    return {className: 'aio-form-body',style:theme.bodyStyle,ofy: 'auto',flex: 1,column:()=>this.getInputs(inputs)}
   }
   body_and_tabs_layout(){
     let {tabs = [],tabSize = 36,bodyStyle} = this.props;

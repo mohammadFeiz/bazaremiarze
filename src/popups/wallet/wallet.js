@@ -52,7 +52,7 @@ export default class Wallet extends Component{
                 {className:'blue-gradient-point1'},
                 {className:'blue-gradient-point2'},
                 {
-                    size:60,className:'colorFFF',
+                    size:60,className:'color-fff',
                     row:[
                         {size:60,html:getSvg('chevronLeft',{flip:true,fill:'#fff'}),align:'vh',attrs:{onClick:()=>onClose()}},
                         {flex:1,html:'مدیریت کیف پول',align:'v'},
@@ -70,12 +70,12 @@ export default class Wallet extends Component{
                     size:72,
                     row:[
                         {flex:1},
-                        {html:'تراز حساب',className:'size12 colorC7E7F4',align:'v'},
+                        {html:'تراز حساب',className:'fs-12 colorC7E7F4',align:'v'},
                         {size:12},
-                        {row:[{html:' بدهکاری',align:'v'},{size:6}],show:userInfo.ballance < 0,className:'colorA4262C size16 bold'},
-                        {html:userInfo.ballance < 0?functions.splitPrice(-userInfo.ballance):functions.splitPrice(userInfo.ballance),className:`colorFFF ${userInfo.ballance < 0?'size16':'size30'} bold`,align:'v'},
+                        {row:[{html:' بدهکاری',align:'v'},{size:6}],show:userInfo.ballance < 0,className:'colorA4262C fs-16 bold'},
+                        {html:userInfo.ballance < 0?functions.splitPrice(-userInfo.ballance):functions.splitPrice(userInfo.ballance),className:`color-fff ${userInfo.ballance < 0?'fs-16':'fs-28'} bold`,align:'v'},
                         {size:6},
-                        {html:'تومان',className:'size14 colorFFF',align:'v'},
+                        {html:'تومان',className:'fs-14 color-fff',align:'v'},
                         {flex:1}
                     ]
                 },
@@ -112,7 +112,7 @@ export default class Wallet extends Component{
                                 {size:6},
                                 {html:icon,align:'h'},
                                 {size:3},
-                                {html:text,align:'h',className:'size14 colorFFF'},
+                                {html:text,align:'h',className:'fs-14 color-fff'},
                                 {size:6}
                             ]
                         }}
@@ -149,7 +149,7 @@ export default class Wallet extends Component{
             size:36,align:'v',
             row:[
                 {flex:1},
-                {html:'از تاریخ : ',className:'size12 color323130',align:'v'},
+                {html:'از تاریخ : ',className:'fs-12 color323130',align:'v'},
                 {size:6},
                 {
                     html:(
@@ -172,7 +172,7 @@ export default class Wallet extends Component{
                     ),align:'v'
                 },
                 {flex:1},
-                // {html:'تا تاریخ : ',className:'size12 color323130',align:'v'},
+                // {html:'تا تاریخ : ',className:'fs-12 color323130',align:'v'},
                 // {size:6},
                 // {
                 //     html:(
@@ -194,7 +194,7 @@ export default class Wallet extends Component{
         if(!items.length){return false}
         return {
             style:{background:'#eee'},
-            flex:1,scroll:'v',gap:1,
+            flex:1,ofy:'auto',gap:1,
             column:items.map((o)=>{
                 return this.card_layout(o)
             })
@@ -209,8 +209,8 @@ export default class Wallet extends Component{
                 {size:12},
                 {
                     column:[
-                        {html:o.title,className:'size14 color323130 bold'},
-                        {html:o.date + ' ' + o._time,className:'size12 colorA19F9D'}
+                        {html:o.title,className:'fs-14 color323130 bold'},
+                        {html:o.date + ' ' + o._time,className:'fs-12 colorA19F9D'}
                     ]
                 },
                 {flex:1},
@@ -218,7 +218,7 @@ export default class Wallet extends Component{
                     column:[
                         {flex:1},
                         {
-                            html:functions.splitPrice(o.amount) + ' تومان',align:'v',className:'size12 color605E5C bold',
+                            html:functions.splitPrice(o.amount) + ' تومان',align:'v',className:'fs-12 color605E5C bold',
                             style:{
                                 background:o.type === 'in'?'#5FD25533':undefined,
                                 color:o.type === 'in'?'#107C10':undefined
@@ -236,7 +236,7 @@ export default class Wallet extends Component{
         if(items.length){return false}
         return {
             style:{background:'#eee',opacity:0.5},
-            flex:1,scroll:'v',gap:1,align:'vh',
+            flex:1,ofy:'auto',gap:1,align:'vh',
             column:[
                 {html:<img src={noItemSrc} alt='' width='128' height='128'/>},
                 {html:'سابقه ای موجود نیست',style:{color:'#858a95'}},
@@ -299,7 +299,7 @@ class BardashtPopup extends Component{
                 onChange={(model)=>this.setState({model})}
                 header={{title:'برداشت از کیف پول',style:{background:'#fff'}}}
                 inputs={[
-                    {type:'html',html:()=><span className="size12 bold" style={{height:36}}>مبلغ انتخابی حداکثر تا # ساعت به حساب شما واریز میشود</span>},
+                    {type:'html',html:()=><span className="fs-12 bold" style={{height:36}}>مبلغ انتخابی حداکثر تا # ساعت به حساب شما واریز میشود</span>},
                     {type:'select',options:cards,optionValue:'option.id',optionSubtext:'option.name',optionText:'option.number',field:'model.card',label:'انتخاب کارت'},
                     {type:'number',field:'model.amount',affix:'ریال',label:'مبلغ برداشت',validations:[['required'],['<=',mojoodi]]},
                     {
@@ -309,8 +309,8 @@ class BardashtPopup extends Component{
                                 layout={{
                                     style:{height:48,flex:'none'},gap:6,
                                     row:[
-                                        {html:'موجودی:',className:'size14 color605E5C bold',align:'v'},
-                                        {html:`${functions.splitPrice(mojoodi)} ریال`,className:'size14 color3B55A5 bold',align:'v'},
+                                        {html:'موجودی:',className:'fs-14 color605E5C bold',align:'v'},
+                                        {html:`${functions.splitPrice(mojoodi)} ریال`,className:'fs-14 color3B55A5 bold',align:'v'},
                                     ]
                                 }}
                             />

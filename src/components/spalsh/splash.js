@@ -18,7 +18,7 @@ export default class Splash extends Component{
                 align:'vh',html:<img src={dotsloading} height='40px' alt=''/>
               },
               {size:24},
-              {html:'چند لحظه صبر کنید',className:'colorFFF size14',align:'vh'},
+              {html:'چند لحظه صبر کنید',className:'color-fff fs-14',align:'vh'},
               {size:48}
             ]
           }}

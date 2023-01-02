@@ -54,7 +54,7 @@ export class OTPLogin extends Component{
         <RVD
           layout={{
             className:'otp-login',
-            scroll: 'v',
+            ofy: 'auto',
             column: [
               { 
                 show:mode === 'inter-phone',align:'h',
@@ -220,7 +220,7 @@ export class OTPLogin extends Component{
       return {
         column:[
           {
-            gap:6,className:'padding-0-12',
+            gap:6,className:'p-h-12',
             row:[
               {flex:1,html:<div className='otp-login-splitter'></div>,align:'v'},
               {html:'یا',align:'v',className:'otp-login-or'},
@@ -234,7 +234,7 @@ export class OTPLogin extends Component{
                 onClick={()=>this.setState({mode:mode === 'otp'?'password':'otp',number:'',password:''})}
               >{mode === 'otp'?'ورود با رمز عبور':'ورود با کد یکبار مصرف'}</button>
             ),
-            className:'padding-0-12',style:{overflow:'visible'}
+            className:'p-h-12',of:'visible'
           }
         ]
       }
@@ -246,7 +246,7 @@ export class OTPLogin extends Component{
             className:'otp-login-form',
             column: [
               {
-                style:{overflow:'visible'},
+                of:'visible',
                 column: [
                   this.title_layout(),
                   {size:12},

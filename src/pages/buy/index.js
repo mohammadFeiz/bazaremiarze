@@ -87,7 +87,7 @@ export default class Buy extends Component {
   }
   tab1(){
     return {
-      flex: 1,scroll: "v",gap: 12,
+      flex: 1,ofy: "auto",
       column: [
         this.billboard_layout(),
         //this.families(),
@@ -99,13 +99,13 @@ export default class Buy extends Component {
     let {openPopup} = this.context;
     let {categories = []} = this.state;
     return {
-      flex: 1,className:'padding-12',scroll:'v',gap: 24,
+      flex: 1,className:'p-12',ofy:'auto',gap: 24,
       column:categories.map((o)=>{
         return {
           attrs:{onClick:()=>openPopup('category',{name:o.name,category:{products:o.products,name:o.name}})},
           column:[
             {size:200,html:<img src={o.src} alt='' height='100%'/>,align:'vh'},
-            {size:36,align:'vh',html:o.name,className:'color323130 size16 bold'}
+            {size:36,align:'vh',html:o.name,className:'color323130 fs-16 bold'}
           ] 
         }
       })
@@ -119,9 +119,9 @@ export default class Buy extends Component {
     return {
       className: "box gap-no-color",style: { padding: 12 },show: families.length !== 0,
       column: [
-        {html: "محبوب ترین خانواده ها",className: "size14 color323130 bold",size: 36,align: "v"},
+        {html: "محبوب ترین خانواده ها",className: "fs-14 color323130 bold",size: 36,align: "v"},
         {
-          gap: 16,scroll:'h',
+          gap: 16,ofx:'auto',
           row: families.map((o) => {
             return {html:<FamilyCard title={o.name} src={o.src} id={o.id}/>}
           }),
@@ -133,13 +133,14 @@ export default class Buy extends Component {
     let {openPopup} = this.context;
     let sliders = [['newOrders','جدید ترین محصولات'],['bestSellings','پر فروش ترین محصولات'],['recommendeds','پیشنهاد سفارش']]
     return {
-      gap:12,className:'margin-0-12',
-      style:{overflow:'visible'},
+      className:'m-h-12',
+      of:'visible',
       column:sliders.map(([key,name])=>{
         let products = this.state[key] || [];
         return {
-          style:{overflow:'visible'},
+          of:'visible',
           className:'box gap-no-color',
+          style:{marginBottom:12},
           html:()=>(
             <CategorySlider 
               title={name} products={this.state[key]} 
@@ -156,7 +157,6 @@ export default class Buy extends Component {
         flex: 1,className: "page-bg",style: { width: "100%" },
         column: [
           this.tabs(),
-          {size:12}
         ]
       }}/>
     )

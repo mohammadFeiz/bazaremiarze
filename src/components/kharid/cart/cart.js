@@ -108,7 +108,7 @@ export default class Cart extends Component{
     products_layout(){
       if(this.tab){
         let {cards} = this.tab;
-        return {flex: 1,ofy:'auto',gap:12,column:cards.map((card) => {return {html:card}})}
+        return {flex: 1,className:'ofy-auto',gap:12,column:cards.map((card) => {return {html:card}})}
       }
       return {
         style:{background:'#eee',opacity:0.5},

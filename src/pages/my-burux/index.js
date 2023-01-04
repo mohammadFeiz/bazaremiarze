@@ -42,7 +42,7 @@ export default class MyBurux extends Component{
     }
     parts_layout(){
         let {parts} = this.state;
-        return {className:'m-h-12',of:'visible',html:<Card type='card4' items={parts}/>}
+        return {className:'m-h-12 of-visible',html:<Card type='card4' items={parts}/>}
     }
     getContent(){
         let {totalGuaranteeItems,userInfo,openPopup,showGaranti} = this.context;
@@ -56,14 +56,14 @@ export default class MyBurux extends Component{
             slpcode = 'تایین نشده';
         }
         return {
-            ofy:'auto',flex:1,className:'page-bg',
+            flex:1,className:'page-bg ofy-auto',
             column:[
                 {
                     className:'my-burux-header',
                     html:headerSvg()
                 },
                 {
-                    size:100,of:'visible',
+                    size:100,className:'of-visible',
                     html:(
                         <div style={{background:'rgba(255,255,255,0.4)',boxShadow:'rgb(0 0 0 / 25%) 0px 4px 12px 1px',color:'#ccc',width:132,height:132,left:'calc(50% - 66px)',position:'absolute',top:-32,borderRadius:'100%',display:'flex',alignItems:'center',justifyContent:'center'}}>
                             <Icon path={mdiAccountCircle} size={6}/>
@@ -80,7 +80,7 @@ export default class MyBurux extends Component{
                 },
                 {size:6},
                 {
-                    className:'m-h-12',of:'visible',            
+                    className:'m-h-12 of-visible',            
                     html:(
                         <Card
                             type='card3' footer='مشاهده و ویرایش اطلاعات کاربری'
@@ -104,11 +104,10 @@ export default class MyBurux extends Component{
                 },
                 {size:16},
                 {
-                    of:'visible',className:'m-h-12',
-                    gap:12,
+                    className:'m-h-12 of-visible',gap:12,
                     row:[
                         {
-                            flex:1,of:'visible', 
+                            flex:1,className:'of-visible', 
                             html:(
                                 <Card
                                     type='card3' footer='جزییات کیف پول'
@@ -118,7 +117,7 @@ export default class MyBurux extends Component{
                             )
                         },
                         {
-                            flex:1,of:'visible',show:showGaranti !== false,          
+                            flex:1,className:'of-visible',show:showGaranti !== false,          
                             html:()=>(
                                 <Card
                                     type='card3'

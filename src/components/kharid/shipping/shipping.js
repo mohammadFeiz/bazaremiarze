@@ -172,7 +172,7 @@ export default class Shipping extends Component{
       return {
         column:[
           {size:36,align:'v',className:'color605E5C fs-14 bold p-h-12',html:'محصولات'},
-          {of:'visible',column:cards.map((card)=>{return {html:card,of:'visible'}})},
+          {className:'of-visible',column:cards.map((card)=>{return {html:card,className:'of-visible'}})},
           {size:12}
         ]
       }
@@ -265,7 +265,7 @@ export default class Shipping extends Component{
             flex:1,
             column:[
               {
-                flex:1,ofy:'auto',
+                flex:1,className:'ofy-auto',
                 column:[
                   {size:12},
                   this.details_layout(),

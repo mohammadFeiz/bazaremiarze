@@ -104,9 +104,7 @@ export default class Product extends Component {
         let { name, optionTypes, details, srcs } = product;
         let { srcIndex,selectedVariant } = this.state;
         return {
-            flex: 1,
-            ofy: "auto",
-            gap: 12,
+            flex: 1,className: "ofy-auto",gap: 12,
             column: [
                 this.image_layout(name, selectedVariant.code, srcs[srcIndex]),
                 this.options_layout(),

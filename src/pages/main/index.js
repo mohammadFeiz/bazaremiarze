@@ -99,7 +99,6 @@ export default class Main extends Component {
       messages:[],
       campaigns:[],
       testedChance: true,
-      userInfo:props.userInfo,
       updateUserInfo:props.updateUserInfo,
       updatePassword:props.updatePassword,
       allProducts:[],
@@ -211,16 +210,19 @@ export default class Main extends Component {
     //this.setState({message:this.state.messages.concat(message)});
   }
   async componentDidMount() {
-    let {userInfo,bazargah,kharidApis} = this.state;
-    this.getGuaranteeItems();
-    this.getCampaignsData();
+    let {bazargah,kharidApis,showGaranti} = this.state;
+    let {userInfo} = this.props;
+    if(showGaranti){
+      this.getGuaranteeItems();
+      this.getCampaignsData();
+    }
     if(bazargah.active){this.getBazargahOrders();}
     //let testedChance = await gardooneApis({type:"get_tested_chance"});
     let pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode,12 * 60 * 60 * 1000)
     pricing.startservice().then((value) => { return value; });
     let getFactorDetails = (items,obj = {})=>{
       let {SettleType,PaymentTime,PayDueDate,DeliveryType} = obj;
-      let {userInfo} = this.state;
+      let {userInfo} = this.props;
       let config = {
         "CardCode": userInfo.cardCode,
         "CardGroupCode":userInfo.groupCode,
@@ -238,7 +240,7 @@ export default class Main extends Component {
       return res
     }
     let fixPrice = (items,campaign = {})=>{
-      let {userInfo} = this.state;
+      let {userInfo} = this.props;
       let data = {
         "CardGroupCode": userInfo.groupCode,
         "CardCode": userInfo.cardCode,
@@ -393,15 +395,16 @@ export default class Main extends Component {
     return <marquee behavior='scroll' scrollamount={3} direction='right'>{str}</marquee> 
   }
   render() {
+    let {userInfo,logout} = this.props;
     let context = {
       ...this.state,
+      userInfo,
       openPopup:this.openPopup.bind(this),
       changeCart:this.changeCart.bind(this),
       getCartCountByVariantId:this.getCartCountByVariantId.bind(this),
       logout: this.props.logout,
       baseUrl:this.props.baseUrl
     };
-    let {userInfo,logout} = this.props;
     return (
       <appContext.Provider value={context}>
         <RSA

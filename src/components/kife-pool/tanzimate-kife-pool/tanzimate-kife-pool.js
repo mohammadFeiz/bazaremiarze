@@ -47,11 +47,9 @@ export default class TanzimateKifePool extends Component{
                     ]
                 },
                 {
-                    gap:12,flex:1,
-                    className:'p-h-12',
-                    ofy:'auto',
+                    gap:12,flex:1,className:'p-h-12 ofy-auto',
                     column:cards.map((card,i)=>{
-                        return {of:'visible',style:{width:'100%'},align:'h',html:<CreaditCard index={i} {...card} onRemove={(id)=>this.removeCard(id)}/>}
+                        return {className:'of-visible',style:{width:'100%'},align:'h',html:<CreaditCard index={i} {...card} onRemove={(id)=>this.removeCard(id)}/>}
                     })
                 }
             ]

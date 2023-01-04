@@ -99,16 +99,16 @@ export default class JoziateDarkhastHayeGaranti extends Component{
                     column:[
                         {size:12},
                         {
-                            show:guaranteeItems.length !== 0,of:'visible',
+                            show:guaranteeItems.length !== 0,className:'of-visible',
                             row:[
                                 {
-                                    of:'visible',
+                                    className:'of-visible',
                                     flex:1,html:<SearchBox placeholder='جستجوی شماره درخواست' value={searchValue} onChange={(searchValue)=>{
                                         this.setState({searchValue})
                                     }}/>
                                 },
                                 {
-                                    align:'vh',of:'visible',
+                                    align:'vh',className:'of-visible',
                                     html:(
                                         <AIOButton
                                             text={sortValue === false?<Icon path={mdiSort} size={0.8}/>:undefined}
@@ -127,7 +127,7 @@ export default class JoziateDarkhastHayeGaranti extends Component{
                         },
                         {size:12},
                         {
-                            flex:1,ofy:'auto',gap:12,show:guaranteeItems.length !== 0,
+                            flex:1,className:'ofy-auto',gap:12,show:guaranteeItems.length !== 0,
                             column:[
                                 {
                                     gap:2,column:guaranteeItems.filter(({Details})=>{
@@ -148,7 +148,7 @@ export default class JoziateDarkhastHayeGaranti extends Component{
                         {
                             show:guaranteeItems.length === 0,
                             style:{background:'#eee',opacity:0.5},
-                            flex:1,ofy:'auto',gap:1,align:'vh',
+                            flex:1,className:'ofy-auto',gap:1,align:'vh',
                             column:[
                                 {html:<img src={noItemSrc} alt='' width='128' height='128'/>},
                                 {html:'سابقه ای موجود نیست',style:{color:'#858a95'}},

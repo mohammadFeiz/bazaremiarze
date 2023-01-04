@@ -106,10 +106,10 @@ export default class OrderPopup extends Component {
       let {details = {}} = this.state;
       let {products = []} = details;
       return {
-        gap: 2,className:'m-h-12',of:'visible',
+        gap: 2,className:'m-h-12 of-visible',
         column: products.map((o, i) => {
           return {
-            of:'visible',
+            className:'of-visible',
             html:(
               <ProductCard {...o} index={i}
                 isFirst={i === 0} isLast={i === products.length - 1}
@@ -127,7 +127,7 @@ export default class OrderPopup extends Component {
             column: [
               {size:12},
               {
-                flex: 1,ofy: "auto",gap: 12,
+                flex: 1,className: "ofy-auto",gap: 12,
                 column: [
                   this.details_layout(),
                   this.products_layout(),

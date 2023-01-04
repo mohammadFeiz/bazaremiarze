@@ -47,7 +47,7 @@ export default class Register extends Component{
     header_layout(){
         let {mode} = this.props;
         return {
-            className:'box-shadow',size:60,of:'visible',style:{marginBottom:12,background:'#fff'},
+            className:'box-shadow of-visible',size:60,style:{marginBottom:12,background:'#fff'},
             row:[
                 {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>this.onClose()}},
                 {flex:1,html:mode === 'edit'?'ویرایش اطلاعات کاربری':'ثبت نام',className:'fs-16 color605E5C',align:'v'}
@@ -100,7 +100,7 @@ export default class Register extends Component{
         let {model} = this.state;
         let {mode} = this.props;
         return {
-            of:'visible',
+            className:'of-visible',
             html:(
                 <Form
                     lang={'fa'}
@@ -185,7 +185,7 @@ export default class Register extends Component{
                             this.header_layout(),
                             {size:12},
                             {
-                                ofy:'auto',flex:1,
+                                className:'ofy-auto',flex:1,
                                 column:[
                                     this.logo_layout(),
                                     this.text_layout(),
@@ -235,7 +235,7 @@ class ShowMap extends Component{
     header_layout(){
         let {onClose} = this.props;
         return {
-            of:'visible',className:'box-shadow',size:60,style:{marginBottom:12,background:'#fff'},
+            className:'box-shadow of-visible',size:60,style:{marginBottom:12,background:'#fff'},
             row:[
                 {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>onClose()}},
                 {flex:1,html:'انتخاب موقعیت فروشگاه',className:'fs-16 color605E5C',align:'v'}
@@ -260,7 +260,7 @@ class ShowMap extends Component{
         let {latitude,longitude} = this.state;
         return {
             size:72,style:{position:'absolute',bottom:12,left:12,width:'calc(100% - 24px)',zIndex:100000000000},
-            of:'visible',className:'box-shadow',align:'vh',
+            className:'box-shadow of-visible',align:'vh',
             column:[
                 {html:`latitude:${latitude.toFixed(6)} - Lonitude:${longitude.toFixed(6)}`,style:{width:'100%',background:'rgba(255,255,255,.8)',fontSize:12,borderRadius:5},align:'h',className:'color3B55A5'},
                 {size:6},

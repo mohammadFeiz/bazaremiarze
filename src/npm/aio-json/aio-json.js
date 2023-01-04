@@ -413,9 +413,9 @@ export default class AIOJson extends Component {
             this.getHeader(mode),
             {
               flex:1,show:mode === 'builder',attrs:{style:{padding:12}},
-              html:<RVD layout={{attrs:{style:{fontSize}},ofy:'auto',column}}/>
+              html:<RVD layout={{style:{fontSize},className:'ofy-auto',column}}/>
             },
-            {show:mode === 'preview',flex:1,ofy:'auto',html:<pre>{generated}</pre>,style:{padding:12}}
+            {show:mode === 'preview',flex:1,className:'ofy-auto',html:<pre>{generated}</pre>,style:{padding:12}}
           ]
         }}
       />

@@ -1,6 +1,10 @@
 import React,{Component,Fragment} from "react";
 import $ from 'jquery';
 import "./index.css";
+let RVDCLS = {
+  rvd:'rvd',pointer:'rvd-pointer',gap:'rvd-gap',justify:'rvd-justify',align:'rvd-align',
+  row:'rvd-row',column:'rvd-column',hidexs:'rvd-hide-xs',hidesm:'rvd-hide-sm',hidemd:'rvd-hide-md',hidelg:'rvd-hide-lg'
+}
 export default class ReactVirtualDom extends Component {
   touch = 'ontouchstart' in document.documentElement;
   eventHandler(event, action,type = 'bind'){
@@ -8,39 +12,38 @@ export default class ReactVirtualDom extends Component {
     $(window).unbind(event, action);
     if(type === 'bind'){$(window).bind(event, action)}
   }
-  getClassName(obj,align,ofx,ofy,of,Attrs,attrs,Props,pointer,padding){
-    let className = 'rvd';
-    let gapClassName = 'rvd-gap';
+  getClassName(obj,align,Attrs,attrs,Props,pointer){
+    let {rtl} = this.props;
+    let className = RVDCLS.rvd;
+    className += rtl?' rvd-rtl':' rvd-ltr';
+    let gapClassName = RVDCLS.gap;
     if(obj.gapAttrs && obj.gapAttrs.className){
       gapClassName += ' ' + obj.gapAttrs.className
     }
-    if(pointer){ className += ' rvd-pointer';}
+    if(pointer){ className += ' ' + RVDCLS.pointer;}
     if(Attrs.className){ className += ' ' + Attrs.className}
     if(attrs.className){ className += ' ' + attrs.className}
     if(obj.className){ className += ' ' + obj.className}
-    if(align === 'v'){className += obj.column?' rvd-justify':' rvd-align';}
-    else if(align === 'h'){className += obj.column?' rvd-align':' rvd-justify';}
-    else if(align === 'vh'){className += ' rvd-justify rvd-align';}
-    if(ofx){className += (' rvd-ofx-' + ofx)}
-    if(ofy){className += (' rvd-ofy-' + ofy)}
-    if(of){className += (' rvd-of-' + of)}
-    if(obj.row){className += ' rvd-row'}
-    else if(obj.column){className += ' rvd-column'}
+    if(align === 'v'){className += ' ' + (obj.column?RVDCLS.justify:RVDCLS.align);}
+    else if(align === 'h'){className += ' ' + (obj.column?RVDCLS.align:RVDCLS.justify);}
+    else if(align === 'vh'){className += ` ${RVDCLS.justify} ${RVDCLS.align}`;}
+    if(obj.row){className += ' ' + RVDCLS.row}
+    else if(obj.column){className += ' ' + RVDCLS.column}
     if(obj.hide_xs || Props.hide_xs){
-      className += ' r-layout-hide-xs';
-      gapClassName += ' r-layout-hide-xs';
+      className += ' ' + RVDCLS.hidexs;
+      gapClassName += ' ' + RVDCLS.hidexs;
     }
     if(obj.hide_sm || Props.hide_sm){
-      className += ' r-layout-hide-sm';
-      gapClassName += ' r-layout-hide-sm';
+      className += ' ' + RVDCLS.hidesm;
+      gapClassName += ' ' + RVDCLS.hidesm;
     }
     if(obj.hide_md || Props.hide_md){
-      className += ' r-layout-hide-md';
-      gapClassName += ' r-layout-hide-md';
+      className += ' ' + RVDCLS.hidemd;
+      gapClassName += ' ' + RVDCLS.hidemd;
     }
     if(obj.hide_lg || Props.hide_lg){
-      className += ' r-layout-hide-lg';
-      gapClassName += ' r-layout-hide-lg';
+      className += ' ' + RVDCLS.hidelg;
+      gapClassName += ' ' + RVDCLS.hidelg;
     }
     return {className,gapClassName};
   }
@@ -52,10 +55,6 @@ export default class ReactVirtualDom extends Component {
     let size = obj.size || Props.size;
     let flex = obj.flex || Props.flex;
     let align = obj.align || Props.align;
-    let ofx = obj.ofx || Props.ofx;
-    let ofy = obj.ofy || Props.ofy;
-    let of = obj.of || Props.of;
-    let padding = obj.padding || Props.padding;
     let onClick = obj.onClick || Props.onClick;
     let pointer = !!Attrs.onClick || !!attrs.onClick || !!onClick;
     let childs = [];
@@ -85,7 +84,7 @@ export default class ReactVirtualDom extends Component {
     if(obj.gapAttrs && obj.gapAttrs.style){
       gapStyle = {...gapStyle,...obj.gapAttrs.style}
     }
-    let {className,gapClassName} = this.getClassName(obj,align,ofx,ofy,of,Attrs,attrs,Props,pointer,padding);
+    let {className,gapClassName} = this.getClassName(obj,align,Attrs,attrs,Props,pointer);
     let gapAttrs = {className:gapClassName,style:gapStyle,draggable:false,onDragStart:(e)=>{e.preventDefault(); return false}};
     if(size && onResize){
       gapAttrs[this.touch?'onTouchStart':'onMouseDown'] = (e)=>{

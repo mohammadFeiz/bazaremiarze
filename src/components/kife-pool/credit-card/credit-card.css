@@ -7,44 +7,19 @@
 }
 .credit-card{
     background:rgba(255,255,255,0.5) !important;
-    border-radius:16px;
     box-shadow: 3px 5px 7px 0px rgb(0 0 0 / 29%);
     max-width:300px;
-    width:100%;
-    transform:rotateX(180deg);
-    height:160px;
     flex:none;
-}
-.credit-card.mounted{
-    transform: rotateX(0deg) !important;
-    transition: 0.9s;
 }
 .credit-card-logo{
     background-size: cover;
-    width:60px;
-    height:60px;
-    margin:0 6px;
-}
-.credit-card-bank-name{
-    font-size:16px;
 }
 .credit-card svg{
     fill:#aaa;
     stroke: #aaa;
 }
-.credit-card-number{
-    height:48px;
-    font-size:14px;
-    display:flex;
-    align-items: center;
-}
 .credit-card-number-split{
     font-family:ocr_a_std;
-    margin:0 6px;
-}
-.credit-card-name{
-    padding:0 24px;
-    margin-bottom:12px;
 }
 .bank-meli{
     background-image:url(./banks-logo/meli.png);

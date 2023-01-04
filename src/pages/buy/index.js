@@ -87,7 +87,7 @@ export default class Buy extends Component {
   }
   tab1(){
     return {
-      flex: 1,ofy: "auto",
+      flex: 1,className: "ofy-auto",
       column: [
         this.billboard_layout(),
         //this.families(),
@@ -99,7 +99,7 @@ export default class Buy extends Component {
     let {openPopup} = this.context;
     let {categories = []} = this.state;
     return {
-      flex: 1,className:'p-12',ofy:'auto',gap: 24,
+      flex: 1,className:'p-12 ofy-auto',gap: 24,
       column:categories.map((o)=>{
         return {
           attrs:{onClick:()=>openPopup('category',{name:o.name,category:{products:o.products,name:o.name}})},
@@ -121,7 +121,7 @@ export default class Buy extends Component {
       column: [
         {html: "محبوب ترین خانواده ها",className: "fs-14 color323130 bold",size: 36,align: "v"},
         {
-          gap: 16,ofx:'auto',
+          gap: 16,className:'ofx-auto',
           row: families.map((o) => {
             return {html:<FamilyCard title={o.name} src={o.src} id={o.id}/>}
           }),
@@ -133,13 +133,11 @@ export default class Buy extends Component {
     let {openPopup} = this.context;
     let sliders = [['newOrders','جدید ترین محصولات'],['bestSellings','پر فروش ترین محصولات'],['recommendeds','پیشنهاد سفارش']]
     return {
-      className:'m-h-12',
-      of:'visible',
+      className:'m-h-12 of-visible',
       column:sliders.map(([key,name])=>{
         let products = this.state[key] || [];
         return {
-          of:'visible',
-          className:'box gap-no-color',
+          className:'box gap-no-color of-visible',
           style:{marginBottom:12},
           html:()=>(
             <CategorySlider 

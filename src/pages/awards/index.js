@@ -268,7 +268,7 @@ class UserAwards extends Component{
               ]
             },
             {
-              flex:1,ofy:'auto',
+              flex:1,className:'ofy-auto',
               column:unusedItems.concat(usedItems).map(({title = '',subtitle = '',used,date,code,remaining})=>{
                 
                 return {

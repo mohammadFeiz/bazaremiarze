@@ -58,7 +58,7 @@ export default class CategorySlider extends Component{
       return (
         <RVD
           layout={{
-            style: { padding: 12 },ofy:'auto',
+            style: { padding: 12 },className:'ofy-auto',
             column: [
               {
                 size:36,

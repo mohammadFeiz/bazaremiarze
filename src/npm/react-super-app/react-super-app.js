@@ -86,7 +86,7 @@ export default class ReactSuperApp extends Component {
       if(!navs.length){return false}
       let {touch,navId} = this.state;
       let props = {navs,navHeader,navId,onChange:(navId)=>this.setState({navId}),touch,rtl}
-      return {of:'visible',html: (<Navigation {...props}/>)};
+      return {className:'of-visible',html: (<Navigation {...props}/>)};
     }
     page_layout(nav){
       let {body = ()=>''} = this.props;
@@ -172,7 +172,7 @@ export default class ReactSuperApp extends Component {
     }
     items_layout(navs,level){
       return {
-        flex:1,ofy:'auto',
+        flex:1,className:'ofy-auto',
         column:navs.filter(({show = ()=>true})=>show()).map((o,i)=>{
           if(o.navs){
             let {openDic} = this.state;
@@ -403,7 +403,7 @@ class Popup extends Component{
     }
     body_layout(){
       let {text} = this.props;
-      return {flex:1,html:text,ofy:'auto',className:'rsa-popup-body'}
+      return {flex:1,html:text,className:'rsa-popup-body ofy-auto'}
     }
     onSubmit(){
       let {onClose,onSubmit} = this.props;

@@ -194,7 +194,7 @@ export default class Wallet extends Component{
         if(!items.length){return false}
         return {
             style:{background:'#eee'},
-            flex:1,ofy:'auto',gap:1,
+            flex:1,className:'ofy-auto',gap:1,
             column:items.map((o)=>{
                 return this.card_layout(o)
             })
@@ -236,7 +236,7 @@ export default class Wallet extends Component{
         if(items.length){return false}
         return {
             style:{background:'#eee',opacity:0.5},
-            flex:1,ofy:'auto',gap:1,align:'vh',
+            flex:1,className:'ofy-auto',gap:1,align:'vh',
             column:[
                 {html:<img src={noItemSrc} alt='' width='128' height='128'/>},
                 {html:'سابقه ای موجود نیست',style:{color:'#858a95'}},

@@ -22,29 +22,29 @@ export default class CreaditCard extends Component{
         return (
             <RVD
                 layout={{
-                    className:'credit-card' + (mounted?' mounted':''),
+                    className:'credit-card rvd-rotate-card w-100 h-168 br-16' + (mounted?' mounted':''),
                     column:[
                         {size:12},
                         {
                             row:[
-                                {className:'credit-card-logo' + (className?' ' + className:'')},
-                                {show:!!bankName,html:'بانک ' + bankName,className:'credit-card-bank-name',align:'v'},
+                                {className:'credit-card-logo w-60 h-60 m-h-6' + (className?' ' + className:'')},
+                                {show:!!bankName,html:'بانک ' + bankName,className:'fs-16',align:'v'},
                                 {flex:1},
                                 {show:!!onRemove,size:60,html:<Icon path={mdiClose} size={1}/>,align:'vh',attrs:{onClick:()=>onRemove(id)}}
                             ]
                         },
                         {
-                            className:'credit-card-number',
+                            className:'h-48 align-v fs-14',
                             row:[
                                 {flex:1},
-                                {html:split1,className:'credit-card-number-split'},
-                                {html:split2,className:'credit-card-number-split'},
-                                {html:split3,className:'credit-card-number-split'},
-                                {html:split4,className:'credit-card-number-split'},
+                                {html:split1,className:'credit-card-number-split m-h-6'},
+                                {html:split2,className:'credit-card-number-split m-h-6'},
+                                {html:split3,className:'credit-card-number-split m-h-6'},
+                                {html:split4,className:'credit-card-number-split m-h-6'},
                                 {flex:1}
                             ]
                         },
-                        {flex:1,html:name,align:'v',className:'credit-card-name'}
+                        {flex:1,html:name,align:'v',className:'p-h-24 m-b-12'}
                     ]
                 }}
             />

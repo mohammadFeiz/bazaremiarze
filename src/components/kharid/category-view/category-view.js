@@ -20,11 +20,11 @@ export default class CategoryView extends Component {
     product_layout(product,index){
         let {searchValue} = this.state;
         if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
-        return {html:<ProductCard index={index} product={product} isFirst={true} isLast={true} type='horizontal' />,of:'visible'}
+        return {html:<ProductCard index={index} product={product} isFirst={true} isLast={true} type='horizontal' />,className:'of-visible'}
     }
     render() {
         let {category} = this.props;
-        let { products} = category;
+        let { products = []} = category;
         return (
             <RVD
                 layout={{

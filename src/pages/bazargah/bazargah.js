@@ -3,11 +3,9 @@ import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import bazargahNoItemSrc from './../../images/bazargah-no-items.png';
 import appContext from '../../app-context';
 import bulbSrc from './../../images/10w-bulb.png';
-import Tabs from '../../components/tabs/tabs';
 import getSvg from '../../utils/getSvg';
 import AIOButton from './../../npm/aio-button/aio-button';
 import AIOButtonInterface from './../../interfaces/aio-button/aio-button';
-
 import AIOContentSlider from './../../npm/aio-content-slider/aio-content-slider';
 import {Icon} from '@mdi/react';
 import Form from './../../interfaces/aio-form-react/aio-form-react';
@@ -60,10 +58,10 @@ export default class Bazargah extends Component{
             }
         }
         return {
-            gap:12,flex:1,ofy:'auto',
+            gap:12,flex:1,className:'ofy-auto',
             column:bazargah.wait_to_get.map((o,i)=>{
                 return {
-                    of:'visible',
+                    className:'of-visible',
                     html:(
                         <BazargahCard key={o.orderId} {...o} 
                             onExpired={()=>{
@@ -124,10 +122,10 @@ export default class Bazargah extends Component{
         if(!wait_to_send){return {size:96,align:'vh',html:'در حال بارگزاری'}}
         if(wait_to_send.length === 0){return {size:96,align:'vh',html:'موردی وجود ندارد'}}
         return {
-            gap:12,flex:1,ofy:'auto',
+            gap:12,flex:1,className:'ofy-auto',
             column:wait_to_send.map((o,i)=>{
                 return {
-                    of:'visible',
+                    className:'of-visible',
                     html:(<BazargahCard key={o.orderId} {...o} onSend={()=>this.openDetails(o)}/>)
                 }
             })
@@ -143,10 +141,10 @@ export default class Bazargah extends Component{
         if(!wait_to_send){return {size:96,align:'vh',html:'در حال بارگزاری'}}
         if(wait_to_send.length === 0){return {size:96,align:'vh',html:'موردی وجود ندارد'}}
         return {
-            gap:12,flex:1,ofy:'auto',
+            gap:12,flex:1,className:'ofy-auto',
             column:wait_to_send.map((o,i)=>{
                 return {
-                    of:'visible',
+                    className:'of-visible',
                     html:(
                         <BazargahCard 
                             {...o} 
@@ -167,9 +165,15 @@ export default class Bazargah extends Component{
         let {activeTabId} = this.state;
         return {
             html:(
-                <Tabs 
-                    tabs={[{title:'اطراف من',flex:1,id:0},{title:'اخذ شده',flex:1,id:1}]}
-                    activeTabId={activeTabId}
+                <AIOButton 
+                    type='tabs' 
+                    options={[
+                        {text:'اطراف من',value:0,badge:bazargah.wait_to_get.length},
+                        {text:'اخذ شده',value:1,badge:bazargah.wait_to_send.length}
+                    ]}  
+                    optionStyle={{flex:1}}
+                    value={activeTabId} 
+                    optionAfter={(option)=><div className='tab-badge'>{option.badge}</div>}
                     onChange={(activeTabId)=>this.setState({activeTabId})}
                 />
             )
@@ -183,13 +187,12 @@ export default class Bazargah extends Component{
             <RVD
                 layout={{
                     style:{flex:'none',width:'100%'},
-                    of:'visible',
+                    className:'of-visible',
                     column:[
                         {
                             size:48,className:'p-h-12',
                             row:[
-                                {html: "بازارگاه",className: "fs-14 color323130 bold p-h-12",size: 48,align: "v"},
-                                {size:6},
+                                {html: "بازارگاه",className: "fs-14 color323130 bold p-h-12",align: "v"},
                                 {html:<div className='my-burux-badge bg3B55A5'>{bazargah.wait_to_get.length}</div>,align:'vh'},
                                 {flex:1},
                                 {html:'مشاهده همه',align:'v',className:'color3B55A5 fs-12 bold',show:!!bazargah.wait_to_get.length,attrs:{onClick:()=>setNavId('bazargah')}}
@@ -431,8 +434,8 @@ class JoziateSefaresheBazargah extends Component{
     }
     header_layout(){
         return {
-            style:{height:60},of:'visible',
-            className:'box-shadow bgFFF',
+            style:{height:60},
+            className:'box-shadow bg-fff of-visible',
             row:[
                 {size:60,html:<Icon path={mdiChevronRight} size={1}/>,align:'vh',attrs:{onClick:()=>this.getInfo('onBack')()}},
                 {html: this.getInfo('title'),className: "fs-16 color605E5C",align:'v'}
@@ -923,7 +926,7 @@ class JoziateSefaresheBazargah extends Component{
                         this.header_layout(),
                         {size:6},
                         {
-                            flex:1,ofy:'auto',gap:6,
+                            flex:1,className:'ofy-auto',gap:6,
                             column:[
                                 this.wizard_layout(),
                                 this.hint_layout(),
@@ -1107,7 +1110,7 @@ class BazargahCard extends Component{
     items_layout(items){
         if(!items){return false}
         return {
-            flex:1,ofx:'auto',gap:12,className:'m-h-12',style:{boxSizing:'border-box',width:'calc(100% - 24px)'},
+            flex:1,gap:12,className:'m-h-12 ofx-auto',style:{boxSizing:'border-box',width:'calc(100% - 24px)'},
             row:items.map((o)=>{
                 return {html:this.item_layout(o)}
             })

@@ -53,8 +53,7 @@ export class OTPLogin extends Component{
       return (
         <RVD
           layout={{
-            className:'otp-login',
-            ofy: 'auto',
+            className:'otp-login ofy-auto',
             column: [
               { 
                 show:mode === 'inter-phone',align:'h',
@@ -234,7 +233,7 @@ export class OTPLogin extends Component{
                 onClick={()=>this.setState({mode:mode === 'otp'?'password':'otp',number:'',password:''})}
               >{mode === 'otp'?'ورود با رمز عبور':'ورود با کد یکبار مصرف'}</button>
             ),
-            className:'p-h-12',of:'visible'
+            className:'p-h-12 of-visible'
           }
         ]
       }
@@ -246,7 +245,7 @@ export class OTPLogin extends Component{
             className:'otp-login-form',
             column: [
               {
-                of:'visible',
+                className:'of-visible',
                 column: [
                   this.title_layout(),
                   {size:12},

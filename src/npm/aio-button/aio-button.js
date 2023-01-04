@@ -2,7 +2,15 @@ import React,{Component,createRef,createContext} from 'react';
 import $ from 'jquery'
 import './index.css';
 let aioButtonContext = createContext();
-
+let ABCLS = {
+  button:'aio-button',radio:'aio-button-radio',tabs:'aio-button-tabs',option:'aio-button-option',options:'aio-button-options',
+  tags:'aio-button-tags',tag:'aio-button-tag',tagIcon:'aio-button-tag-icon',tagText:'aio-button-tag-text',
+  open:'aio-button-open',radioOption:'aio-button-radio-option',tabsOption:'aio-button-tabs-option',
+  checkbox:'aio-button-checkbox',text:'aio-button-text',hasSubtext:'aio-button-has-subtext',subtext:'aio-button-subtext',
+  gap:'aio-button-gap',caret:'aio-button-caret',badge:'aio-button-badge',search:'aio-button-search',searchIcon:'aio-button-icon',
+  add:'aio-button-add',popup:'aio-button-popup',popupContainer:'aio-button-popup-container',multiselect:'aio-button-multiselect',
+  checkOut:'aio-button-check-out',checkIn:'aio-button-check-in',splitter:'aio-button-splitter'
+}
 class Radio extends Component {
   static contextType = aioButtonContext;
   render(){
@@ -10,7 +18,7 @@ class Radio extends Component {
     var {options = [],attrs = {}} = this.props;
     return (
       <div 
-        {...attrs} className={'aio-button-radio' + (rtl?' rtl':'') + (className?' ' + className:'')} 
+        {...attrs} className={ABCLS.radio + (rtl?' rtl':'') + (className?' ' + className:'')} 
         style={{justifyContent:justify?'center':undefined,...style}}
       >
         {
@@ -30,7 +38,7 @@ class Tabs extends Component {
     var {options = [],attrs = {}} = this.props;
     return (
       <div 
-        {...attrs} className={'aio-button-tabs' + (rtl?' rtl':'') + (className?' ' + className:'')} 
+        {...attrs} className={ABCLS.tabs + (rtl?' rtl':'') + (className?' ' + className:'')} 
         style={{...style}}
       >
         {before !== undefined && before}
@@ -94,8 +102,8 @@ export default class AIOButton extends Component {
     drop(e){
       e.stopPropagation();
       let {onSwap} = this.props,from = this.dragIndex,dom = $(e.target);
-      if(!dom.hasClass('aio-button-option')){dom = dom.parents('.aio-button-option');};
-      if(!dom.hasClass('aio-button-option')){return};
+      if(!dom.hasClass(ABCLS.option)){dom = dom.parents('.' + ABCLS.option);};
+      if(!dom.hasClass(ABCLS.option)){return};
       let to = parseInt(dom.attr('datarealindex'));
       if(from === to){return}
       onSwap(from,to,this.swap)
@@ -114,7 +122,7 @@ export default class AIOButton extends Component {
     
     arrow(e,dom,dir){
       e.preventDefault();
-      let options = dom.find('.aio-button-option')
+      let options = dom.find('.' + ABCLS.option)
       let active = options.filter('.active');
       if(active.length === 0){
         let first = options.eq(0);
@@ -159,7 +167,7 @@ export default class AIOButton extends Component {
       if(this.getProp({option,index:realIndex,field:'close',def:true}) !== false && this.getProp({option,index:realIndex,field:'checked',def:undefined}) === undefined ){this.toggle();}
     }
     onButtonClick(e){
-      if($(e.target).parents('.aio-button-tags').length !== 0){return;}
+      if($(e.target).parents('.' + ABCLS.tags).length !== 0){return;}
       var {options,popOver,onClick = ()=>{}} = this.props;
       if(options || popOver){this.toggle(true);}
       else{onClick(this.props);}
@@ -180,9 +188,9 @@ export default class AIOButton extends Component {
       this.timeOut = setTimeout(()=>{
         if(state === open){return}
         this.setState({open:state});
-        if(state){$('body').addClass('aio-button-open');}
+        if(state){$('body').addClass(ABCLS.open);}
         else{
-          $('body').removeClass('aio-button-open');
+          $('body').removeClass(ABCLS.open);
           setTimeout(()=>$(this.dom.current).focus(),0)
         }
         if(onBackdropClick && isBackdrop){onBackdropClick(this.props)}
@@ -203,7 +211,7 @@ export default class AIOButton extends Component {
         let text = this.getProp({option,index:realIndex,field:'text',def:undefined});
         let checked,tagAttrs,className,before,after,close,tagBefore,active;
         if(type === 'select'){
-          className = 'aio-button-option';
+          className = ABCLS.option;
           checked = this.getProp({option,index:realIndex,field:'checked',def:undefined});
           if(value !== undefined && value === this.props.value && this.text === undefined){this.text = text}
           before = this.getProp({option,index:realIndex,field:'before',def:undefined});
@@ -211,7 +219,7 @@ export default class AIOButton extends Component {
           close = this.getProp({option,index:realIndex,field:'close',def:checked === undefined});
         }
         else if(type === 'multiselect'){
-          className = 'aio-button-option';
+          className = ABCLS.option;
           checked = (this.props.value || []).indexOf(value) !== -1
           tagAttrs = this.getProp({option,index:realIndex,field:'tagAttrs',def:tagAttrs});
           before = this.getProp({option,index:realIndex,field:'before',def:undefined});
@@ -220,7 +228,7 @@ export default class AIOButton extends Component {
           close = this.getProp({option,index:realIndex,field:'close',def:checked === undefined});
         }
         else if(type === 'radio'){
-          className = 'aio-button-radio-option';
+          className = ABCLS.radioOption;
           before = this.getProp({option,index:realIndex,field:'before',def:undefined});
           after = this.getProp({option,index:realIndex,field:'after',def:undefined});
           checked = this.props.value === value;
@@ -228,7 +236,7 @@ export default class AIOButton extends Component {
         }
         else if(type === 'tabs'){
           active = this.props.value === value;
-          className = 'aio-button-tabs-option' + (active?' active':'');
+          className = ABCLS.tabsOption + (active?' active':'');
           before = this.getProp({option,index:realIndex,field:'before',def:undefined});
           after = this.getProp({option,index:realIndex,field:'after',def:undefined});
           close = false;
@@ -299,7 +307,7 @@ export default class AIOButton extends Component {
       
     }
     render(){
-      let {type,popOver,caret,className,style} = this.props;
+      let {type,popOver,caret,style} = this.props;
       let {open,touch} = this.state;
       let context = {
         ...this.props,touch,
@@ -358,7 +366,7 @@ class Checkbox extends Component{
         rtl={rtl}
         text={this.getText()}
         subtext={this.getSubtext()}
-        className={'aio-button-radio-option aio-button-checkbox' + (disabled?' disabled': '') + (className?' ' + className:'')}
+        className={ABCLS.radioOption + ' ' + ABCLS.checkbox + (disabled?' disabled': '') + (className?' ' + className:'')}
         checked={!!value}
         onClick={()=>{if(!disabled){onChange(!!value,this.props)}}}
       />
@@ -372,7 +380,7 @@ class Button extends Component{
     let {dataUniqId,text,subtext,caret,dom} = this.props;
     let props = {
       tabIndex:0,...attrs,style,onClick:onButtonClick,'data-uniq-id':dataUniqId,disabled,ref:dom,
-      className:`aio-button ${rtl?'rtl':'ltr'}${className?' ' + className:''}`,
+      className:`${ABCLS.button} ${rtl?'rtl':'ltr'}${className?' ' + className:''}`,
     }
     return (
       <button {...props}>
@@ -387,16 +395,16 @@ class Button extends Component{
 }
 function Text(props){
   return (
-    <div className={'aio-button-text' + (props.subtext?' aio-button-has-subtext':'')}>
+    <div className={ABCLS.text + (props.subtext?' ' + ABCLS.hasSubtext:'')}>
       {props.text !== undefined && props.text}
-      {props.subtext !== undefined && <div className='aio-button-subtext'>{props.subtext}</div>}  
+      {props.subtext !== undefined && <div className={ABCLS.subtext}>{props.subtext}</div>}  
     </div>
   )
 }
-function Before(props){return <>{props.before}<div className='aio-button-gap' style={{width:props.gap}}></div></>}
+function Before(props){return <>{props.before}<div className={ABCLS.gap} style={{width:props.gap}}></div></>}
 function Caret(props){
   let {attrs = {}} = props
-  let icon = props.caret === true?<div className={'aio-button-caret'} {...attrs}></div>:props.caret;
+  let icon = props.caret === true?<div className={ABCLS.caret} {...attrs}></div>:props.caret;
   return (<><div style={{flex:1}}></div>{icon}</>)
 }
 function After(props){
@@ -408,12 +416,12 @@ function After(props){
     </>
   )
 }
-function Badge({badge,attrs = {}}){return <div {...attrs} className={'aio-button-badge' + (attrs.className?' ' + attrs.className:'')}>{badge}</div>}
+function Badge({badge,attrs = {}}){return <div {...attrs} className={ABCLS.badge + (attrs.className?' ' + attrs.className:'')}>{badge}</div>}
 function SearchBox(props){
   return (
-    <div className='aio-button-search'>
+    <div className={ABCLS.search}>
       <input type='text' value={props.value} placeholder={props.placeholder} onChange={(e)=>props.onChange(e.target.value)}/>
-      <div className={'aio-button-icon'} onClick={()=>{props.onChange('')}}>
+      <div className={ABCLS.searchIcon} onClick={()=>{props.onChange('')}}>
         {
           props.value && 
           <svg viewBox="0 0 24 24" role="presentation" style={{width: '1.2rem',height: '1.2rem'}}><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" style={{fill: 'currentcolor'}}></path></svg>
@@ -430,7 +438,7 @@ function SearchBox(props){
 function AddBox(props){
   if(props.exact){return null}
   return (
-    <div className='aio-button-add' onClick={()=>{props.onClick()}}> 
+    <div className={ABCLS.add} onClick={()=>{props.onClick()}}> 
       {props.placeholder}
     </div>
   )
@@ -458,7 +466,7 @@ class Popup extends Component{
   update(popup){
       let {dataUniqId} = this.props;
       var {rtl,openRelatedTo,animate,popupWidth,popupAttrs = {},popupPosition} = this.context;
-      var button = $(`.aio-button[data-uniq-id = ${dataUniqId}]`);
+      var button = $(`.${ABCLS.button}[data-uniq-id = ${dataUniqId}]`);
       var parent = openRelatedTo?popup.parents(openRelatedTo):undefined;
       parent = Array.isArray(parent) && parent.length === 0?undefined:parent;
       var bodyWidth = window.innerWidth;
@@ -543,7 +551,7 @@ class Popup extends Component{
         {popupHeader && popupHeader}
         {(searchValue !== '' || options.length > 10) && search !== false &&<SearchBox value={searchValue} onChange={(text)=>this.setState({searchValue:text})} placeholder={searchText}/>}
         {onAdd && searchValue && <AddBox value={searchValue} onClick={()=>onAdd(searchValue)} placeholder={addText} options={options} exact={this.exact}/>}
-        <div className='aio-button-options'>{options}</div>
+        <div className={ABCLS.options}>{options}</div>
         {popupFooter && popupFooter}
       </>
     )
@@ -551,7 +559,7 @@ class Popup extends Component{
   getClassName(){
     let {rtl,popupAttrs = {}} = this.context;
     let {className:popupClassName} = popupAttrs;
-    let className = 'aio-button-popup';
+    let className = ABCLS.popup;
     if(rtl){className += ' rtl'}
     if(popupClassName){className += ' ' + popupClassName}
     return className;
@@ -562,7 +570,7 @@ class Popup extends Component{
     var {toggle,popupAttrs = {},keyDown,backColor} = this.context;
     let {dataUniqId} = this.props;
     let props = {
-      className:'aio-button-popup-container',style:{background:backColor},
+      className:ABCLS.popupContainer,style:{background:backColor},
       onClick:(e)=>{
         e.stopPropagation();
         if($(e.target).attr('data-uniq-id') === dataUniqId){return;}
@@ -586,7 +594,7 @@ class Multiselect extends Component{
     let {showTags,style = {}} = this.context;
     let {dataUniqId,tags,text,subtext,caret} = this.props;
     return (
-      <div className='aio-button-multiselect' style={{width:style.width}}>
+      <div className={ABCLS.multiselect} style={{width:style.width}}>
         <Button dataUniqId={dataUniqId} text={text} subtext={subtext} caret={caret}/>
         {showTags !== false && tags.length !== 0 && <Tags tags={tags}/>}
       </div>
@@ -601,7 +609,7 @@ class Tags extends Component{
     let Tags = tags.map((tag,i)=>{
       return <Tag key={i} {...tag} attrs={tag.tagAttrs}/>
     });
-    return (<div className={'aio-button-tags' + (rtl?' rtl':'') + (tcc?' ' + tcc:'')} style={tcs}>{Tags}</div>)
+    return (<div className={ABCLS.tags + (rtl?' rtl':'') + (tcc?' ' + tcc:'')} style={tcs}>{Tags}</div>)
   }
 }
 function Tag(props){
@@ -613,10 +621,10 @@ function Tag(props){
       </svg>
     )} = props;
   return (
-    <div className={'aio-button-tag' + (attrs.className?' ' + attrs.className:'') + (disabled?' disabled':'')} onClick={onClick} style={attrs.style}>
-      <div className='aio-button-tag-icon'>{tagBefore}</div>
-      <div className='aio-button-tag-text'>{text}</div>
-      <div className='aio-button-tag-icon'>
+    <div className={ABCLS.tag + (attrs.className?' ' + attrs.className:'') + (disabled?' disabled':'')} onClick={onClick} style={attrs.style}>
+      <div className={ABCLS.tagIcon}>{tagBefore}</div>
+      <div className={ABCLS.tagText}>{text}</div>
+      <div className={ABCLS.tagIcon}>
         <svg viewBox="0 0 24 24" role="presentation" style={{width:'0.9rem'}}>
           <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" style={{fill: 'currentcolor'}}></path>
         </svg>
@@ -632,7 +640,7 @@ function CheckIcon(props){
     return (
       <>
         {checkIcon[checked?1:0]}
-        <div className='aio-button-gap' style={{width:gap}}></div>
+        <div className={ABCLS.gap} style={{width:gap}}></div>
       </>
     )
   }
@@ -646,12 +654,12 @@ function CheckIcon(props){
   return (
     <>
     <div 
-      className={'aio-button-check-out' + (checked?' checked':'') + (round?' round':'')} 
+      className={ABCLS.checkOut + (checked?' checked':'') + (round?' round':'')} 
       style={{color:iconColor[0],width:iconSize[0],height:iconSize[0],border:`${iconSize[2]}px solid`}}
     >
-      {checked && <div className={'aio-button-check-in' + (round?' round':'')} style={{background:iconColor[1],width:iconSize[1],height:iconSize[1]}}></div>}
+      {checked && <div className={ABCLS.checkIn + (round?' round':'')} style={{background:iconColor[1],width:iconSize[1],height:iconSize[1]}}></div>}
     </div>
-    <div className='aio-button-gap' style={{width:gap}}></div>
+    <div className={ABCLS.gap} style={{width:gap}}></div>
     </>
   );
 }
@@ -668,7 +676,7 @@ class Option extends Component{
     }
     return (
       <>
-          {option && option.splitter &&<div className={'aio-button-splitter ' + (rtl?'rtl':'ltr')}>{option.splitter}</div>}
+          {option && option.splitter &&<div className={ABCLS.splitter + (rtl?' rtl':' ltr')}>{option.splitter}</div>}
           <div {...props}>
             <CheckIcon {...checkIconProps}/>
             {before && <Before before={before} gap={gap}/>}

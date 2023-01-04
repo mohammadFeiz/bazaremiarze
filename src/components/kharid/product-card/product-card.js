@@ -4,7 +4,6 @@ import ProductCount from './../product-count/product-count';
 import NoSrc from './../../../images/no-src.png';
 import appContext from './../../../app-context';
 import AIOButton from './../../../interfaces/aio-button/aio-button';
-import './product-card.css';
 //props
 //1 - product {name = '',variants = [{id}],price = 0,discountPrice = 0,discountPercent = 0,inStock = false,srcs = ['...']}
 //3 - details = [[title = '',value = '']]
@@ -152,9 +151,8 @@ export default class ProductCard extends Component{
         return (
             <RVD
                 layout={{
-                    className:'box gap-no-color m-h-12 product-card-horizontal' + (mounted?' mounted':''),
+                    className:'box gap-no-color m-h-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
                     attrs:{onClick:()=>this.onClick()},
-                    of:'visible',
                     style:{
                         padding:6,height:130,
                         borderBottomLeftRadius:!isLast?0:undefined,
@@ -193,7 +191,7 @@ export default class ProductCard extends Component{
         return (
             <RVD
                 layout={{
-                    style:{...style},of:'visible',className:'bg-fff border-eee w-168 h-288 fs-14 br-12',
+                    style:{...style},className:'bg-fff border-eee of-visible w-168 h-288 fs-14 br-12',
                     attrs:{onClick:()=>this.onClick()},
                     column:[
                         {size:140,align:'vh',html:<img src={srcs[0] || NoSrc} width={'100%'} style={{width:'calc(100% - 24px)',height:'100%',borderRadius:8}} alt=''/>,style:{padding:6,paddingBottom:0}},

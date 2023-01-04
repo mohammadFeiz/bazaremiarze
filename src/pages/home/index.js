@@ -57,11 +57,10 @@ export default class Home extends Component {
     cartAndWallet_layout(){
         let {userInfo,cart,openPopup} = this.context;
         return {
-            of:'visible',
-            className:'p-h-12',
+            className:'p-h-12 of-visible',
             row: [
                 {
-                    of:'visible',flex:1,
+                    className:'of-visible',flex:1,
                     html:(
                         <Card
                             type='card1' title='کیف پول' value={functions.splitPrice(Math.max(userInfo.ballance,0))} unit='ریال'
@@ -71,7 +70,7 @@ export default class Home extends Component {
                 },
                 {size:12},
                 {
-                    of:'visible',flex:1,
+                    className:'of-visible',flex:1,
                     html:(
                         <Card
                             type='card1' title='سبد خرید' value={Object.keys(cart).length} unit='کالا'
@@ -87,14 +86,14 @@ export default class Home extends Component {
         let {preOrders} = this.state;
         if(!preOrders){return false}
         return {
-            className:'p-h-12',of:'visible',
+            className:'p-h-12 of-visible',
             column:[
                 //{html: "پیش سفارشات",className: "fs-14 color323130 bold p-h-12",size: 48,align: "v"},
                 {
-                    size:72,of:'visible',
+                    size:72,className:'of-visible',
                     row: [
                         {
-                            flex:1,of:'visible',
+                            flex:1,className:'of-visible',
                             html:(
                                 <Card
                                     type='card2' icon={getSvg('paperRocket')} title='پیگیری سفارشات'
@@ -111,8 +110,7 @@ export default class Home extends Component {
         let {guaranteeItems = [],openPopup,showGaranti} = this.context;
         if(showGaranti === false){return false}
         return {
-            className:'p-h-12 m-t-12',
-            of:'visible',
+            className:'p-h-12 m-t-12 of-visible',
             column:[
                 {
                     className:'p-h-12',size:48,style:{borderRadius:guaranteeItems.length > 0 ?'14px 14px 0 0':'14px'},
@@ -195,7 +193,7 @@ export default class Home extends Component {
         }
     }
     bazargah_layout(){
-        return {of:'visible',html:<Bazargah renderInHome={true}/>}
+        return {className:'of-visible',html:<Bazargah renderInHome={true}/>}
     }
     getContent() {
         let {testedChance} = this.state;
@@ -204,7 +202,7 @@ export default class Home extends Component {
             className:'page-bg',style:{width:'100%'},
             column: [
                 {
-                    flex:1,ofy:'auto',
+                    flex:1,className:'ofy-auto',
                     column: [
                         this.billboard_layout(),
                         this.cartAndWallet_layout(),

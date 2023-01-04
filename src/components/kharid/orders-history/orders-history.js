@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import RVD from "./../../../interfaces/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
 import AIOButton from './../../../interfaces/aio-button/aio-button';
-import './index.css';
 export default class OrdersHistory extends Component {
     static contextType = appContext;
     constructor(props) {
@@ -44,12 +43,12 @@ export default class OrdersHistory extends Component {
       }
       let column = orders.map((o,i)=>this.order_layout(o,i))
       column.push({size:300})
-      return {flex: 1,gap: 12,ofy:'auto',column}
+      return {flex: 1,gap: 12,className:'ofy-auto',column}
     }
     order_layout(order,index){
       let {openPopup} = this.context;
       return {
-        of:'visible',
+        className:'of-visible',
         html:<OrderCard order={order} index={index}/>,
         attrs:{onClick:()=>openPopup('joziate-sefareshe-kharid',order)}
       }
@@ -115,7 +114,7 @@ export default class OrdersHistory extends Component {
       return (
         <RVD
           layout={{
-            className: "box gap-no-color order-card" + (mounted?' mounted':''),
+            className: "box gap-no-color m-h-12 p-12 rvd-rotate-card" + (mounted?' mounted':''),
             column: [this.header_layout(),this.footer_layout(),],
           }}
         />

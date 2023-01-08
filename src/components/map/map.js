@@ -1,11 +1,14 @@
-import React, { Component,useEffect, useRef } from "react";
+import React, { Component,useEffect, useRef,useState } from "react";
 import "./index.css";
 
 export default class Map extends Component{
     constructor(props){
         super(props);
-        let {latitude,longitude} = props;
-        this.state = {latitude,longitude}
+        let {latitude,longitude,getGoTo = ()=>{}} = props;
+        getGoTo((lat,lng)=>{
+          this.goTo(lat,lng)
+        })
+        this.state = {latitude,prevLat:latitude,longitude,prevLong:longitude}
     }
     setCoords({latitude,longitude}){
         clearTimeout(this.timeout);
@@ -16,10 +19,14 @@ export default class Map extends Component{
             this.setState({latitude,longitude})
         },500);   
     }
+    goTo(lat,lng){
+      this.map.flyTo([lat, lng], 18);
+      this.setState({latitude:lat,longotude:lng})
+    }
     render(){
         let {
             changeView,zoom = 12,onClick,style,
-            key = 'web.3b7ae71ad0f4482e84b0f8c47e762b5b',
+            key = 'web.3037ddd42c9e4173af6427782584a2a1',
             onChange
         } = this.props;
         let {latitude,longitude} = this.state;
@@ -30,13 +37,17 @@ export default class Map extends Component{
                     center: [latitude, longitude],
                     maptype:'standard-day',
                     dragging:changeView !== false,
+                    scrollWheelZoom: 'center',
                     zoomControl:changeView !== false,
                     minZoom:changeView === false?zoom:undefined,
                     maxZoom:changeView === false?zoom:undefined,
                 }}
-                
+                onZoom={()=>{
+                  console.log('msf')
+                }}
                 onInit={(L, myMap) => {
-                    let marker = L.marker([latitude, longitude])
+                    this.map = myMap;
+                    this.marker = L.marker([latitude, longitude])
                     .addTo(myMap)
                     .bindPopup('I am a popup.');
                     if(onClick){
@@ -46,7 +57,7 @@ export default class Map extends Component{
                         myMap.on('move', (e) => {
                             //marker.setLatLng(e.target.getCenter())
                             let {lat,lng} = e.target.getCenter()
-                            marker.setLatLng({lat,lng})
+                            this.marker.setLatLng({lat,lng})
                             this.setCoords({latitude:lat,longitude:lng})
                         });
                     }
@@ -90,6 +101,7 @@ function NeshanLoader (props){
 const NeshanMap = (props) => {
   const { style, options, onInit } = props;
   const mapEl = useRef(null);
+  const [init,setInit] = useState(false)
 
   const defaultStyle = {
     width: "600px",
@@ -109,6 +121,8 @@ const NeshanMap = (props) => {
   };
 
   useEffect(() => {
+    if(init){return}
+    setInit(true)
     NeshanLoader({
       onLoad: () => {
         let map = new window.L.Map(mapEl.current, { ...defaultOptions, ...options });

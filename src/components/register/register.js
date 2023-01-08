@@ -28,7 +28,7 @@ export default class Register extends Component{
         this.state = {
             prevProvince:userProvince,
             model:{latitude,cardCode,longitude,firstName,lastName,phoneNumber,storeName,address,userProvince,userCity,landline,password,re_password:password},
-            showMap:false,
+            showMap:true,
             loading:false,
         }
     }
@@ -230,7 +230,7 @@ class ShowMap extends Component{
     constructor(props){
         super(props);
         let {latitude = 35.699739,longitude = 51.338097} = props;
-        this.state = {latitude,longitude};
+        this.state = {latitude,longitude,showSearch:false,searchValue:''};
     }
     header_layout(){
         let {onClose} = this.props;
@@ -243,16 +243,31 @@ class ShowMap extends Component{
         }
     }
     map_layout(){
-        let {latitude,longitude} = this.state;
+        let {latitude,longitude,searchValue} = this.state;
+        let {search = true} = this.props;
         return {
             flex:1,
             html:(
-                <Map
-                    latitude={latitude} longitude={longitude} style={{width:'100%',height:'100%'}}
-                    onChange={(latitude,longitude)=>this.setState({latitude,longitude})}
-                />
-            ),
-            
+                <>
+                    <Map
+                        latitude={latitude} longitude={longitude} style={{width:'100%',height:'100%',position:'absolute'}}
+                        onChange={(latitude,longitude)=>this.setState({latitude,longitude})}
+                        getGoTo={(fn)=>this.goTo = fn}
+                    />
+                    {
+                        search && 
+                        <input 
+                            onClick={()=>this.setState({showSearch:true})}
+                            defaultValue={searchValue}
+                            style={{
+                                zIndex:1000,position:'absolute',left:12,top:12,width:'calc(100% - 24px)',padding:12,height:36,
+                                boxSizing:'border-box',border:'1px solid #ddd',borderRadius:4,fontFamily:'inherit'
+                            }} 
+                            type='text' placeholder='جستجو'
+                        />
+                    }
+                </>
+            )
         }
     }
     footer_layout(){
@@ -269,11 +284,123 @@ class ShowMap extends Component{
         }
     }
     render(){
+        let {showSearch,latitude,longitude,searchValue} = this.state;
+        return (
+            <>
+                <RVD
+                    layout={{
+                        style:{position:'fixed',left:0,top:0,width:'100%',height:'100%',zIndex:100},
+                        column:[this.header_layout(),this.map_layout(),this.footer_layout()]
+                    }}
+                />
+                {
+                    showSearch &&
+                    <MapSearch 
+                        searchValue={searchValue}
+                        onClose={(searchValue)=>this.setState({showSearch:false,searchValue})}
+                        latitude={latitude}
+                        longitude={longitude}
+                        onClick={(lat,lng,searchValue)=>{
+                            this.goTo(lat,lng);
+                            this.setState({showSearch:false,searchValue})
+                        }}
+                    />
+                }
+            </>
+        )
+    }
+}
+
+class MapSearch extends Component{
+    constructor(props){
+        super(props);
+        this.dom = createRef()
+        this.state = {searchValue:'',searchResult:[]}
+    }
+    componentDidMount(){
+        let {searchValue} = this.props;
+        if(searchValue){this.changeSearch(searchValue);}
+        $(this.dom.current).focus().select()
+    }
+    async changeSearch(searchValue){
+        let {latitude,longitude} = this.props;
+        this.setState({searchValue});
+
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(async ()=>{
+            let param = {
+                headers:{
+                    'Api-Key':'service.8f13cd0a4d2442399a3d690d26e993ed',
+                    'Authorization':undefined
+                }
+            }
+            let url = `https://api.neshan.org/v1/search?term=${searchValue}&lat=${latitude}&lng=${longitude}`;
+            let res = await Axios.get(url,param); 
+            if(res.status !== 200){return}
+            this.setState({searchResult:res.data.items})
+        },1000)
+    }
+    space_layout(type){
+        let {onClose} = this.props;
+        let {searchValue} = this.state;
+        let layout = {onClick:()=>onClose(searchValue)};
+        if(type === 'first'){layout.size = 84;}
+        else {layout.flex = 1;}
+        return layout;
+    }
+    input_layout(){
+        let {searchValue} = this.state;
+        return {
+            align:'h',
+            html:(
+                <input 
+                    ref={this.dom}
+                    value={searchValue}
+                    onChange={(e)=>this.changeSearch(e.target.value)}
+                    style={{
+                        zIndex:1000,width:'calc(100% - 24px)',padding:12,height:36,
+                        boxSizing:'border-box',border:'1px solid #ddd',borderRadius:4,fontFamily:'inherit',outline:'none'
+                    }} 
+                    type='text' placeholder='جستجو'
+                />
+            )
+        }
+    }
+    result_layout(){
+        let {searchResult} = this.state;
+        if(!searchResult || !searchResult.length){return false}
+        let {onClick} = this.props;
+        return {
+            style:{background:'#fff',height:'fit-content',maxHeight:400},
+            className:'m-h-12 p-v-12 ofy-auto',gap:3,
+            column:searchResult.map(({title,address,location})=>{
+                return {
+                    onClick:()=>{
+                        this.setState({searchValue:title,showSearch:false});
+                        onClick(location.y,location.x,title)
+                    },
+                    column:[
+                        {
+                            html:title,className:'p-h-12 fs-12',align:'v'
+                        },
+                        {html:address,className:'p-h-12 fs-10',align:'v',style:{opacity:0.5}}
+                    ]
+                }
+            })
+        }
+    }
+    render(){
         return (
             <RVD
                 layout={{
-                    style:{position:'fixed',left:0,top:0,width:'100%',height:'100%',zIndex:100},
-                    column:[this.header_layout(),this.map_layout(),this.footer_layout()]
+                    style:{zIndex:1000,background:'rgba(0,0,0,0.5)'},
+                    className:'fullscreen',
+                    column:[
+                        this.space_layout('first'),
+                        this.input_layout(),
+                        this.result_layout(),
+                        this.space_layout('last')
+                    ]
                 }}
             />
         )

@@ -16,8 +16,7 @@ class Card1 extends Component {
             <RVD
                 layout={{
                     flex: 1,
-                    className:'br-12 bg-fff',
-                    style: { boxShadow: '0px 2px 8px 0px rgb(153 153 153 / 21%)' },
+                    className:'theme-border-radius theme-card-bg theme-box-shadow',
                     attrs: { onClick },
                     column: [
                         { size: 12 },
@@ -45,8 +44,7 @@ class Card2 extends Component {
         return (
             <RVD
                 layout={{
-                    flex: 1,className:'br-12 bg-fff',
-                    style: { boxShadow: '0px 2px 8px 0px rgb(153 153 153 / 21%)' },
+                    flex: 1,className:'theme-border-radius theme-card-bg theme-box-shadow',
                     onClick,
                     row: [
                         { size: 60, html: icon, align: 'vh' },
@@ -76,8 +74,8 @@ class Card3 extends Component {
     cell_layout([title, value], isFirstRow, isFirstCell, isLastCell) {
         return {
             flex: 1,
+            className:'theme-card-bg',
             style: {
-                background: '#fff',
                 borderTopRightRadius: isFirstRow && isFirstCell ? 12 : undefined,
                 borderTopLeftRadius: isFirstRow && isLastCell ? 12 : undefined,
             },
@@ -90,7 +88,7 @@ class Card3 extends Component {
         }
     }
     row_layout(row, isFirstRow) {
-        return { flex: 1, row: row.map((o, i) => this.cell_layout(o, isFirstRow, i === 0, i === row.length - 1)) }
+        return { flex: 1,gap:1, row: row.map((o, i) => this.cell_layout(o, isFirstRow, i === 0, i === row.length - 1)) }
     }
     rows_layout(rows) {
         return { gap: 1, column: rows.map((o, i) => this.row_layout(o, i === 0)) }
@@ -100,12 +98,11 @@ class Card3 extends Component {
         return (
             <RVD
                 layout={{
-                    style: {boxShadow: '0px 2px 8px 0px rgb(153 153 153 / 21%)' },
-                    className:'bg-ddd br-12',
+                    className:'theme-card-border-color theme-border-radius theme-box-shadow',
                     gap: 1,
                     column: [
                         this.rows_layout(rows),
-                        { show: !!footer, size: 40, align: 'vh', html: footer, className: 'color3B55A5 fs-12 bold br-12 br-t-0 bg-fff', attrs: { onClick } }
+                        { show: !!footer, size: 40, align: 'vh', html: footer, className: 'color3B55A5 fs-12 bold br-12 br-t-0 theme-card-bg', attrs: { onClick } }
                     ]
                 }}
             />
@@ -118,7 +115,8 @@ class Card4 extends Component {
         if(show() === false){return false}
         return {
             onClick: () => onClick(),
-            size: 60, style: { background: '#fff', color: '#605E5C', ...style },
+            className:'theme-card-bg',
+            size: 60, style: { color: '#605E5C', ...style },            
             row: [
                 { size: 60, html: icon, align: 'vh' },
                 {
@@ -138,7 +136,7 @@ class Card4 extends Component {
         return (
             <RVD
                 layout={{
-                    gap: 1, style: { boxShadow: '0px 2px 8px 0px rgb(153 153 153 / 21%)'},className:'br-12 bg-ddd',
+                    gap: 1,className:'theme-border-radius theme-box-shadow theme-card-border-color',
                     column: items.map((o) => this.item_layout(o))
                 }}
             />

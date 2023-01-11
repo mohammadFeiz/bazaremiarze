@@ -203,7 +203,7 @@ export default class Bazargah extends Component{
                             ]
                         },
                         {
-                            className:'box m-h-12 p-h-12 fs-14 color605E5C',show:bazargah.wait_to_get.length === 0,
+                            className:'theme-box-shadow theme-card-bg theme-border-radius m-h-12 p-h-12 fs-14 color605E5C',show:bazargah.wait_to_get.length === 0,
                             column:[
                                 {size:12},
                                 {

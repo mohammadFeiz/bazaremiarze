@@ -167,7 +167,7 @@ export default class OrderPopup extends Component {
     }
     name_layout(){
       let {itemName} = this.props;
-      return {html:itemName,className:'fs-12 color575756 bold'}
+      return {html:itemName,className:'fs-12 color605E5C bold'}
     }
     details_layout(){
       let {details = []} = this.props;

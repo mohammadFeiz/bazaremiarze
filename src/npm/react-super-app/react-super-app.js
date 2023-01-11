@@ -113,8 +113,9 @@ export default class ReactSuperApp extends Component {
     }
     getMainClassName(){
       let {confirm,popups,sideOpen} = this.state;
-      let {rtl} = this.props;
+      let {rtl,className:cls} = this.props;
       let className = 'rsa';
+      className += cls?' ' + cls:'';
       className += rtl?' rtl':' ltr';
       if(popups.length){className += ' has-opened-popup'}
       if(confirm || popups.length || sideOpen){className += ' rsa-blur'}
@@ -157,13 +158,13 @@ export default class ReactSuperApp extends Component {
     }
     render() {
       let {confirm,sideOpen,splash} = this.state;
-      let {sides = [],sideId,rtl,sideHeader,popupConfig = {}} = this.props;
+      let {sides = [],sideId,rtl,sideHeader,sideFooter,sideClassName} = this.props;
       return (
         <>
           {this.renderMain()},
           {this.renderPopups()}
           {confirm && <Confirm {...confirm} rtl={rtl} onClose={()=>this.setState({confirm:false})}/>}
-          {sides.length && <SideMenu sideHeader={sideHeader} sides={sides} sideId={sideId} sideOpen={sideOpen} rtl={rtl} onClose={()=>this.setState({sideOpen:false})}/>}
+          {sides.length && <SideMenu className={sideClassName} sideHeader={sideHeader} sideFooter={sideFooter} sides={sides} sideId={sideId} sideOpen={sideOpen} rtl={rtl} onClose={()=>this.setState({sideOpen:false})}/>}
           {splash && splash()}
         </>
       );
@@ -207,7 +208,7 @@ export default class ReactSuperApp extends Component {
         className:'rsa-navigation-item' + (active?' active':''),attrs:{onClick:()=>navs?this.toggle(id):onChange(id)},
         row:[
           {size:level * 16},
-          {size:24,html:navs?<Icon path={open?mdiChevronDown:(rtl?mdiChevronLeft:mdiChevronRight)} size={1}/>:'',align:'vh'},
+          {show:navs!== undefined,size:24,html:navs?<Icon path={open?mdiChevronDown:(rtl?mdiChevronLeft:mdiChevronRight)} size={1}/>:'',align:'vh'},
           {show:!!icon,size:48,html:()=>icon(active),align:'vh'},
           {html:text,align:'v'}
         ]
@@ -244,7 +245,7 @@ export default class ReactSuperApp extends Component {
     items_layout(){
       let {sides,sideId,onClose} = this.props;
       return {
-        gap:12,
+        flex:1,gap:12,
         column:sides.map((o,i)=>{
           let {icon = ()=><div style={{width:12}}></div>,text,id,className,onClick = ()=>{},show = ()=>true} = o;
           let Show = show();
@@ -259,18 +260,22 @@ export default class ReactSuperApp extends Component {
         })
       }
     }
-    
+    footer_layout(){
+      let {sideFooter} = this.props;
+      if(!sideFooter){return false}
+      return {html: sideFooter(),className:'rsa-sidemenu-footer'};
+    }
     componentDidMount(){
       setTimeout(()=>this.setState({open:true}),0)  
     }
     render() {
-      let {onClose,rtl,sideOpen} = this.props;
+      let {onClose,rtl,sideOpen,className} = this.props;
       return (
           <RVD 
             layout={{
-              className: 'rsa-sidemenu-container' + (sideOpen?' open':'') + (rtl?' rtl':' ltr'),
+              className: 'rsa-sidemenu-container' + (sideOpen?' open':'') + (rtl?' rtl':' ltr') + (className?' ' + className:''),
               row:[
-                {className: 'rsa-sidemenu',column: [this.header_layout(),this.items_layout()]},
+                {className: 'rsa-sidemenu',column: [this.header_layout(),this.items_layout(),this.footer_layout()]},
                 {flex:1,attrs:{onClick:()=>onClose()}}
               ]
             }} 
@@ -352,8 +357,9 @@ class Popup extends Component{
       return {flex:1,html:<div className='rsa-popup-body'>{Content}</div>}
     }
     getClassName(){
-      let {type,blur} = this.props;
+      let {type,blur,className:cls} = this.props;
       let className = 'rsa-popup-container';
+      if(cls){className += className?(' ' + cls):''}
       if(blur){className += ' rsa-blur'}
       if(type === 'fullscreen'){className += ' fullscreen'}
       if(type === 'bottom'){className += ' bottom-popup'}

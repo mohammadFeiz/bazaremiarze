@@ -117,7 +117,7 @@ export default class Product extends Component {
     image_layout(name, code, src) {
         let { product } = this.props, { srcIndex } = this.state;
         return {
-            size: 346, className: "box m-h-12",
+            size: 346, className: "theme-box-shadow theme-card-bg theme-border-radius m-h-12",
             column: [
                 { size: 24 },
                 {
@@ -140,7 +140,7 @@ export default class Product extends Component {
         if (product.optionTypes.length < 2) { return false }
         let {selectedVariant} = this.state;
         return {
-            className: 'box m-h-12',hide_xs:true,
+            className: 'theme-card-bg theme-box-shadow theme-border-radius m-h-12',hide_xs:true,
             column: [
                 {size:12},
                 {
@@ -174,7 +174,7 @@ export default class Product extends Component {
         let { optionValues, selectedVariant } = this.state;
         if (!optionValues || !optionTypes) { return { html: '' } }
         return {
-            className: "box gap-no-color m-h-12 p-12",
+            className: "theme-card-bg theme-box-shadow theme-border-radius gap-no-color m-h-12 p-12",
             column: [
                 {
                     gap:6,
@@ -214,7 +214,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
     details_layout(details) {
         let { showDetails } = this.state;
         return {
-            className: "box p-12 m-h-12",
+            className: "theme-card-bg theme-box-shadow theme-border-radius p-12 m-h-12",
             column: [
                 {
                     size: 36, childsProps: { align: 'v' },

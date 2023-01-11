@@ -76,7 +76,7 @@ export default class ProductCard extends Component{
                     )
                 }}
             />
-        ):name,className:'fs-14 color575756 bold',style:{whiteSpace:'normal'}}
+        ):name,className:'fs-14 color605E5C bold',style:{whiteSpace:'normal'}}
     }
     discount_layout(){
         let {product,count = 1} = this.props;
@@ -195,7 +195,7 @@ export default class ProductCard extends Component{
                     attrs:{onClick:()=>this.onClick()},
                     column:[
                         {size:140,align:'vh',html:<img src={srcs[0] || NoSrc} width={'100%'} style={{width:'calc(100% - 24px)',height:'100%',borderRadius:8}} alt=''/>,style:{padding:6,paddingBottom:0}},
-                        {html:name,className:'fs-12 p-v-6 p-h-12 color575756 bold',style:{whiteSpace:'normal'}},
+                        {html:name,className:'fs-12 p-v-6 p-h-12 color605E5C bold',style:{whiteSpace:'normal'}},
                         //this.name_layout(),
                         {flex:1},
                         this.isInCart_layout(),

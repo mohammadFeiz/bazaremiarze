@@ -131,7 +131,7 @@ export default class Shipping extends Component{
         column:[
           {size:36,align:'v',className:'color605E5C fs-12 bold',html:'آدرس تحویل'},
           {
-            className:'fs-14 color575756 bgF1F1F1 p-12 br-4',html:address,size:72
+            className:'fs-14 color605E5C bgF1F1F1 p-12 br-4',html:address,size:72
           }
         ]
       }
@@ -166,7 +166,7 @@ export default class Shipping extends Component{
         column:[
           {size:36,align:'v',className:'color605E5C fs-12 bold',html:'شماره تلفن'},
           {
-            className:'fs-14 color575756 bgF1F1F1 p-12 br-4',html:phone,style:{minHeight:36}
+            className:'fs-14 color605E5C bgF1F1F1 p-12 br-4',html:phone,style:{minHeight:36}
           }
         ]
       }

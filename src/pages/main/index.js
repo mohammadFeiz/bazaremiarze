@@ -20,7 +20,7 @@ import PasswordPopup from "../../components/password-popup/password-popup";
 
 //npm////////////////////////////////////////
 import {Icon} from '@mdi/react';
-import { mdiShieldCheck,mdiCellphoneMarker,mdiClipboardList,mdiExitToApp, mdiCart, mdiBell, mdiPower, mdiMagnify} from "@mdi/js";
+import { mdiShieldCheck,mdiCellphoneMarker,mdiClipboardList,mdiExitToApp, mdiCart, mdiBell, mdiPower, mdiMagnify, mdiPalette, mdiOpacity} from "@mdi/js";
 import RSA from './../../npm/react-super-app/react-super-app';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import AIOService from './../../npm/aio-service/aio-service';
@@ -29,6 +29,7 @@ import AIOButton from './../../interfaces/aio-button/aio-button';
 
 
 import getSvg from "../../utils/getSvg";
+import Logo1 from './../../images/logo1.png';
 import Pricing from "./../../pricing";
 import appContext from "../../app-context";
 import dateCalculator from "../../utils/date-calculator";
@@ -81,6 +82,7 @@ export default class Main extends Component {
       forsate_akhze_sefareshe_bazargah:30
     }
     this.state = {
+      opacity:100,theme:'light',
       bazargah:{
         setActivity:async (state)=>{
           let {bazargahApis,bazargah} = this.state;
@@ -128,7 +130,14 @@ export default class Main extends Component {
     this.state.gardooneApis = AIOService({token,getState,apis:gardooneApis,log,baseUrl});
     this.state.guarantiApis = AIOService({token,getState,apis:guarantiApis,log,baseUrl});
   }
-  
+  changeOpacity(){
+    let {opacity} = this.state;
+    if(opacity === 100){opacity = 90}
+    else if(opacity === 90){opacity = 80}
+    else if(opacity === 80){opacity = 70}
+    else if(opacity === 70){opacity = 100}
+    this.setState({opacity})
+  }
   changeCart(count,variantId,product){
     let {cart,kharidApis} = this.state;
     let newCart;
@@ -400,6 +409,8 @@ export default class Main extends Component {
   }
   render() {
     let {userInfo,logout} = this.props;
+    let {opacity,theme} = this.state;
+    console.log('opacity',opacity);
     let context = {
       ...this.state,
       userInfo,
@@ -413,9 +424,10 @@ export default class Main extends Component {
       <appContext.Provider value={context}>
         <RSA
           rtl={true}
-          className='rvd-rtl'
-          popupConfig={{closeType:'back button',type:'fullscreen'}}
-          title={(nav)=>nav.id === 'khane'?getSvg('mybrxlogo'):(nav.id === 'profile'?'پروفایل':nav.text)}
+          className={`rvd-rtl opacity-${opacity} theme-${theme}`}
+          popupConfig={{closeType:'back button',type:'fullscreen',className:`opacity-${opacity} theme-${theme}`}}
+          sideClassName={`opacity-${opacity} theme-${theme}`}
+          title={(nav)=>nav.id === 'khane'?<>{getSvg('mybrxlogo',{className:'rvd-hide-sm rvd-hide-md rvd-hide-lg'})}<div className='rvd-hide-xs'>{nav.text}</div></>:(nav.id === 'profile'?'پروفایل':nav.text)}
           navs={[
             { text: "خانه", icon: (active)=>getSvg(19, { fill: active ? "#fff" : "#605E5C" }), id: "khane" },
             { text: "خرید", icon: (active)=>getSvg('buy', { fill: active ? "#fff" : "#605E5C" }), id: "kharid" },
@@ -434,7 +446,21 @@ export default class Main extends Component {
             //     kharidApis({api:'dargah',parameter:{amount,url}})
             // }},
           ]}
+          navHeader={()=>{
+            return <NavHeader/>
+          }}
           sideHeader={()=><div style={{padding:'24px 0'}}>{getSvg('mybrxlogo')}</div>}
+          sideFooter={()=>(
+            <RVD
+              layout={{
+                className:'h-48 p-12 color-fff',align:'v',
+                row:[
+                  {flex:1},
+                  {html:<Icon path={mdiOpacity} size={1} onClick={()=>this.changeOpacity()}/>}
+                ]
+              }}
+            />
+          )}
           header={({navId})=><Header type='page' navId={navId}/>}
           navId='khane'
           body={({navId})=>{
@@ -454,6 +480,16 @@ export default class Main extends Component {
   }
 }
 Main.defaultProps = {userInfo:{cardCode:'c50000'}}
+class NavHeader extends Component{
+  render(){
+    return (
+      <div className='w-100 align-vh m-v-16'>
+        <img src={Logo1} alt='' width={200}/>
+      </div>
+      
+    )
+  }
+}
 class Message extends Component{
   constructor(props){
     super(props);

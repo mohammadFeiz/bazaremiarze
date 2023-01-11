@@ -1,11 +1,20 @@
 .product-count-button{
     color: dodgerblue;
-    width: 24px;
+    width: 30px;
     height: 24px;
-    border-radius: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding:0;
+}
+.product-count-input[type=number]::-webkit-inner-spin-button, 
+.product-count-input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.product-count-input{
+    width:24px;
+    text-align: center;
 }
 .product-count-button.disabled{
     background: #aaa;

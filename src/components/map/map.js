@@ -2,7 +2,7 @@ import React, { Component,useEffect, useRef,useState,createRef } from "react";
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import Axios from 'axios';
 import {Icon} from '@mdi/react';
-import {mdiCrosshairsGps} from '@mdi/js';
+import {mdiClose, mdiCrosshairsGps, mdiLoading, mdiMagnify} from '@mdi/js';
 import $ from 'jquery';
 import "./index.css";
 
@@ -10,7 +10,7 @@ export default class Map extends Component{
     constructor(props){
         super(props);
         let {latitude = 35.699739,longitude = 51.338097} = props;
-        this.state = {latitude,longitude,showSearch:false,searchValue:''}
+        this.state = {latitude,longitude}
     }
     ipLookUp () {
       $.ajax('http://ip-api.com/json')
@@ -25,16 +25,16 @@ export default class Map extends Component{
           }
       );
     }
-    goToCurrentPopint(){
-      if ("geolocation" in navigator) {
-          // check if geolocation is supported/enabled on current browser
-          navigator.geolocation.getCurrentPosition(
-              (position)=> {
-                  let {latitude,longitude} = position.coords;
-                  this.apis.flyTo(latitude,longitude);
-              },
-              (error_message)=> this.ipLookUp()
-          )
+    goToCurrentPoint(){
+        if ("geolocation" in navigator) {
+            // check if geolocation is supported/enabled on current browser
+            navigator.geolocation.getCurrentPosition(
+                (position)=> {
+                    let {latitude,longitude} = position.coords;
+                    this.apis.flyTo(latitude,longitude);
+                },
+                (error_message)=> this.ipLookUp()
+            )
       } 
       else {this.ipLookUp()}
     }
@@ -57,16 +57,16 @@ export default class Map extends Component{
       return (
         <RVD
           layout={{
-            style:{position:'absolute',height:72,background:'rgba(255,255,255,.8)',bottom:12,left:12,width:'calc(100% - 24px)',border:'1px solid #ddd',zIndex:100000000000},
-            className:'box-shadow of-visible br-6',align:'vh',
+            style:{zIndex:10,position:'absolute',background:'rgba(255,255,255,.5)',bottom:12,left:12,width:'calc(100% - 24px)',border:'1px solid #ddd'},
+            className:'box-shadow of-visible br-6 p-v-6',align:'vh',
             column:[
-                {html:`latitude:${latitude.toFixed(6)} - Lonitude:${longitude.toFixed(6)}`,style:{width:'100%',fontSize:12,borderRadius:5},align:'h',className:'color3B55A5'},
-                {size:6},
+                //{html:`latitude:${latitude.toFixed(6)} - Lonitude:${longitude.toFixed(6)}`,style:{width:'100%',fontSize:12,borderRadius:5},align:'h',className:'color3B55A5'},
+                //{size:6},
                 {
                     style:{width:'100%'},
-                    className:'p-e-12',
+                    className:'p-e-6',
                     row:[
-                        {size:48,html:<Icon path={mdiCrosshairsGps} size={1} onClick={()=>this.goToCurrentPopint()}/>,align:'vh'},
+                        {size:48,html:<Icon path={mdiCrosshairsGps} size={1} onClick={()=>this.goToCurrentPoint()}/>,align:'vh'},
                         {flex:1,html:<button style={{border:'none',background:'dodgerblue',color:'#fff'}} className='w-100 h-30 br-4' onClick={()=>onChange(latitude,longitude)}>تایید موقعیت</button>}
                     ]
                 },
@@ -82,7 +82,7 @@ export default class Map extends Component{
             key = 'web.3037ddd42c9e4173af6427782584a2a1',
             onChange
         } = this.props;
-        let {latitude,longitude,showSearch,searchValue} = this.state;
+        let {latitude,longitude} = this.state;
         return (
             <div style={style}>
               <NeshanMap
@@ -128,36 +128,17 @@ export default class Map extends Component{
                     // radius: 1500
                     // }).addTo(myMap);
                 }}
-                style={{position:'absolute',left:0,top:0,width:'100%',height:'100%'}}
+                style={{position:'absolute',left:0,top:0,width:'100%',height:'100%',zIndex:0}}
             />
             {this.footer_layout()}
             {
-              search && 
-              <input 
-                onClick={()=>this.setState({showSearch:true})}
-                defaultValue={searchValue}
-                style={{
-                    zIndex:1000,position:'absolute',left:12,top:12,width:'calc(100% - 24px)',padding:12,height:36,
-                    boxSizing:'border-box',border:'1px solid #ddd',borderRadius:4,fontFamily:'inherit'
-                }} 
-                type='text' placeholder='جستجو'
-              />
-            }
-            {
-                    showSearch &&
-                    <MapSearch 
-                        searchValue={searchValue}
-                        onClose={(searchValue)=>this.setState({showSearch:false,searchValue})}
-                        latitude={latitude}
-                        longitude={longitude}
-                        onClick={(lat,lng,searchValue)=>{
-                            this.flyTo(lat,lng);
-                            this.setState({showSearch:false,searchValue})
-                        }}
-                    />
-                }
+                search && 
+                <MapSearch 
+                    latitude={latitude} longitude={longitude}
+                    onClick={(lat,lng)=>this.flyTo(lat,lng)}
+                />
+            }  
             </div>
-            
         )
     }
 }
@@ -165,12 +146,7 @@ class MapSearch extends Component{
   constructor(props){
       super(props);
       this.dom = createRef()
-      this.state = {searchValue:'',searchResult:[]}
-  }
-  componentDidMount(){
-      let {searchValue} = this.props;
-      if(searchValue){this.changeSearch(searchValue);}
-      $(this.dom.current).focus().select()
+      this.state = {searchValue:'',searchResult:[],loading:false,showResult:false}
   }
   async changeSearch(searchValue){
       let {latitude,longitude} = this.props;
@@ -185,76 +161,102 @@ class MapSearch extends Component{
               }
           }
           let url = `https://api.neshan.org/v1/search?term=${searchValue}&lat=${latitude}&lng=${longitude}`;
-          let res = await Axios.get(url,param); 
+          this.setState({loading:true})
+          let res = await Axios.get(url,param);
+          this.setState({loading:false}) 
           if(res.status !== 200){return}
           this.setState({searchResult:res.data.items})
       },1000)
   }
   space_layout(type){
-      let {onClose} = this.props;
-      let {searchValue} = this.state;
-      let layout = {onClick:()=>onClose(searchValue)};
-      if(type === 'first'){layout.size = 84;}
-      else {layout.flex = 1;}
-      return layout;
+        let {searchResult,showResult} = this.state;
+        if(type === 'last'){
+            if(!searchResult || !searchResult.length || !showResult){return false}
+        }
+        let layout = {onClick:()=>this.setState({showResult:false})};
+        if(type === 'first'){layout.size = 12;}
+        else {layout.flex = 1;}
+        return layout;
   }
   input_layout(){
-      let {searchValue} = this.state;
+      let {searchValue,loading,showResult,searchResult} = this.state;
+      let showCloseButton = !!showResult && !!searchResult.length;
+      let showLoading = !!loading;
       return {
-          align:'h',
-          html:(
-              <input 
-                  ref={this.dom}
-                  value={searchValue}
-                  onChange={(e)=>this.changeSearch(e.target.value)}
-                  style={{
-                      zIndex:1000,width:'calc(100% - 24px)',padding:12,height:36,
-                      boxSizing:'border-box',border:'1px solid #ddd',borderRadius:4,fontFamily:'inherit',outline:'none'
-                  }} 
-                  type='text' placeholder='جستجو'
-              />
-          )
+        className:'p-h-12',
+        row:[
+            {
+                align:'h',flex:1,
+                html:(
+                      <input 
+                          ref={this.dom}
+                          value={searchValue}
+                          onChange={(e)=>this.changeSearch(e.target.value)}
+                          onClick={()=>this.setState({showResult:true})}
+                          style={{
+                              width:'100%',padding:'0 12px',height:36,
+                              boxSizing:'border-box',borderRadius:4,fontFamily:'inherit',outline:'none',border:'none'
+                          }} 
+                          type='text' placeholder='جستجو'
+                      />
+                )
+            },
+            {
+                size:36,show:showLoading,align:'vh',style:{color:'#888',background:'#fff'},
+                html:<Icon path={mdiLoading} size={1} spin={0.4}/>
+            },
+            {
+                size:36,show:showCloseButton,align:'vh',style:{color:'#888',background:'#fff'},
+                html:<Icon path={mdiClose} size={0.8} onClick={()=>this.setState({showResult:false})}/>
+            },
+            {
+                size:36,show:!showCloseButton && !showLoading,align:'vh',style:{color:'#888',background:'#fff'},
+                html:<Icon path={mdiMagnify} size={0.8}/>
+            }
+        ]
       }
   }
   result_layout(){
-      let {searchResult} = this.state;
-      if(!searchResult || !searchResult.length){return false}
-      let {onClick} = this.props;
-      return {
-          style:{background:'#fff',height:'fit-content',maxHeight:400},
-          className:'m-h-12 p-v-12 ofy-auto',gap:3,
-          column:searchResult.map(({title,address,location})=>{
-              return {
-                  onClick:()=>{
-                      this.setState({searchValue:title,showSearch:false});
-                      onClick(location.y,location.x,title)
-                  },
-                  column:[
-                      {
-                          html:title,className:'p-h-12 fs-12',align:'v'
-                      },
-                      {html:address,className:'p-h-12 fs-10',align:'v',style:{opacity:0.5}}
-                  ]
-              }
-          })
-      }
-  }
-  render(){
-      return (
-          <RVD
-              layout={{
-                  style:{zIndex:1000,background:'rgba(0,0,0,0.5)'},
-                  className:'fullscreen',
-                  column:[
-                      this.space_layout('first'),
-                      this.input_layout(),
-                      this.result_layout(),
-                      this.space_layout('last')
-                  ]
-              }}
-          />
-      )
-  }
+        let {searchResult,showResult} = this.state;
+        if(!searchResult || !searchResult.length || !showResult){return false}
+        let {onClick} = this.props;
+        return {
+            style:{background:'rgba(255,255,255,0.95)',height:'fit-content',maxHeight:400},
+            className:'m-h-12 p-v-12 ofy-auto m-t-3 br-4',gap:3,
+            column:searchResult.map(({title,address,location})=>{
+                return {
+                    onClick:()=>{
+                        this.setState({showResult:false});
+                        onClick(location.y,location.x,title)
+                    },
+                    column:[
+                        {
+                            html:title,className:'p-h-12 fs-12',align:'v'
+                        },
+                        {html:address,className:'p-h-12 fs-10',align:'v',style:{opacity:0.5}}
+                    ]
+                }
+            })
+        }
+    }
+    render(){
+        let {searchResult,showResult} = this.state;
+        let isOpen = true;
+        if(!searchResult || !searchResult.length || !showResult){isOpen = false}
+        return (
+            <RVD
+                layout={{
+                    style:{position:'absolute',width:'100%',height:isOpen?'100%':50,left:0,top:0,zIndex:1000},
+                    column:[
+                        this.space_layout('first'),
+                        this.input_layout(),
+                        this.result_layout(),
+                        this.space_layout('last')
+                    ]
+                }}
+            />
+        )
+    }
 }
 const BASE_URL = "https://static.neshan.org";
 const DEFAULT_URL = `${BASE_URL}/sdk/leaflet/1.4.0/leaflet.js`;

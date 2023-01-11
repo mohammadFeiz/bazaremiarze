@@ -119,11 +119,14 @@ export default class Main extends Component {
     };
     let {token,baseUrl} = this.props;
     let log = true;
-    this.state.kharidApis = AIOService({token,getState:()=>this.state,apis:kharidApis,log,baseUrl});
-    this.state.bazargahApis = AIOService({token,getState:()=>this.state,apis:bazargahApis,log,baseUrl});
-    this.state.walletApis = AIOService({token,getState:()=>this.state,apis:walletApis,log,baseUrl});
-    this.state.gardooneApis = AIOService({token,getState:()=>this.state,apis:gardooneApis,log,baseUrl});
-    this.state.guarantiApis = AIOService({token,getState:()=>this.state,apis:guarantiApis,log,baseUrl});
+    let getState = ()=>{
+      return {...this.state,userInfo:props.userInfo}
+    }
+    this.state.kharidApis = AIOService({token,getState,apis:kharidApis,log,baseUrl});
+    this.state.bazargahApis = AIOService({token,getState,apis:bazargahApis,log,baseUrl});
+    this.state.walletApis = AIOService({token,getState,apis:walletApis,log,baseUrl});
+    this.state.gardooneApis = AIOService({token,getState,apis:gardooneApis,log,baseUrl});
+    this.state.guarantiApis = AIOService({token,getState,apis:guarantiApis,log,baseUrl});
   }
   
   changeCart(count,variantId,product){
@@ -409,6 +412,7 @@ export default class Main extends Component {
       <appContext.Provider value={context}>
         <RSA
           rtl={true}
+          className='rvd-rtl'
           popupConfig={{closeType:'back button',type:'fullscreen'}}
           title={(nav)=>nav.id === 'khane'?getSvg('mybrxlogo'):(nav.id === 'profile'?'پروفایل':nav.text)}
           navs={[

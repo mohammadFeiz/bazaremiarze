@@ -125,12 +125,13 @@ export default class ReactSuperApp extends Component {
     }
     getMainClassName(){
       let {confirm,popups,sideOpen} = this.state;
-      let {rtl} = this.props;
-      let className = 'rsa';
-      className += rtl?' rtl':' ltr';
-      if(popups.length){className += ' has-opened-popup'}
-      if(confirm || popups.length || sideOpen){className += ' rsa-blur'}
-      return className;
+      let {rtl,className} = this.props;
+      let cls = 'rsa';
+      if(className){cls += ' ' + className}
+      cls += rtl?' rtl':' ltr';
+      if(popups.length){cls += ' has-opened-popup'}
+      if(confirm || popups.length || sideOpen){cls += ' rsa-blur'}
+      return cls;
     }
     renderMain(){
       let {touch,navId} = this.state;

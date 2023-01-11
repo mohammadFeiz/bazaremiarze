@@ -103,8 +103,8 @@ class App extends Component {
       res = await Axios.post(`${this.apiBaseUrl}/BOne/GetCustomer`, { "DocCode": storage.userInfo.cardCode });
       //$('.loading').css({display:'none'});
     }
-    catch{
-      this.setState({pageError:{text:'سرویس دهنده در دسترس نیست',subtext:'BOne/GetCustomer'}})
+    catch(err){
+      this.setState({pageError:{text:'سرویس دهنده در دسترس نیست',subtext:'BOne/GetCustomer ' + err.message}})
     }
     if (res.status === 401) {
       this.setState({});
@@ -136,6 +136,9 @@ class App extends Component {
     });
     let {customer = {}} = b1Info;
     let ballance = customer.ballance;
+    let visitorMobile;
+    try{visitorMobile = customer.salePeople.mobile}
+    catch{visitorMobile = ''}
     if(isNaN(ballance)){
       console.error(`b1Info.customer.ballance is ${ballance} but we set it on 0`)
       ballance = 0;
@@ -151,7 +154,8 @@ class App extends Component {
       slpname:customer.slpname,
       groupCode:customer.groupCode,
       ballance:-ballance,
-      slpphone:'09123534314'
+      slpphone:'09123534314',
+      visitorMobile
     }
   }
   header_layout(){

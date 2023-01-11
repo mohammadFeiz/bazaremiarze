@@ -273,10 +273,12 @@ export default class Home extends Component {
     }
 }
 class Call extends Component{
-    static contextType = appContext
+    static contextType = appContext;
     render(){
         let {onClose} = this.props;
         let {userInfo} = this.context;
+        let {visitorMobile} = userInfo;
+    
         return (
             <RVD
                 layout={{
@@ -284,20 +286,19 @@ class Call extends Component{
                     column:[
                         {flex:1,attrs:{onClick:()=>onClose()}},
                         {
-                            size:48,
+                            size:48,className:'m-b-12',show:!!visitorMobile,
                             row:[
                                 {size:12},
-                                {html:<a style={{height:48}} href={`tel:${userInfo.slpphone}`}>{getSvg('tamasbavizitor')}</a>,align:'vh'},
+                                {html:<a style={{height:48}} href={`tel:${visitorMobile}`}>{getSvg('tamasbavizitor')}</a>,align:'vh'},
                                 {size:12},
                                 {
                                     column:[
                                         {html:'تماس با ویزیتور',align:'v',style:{color:'#fff'},className:'fs-14'},
-                                        {html:userInfo.slpphone,align:'v',style:{color:'#fff'},className:'fs-12'}
+                                        {html:visitorMobile,align:'v',style:{color:'#fff'},className:'fs-12'}
                                     ]
                                 }
                             ]
                         },
-                        {size:12},
                         {
                             size:48,
                             row:[

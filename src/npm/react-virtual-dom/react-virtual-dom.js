@@ -13,9 +13,7 @@ export default class ReactVirtualDom extends Component {
     if(type === 'bind'){$(window).bind(event, action)}
   }
   getClassName(obj,align,Attrs,attrs,Props,pointer){
-    let {rtl} = this.props;
     let className = RVDCLS.rvd;
-    className += rtl?' rvd-rtl':' rvd-ltr';
     let gapClassName = RVDCLS.gap;
     if(obj.gapAttrs && obj.gapAttrs.className){
       gapClassName += ' ' + obj.gapAttrs.className

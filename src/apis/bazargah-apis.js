@@ -2,7 +2,6 @@ import Axios from "axios";
 import nosrcImage from './../images/no-src.png';
 import AIODate from './../npm/aio-date/aio-date';
 export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) {
-  let {userInfo} = getState();
   return {
     async orders({type}){
       let time = getState().bazargah[{'wait_to_get':'forsate_akhze_sefareshe_bazargah','wait_to_send':'forsate_ersale_sefareshe_bazargah'}[type]];
@@ -38,7 +37,9 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
         type,
         sendStatus:{
           itemsChecked:order.providedData !== null && order.providedData.itemsChecked ? order.providedData.itemsChecked : {},//{'0':true,'1':false}
-          delivererId:order.providedData !== null && order.providedData.delivererId ? order.providedData.delivererId : {},
+          delivererId:order.providedData !== null && order.providedData.delivererId ? order.providedData.delivererId : undefined,
+          delivererType:order.providedData !== null && order.providedData.delivererType ? order.providedData.delivererType : 'eco',
+          isFinal:order.providedData !== null && order.providedData.isFinal ? order.providedData.isFinal : false,
         },
         "amount":order.finalAmount,
         distance,
@@ -90,7 +91,7 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       // }
       
       //if(!res){return false}
-
+      
       return result.data.isSuccess;
 
     },
@@ -107,6 +108,18 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       //   {name:'محمد احمدی',id:'3',mobile:'09123345435'}
       // ] 
     },
+    async get_ecoDeliverer(res){
+      console.log('get_ecoDeliverer')
+      if(!res){
+        return false
+      }
+      return {
+          fullName:'عباس حسنی',id:'1231234',phoneNumber:'09123434568'
+      } 
+    },
+    async ecoRequest(order){
+      return true
+    },
     async add_deliverer({mobile,name}){
       let result = await Axios.post(`${baseUrl}/Deliverer`,{
         phoneNumber:mobile,
@@ -122,6 +135,7 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       return result.data.data;
     },
     async akhze_sefaresh({orderId}){
+      let {userInfo} = getState();
       let res = await Axios.post(`${baseUrl}/OS/AddNewOrder`, {
         cardCode :userInfo.cardCode,
         orderId

@@ -18,26 +18,31 @@ export default class Shipping extends Component{
         PayDueDate:'ByDelivery',
         PayDueDate_options:[
           {value:'ByDelivery',text:'نقد'},
-          {value:'By15Days',text:'چک 15 روزه'},
-          {value:'ByMonth',text:'چک 30 روزه'},
-          {value:'By45Days',text:'چک 45 روزه'},
-          {value:'By60Days',text:'چک 60 روزه'},
+          // {value:'By15Days',text:'چک 15 روزه'},
+          // {value:'ByMonth',text:'چک 30 روزه'},
+          // {value:'By45Days',text:'چک 45 روزه'},
+          // {value:'By60Days',text:'چک 60 روزه'},
+          {value:'Cash25_TowMonth75',text:'25% نقد و 75% چک دو ماهه'},
+          {value:'Cach50_ThreeMonth50',text:'50% نقد و چک سه ماهه'},
+          
         ],
         PayDueDate_map:{
           ByDelivery:1, // نقد --->*
-          By15Days:2, // *
-          ByMonth:3,// *
-          By45Days:4, // *
-          NotSet:5,
-          By60Days:6,//*
-          By75Days:7,
-          By3Months:8,
-          By3_5Months:9,
-          By4Months:10,
-          By4_5Months:11,
-          By5Months:12,
-          By5_5Months:13,
-          By6Months:14,
+          // By15Days:2, // *
+          // ByMonth:3,// *
+          // By45Days:4, // *
+          // NotSet:5,
+          // By60Days:6,//*
+          // By75Days:7,
+          // By3Months:8,
+          // By3_5Months:9,
+          // By4Months:10,
+          // By4_5Months:11,
+          // By5Months:12,
+          // By5_5Months:13,
+          // By6Months:14,
+          Cash25_TowMonth75:15,
+          Cach50_ThreeMonth50:16
         },
         PaymentTime:'ByOnlineOrder',
         PaymentTime_options:[
@@ -277,8 +282,8 @@ export default class Shipping extends Component{
                   this.options_layout('DeliveryType','نحوه ارسال'),
                   {size:12},
                   this.options_layout('PaymentTime','زمان پرداخت',),
-                  // {size:12},
-                  // this.options_layout('PayDueDate','مهلت تسویه',PaymentTime !== 'ByOnlineOrder'),
+                  {size:12},
+                  this.options_layout('PayDueDate','مهلت تسویه',PaymentTime !== 'ByOnlineOrder'),
                   {size:12},
                   this.products_layout(),
                   {size:12},

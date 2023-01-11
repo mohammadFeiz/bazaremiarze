@@ -15,7 +15,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
             tableColumns: [
                 { title: "عنوان", field: 'row.Name' },
                 {
-                    title: "تعداد", field: 'row.Qty', width: 120,
+                    title: "تعداد", field: 'row.Qty', width: 160,
                     template: 'count'
                 },
             ]

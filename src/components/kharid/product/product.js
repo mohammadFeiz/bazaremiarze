@@ -277,7 +277,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
                     flex:1,show:!!!count,html: (<button onClick={() => this.changeCount(1)} className={"button-2" + (!selectedVariant ? " disabled" : "")}>افزودن به سبد خرید</button>),
                     align: "v",
                 },
-                { flex:1,align:'v',show:!!count, html: () => <ProductCount value={count} onChange={(count) => this.changeCount(count)} max={this.getInStock()} />,style:{width:90} },
+                { flex:1,align:'v',show:!!count, html: () => <ProductCount value={count} onChange={(count) => this.changeCount(count)} max={this.getInStock()} /> },
                 
             ]
         }

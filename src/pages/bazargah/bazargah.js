@@ -9,13 +9,15 @@ import AIOButtonInterface from './../../interfaces/aio-button/aio-button';
 import AIOContentSlider from './../../npm/aio-content-slider/aio-content-slider';
 import {Icon} from '@mdi/react';
 import Form from './../../interfaces/aio-form-react/aio-form-react';
-import {mdiBackspace, mdiCheck, mdiChevronDoubleRight, mdiChevronRight} from '@mdi/js';
+import {mdiBackspace, mdiCheck, mdiChevronDoubleRight, mdiChevronRight, mdiBikeFast, mdiMagnify} from '@mdi/js';
+import delSrc from './../../images/del.png';
 import Slider from './../../npm/aio-slider/aio-slider';
 import Map from '../../components/map/map';
 import bazargahBlankSrc from './../../images/bazargah-no-order.png';
 //import functions from '../../../functions';
 import functions from '../../functions';
 import TimerGauge from '../../components/timer-gauge/timer-gauge';
+import InlineNumberKeyboard from '../../components/inline-number-keyboard/inline-number-keyboard';
 import bazargahCommingSoon from './../../images/bazargah-comming-soon.png';
 
 export default class Bazargah extends Component{
@@ -84,6 +86,8 @@ export default class Bazargah extends Component{
                 sendStatus:{
                     itemsChecked:{},//{'0':true,'1':false}
                     delivererId:false,
+                    delivererType:'eco',
+                    isFinal:false
                 },
                 "amount":123456789,
                 distance:1000,
@@ -132,7 +136,7 @@ export default class Bazargah extends Component{
         }
     }
     wait_to_send_layout(){
-        //return this.mock_wait_to_send_layout()
+        return this.mock_wait_to_send_layout()
         let {SetState,bazargah} = this.context;
         if(!bazargah.active){return false}
         let {activeTabId} = this.state;
@@ -290,17 +294,38 @@ class JoziateSefaresheBazargah extends Component{
     static contextType=appContext;
     constructor(props){
         super(props);
+        this.counter = 0;
         let {order} = props;
         let {sendStatus,deliveredCode} = order;
-        this.state = {sendStep:0,sendStatus,deliverers:[],code0:'',code1:'',code2:'',deliveredCode}
+        let sendStep = sendStatus.isFinal?3:0;
+        this.state = {
+            sendStep,sendStatus,deliverers:[],
+            code0:'',code1:'',code2:'',
+            deliveredCode
+            
+        }
     }
     async get_deliverers(){
         let {bazargahApis} = this.context;
         let deliverers = await bazargahApis({api:'get_deliverers'});
         this.setState({deliverers})
     }
+    async get_ecoDeliverer(){
+        let {sendStatus} = this.state;
+        if(!sendStatus.isFinal || sendStatus.delivererType !== 'eco'){return}
+        let {bazargahApis} = this.context;
+        let res;
+        if(this.counter < 2){this.counter++; res = false}
+        else{res = true}
+        let ecoDeliverer = await bazargahApis({api:'get_ecoDeliverer',parameter:res});
+        if(!ecoDeliverer){
+            setTimeout(()=>this.get_ecoDeliverer(),10000)
+        }
+        this.setState({ecoDeliverer})
+    }
     async componentDidMount(){
         this.get_deliverers();
+        await this.get_ecoDeliverer()
     }
     async changeSendStatus(key,value){
         let {bazargahApis} = this.context;
@@ -310,11 +335,13 @@ class JoziateSefaresheBazargah extends Component{
         sendStatus = JSON.parse(JSON.stringify(sendStatus));
         sendStatus[key] = value;
         let res = await bazargahApis({api:'taghire_vaziate_ersale_sefaresh',parameter:{orderId,sendStatus}})
-        //if(!res){
-        //    alert('تغییرات موفقیت آمیز نبود')
-        //}
-        //else{
+        // if(!res){
+        //     alert('تغییرات موفقیت آمیز نبود')
+        //     return false
+        // }
+        // else{
             this.setState({sendStatus})
+            return true
         //}
     }
     getVisibility(key){
@@ -332,10 +359,10 @@ class JoziateSefaresheBazargah extends Component{
         if(key === 'submit'){return type === 'wait_to_get' || sendStep < 3}
     }
     async onSubmit(){
+        let {bazargahApis} = this.context;
         let {order} = this.props;
         let {type,orderId} = order;
         if(type === 'wait_to_get'){
-            let {bazargahApis} = this.context;
             let res = await bazargahApis({api:'akhze_sefaresh',parameter:{orderId}})
             let {showMessage} = this.context;
             if(res){showMessage('سفارش با موفقیت اخذ شد'); this.props.onClose(order)}
@@ -343,8 +370,20 @@ class JoziateSefaresheBazargah extends Component{
         }
         if(type === 'wait_to_send'){
             let {sendStep} = this.state;
+            if(sendStep === 2){
+                let statusRes = await this.changeSendStatus('isFinal',true);
+                let {sendStatus,ecoDeliverer} = this.state;
+                if(sendStatus.delivererType === 'eco' && !ecoDeliverer){
+                    let res = await bazargahApis({api:'ecoRequest',parameter:order})        
+                    if(res && statusRes){
+                        setTimeout(()=>this.get_ecoDeliverer(),10000)
+                    }
+                        
+                }
+            }
             this.setState({sendStep:sendStep + 1})
         }
+        
     }
     getHints(){
         let {order} = this.props;
@@ -361,7 +400,7 @@ class JoziateSefaresheBazargah extends Component{
             }
         }
         if(type === 'wait_to_send'){
-            let {sendStep,sendStatus} = this.state;
+            let {sendStep} = this.state;
             let res = {}
             res.title = [
                 'ارسال سفارش',
@@ -422,12 +461,14 @@ class JoziateSefaresheBazargah extends Component{
                 if(sendStep === 2){return 'ارسال سفارش'}
             }
             if(key === 'buttonDisabled'){
-                let {itemsChecked = {},delivererId} = sendStatus;
+                let {itemsChecked = {},delivererId,delivererType} = sendStatus;
                 if(sendStep === 0){return false}
                 if(sendStep === 1){
                     return Object.keys(itemsChecked).filter((o)=>!!itemsChecked[o]).length !== items.length
                 }
-                if(sendStep === 2){return !delivererId}
+                if(sendStep === 2){
+                    if(delivererType === 'shakhsi'){return !delivererId}
+                }
             }
             if(key === 'timeTitle'){return 'مهلت ارسال'}
         }
@@ -623,7 +664,6 @@ class JoziateSefaresheBazargah extends Component{
             ]
         }
     }
-    
     deliverer_layout(){
         if(!this.getVisibility('deliverer')){return false}
         let {deliverers,sendStatus} = this.state;
@@ -631,7 +671,23 @@ class JoziateSefaresheBazargah extends Component{
             className:'bgFFF',
             column:[
                 {size:16},
+                {size:36,html:'نحوه ارسال',align:'v',className:'m-h-12'},
                 {
+                    html:(
+                        <AIOButton
+                            type={'radio'}
+                            style={{width:'100%'}}
+                            options={[{text:'اکو پیک',value:'eco',subtext:'مخصوص تهران'},{text:'شخصی',value:'shakhsi'}]}
+                            optionStyle='{width:"100%",borderBottom:"1px solid #ddd"}'
+                            optionClassName='fs-14 color605E5C'
+                            value={sendStatus.delivererType}
+                            onChange={(value)=>this.changeSendStatus('delivererType',value)}
+                        />
+                    )
+                },
+                {size:16},
+                {
+                    show:sendStatus.delivererType === 'shakhsi',
                     size:36,className:'fs-16 color323130 bold m-h-12',
                     row:[
                         {flex:1,html:'انتخاب پیک',align:'v'},
@@ -662,7 +718,8 @@ class JoziateSefaresheBazargah extends Component{
                     ]
                 },
                 {
-                    html:(
+                    show:sendStatus.delivererType === 'shakhsi',
+                    html:()=>(
                         <AIOButton
                             type={'radio'}
                             options={deliverers}
@@ -770,11 +827,10 @@ class JoziateSefaresheBazargah extends Component{
         let {setNavId} = rsa_actions;
         let {deliveredCode = '1234',code0,code1,code2} = this.state;
         let disabled = code0 === '' || code1 === '' || code2 === '';
-        console.log(code0.code1,code2)
         return {
             className:'bg-fff p-h-12',
             column:[
-                {size:6},
+                {size:12},
                 {
                     size:48,
                     row:[
@@ -853,6 +909,7 @@ class JoziateSefaresheBazargah extends Component{
                             onClick={async ()=>{
                                 if(disabled){return}
                                 let {bazargahApis,showMessage,SetState} = this.context;
+                                let {sendStatus} = this.state;
                                 let {order} = this.props;
                                 let {orderId} = order;
                                 let res = await bazargahApis({api:'taide_code_tahvil',parameter:{deliveredCode,orderId,dynamicCode:`${code0}${code1}${code2}`}})
@@ -870,18 +927,25 @@ class JoziateSefaresheBazargah extends Component{
                         >تایید</button>
                     )
                 },
-                {size:6}
+                {size:12}
             ]
         }
     }
     callDeliverer_layout(){
         if(!this.getVisibility('call')){return false}
-        let {sendStatus,deliverers} = this.state;
-        let deliverer = deliverers.find((o)=>o.id === sendStatus.delivererId)
+        let {sendStatus,deliverers,ecoDeliverer} = this.state;
+        let deliverer;
+        if(sendStatus.delivererType === 'eco'){
+            if(!ecoDeliverer){return false}
+            else {deliverer = ecoDeliverer}
+        }
+        else{
+            deliverer = deliverers.find((o)=>o.id === sendStatus.delivererId)
+        }
         return {
             className:'bg-fff p-h-12',
             column:[
-                {size:6},
+                {size:12},
                 {
                     size:42,
                     row:[
@@ -889,8 +953,8 @@ class JoziateSefaresheBazargah extends Component{
                         {size:12},
                         {
                             column:[
-                                {html:deliverer.fullName,className:'fs-16 bold color323130'},
-                                {html:deliverer.phoneNumber,className:'fs-14 color605E5C'}
+                                {html:`${deliverer.fullName}${sendStatus.delivererType === 'eco'?' (اکو پیک)':''}`,className:'fs-12 bold color323130'},
+                                {html:deliverer.phoneNumber,className:'fs-12 color605E5C'}
                             ]
                         },
                         {flex:1},
@@ -905,7 +969,7 @@ class JoziateSefaresheBazargah extends Component{
                         }
                     ]
                 },
-                {size:6}
+                {size:12}
             ]
         }
     }
@@ -917,8 +981,12 @@ class JoziateSefaresheBazargah extends Component{
         }
     }
     render(){
+        let {sendStatus,ecoDeliverer} = this.state;
+        let {onClose} = this.props;
+        let searchEco = sendStatus.delivererType === 'eco' && !ecoDeliverer && sendStatus.isFinal;
         return (
-            <RVD
+            <>
+                <RVD
                 layout={{
                     className:'popup-bg',
                     style:{overflow:'hidden'},
@@ -943,57 +1011,39 @@ class JoziateSefaresheBazargah extends Component{
                     ]
                 }}
             />
+            {
+                searchEco &&
+                <RVD
+                    layout={{
+                        className:'fullscreen bg-fff',
+                        style:{zIndex:1000,color:'#999'},
+                        column:[
+                            {flex:1},
+                            {
+                                size:180,
+                                html:(
+                                    <>
+                                        <img className='del-icon' src={delSrc} alt='' width={120}/>
+                                        <Icon path={mdiMagnify} className='del-search-icon' size={9}/>
+                                    </>
+                                ),
+                                align:'vh'
+                            },
+                            {size:24},
+                            {html:'در حال جستجوی پیک',align:'vh',className:'del-text'},
+                            {size:24},
+                            {html:<button onClick={()=>onClose()} className='button-3'>لغو جستجو</button>,align:'h'},
+                            {flex:1},
+                            {html:<button onClick={()=>onClose()} className='button-2'>بازگشت</button>,align:'h',className:'m-h-12 m-b-12'}
+                        ]
+                    }}
+                />
+            }
+            </>
         )
     }
 }
-class InlineNumberKeyboard extends Component{
-    render(){
-        let {onClick} = this.props;
-        let style = {background:'dodgerblue',color:'#fff',borderRadius:5}
-        return (
-            <RVD
-                layout={{
-                    style:{width:120,fontSize:16,flex:'none',padding:6},
-                    gap:6,
-                    column:[
-                        {
-                            size:30,gap:6,
-                            row:[
-                                {flex:1,style,html:'1',align:'vh',attrs:{onClick:()=>onClick(1)}},
-                                {flex:1,style,html:'2',align:'vh',attrs:{onClick:()=>onClick(2)}},
-                                {flex:1,style,html:'3',align:'vh',attrs:{onClick:()=>onClick(3)}},
-                            ]
-                        },
-                        {
-                            size:30,gap:6,
-                            row:[
-                                {flex:1,style,html:'4',align:'vh',attrs:{onClick:()=>onClick(4)}},
-                                {flex:1,style,html:'5',align:'vh',attrs:{onClick:()=>onClick(5)}},
-                                {flex:1,style,html:'6',align:'vh',attrs:{onClick:()=>onClick(6)}},
-                            ]
-                        },
-                        {
-                            size:30,gap:6,
-                            row:[
-                                {flex:1,style,html:'7',align:'vh',attrs:{onClick:()=>onClick(7)}},
-                                {flex:1,style,html:'8',align:'vh',attrs:{onClick:()=>onClick(8)}},
-                                {flex:1,style,html:'9',align:'vh',attrs:{onClick:()=>onClick(9)}},
-                            ]
-                        },
-                        {
-                            size:30,gap:6,
-                            row:[
-                                {flex:1,style,html:<Icon path={mdiBackspace} size={0.7}/>,align:'vh',attrs:{onClick:()=>onClick('backspace')}},
-                                {flex:1,style,html:'0',align:'vh',attrs:{onClick:()=>onClick(0)}},
-                                {flex:1,html:'',align:'vh'},
-                            ]
-                        }
-                    ]
-                }}
-            />
-        )
-    }
-}
+
 class AddDeliverer extends Component{
     static contextType = appContext;
     constructor(props){

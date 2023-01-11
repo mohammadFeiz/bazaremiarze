@@ -28,7 +28,7 @@ export default class Register extends Component{
         this.state = {
             prevProvince:userProvince,
             model:{latitude,cardCode,longitude,firstName,lastName,phoneNumber,storeName,address,userProvince,userCity,landline,password,re_password:password},
-            showMap:true,
+            showMap:false,
             loading:false,
         }
     }
@@ -232,7 +232,7 @@ class ShowMap extends Component{
     header_layout(){
         let {onClose} = this.props;
         return {
-            className:'box-shadow of-visible',size:60,style:{marginBottom:12,background:'#fff'},
+            className:'box-shadow of-visible',size:60,style:{background:'#fff'},
             row:[
                 {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>onClose()}},
                 {flex:1,html:'انتخاب موقعیت فروشگاه',className:'fs-16 color605E5C',align:'v'}

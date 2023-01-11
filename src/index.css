@@ -186,7 +186,7 @@ body{
 
 }
 .popup-bg{
-	background:#f8f8f8bb;
+	background:#f8f8f8;
 	height:100%;
 }
 .page-bg{
@@ -683,4 +683,41 @@ button{
 	outline: none;
 	border: 2px solid #4285f4;
   }
-  
+  .del-search-icon{
+	position:absolute;
+	top:-16px;
+	
+  }
+  .del-icon{
+	transform: translateX(-100%);
+	animation-name:ddd;
+	animation-duration: 2s;
+	animation-iteration-count: infinite;
+	animation-timing-function: linear;
+  }
+  .del-text{
+	animation-name:ccc;
+	animation-duration: 2s;
+	animation-iteration-count: infinite;
+	animation-timing-function:ease-in-out;
+  }
+
+  @keyframes ddd{
+	0% {
+		transform: translateX(-200%);
+	}
+	100% {
+		transform: translateX(200%);
+	}
+  }
+  @keyframes ccc{
+	0% {
+		opacity: 0.2;
+	}
+	50% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0.2;
+	}
+  }

@@ -2,7 +2,8 @@ import React,{Component, createRef} from 'react';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import {Icon} from '@mdi/react';
 import { mdiPlus,mdiMinus, mdiTrashCanOutline } from '@mdi/js';
-import AIOButton from './../../../interfaces/aio-button/aio-button';
+import AIOButton from './../../../npm/aio-button/aio-button';
+import InlineNumberKeyboard from '../../inline-number-keyboard/inline-number-keyboard';
 import $ from 'jquery';
 import './index.css';
 export default class ProductCount extends Component{
@@ -12,11 +13,13 @@ export default class ProductCount extends Component{
         this.state = {value,prevValue:value}
     }
     change(value,min = this.props.min || 0){
+        value = +value;
+        if(isNaN(value)){value = 0}
         let {onChange,max = Infinity} = this.props;
-        if(value > max){return}
         this.setState({value});
         clearTimeout(this.changeTimeout);
         this.changeTimeout = setTimeout(()=>{
+            if(value > max){value = max}
             if(value < min){value = min}
             onChange(value)
         },500)
@@ -70,30 +73,9 @@ export default class ProductCount extends Component{
                             show:onChange!== undefined
                         },
                         { 
-                            flex: 1, show:!!value,
+                            show:!!value,
                             html:(
-                                <AIOButton
-                                    type='button'
-                                    caret={false}
-                                    position='top'
-                                    text={value}
-                                    popOver={({toggle})=>{
-                                        return (
-                                            <CountPopup value={value}
-                                                onChange={(value)=>{
-                                                    value = +value;
-                                                    if(isNaN(value)){value = 0}
-                                                    this.change(value)
-                                                    toggle()
-                                                }}
-                                                onRemove={()=>{
-                                                    this.change(0);
-                                                    toggle()
-                                                }}
-                                            />
-                                        )
-                                    }}
-                                />
+                                <input type='number' value={value} className='product-count-input' onChange={(e)=>this.change(e.target.value)}/>
                             )
                         },
                         {

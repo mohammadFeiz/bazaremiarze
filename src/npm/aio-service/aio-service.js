@@ -69,9 +69,9 @@ export default function services({getState,apis,token,loader,baseUrl}) {
   return Service(apis({Axios,getState,getDateAndTime,arabicToFarsi,token,AIOServiceShowAlert,baseUrl}),loader)
 }
 
-function AIOServiceLoading(){
+function AIOServiceLoading(id){
   return (`
-    <div class="aio-service-loading">
+    <div class="aio-service-loading" id="${id}">
       <div class="aio-service-loading-0">
         <div class="aio-service-loading-1">
           <div class="aio-service-loading-2" style="animation: 1s ease-in-out 0.0s infinite normal none running aioserviceloading;"></div>
@@ -98,17 +98,27 @@ function Service(services,loader) {
     let time = new Date().getTime();
     localStorage.setItem(key, JSON.stringify({ time, data }))
   }
-  return async ({ api,callback, parameter, loading = true, cache, cacheName,def,validation }) => {
-    if (loading) {$("body").append(typeof loader === 'function'?loader():AIOServiceLoading()); }
+  function removeLoading(id){
+    if(!id){return}
+    let loading = $('#' + id);
+    if(!loading.length){loading = $('.aio-service-loading')}
+    loading.remove()
+  }
+  return async ({ api,callback, parameter, loading = true, cache, cacheName,def,validation,loadingParent = 'body' }) => {
+    let loadingId;
+    if (loading) {
+      loadingId = 'b' + Math.random()
+      $(loadingParent).append(typeof loader === 'function'?loader():AIOServiceLoading(loadingId)); 
+    }
     if (cache) {
       let a = getFromCache(cacheName ? 'storage-' + cacheName : 'storage-' + api, cache);
       if (a !== false) {
-        $(".aio-service-loading").remove();
+        removeLoading(loadingId);
         return a
       }
       if (!services[api]) {debugger;}
       let result = await services[api](parameter);
-      $(".aio-service-loading").remove();
+      removeLoading(loadingId);
       setToCache(cacheName ? 'storage-' + cacheName : 'storage-' + api, result);
       return result;
     }
@@ -120,7 +130,7 @@ function Service(services,loader) {
     catch(err){
       AIOServiceShowAlert({type:'error',text:`apis().${api}`,subtext:err.message});
     }
-    $(".aio-service-loading").remove();
+    removeLoading(loadingId);
     if(validation){
       let message = validation(result);
       if(typeof message === 'string'){

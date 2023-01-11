@@ -137,7 +137,7 @@ class App extends Component {
     let {customer = {}} = b1Info;
     let ballance = customer.ballance;
     let visitorMobile;
-    try{visitorMobile = customer.salePeople.mobile}
+    try{visitorMobile = b1Info.salePeople.mobile}
     catch{visitorMobile = ''}
     if(isNaN(ballance)){
       console.error(`b1Info.customer.ballance is ${ballance} but we set it on 0`)

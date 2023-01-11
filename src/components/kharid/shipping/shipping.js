@@ -47,8 +47,8 @@ export default class Shipping extends Component{
         PaymentTime:'ByOnlineOrder',
         PaymentTime_options:[
           {value:'ByOnlineOrder',text:'اینترنتی'},
-          {value:'ByOrder',text:'واریز قبل ارسال - نقد'},
-          {value:'ByDelivery',text:'واریز پای بار - نقد'},
+          {value:'ByOrder',text:'واریز قبل ارسال'},
+          {value:'ByDelivery',text:'واریز پای بار'},
         ],
         PaymentTime_map:{
             ByOrder:1,

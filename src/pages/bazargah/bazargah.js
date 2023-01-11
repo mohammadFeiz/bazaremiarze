@@ -136,7 +136,7 @@ export default class Bazargah extends Component{
         }
     }
     wait_to_send_layout(){
-        return this.mock_wait_to_send_layout()
+        //return this.mock_wait_to_send_layout()
         let {SetState,bazargah} = this.context;
         if(!bazargah.active){return false}
         let {activeTabId} = this.state;

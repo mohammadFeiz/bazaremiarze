@@ -914,7 +914,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         "DocNum":order.mainDocNum,
         "DocEntry":order.code,
         // "CallbackUrl":"https://bazar.miarze."+"com/"
-        "CallbackUrl":"https://retailerapp.bbeta."+"ir/"
+        "CallbackUrl":"https://uiretailerapp.bbeta."+"ir/"
         // "CallbackUrl":"http://localhost:3000/"
       });
       

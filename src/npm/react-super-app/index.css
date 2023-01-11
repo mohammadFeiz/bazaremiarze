@@ -89,14 +89,10 @@
   border-bottom:1px solid #ddd;
 }
 .rsa-header-title {
-  font-size: 20px;
+  font-size: 16px;
   font-weight:bold;
   color:#323130;
 }
-.rsa-header.touch-mode .rsa-header-title {
-    font-weight:bold;
-    color:#323130;
-  }
 .rsa-header-username{
   font-size:16px;
   color:#605E5C;
@@ -194,7 +190,6 @@
 }
 .rsa-popup-container{
   position:fixed;
-  background:rgba(0,0,0,0.4);
   display:flex;
   width:100%;
   height:100%;

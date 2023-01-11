@@ -81,23 +81,11 @@ export default class ReactSuperApp extends Component {
       if(!navs.length){return false}
       return navs[0].id;
     }
-    navigation_layout() {
-      let {navs = [],navHeader,rtl} = this.props;
-      if(!navs.length){return false}
-      let {touch,navId} = this.state;
-      let props = {navs,navHeader,navId,onChange:(navId)=>this.setState({navId}),touch,rtl}
-      return {className:'of-visible',html: (<Navigation {...props}/>)};
-    }
-    page_layout(nav){
-      let {body = ()=>''} = this.props;
-      return {flex:1,column:[this.header_layout(nav),{flex:1,html:<div className='rsa-body'>{body(this.state)}</div>}]} 
-    }
     header_layout(nav){
-        let {touch} = this.state;
         let {header,sides = [],title = ()=>nav.text} = this.props;
         if(header === false){return false}
         return {
-          style:{flex:'none'},align:'v',className:'rsa-header' + (touch?' touch-mode':''),
+          style:{flex:'none'},align:'v',className:'rsa-header',
           row:[
             {size:60,show:!!sides.length,html:<Icon path={mdiMenu} size={1}/>,align:'vh',attrs:{onClick:()=>this.setState({sideOpen:!this.state.sideOpen})}},
             {show:!sides.length,size:24},
@@ -125,21 +113,38 @@ export default class ReactSuperApp extends Component {
     }
     getMainClassName(){
       let {confirm,popups,sideOpen} = this.state;
-      let {rtl,className} = this.props;
-      let cls = 'rsa';
-      if(className){cls += ' ' + className}
-      cls += rtl?' rtl':' ltr';
-      if(popups.length){cls += ' has-opened-popup'}
-      if(confirm || popups.length || sideOpen){cls += ' rsa-blur'}
-      return cls;
+      let {rtl} = this.props;
+      let className = 'rsa';
+      className += rtl?' rtl':' ltr';
+      if(popups.length){className += ' has-opened-popup'}
+      if(confirm || popups.length || sideOpen){className += ' rsa-blur'}
+      return className;
     }
+    navigation_layout(type) {
+      let {navs = [],navHeader,rtl} = this.props;
+      if(!navs.length){return false}
+      let {navId} = this.state;
+      let props = {navs,navHeader,navId,onChange:(navId)=>this.setState({navId}),type,rtl}
+      return {className:'of-visible',html: (<Navigation {...props}/>)};
+    }
+    page_layout(nav){
+      let {body = ()=>''} = this.props;
+      return {
+        flex:1,
+        column:[
+          this.header_layout(nav),
+          {flex:1,html:<div className='rsa-body'>{body(this.state)}</div>},
+          this.navigation_layout('bottom')
+        ]
+      } 
+    }
+    
     renderMain(){
-      let {touch,navId} = this.state;
+      let {navId} = this.state;
       let {navs,style} = this.props;
       let nav = navs?this.getNavById(navId):false;
       let layout = {style,className: this.getMainClassName()}
-      if(touch){layout.column = [this.page_layout(nav),this.navigation_layout()]}
-      else{layout.row = [this.navigation_layout(),this.page_layout(nav)]}
+      layout.row = [this.navigation_layout('side'),this.page_layout(nav)]
       return (<RVD layout={layout}/>)
     }
     renderPopups(){
@@ -151,7 +156,7 @@ export default class ReactSuperApp extends Component {
       })
     }
     render() {
-      let {confirm,popups,removePopup,sideOpen,splash} = this.state;
+      let {confirm,sideOpen,splash} = this.state;
       let {sides = [],sideId,rtl,sideHeader,popupConfig = {}} = this.props;
       return (
         <>
@@ -223,11 +228,11 @@ export default class ReactSuperApp extends Component {
       }
     }
     render() {
-      let {touch,navs} = this.props;
-      if(touch){
-        return (<RVD layout={{className: 'rsa-bottom-menu',row: navs.map((o)=>this.bottomMenu_layout(o))}}/>)
+      let {type,navs} = this.props;
+      if(type === 'bottom'){
+        return (<RVD layout={{className: 'rsa-bottom-menu',hide_sm:true,hide_md:true,hide_lg:true,row: navs.map((o)=>this.bottomMenu_layout(o))}}/>)
       }
-      return (<RVD layout={{className: 'rsa-navigation',column: [this.header_layout(),this.items_layout(navs,0)]}}/>);
+      return (<RVD layout={{hide_xs:true,className: 'rsa-navigation',column: [this.header_layout(),this.items_layout(navs,0)]}}/>);
     }
   }
   class SideMenu extends Component {
@@ -368,7 +373,7 @@ class Popup extends Component{
       $(this.dom.current).animate({height: '100%',width: '100%',left:'0%',top:'0%',opacity:1}, 300);
     }
     render(){
-      let {rtl} = this.props;
+      let {rtl,style} = this.props;
       return (  
         <div ref={this.dom} className={this.getClassName()} onClick={(e)=>this.backClick(e)} style={{
           left:'50%',top:'100%',height:'0%',width:'0%',opacity:0
@@ -376,7 +381,7 @@ class Popup extends Component{
           <RVD 
             layout={{
               className:'rsa-popup' + (rtl?' rtl':' ltr') + (' ' + this.dui),
-              style:{flex:'none'},
+              style:{flex:'none',...style},
               column:[this.header_layout(),this.body_layout()]
             }}
           />  

@@ -13,7 +13,9 @@ export default class ReactVirtualDom extends Component {
     if(type === 'bind'){$(window).bind(event, action)}
   }
   getClassName(obj,align,Attrs,attrs,Props,pointer){
+    let {rtl} = this.props;
     let className = RVDCLS.rvd;
+    className += rtl?' rvd-rtl':' rvd-ltr';
     let gapClassName = RVDCLS.gap;
     if(obj.gapAttrs && obj.gapAttrs.className){
       gapClassName += ' ' + obj.gapAttrs.className
@@ -27,19 +29,29 @@ export default class ReactVirtualDom extends Component {
     else if(align === 'vh'){className += ` ${RVDCLS.justify} ${RVDCLS.align}`;}
     if(obj.row){className += ' ' + RVDCLS.row}
     else if(obj.column){className += ' ' + RVDCLS.column}
-    if(obj.hide_xs || Props.hide_xs){
+    let hide_xs,hide_sm,hide_md,hide_lg;
+    
+    if(obj.show_xs || Props.show_xs){hide_xs = false; hide_sm = true; hide_md = true; hide_lg = true;}
+    if(obj.hide_xs || Props.hide_xs){hide_xs = true;}
+    if(obj.show_sm || Props.show_sm){hide_xs = true; hide_sm = false; hide_md = true; hide_lg = true;}
+    if(obj.hide_sm || Props.hide_sm){hide_sm = true;}
+    if(obj.show_md || Props.show_md){hide_xs = true; hide_sm = true; hide_md = false; hide_lg = true;}
+    if(obj.hide_md || Props.hide_md){hide_md = true;}
+    if(obj.show_lg || Props.show_lg){hide_xs = true; hide_sm = true; hide_md = true; hide_lg = false;}
+    if(obj.hide_lg || Props.hide_lg){hide_lg = true;} 
+    if(hide_xs){
       className += ' ' + RVDCLS.hidexs;
       gapClassName += ' ' + RVDCLS.hidexs;
     }
-    if(obj.hide_sm || Props.hide_sm){
+    if(hide_sm){
       className += ' ' + RVDCLS.hidesm;
       gapClassName += ' ' + RVDCLS.hidesm;
     }
-    if(obj.hide_md || Props.hide_md){
+    if(hide_md){
       className += ' ' + RVDCLS.hidemd;
       gapClassName += ' ' + RVDCLS.hidemd;
     }
-    if(obj.hide_lg || Props.hide_lg){
+    if(hide_lg){
       className += ' ' + RVDCLS.hidelg;
       gapClassName += ' ' + RVDCLS.hidelg;
     }

@@ -118,8 +118,13 @@ export default class Table extends Component {
         if(_show === false){return null}
         if(!this.isRowOpen(id)){return null}
         let {width,flex,minWidth = 3,dataColumnId} = column;
+        let {hide_xs,hide_sm,hide_md,hide_lg,show_xs,show_sm,show_md,show_lg} = column;
         if(width === undefined && flex === undefined){flex = 1;}
-        return {html:<Cell striped={striped} key={id + dataColumnId + column.freeze} colId={j} rowId={id} column={column} value={value}/>,size:width,flex,minWidth,attrs:{'data-column-id':dataColumnId}}
+        return {
+          html:<Cell striped={striped} key={id + dataColumnId + column.freeze} colId={j} rowId={id} column={column} value={value}/>,
+          size:width,flex,minWidth,attrs:{'data-column-id':dataColumnId},
+          hide_xs,hide_sm,hide_md,hide_lg,show_xs,show_sm,show_md,show_lg
+        }
       };
       if(column.freeze){this.freezeMode = true; freezeCells.push(cell)}
       else{unfreezeCells.push(cell)}  
@@ -496,9 +501,11 @@ class TableUnit extends Component{
     let resizable = column.resizable !== false && column.width && !column.flex;
     let {rowHeight,headerHeight} = this.context;
     let {width,flex,minWidth = 3,titleAttrs = {}} = column;
+    let {hide_xs,hide_sm,hide_md,hide_lg,show_xs,show_sm,show_md,show_lg} = column;
     if(setFlex){width = undefined; flex = 1}
     if(width === undefined && flex === undefined){flex = 1;}
     return {
+      hide_xs,hide_sm,hide_md,hide_lg,show_xs,show_sm,show_md,show_lg,
       size:width,align:'vh',flex,style:{minWidth,height:headerHeight || rowHeight,...titleAttrs.style},
       attrs:{
         ...titleAttrs,'data-column-id':column.dataColumnId,className:undefined,style:undefined,
@@ -647,13 +654,17 @@ class TableUnit extends Component{
       gap:columnGap,
       row:cells.map((cell,i)=>{
         let res = cell(striped);
-        let {html,size,flex,minWidth = 3,attrs} = res;
+        let {html,size,flex,minWidth = 3,attrs,hide_xs,hide_sm,hide_md,hide_lg,show_xs,show_sm,show_md,show_lg} = res;
         if(size === undefined && flex === undefined){flex = 1;}
         if(flex !== undefined){isThereAnyFlex = true}
         if(i === cells.length - 1 && !isThereAnyFlex){
           size = undefined; flex = 1
         }
-        return {style:{height:'100%',minWidth},html,size,flex,attrs,className:'of-visible'}
+        return {
+          style:{height:'100%',minWidth},
+          html,size,flex,attrs,className:'of-visible',
+          hide_xs,hide_sm,hide_md,hide_lg,show_xs,show_sm,show_md,show_lg
+        }
       })
     }
   }
@@ -665,7 +676,7 @@ class TableUnit extends Component{
     let headerLayout = this.header_layout();
     let rowsLayout = this.rows_layout()
     let className = TableCLS.rows;
-    className += 'of-auto';
+    className += ' of-auto';
     if(cellsType === 'freezeCells'){className += ' ' + TableCLS.freezeContainer}
     else if(cellsType === 'unfreezeCells'){className += ' ' + TableCLS.unfreezeContainer}
     return (
@@ -686,7 +697,7 @@ class TableUnit extends Component{
     if(rowTemplate || showHeader === false){return false}
     let isThereAnyFlex = false;
     return {
-      gap:columnGap,className:TableCLS.header,
+      gap:columnGap,className:TableCLS.header,hide_xs:showHeader === 'hide_xs',
       row:columns.map((column,i)=>{
         let {width,flex} = column;
         if(width === undefined && flex === undefined){flex = 1;}
@@ -898,7 +909,7 @@ class Cell extends Component{
   }
   async onChange(value){
     let {column,rowId} = this.props;
-    let {rows_object,setModel} = this.context;
+    let {rows_object,setModel = ()=>{}} = this.context;
     let row = rows_object[rowId];
     this.setState({loading:true})
     if(this.inlineEdit.type === 'number' && !isNaN(+value)){value = +value}
@@ -942,24 +953,24 @@ class Cell extends Component{
       style.background = striped[0];
       style.color = striped[1];
     }
-    style = {justifyContent:column.justify?'center':undefined,...style}
+    style = {justifyContent:column.justify?'center':undefined,padding:column.justify?undefined:'0 12px',...style}
     this.inlineEdit = this.getInlineEdit(row,column);
     return (
       <RVD
         layout={{
-            className:TableCLS.cell + ' of-visible' + (attrs.className?' ' + attrs.className:'') + (striped === true?' striped':''),
-            attrs:{
-              ...attrs,'data-uniq-id':this.dataUniqId,style:undefined,className:undefined,
-              onClick:attrs.onClick?()=>attrs.onClick(row):undefined,
-            },
-            style,
-            row:[
-              this.indent_layout(column.treeMode,rowId),
-              this.toggle_layout(),
-              this.before_layout(row,column),
-              this.content_layout(row,column,value),
-              this.after_layout(row,column) 
-            ]
+          className:TableCLS.cell + ' of-visible' + (attrs.className?' ' + attrs.className:'') + (striped === true?' striped':''),
+          attrs:{
+            ...attrs,'data-uniq-id':this.dataUniqId,style:undefined,className:undefined,
+            onClick:attrs.onClick?()=>attrs.onClick(row):undefined,
+          },
+          style,
+          row:[
+            this.indent_layout(column.treeMode,rowId),
+            this.toggle_layout(),
+            this.before_layout(row,column),
+            this.content_layout(row,column,value),
+            this.after_layout(row,column) 
+          ]
         }}
       />  
     )

@@ -312,12 +312,10 @@ class JoziateSefaresheBazargah extends Component{
     }
     async get_ecoDeliverer(){
         let {sendStatus} = this.state;
+        let {order} = this.props;
         if(!sendStatus.isFinal || sendStatus.delivererType !== 'eco'){return}
         let {bazargahApis} = this.context;
-        let res;
-        if(this.counter < 2){this.counter++; res = false}
-        else{res = true}
-        let ecoDeliverer = await bazargahApis({api:'get_ecoDeliverer',parameter:res});
+        let ecoDeliverer = await bazargahApis({api:'get_ecoDeliverer',parameter:order});
         if(!ecoDeliverer){
             setTimeout(()=>this.get_ecoDeliverer(),10000)
         }

@@ -217,8 +217,9 @@ export default class Main extends Component {
     let {userInfo} = this.props;
     if(showGaranti){
       this.getGuaranteeItems();
-      this.getCampaignsData();
+      
     }
+    this.getCampaignsData();
     if(bazargah.active){this.getBazargahOrders();}
     //let testedChance = await gardooneApis({type:"get_tested_chance"});
     let pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode,12 * 60 * 60 * 1000)

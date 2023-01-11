@@ -306,7 +306,7 @@ button{
 	justify-content: center;
 	font-size:14px;
 	font-family: inherit;
-	background-image: linear-gradient(#0dccea, #0d70ea);
+	background: #3B55A5;
 	border: 0;
 	padding:0 24px;
 	cursor: pointer;

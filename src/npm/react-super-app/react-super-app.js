@@ -159,12 +159,14 @@ export default class ReactSuperApp extends Component {
       let {confirm,sideOpen,splash} = this.state;
       let {sides = [],sideId,rtl,sideHeader,sideFooter,sideClassName} = this.props;
       return (
-        <div className='rsa'>
-          {this.renderMain()},
-          {this.renderPopups()}
-          {confirm && <Confirm {...confirm} rtl={rtl} onClose={()=>this.setState({confirm:false})}/>}
-          {sides.length && <SideMenu className={sideClassName} sideHeader={sideHeader} sideFooter={sideFooter} sides={sides} sideId={sideId} sideOpen={sideOpen} rtl={rtl} onClose={()=>this.setState({sideOpen:false})}/>}
-          {splash && splash()}
+        <div className='rsa-container'>
+          <div className='rsa'>
+            {this.renderMain()},
+            {this.renderPopups()}
+            {confirm && <Confirm {...confirm} rtl={rtl} onClose={()=>this.setState({confirm:false})}/>}
+            {sides.length && <SideMenu className={sideClassName} sideHeader={sideHeader} sideFooter={sideFooter} sides={sides} sideId={sideId} sideOpen={sideOpen} rtl={rtl} onClose={()=>this.setState({sideOpen:false})}/>}
+            {splash && splash()}
+          </div>
         </div>
       );
     }

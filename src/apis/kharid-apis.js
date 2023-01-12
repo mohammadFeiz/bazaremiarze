@@ -903,6 +903,8 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       //AIOServiceShowAlert({type:'success',text:'text',subtext:'test'})
       let res = await Axios.get(`${baseUrl}/payment/request?price=${amount}&cbu=${url}`);
       if(res.data.isSuccess){
+        let {getUserInfo} = getState();
+        getUserInfo()
         window.location.href = res.data.data;
       }
     },
@@ -919,6 +921,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       });
       
       if(res.data.isSuccess){
+        let {getUserInfo} = getState();
+        getUserInfo()
+      
         window.location.href = res.data.data;
       }
     }

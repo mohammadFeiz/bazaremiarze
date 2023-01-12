@@ -24,7 +24,7 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       }
       return result.map((x)=>{
         let {date,time} = getDateAndTime(x.date);
-        return {title:titleDic[x.realtedDoc.docType] ,date,_time:time,type:typeDic[x.realtedDoc.docType] ,amount:x.sum}
+        return {title:titleDic[x.realtedDoc.docType] ,date,_time:time,type:typeDic[x.realtedDoc.docType] ,amount:x.credit}
       });
     },
     async ettelaate_banki(){
@@ -63,18 +63,16 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
     async bardasht(parameter){
       let {amount,card} = parameter;
 
-      let res = await Axios.post(`${baseUrl}/WithdrawRequest`,
-      {
-        "creditCardId": card,
-        "amount": amount
-      }
-    );
-
+      let res = await Axios.post(`${baseUrl}/WithdrawRequest`,{"creditCardId": card,"amount": amount})
+      
+      let {getUserInfo} = getState();
+      getUserInfo()
+      
       //در صورت موفقیت
       return res.data.isSuccess;
       //در صورت خطا
       //return false
-
+      
     },
     async variz({amount}){
       let res = await Axios.post(`${baseUrl}/payment/request`,{
@@ -84,6 +82,9 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       });
       
       if(res.data.isSuccess){
+        let {getUserInfo} = getState();
+        getUserInfo()
+      
         window.location.href = res.data.data;
       }
     }

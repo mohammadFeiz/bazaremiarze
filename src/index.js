@@ -123,7 +123,7 @@ class App extends Component {
     this.setState({userInfo:newUserInfo});
     localStorage.setItem('brxelctoken', JSON.stringify({ token, userInfo:newUserInfo }));
   }
-  async getUserInfo(userInfo){
+  async getUserInfo(userInfo = this.state.userInfo){
     const b1Info = await fetch(`https://b1api.burux.com/api/BRXIntLayer/GetCalcData/${userInfo.cardCode}`, {
         mode: 'cors',headers: {'Access-Control-Allow-Origin': '*'}
     }).then((response) => {
@@ -217,6 +217,7 @@ class App extends Component {
           token={token} 
           userInfo={userInfo} 
           updateUserInfo={this.updateUserInfo.bind(this)} 
+          getUserInfo={this.getUserInfo.bind(this)}
           updatePassword={this.updatePassword.bind(this)} 
           baseUrl={this.apiBaseUrl}
         />

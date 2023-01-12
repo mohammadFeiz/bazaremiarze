@@ -111,7 +111,7 @@ export default class MyBurux extends Component{
                             html:(
                                 <Card
                                     type='card3' footer='جزییات کیف پول'
-                                    rows={[[['کیف پول',functions.splitPrice(Math.max(userInfo.ballance,0)) + ' ریال']]]}
+                                    rows={[[['کیف پول',functions.splitPrice(Math.max(userInfo.ballance * 10,0)) + ' ریال']]]}
                                     onClick={()=>this.setState({showWallet:true})}
                                 />
                             )

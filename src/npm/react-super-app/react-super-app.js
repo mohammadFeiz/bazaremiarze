@@ -114,10 +114,9 @@ export default class ReactSuperApp extends Component {
     getMainClassName(){
       let {confirm,popups,sideOpen} = this.state;
       let {rtl,className:cls} = this.props;
-      let className = 'rsa';
+      let className = 'rsa-main';
       className += cls?' ' + cls:'';
       className += rtl?' rtl':' ltr';
-      if(popups.length){className += ' has-opened-popup'}
       if(confirm || popups.length || sideOpen){className += ' rsa-blur'}
       return className;
     }
@@ -160,13 +159,13 @@ export default class ReactSuperApp extends Component {
       let {confirm,sideOpen,splash} = this.state;
       let {sides = [],sideId,rtl,sideHeader,sideFooter,sideClassName} = this.props;
       return (
-        <>
+        <div className='rsa'>
           {this.renderMain()},
           {this.renderPopups()}
           {confirm && <Confirm {...confirm} rtl={rtl} onClose={()=>this.setState({confirm:false})}/>}
           {sides.length && <SideMenu className={sideClassName} sideHeader={sideHeader} sideFooter={sideFooter} sides={sides} sideId={sideId} sideOpen={sideOpen} rtl={rtl} onClose={()=>this.setState({sideOpen:false})}/>}
           {splash && splash()}
-        </>
+        </div>
       );
     }
   }

@@ -102,6 +102,7 @@ export default class Main extends Component {
       campaigns:[],
       testedChance: true,
       updateUserInfo:props.updateUserInfo,
+      getUserInfo:props.getUserInfo,
       updatePassword:props.updatePassword,
       allProducts:[],
       shipping:false,//{cards:[<ProductCard/>,...],cartItems:[{count,variant,product}],total:number}

@@ -25,8 +25,22 @@ export default class Map extends Component{
           }
       );
     }
+    handlePermission() {
+        navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+            if (result.state === 'granted') {
+                console.log(result.state);
+            } 
+            else if (result.state === 'prompt') {
+                console.log(result.state);
+            } 
+            else if (result.state === 'denied') {
+                console.log(result.state);
+        }
+    });
+    }
     goToCurrentPoint(){
         if ("geolocation" in navigator) {
+            this.handlePermission();
             // check if geolocation is supported/enabled on current browser
             navigator.geolocation.getCurrentPosition(
                 (position)=> {

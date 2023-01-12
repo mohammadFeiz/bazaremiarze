@@ -14,9 +14,10 @@ export default class SabteGarantiJadidBaJoziat extends Component {
             items: [],
             tableColumns: [
                 { title: "عنوان", field: 'row.Name' },
+                {title:'رنگ',template:'color',width:42,justify:true},
                 {
-                    title: "تعداد", field: 'row.Qty', width: 160,
-                    template: 'count'
+                    title: "تعداد", field: 'row.Qty', width: 100,
+                    template: 'count',justify:true
                 },
             ]
         };
@@ -35,6 +36,12 @@ export default class SabteGarantiJadidBaJoziat extends Component {
             });
         }
         else {openPopup('payame-sabte-garanti',{text: "خطا"});}
+    }
+    getColor(c){
+        let color;
+        if(c){color = {'aftabi':'#ffd100','mahtabi':'#66b6ff','yakhi':'#f9ffd6'}[c];}
+        else {return '-'}
+        return <div style={{width:16,height:16,background:color,borderRadius:'100%',border:'1px solid #ddd'}}></div>
     }
     table_layout() {
         let { guaranteeExistItems } = this.context;
@@ -70,6 +77,26 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                                 
                             }}/>
                             
+                        },
+                        color:(row)=>{
+                            return (
+                                <AIOButton
+                                    type='select' caret={false}
+                                    style={{background:'none'}}
+                                    text={this.getColor(row.lightColor)}
+                                    options={[
+                                        {before:this.getColor(false),value:false,text:'انتخاب نشده'},
+                                        {before:this.getColor('mahtabi'),value:'mahtabi',text:'مهتابی'},
+                                        {before:this.getColor('aftabi'),value:'aftabi',text:'آفتابی'},
+                                        {before:this.getColor('yakhi'),value:'yakhi',text:'یخی'},
+                                    ]}
+                                    onChange={(value)=>{
+                                        let {items} = this.state;
+                                        row.lightColor = value;
+                                        this.setState({items})
+                                    }}
+                                />
+                            )
                         }
                     }}
                     paging={false} columns={tableColumns} model={items} rtl={true}
@@ -101,7 +128,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
         return {
             attrs:{onClick},
             style:{background:'#EFF0FF',paddingLeft:0},
-            className:'p-12 m-h-12 br-8 box-shadow',
+            className:'m-h-12 br-8 box-shadow',
             row:[
                 {
                     flex:1,

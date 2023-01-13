@@ -303,7 +303,7 @@ export default class ReactSuperApp extends Component {
     }
     return res
   }
-//tabs,content,onClose,title
+//tabs,body,onClose,title
 class Popup extends Component{
     constructor(props){
       super(props);
@@ -338,24 +338,24 @@ class Popup extends Component{
         ]
       }
     }
-    body_layout(){return {flex:1,column:[this.tabs_layout(),this.content_layout()]}}
+    body_layout(){return {flex:1,column:[this.tabs_layout(),this.body_layout()]}}
     tabs_layout(){
       let {tabs} = this.props;
       if(!tabs){return false}
       let {activeTabIndex} = this.state;
       return {html:(<AIOButton type='tabs' options={tabs.map((o,i)=>{return {text:o,value:i}})} value={activeTabIndex} onChange={(activeTabIndex)=>this.setState({activeTabIndex})}/>)}
     }
-    content_layout(){
-      let {tabs,content} = this.props;
-      let Content;
+    body_layout(){
+      let {tabs,body} = this.props;
+      let content;
       if(tabs){
         let {activeTabIndex} = this.state;
-        Content = content(activeTabIndex)
+        content = body(activeTabIndex)
       }
-      else {Content = content()}
-      if(Content === 'loading'){return {flex:1,html:'در حال بارگزاری',align:'vh'}}
-      if(Content === 'empty'){return {flex:1,html:'موردی موجود نیست',align:'vh'}}
-      return {flex:1,html:<div className='rsa-popup-body'>{Content}</div>}
+      else {content = body()}
+      if(content === 'loading'){return {flex:1,html:'در حال بارگزاری',align:'vh'}}
+      if(content === 'empty'){return {flex:1,html:'موردی موجود نیست',align:'vh'}}
+      return {flex:1,html:<div className='rsa-popup-body'>{content}</div>}
     }
     getClassName(){
       let {type,blur,className:cls} = this.props;

@@ -50,7 +50,7 @@ export default class Register extends Component{
             className:'box-shadow of-visible',size:60,style:{marginBottom:12,background:'#fff'},
             row:[
                 {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>this.onClose()}},
-                {flex:1,html:mode === 'edit'?'ویرایش اطلاعات کاربری':'ثبت نام',className:'fs-16 color605E5C',align:'v'}
+                {flex:1,html:mode === 'edit'?'ویرایش اطلاعات کاربری':'ثبت نام',className:'fs-16 theme-medium-font-color',align:'v'}
             ]
         }
     }
@@ -58,12 +58,12 @@ export default class Register extends Component{
     text_layout(){
         let {mode} = this.props;
         if(mode === 'edit'){return false}
-        return {html:'به خانواده بزرگ بروکس بپیوندید',align:'h',className:'fs-20 color323130 bold'}
+        return {html:'به خانواده بزرگ بروکس بپیوندید',align:'h',className:'fs-20 theme-dark-font-color bold'}
     }
     subtext_layout(){
         let {mode} = this.props;
         if(mode === 'edit'){return false}
-        return {html:'بیش از 8000 فروشگاه در سطح کشور عضو این خانواده هستند',align:'vh',className:'fs-14 color605E5C'}
+        return {html:'بیش از 8000 فروشگاه در سطح کشور عضو این خانواده هستند',align:'vh',className:'fs-14 theme-medium-font-color'}
     }
     async onSubmit(){
         if($('.aio-form-error').length){alert('موارد ضروری را پر کنید'); return;}
@@ -108,11 +108,13 @@ export default class Register extends Component{
                     style={{margin:12,borderRadius:12}}
                     theme={{
                         inlineLabel:false,
-                        bodyStyle:{background:'#fff',padding:12},
-                        inputStyle:{height:30,background:'#f5f5f5',border:'none'}
+                        bodyStyle:{background:'none',padding:12},
                     }}
-                    className='box-shadow'
-                    labelAttrs={{className:'fs-14 color605E5C'}}
+                    classNames={{
+                        label:'fs-14 theme-dark-font-color bold',
+                        input:'theme-input',
+                    }}
+                    className='theme-box-shadow theme-card-bg'
                     onChange={(model)=>this.change(model)}
                     inputs={[
                         {label:'کد مشتری',type:'text',field:'model.cardCode',disabled:true,show:mode === 'edit'},
@@ -235,7 +237,7 @@ class ShowMap extends Component{
             className:'box-shadow of-visible',size:60,style:{background:'#fff'},
             row:[
                 {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>onClose()}},
-                {flex:1,html:'انتخاب موقعیت فروشگاه',className:'fs-16 color605E5C',align:'v'}
+                {flex:1,html:'انتخاب موقعیت فروشگاه',className:'fs-16 theme-medium-font-color',align:'v'}
             ]
         }
     }

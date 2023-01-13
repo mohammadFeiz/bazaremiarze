@@ -115,7 +115,7 @@
   color:#605E5C;
 }
 .rsa-navigation{
-  background:#0094D4;
+  background:dodgerblue;
   width:240px;
 }
 .rsa-sidemenu-container{
@@ -162,29 +162,29 @@
   color:#605E5C;
 }
 
-.rsa-sidemenu-item.active{
-}
 .rsa-navigation-item{
   margin:0 12px;
   border-radius:6px;
   font-size:16px;
   color:#fff;
+  height:48px;
   user-select:none;
 }
 .rsa-bottom-menu{
     box-shadow: 0 0 12px 0px rgba(0,0,0,0.1);
     height:48px;
+    margin:6px;
+    border-radius:8px;
   }
 .rsa-navigation-item.active{
-  color:#005478;
-  background:#DEF1F9;
+  color:#fff;
+  background:rgba(0,0,0,0.2);
 }
 .rsa-bottom-menu-item{
     font-size:18px;
 }
   .rsa-bottom-menu-item.active{
-    color:#fff;
-    background:dodgerblue;
+    color:dodgerblue;
   }
 .rsa-bottom-menu-item-text{
   font-size:10px;

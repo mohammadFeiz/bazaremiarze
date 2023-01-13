@@ -38,7 +38,7 @@ export default class OrdersHistory extends Component {
       let orders = tab.orders;
       if(!orders.length){
         return {
-          flex:1,html:'سفارشی موجود نیست',className:'fs-16 color605E5C bold',align:'vh'
+          flex:1,html:'سفارشی موجود نیست',className:'fs-16 theme-medium-font-color bold',align:'vh'
         }
       }
       let column = orders.map((o,i)=>this.order_layout(o,i))
@@ -86,11 +86,11 @@ export default class OrdersHistory extends Component {
       return {
         align:"v",size:36,
         row: [
-          {html:"پیش سفارش:",className:"colorA19F9D fs-12"},
+          {html:"پیش سفارش:",className:"theme-light-font-color fs-12"},
           {size:4},
-          {html:mainDocNum, className: "color605E5C fs-14"},
+          {html:mainDocNum, className: "theme-medium-font-color fs-14"},
           {flex:1},
-          {html:date,className:"colorA19F9D fs-12"},
+          {html:date,className:"theme-light-font-color fs-12"},
         ],
       }
     }
@@ -101,11 +101,11 @@ export default class OrdersHistory extends Component {
       return {
         size: 36,childsProps: { align: "v" },
         row: [
-          {html:order.translate,className:'fs-12 color323130'},
+          {html:order.translate,className:'fs-12 theme-dark-font-color'},
           {flex:1},
-          {html:this.splitPrice(total),className: "fs-14 color323130"},
+          {html:this.splitPrice(total),className: "fs-14 theme-dark-font-color"},
           {size:6},
-          {html:unit,className: "fs-12 color605E5C"},
+          {html:unit,className: "fs-12 theme-medium-font-color"},
         ],
       }
     }

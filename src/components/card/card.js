@@ -21,13 +21,13 @@ class Card1 extends Component {
                     column: [
                         { size: 12 },
                         { html: icon, align: 'vh', size: 40 },
-                        { html: title, className: 'color605E5C fs-14 bold', align: 'h' },
+                        { html: title, className: 'theme-medium-font-color fs-14 bold', align: 'h' },
                         {
                             align: 'h',
                             row: [
-                                { html: value, className: 'color323130 fs-16 bold', align: 'vh' },
+                                { html: value, className: 'theme-dark-font-color fs-16 bold', align: 'vh' },
                                 { size: 4 },
-                                { html: unit, className: 'colorA19F9D fs-12', align: 'vh' }
+                                { html: unit, className: 'theme-light-font-color fs-12', align: 'vh' }
                             ]
                         },
                         { size: 12 }
@@ -52,12 +52,12 @@ class Card2 extends Component {
                             flex: 1,
                             column: [
                                 { flex: 1 },
-                                { html: title, className: 'color605E5C fs-14 bold' },
+                                { html: title, className: 'theme-medium-font-color fs-14 bold' },
                                 {
                                     row: [
-                                        { html: value, className: 'color323130 fs-14 bold' },
+                                        { html: value, className: 'theme-dark-font-color fs-14 bold' },
                                         { size: 4 },
-                                        { html: unit, className: 'colorA19F9D fs-12' }
+                                        { html: unit, className: 'theme-light-font-color fs-12' }
                                     ]
                                 },
                                 { flex: 1 }
@@ -81,8 +81,8 @@ class Card3 extends Component {
             },
             column: [
                 { size: 12 },
-                { size: 24, align: 'vh', html: title, className: 'colorA19F9D fs-12' },
-                { size: 24, align: 'vh', html: value, className: 'color605E5C fs-14 bold' },
+                { size: 24, align: 'vh', html: title, className: 'theme-light-font-color fs-12' },
+                { size: 24, align: 'vh', html: value, className: 'theme-medium-font-color fs-14 bold' },
                 { size: 12 }
             ]
         }
@@ -102,7 +102,7 @@ class Card3 extends Component {
                     gap: 1,
                     column: [
                         this.rows_layout(rows),
-                        { show: !!footer, size: 40, align: 'vh', html: footer, className: 'color3B55A5 fs-12 bold br-12 br-t-0 theme-card-bg', attrs: { onClick } }
+                        { show: !!footer, size: 40, align: 'vh', html: footer, className: 'theme-link-font-color fs-12 bold br-12 br-t-0 theme-card-bg', attrs: { onClick } }
                     ]
                 }}
             />
@@ -115,8 +115,8 @@ class Card4 extends Component {
         if(show() === false){return false}
         return {
             onClick: () => onClick(),
-            className:'theme-card-bg',
-            size: 60, style: { color: '#605E5C', ...style },            
+            className:'theme-card-bg theme-medium-font-color',
+            size: 60, style,            
             row: [
                 { size: 60, html: icon, align: 'vh' },
                 {

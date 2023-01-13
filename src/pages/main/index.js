@@ -309,63 +309,63 @@ export default class Main extends Component {
     let {rsa_actions} = this.state;
     let {addPopup,removePopup,setNavId} = rsa_actions;
     if(type === 'password'){
-      addPopup({content:()=><PasswordPopup/>,title:'مشاهده و ویرایش رمز عبور'})
+      addPopup({body:()=><PasswordPopup/>,title:'مشاهده و ویرایش رمز عبور'})
     }
     else if(type === 'peygiriye-sefareshe-kharid'){
-      addPopup({content:()=><OrdersHistory activeTab={parameter}/>,title:'جزيیات سفارش خرید'})
+      addPopup({body:()=><OrdersHistory activeTab={parameter}/>,title:'جزيیات سفارش خرید'})
     }
     if(type === 'joziate-sefareshe-kharid'){
-      addPopup({content:()=><OrderPopup order={parameter}/>,title:'پیگیری سفارش خرید'})
+      addPopup({body:()=><OrderPopup order={parameter}/>,title:'پیگیری سفارش خرید'})
     }
     else if(type === 'sabte-garanti-jadid'){
-      addPopup({ content:()=><SabteGarantiJadid/>,title:'درخواست مرجوع کالای سوخته'})
+      addPopup({ body:()=><SabteGarantiJadid/>,title:'درخواست مرجوع کالای سوخته'})
     }
     else if(type === 'joziate-darkhast-haye-garanti'){
-      addPopup({ content:()=><JoziateDarkhastHayeGaranti/>,title:'جزییات درخواست های گارانتی'})
+      addPopup({ body:()=><JoziateDarkhastHayeGaranti/>,title:'جزییات درخواست های گارانتی'})
     }
     else if(type === 'payame-sabte-garanti'){
       let {text,subtext} = parameter;
-      addPopup({ type:'center',content:()=><PayameSabteGaranti text={text} subtext={subtext} onClose={()=>removePopup()}/>,header:false})
+      addPopup({ type:'center',body:()=><PayameSabteGaranti text={text} subtext={subtext} onClose={()=>removePopup()}/>,header:false})
     }
     else if(type === 'sabte-garanti-jadid-ba-joziat'){
-      addPopup({ content:()=><SabteGarantiJadidBaJoziat/>,title:'ثبت در خواست گارانتی جدید با جزییات'})
+      addPopup({ body:()=><SabteGarantiJadidBaJoziat/>,title:'ثبت در خواست گارانتی جدید با جزییات'})
     }
     else if(type === 'search'){
       addPopup({ 
-        content:()=><Search/>,title:'جستجو در محصولات',
+        body:()=><Search/>,title:'جستجو در محصولات',
         header:()=><Header type='popup' popupId='search'/>
       })
     }
     else if(type === 'product'){
       addPopup({
-        content:()=><Product product={parameter}/>,
+        body:()=><Product product={parameter}/>,
         title:'خرید کالا',id:'product',
         header:()=><Header type='popup' popupId='product'/>
       })
     }
     else if (type === 'category'){
-      addPopup({content:()=><CategoryView category={parameter.category}/>,title:parameter.name})
+      addPopup({body:()=><CategoryView category={parameter.category}/>,title:parameter.name})
     }
     else if(type === 'wallet'){
-      addPopup({header:false,content:()=><Wallet onClose={()=>removePopup()}/>})
+      addPopup({header:false,body:()=><Wallet onClose={()=>removePopup()}/>})
     }
     else if(type === 'tanzimate-kife-pool'){
-      addPopup({content:()=><TanzimateKifePool cards={parameter.cards} onChange={parameter.onChange}/>,title:'تنظیمات کیف پول'})
+      addPopup({body:()=><TanzimateKifePool cards={parameter.cards} onChange={parameter.onChange}/>,title:'تنظیمات کیف پول'})
     }
     else if(type === 'cart'){
-      addPopup({content:()=><Cart/>,title:'سبد خرید',id:'cart'})
+      addPopup({body:()=><Cart/>,title:'سبد خرید',id:'cart'})
     }
     else if(type === 'shipping'){
       this.setState({shipping:parameter},()=>{
         addPopup({
-          content:()=><Shipping onSend={(o)=>this.ersal_baraye_vizitor(o)}/>,
+          body:()=><Shipping onSend={(o)=>this.ersal_baraye_vizitor(o)}/>,
           title:'ادامه فرایند خرید'
         })
       })
     }
     else if(type === 'sefareshe-ersal-shode-baraye-vizitor'){
       addPopup({
-        content:()=>(
+        body:()=>(
           <Sefareshe_Ersal_Shode_Baraye_Vizitor
             orderNumber={parameter}
             onShowInHistory={()=>{
@@ -430,22 +430,16 @@ export default class Main extends Component {
           sideClassName={`opacity-${opacity} theme-${theme}`}
           title={(nav)=>nav.id === 'khane'?<>{getSvg('mybrxlogo',{className:'rvd-hide-sm rvd-hide-md rvd-hide-lg'})}<div className='rvd-hide-xs'>{nav.text}</div></>:(nav.id === 'profile'?'پروفایل':nav.text)}
           navs={[
-            { text: "خانه", icon: (active)=>getSvg(19, { fill: active ? "#fff" : "#605E5C" }), id: "khane" },
-            { text: "خرید", icon: (active)=>getSvg('buy', { fill: active ? "#fff" : "#605E5C" }), id: "kharid" },
-            { text: "بازارگاه", icon: (active)=>getSvg(20, { fill: active ? "#fff" : "#605E5C" }), id: "bazargah" },
-            { text:this.getProfileName(userInfo), icon: (active)=>getSvg(21, { fill: active ? "#fff" : "#605E5C" }), id: "profile" },
+            { text: "خانه", icon: ()=>getSvg(19), id: "khane" },
+            { text: "خرید", icon: ()=>getSvg('buy'), id: "kharid" },
+            { text: "بازارگاه", icon: ()=>getSvg(20), id: "bazargah" },
+            { text:this.getProfileName(userInfo), icon: ()=>getSvg(21), id: "profile" },
           ]}
           sides={[
             { text: 'بازارگاه', icon: ()=> <Icon path={mdiCellphoneMarker} size={0.8}/>,onClick:()=>this.state.rsa_actions.setNavId('bazargah')},
             { text: 'پیگیری سفارش خرید', icon: ()=> <Icon path={mdiClipboardList} size={0.8} />,onClick:()=>this.openPopup('peygiriye-sefareshe-kharid')},
             { text: 'درخواست گارانتی', icon: ()=> <Icon path={mdiShieldCheck} size={0.8} />,onClick:()=>this.openPopup('sabte-garanti-jadid'),show:()=>this.state.showGaranti !== false},
-            { text: 'خروج از حساب کاربری', icon: ()=> <Icon path={mdiExitToApp} size={0.8} />,className:'colorFDB913',onClick:()=>logout() },
-            // { text: 'تست درگاه', icon: 17,fill:'#A4262c',onClick:()=>{
-            //     let {kharidApis} = this.context;
-            //     let amount = window.prompt('مبلغ را وارد کنید');
-            //     let url = window.prompt('آدرس بازگشت را وارد کنید');
-            //     kharidApis({api:'dargah',parameter:{amount,url}})
-            // }},
+            { text: 'خروج از حساب کاربری', icon: ()=> <Icon path={mdiExitToApp} size={0.8} />,className:'colorFDB913',onClick:()=>logout() }
           ]}
           navHeader={()=>{
             return <NavHeader/>

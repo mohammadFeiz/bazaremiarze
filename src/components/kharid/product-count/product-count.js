@@ -121,7 +121,7 @@ class CountPopup extends Component{
                 layout={{
                     style:{padding:12,background:'#fff',flex:'none',height:'fit-content'},
                     column:[
-                        {html:'تعداد را وارد کنید',className:'fs-12 bold color605E5C'},
+                        {html:'تعداد را وارد کنید',className:'fs-12 bold theme-medium-font-color'},
                         {size:6},
                         {
                             gap:3,

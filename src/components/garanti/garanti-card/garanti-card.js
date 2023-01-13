@@ -30,7 +30,7 @@ export default class GarantiCard extends Component{
         else {height = size; top = 0;}
         return {
             size,childsProps:{align:'v'},gap:12,
-            childsAttrs:{className:'fs-12 color605E5C'},
+            childsAttrs:{className:'fs-12 theme-medium-font-color'},
             row:[
                 {
                     html:(
@@ -61,12 +61,12 @@ export default class GarantiCard extends Component{
                             {
                                 size:48,childsProps:{align:'v'},
                                 row:[
-                                    {html:'شماره درخواست :',className:'fs-14 color605E5C bold'},
-                                    {html:RequestID,className:'fs-14 color605E5C bold'},
+                                    {html:'شماره درخواست :',className:'fs-14 theme-medium-font-color bold'},
+                                    {html:RequestID,className:'fs-14 theme-medium-font-color bold'},
                                     {flex:1},
-                                    {html:_time,className:'fs-12 colorA19F9D'},
+                                    {html:_time,className:'fs-12 theme-light-font-color'},
                                     {size:6},
-                                    {html:CreateTime,className:'fs-12 colorA19F9D'}
+                                    {html:CreateTime,className:'fs-12 theme-light-font-color'}
                                 ]
                             },
                             {html:this.getStatus()},
@@ -91,8 +91,8 @@ export default class GarantiCard extends Component{
                             {
                                 childsProps:{align:'v'},
                                 row:[
-                                    {html:'شماره گارانتی :',className:'fs-14 color323130 bold'},
-                                    {html:RequestID,className:'fs-14 color323130 bold'},
+                                    {html:'شماره گارانتی :',className:'fs-14 theme-dark-font-color bold'},
+                                    {html:RequestID,className:'fs-14 theme-dark-font-color bold'},
                                     {flex:1},
                                     {html:this.getStatus()}
                                 ]
@@ -100,8 +100,8 @@ export default class GarantiCard extends Component{
                             {
                                 childsProps:{align:'v'},
                                 row:[
-                                    {html:'تاریخ ثبت :',className:'fs-12 color605E5C'},
-                                    {html:_time + ' - ' + CreateTime,className:'fs-12 color605E5C'},
+                                    {html:'تاریخ ثبت :',className:'fs-12 theme-medium-font-color'},
+                                    {html:_time + ' - ' + CreateTime,className:'fs-12 theme-medium-font-color'},
                                 ]
                             },
                             {size:12},
@@ -120,7 +120,7 @@ export default class GarantiCard extends Component{
                                     },
                                     {size:12},
                                     {
-                                        show:Details.length > 5,className:'color605E5C fs-12',align:'v',
+                                        show:Details.length > 5,className:'theme-medium-font-color fs-12',align:'v',
                                         html:'+' + (Details.length - 5)
                                     }
                                 ]

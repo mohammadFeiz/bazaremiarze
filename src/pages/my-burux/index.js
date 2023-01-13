@@ -24,12 +24,12 @@ export default class MyBurux extends Component{
             user:'محمد شریف فیض',
             customerCode:'c19428',shopName:'فروشگاه الکتریکی تهران',visitorName:'علی محمدی',nationalCode:'0386481784',
             parts:[
-                {after:getSvg('chevronLeft'),text:'پیگیری سفارش خرید',icon:getSvg(13),onClick:()=>{
+                {after:getSvg('chevronLeft'),text:'پیگیری سفارش خرید',icon:getSvg(13,{className:'theme-medium-font-color'}),onClick:()=>{
                     let {openPopup} = this.context;
                     openPopup('peygiriye-sefareshe-kharid')
                 }},
                 //{after:getSvg('chevronLeft'),text:'جایزه ها',icon:getSvg(15),onClick:()=>{}},
-                {after:getSvg('chevronLeft'),text:'جزییات درخواست های گارانتی',icon:getSvg(14),show:()=>this.context.showGaranti !== false,onClick:async ()=>{
+                {after:getSvg('chevronLeft'),text:'جزییات درخواست های گارانتی',icon:getSvg(14,{className:'theme-medium-font-color'}),show:()=>this.context.showGaranti !== false,onClick:async ()=>{
                     let {SetState,guarantiApis,openPopup} = this.context;
                     let {items,total} = await guarantiApis({api:'items'});
                     SetState({guaranteeItems:items,totalGuaranteeItems:total});
@@ -74,7 +74,7 @@ export default class MyBurux extends Component{
                     size:36,
                     row:[
                         {flex:1},
-                        {className:'color323130 fs-20 bold',html:userInfo.cardName,align:'vh'},
+                        {className:'theme-dark-font-color fs-20 bold',html:userInfo.cardName,align:'vh'},
                         {flex:1}
                     ]
                 },
@@ -93,7 +93,7 @@ export default class MyBurux extends Component{
                                         'رمز ورود',
                                         <button 
                                             style={{background:'none',border:'none',outline:'none',fontWeight:'bold'}}
-                                            className='color3B55A5'
+                                            className='theme-link-font-color'
                                             onClick={()=>openPopup('password')}
                                         >مشاهده و ویرایش</button>]]
                                 
@@ -138,10 +138,10 @@ export default class MyBurux extends Component{
                 this.parts_layout(),
                 {size:120,html:footerSvg(),align:'vh'},
                 {html:(
-                    <AIOButton position='bottom' className='color605E5C fs-14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
+                    <AIOButton position='bottom' className='theme-medium-font-color fs-14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
                         return (
                             <div style={{background:'#fff'}}>
-                                <div style={{height:60,display:'flex',alignItems:'center'}} className='color323130 fs-16 bold p-h-24'>موارد اضافه شده به این نسخه</div>
+                                <div style={{height:60,display:'flex',alignItems:'center'}} className='theme-dark-font-color fs-16 bold p-h-24'>موارد اضافه شده به این نسخه</div>
                                 <ul>
                                     <li>تکمیل بازارگاه تا تحویل به مشتری</li>
                                     <li>بهبود گرافیک</li>

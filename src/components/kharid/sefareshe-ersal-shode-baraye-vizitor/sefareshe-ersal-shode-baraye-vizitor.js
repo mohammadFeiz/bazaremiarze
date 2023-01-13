@@ -17,7 +17,7 @@ export default class Sefareshe_Ersal_Shode_Baraye_Vizitor extends Component{
     }
     subtext_layout(text){
       return {
-        className:'fs-14 color605E5C',style:{textAlign:'center',padding:'0 36px'},
+        className:'fs-14 theme-medium-font-color',style:{textAlign:'center',padding:'0 36px'},
         html:text,
         align:'vh'
       }
@@ -28,7 +28,7 @@ export default class Sefareshe_Ersal_Shode_Baraye_Vizitor extends Component{
         size:48,align:'v',className:'p-h-24',
         row:[
           {html:'شماره درخواست:',className:'color605#5C fs-12'},
-          {html:orderNumber,className:'color605E5C fs-12 bold'},
+          {html:orderNumber,className:'theme-medium-font-color fs-12 bold'},
           {flex:1},
           {html:'مشاهده درخواست',className:'color3B55A5 fs-14 bold',attrs:{onClick:()=>onShowInHistory()}}
         ]

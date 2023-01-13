@@ -92,20 +92,20 @@ export default class Shipping extends Component{
           {
             size:36,childsProps:{align:'v'},
             row:[
-              {html:'نام مشتری:',className:'colorA19F9D fs-14'},
+              {html:'نام مشتری:',className:'theme-light-font-color fs-14'},
               {html:name,className:'fs-14'},
               {flex:1},
-              {html:'نام کمپین:',className:'colorA19F9D fs-14'},
+              {html:'نام کمپین:',className:'theme-light-font-color fs-14'},
               {html:campaign,className:'fs-14'}
             ]
           },
           {
             size:36,childsProps:{align:'v'},
             row:[
-              {html:'کد مشتری:',className:'colorA19F9D fs-14'},
+              {html:'کد مشتری:',className:'theme-light-font-color fs-14'},
               {html:code,className:'fs-14'},
               {flex:1},
-              {html:'گروه مشتری:',className:'colorA19F9D fs-14'},
+              {html:'گروه مشتری:',className:'theme-light-font-color fs-14'},
               {html:customerGroup,className:'fs-14'},
             ]
           },
@@ -129,9 +129,9 @@ export default class Shipping extends Component{
       return {
         className:'box p-12 m-h-12',
         column:[
-          {size:36,align:'v',className:'color605E5C fs-12 bold',html:'آدرس تحویل'},
+          {size:36,align:'v',className:'theme-medium-font-color fs-12 bold',html:'آدرس تحویل'},
           {
-            className:'fs-14 color605E5C bgF1F1F1 p-12 br-4',html:address,size:72
+            className:'fs-14 theme-medium-font-color bgF1F1F1 p-12 br-4',html:address,size:72
           }
         ]
       }
@@ -144,7 +144,7 @@ export default class Shipping extends Component{
       return {
         className:'box p-12 m-h-12',
         column:[
-          {size:36,align:'v',className:'color605E5C fs-12 bold',html:title},
+          {size:36,align:'v',className:'theme-medium-font-color fs-12 bold',html:title},
           {
             html:(
               <AIOButton
@@ -164,9 +164,9 @@ export default class Shipping extends Component{
       return {
         className:'box p-12 m-h-12',
         column:[
-          {size:36,align:'v',className:'color605E5C fs-12 bold',html:'شماره تلفن'},
+          {size:36,align:'v',className:'theme-medium-font-color fs-12 bold',html:'شماره تلفن'},
           {
-            className:'fs-14 color605E5C bgF1F1F1 p-12 br-4',html:phone,style:{minHeight:36}
+            className:'fs-14 theme-medium-font-color bgF1F1F1 p-12 br-4',html:phone,style:{minHeight:36}
           }
         ]
       }
@@ -176,7 +176,7 @@ export default class Shipping extends Component{
       let {cards} = shipping;
       return {
         column:[
-          {size:36,align:'v',className:'color605E5C fs-14 bold p-h-12',html:'محصولات'},
+          {size:36,align:'v',className:'theme-medium-font-color fs-14 bold p-h-12',html:'محصولات'},
           {className:'of-visible',column:cards.map((card)=>{return {html:card,className:'of-visible'}})},
           {size:12}
         ]
@@ -233,22 +233,22 @@ export default class Shipping extends Component{
           {
             size:28,childsProps:{align:'v'},
             row:[
-              {html:'قیمت کالاها:',className:'color605E5C fs-14'},
+              {html:'قیمت کالاها:',className:'theme-medium-font-color fs-14'},
               {flex:1},
-              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht + discount + mablaghe_takhfife_pardakhte_online)) + ' ریال',className:'color605E5C fs-14'}
+              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht + discount + mablaghe_takhfife_pardakhte_online)) + ' ریال',className:'theme-medium-font-color fs-14'}
             ]
           },
           {
             size:28,childsProps:{align:'v'},
             row:[
-              {html:'مبلغ قابل پرداخت:',className:'color323130 bold fs-16'},
+              {html:'مبلغ قابل پرداخت:',className:'theme-dark-font-color bold fs-16'},
               {flex:1},
-              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال',className:'color323130 bold fs-16'}
+              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال',className:'theme-dark-font-color bold fs-16'}
             ]
           },
           {size:6},
           {
-            size:36,align:'vh',className:'color605E5C fs-14 bold',
+            size:36,align:'vh',className:'theme-medium-font-color fs-14 bold',
             html:(
               <button 
                 className="button-2" 

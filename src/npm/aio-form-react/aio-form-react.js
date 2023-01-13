@@ -242,14 +242,16 @@ export default class AIOForm extends Component {
     return {...stateTheme,...inputTheme,label:{...stateTheme.label,...inputTheme.label},input:{...stateTheme.input,...inputTheme.input}} 
   }
   getLabelLayout(label,input,inlineLabel){
-    let {inputs} = this.props;
+    let {inputs,classNames = {}} = this.props;
     let labelStyle = this.getTheme(input,'labelStyle');
     labelStyle = this.getValue({field:labelStyle,def:{},input})
     if(typeof labelStyle === 'string'){
       try{labelStyle = JSON.parse(labelStyle)}
       catch{labelStyle = {}}
     }
-    let props = {align:'v',show: label !== undefined,style:{...labelStyle,width:'fit-content',height:'fit-content'},className:'aio-form-label'}
+    let className = 'aio-form-label';
+    if(classNames.label){className += classNames.label}
+    let props = {align:'v',show: label !== undefined,style:{...labelStyle,width:'fit-content',height:'fit-content'},className}
     props.size = inlineLabel?labelStyle.width:(labelStyle.height || 24);
     let {onChangeInputs} = this.props;
     if(onChangeInputs){
@@ -263,6 +265,19 @@ export default class AIOForm extends Component {
     }
     else{props.html = label;}
     return props;
+  }
+  getInputClassName(input,disabled,prefix,affix){
+    let {rtl,classNames = {}} = this.props;
+    let cls = 'aio-form-input';
+    cls += ` aio-form-input-${input.type}`;
+    if(disabled === true){cls += ' disabled';}
+    if(input.className){cls += ` ${input.className}`;}
+    if(classNames.input){cls += ` ${classNames.input}`;}
+    if(affix){cls += ' has-affix'}
+    if(prefix){cls += ' has-prefix'}
+    if(input.className){cls += ` ${input.className}`;}
+    cls += rtl?' rtl':' ltr';
+    return cls
   }
   getInput(input){
     let {rtl,showErrors} = this.props;
@@ -282,7 +297,7 @@ export default class AIOForm extends Component {
     let placeholder = this.getValue({field:input.placeholder,def:false});
     let onChange = (value) => this.onChange(input, value);
     let style = this.getTheme(input,'inputStyle')
-    let className = `aio-form-input aio-form-input-${input.type}` + (disabled === true?' disabled':'') + (input.className ? ' ' + input.className : '') + (affix?' has-affix':'') + (prefix?' has-prefix':'') + (rtl?' rtl':' ltr')
+    let className = this.getInputClassName(input,disabled,prefix,affix);
     let error = this.getError(input,value,options)
     let props = {value,options,step,disabled:disabled === true,onChange,className,style,placeholder,text,subtext,start,end,theme,columns,min,max}
     let {error:themeError = {}} = theme;

@@ -54,7 +54,7 @@ export default class Wallet extends Component{
                 {
                     size:60,className:'color-fff',
                     row:[
-                        {size:60,html:getSvg('chevronLeft',{flip:true,fill:'#fff'}),align:'vh',attrs:{onClick:()=>onClose()}},
+                        {size:60,html:getSvg('chevronLeft',{flip:true,className:'theme-color-fff'}),align:'vh',attrs:{onClick:()=>onClose()}},
                         {flex:1,html:'مدیریت کیف پول',align:'v'},
                         {
                             size:60,align:'vh',html:<Icon path={mdiCog} size={0.8}/>,
@@ -149,7 +149,7 @@ export default class Wallet extends Component{
             size:36,align:'v',
             row:[
                 {flex:1},
-                {html:'از تاریخ : ',className:'fs-12 color323130',align:'v'},
+                {html:'از تاریخ : ',className:'fs-12 theme-dark-font-color',align:'v'},
                 {size:6},
                 {
                     html:(
@@ -172,7 +172,7 @@ export default class Wallet extends Component{
                     ),align:'v'
                 },
                 {flex:1},
-                // {html:'تا تاریخ : ',className:'fs-12 color323130',align:'v'},
+                // {html:'تا تاریخ : ',className:'fs-12 theme-dark-font-color',align:'v'},
                 // {size:6},
                 // {
                 //     html:(
@@ -209,8 +209,8 @@ export default class Wallet extends Component{
                 {size:12},
                 {
                     column:[
-                        {html:o.title,className:'fs-14 color323130 bold'},
-                        {html:o.date + ' ' + o._time,className:'fs-12 colorA19F9D'}
+                        {html:o.title,className:'fs-14 theme-dark-font-color bold'},
+                        {html:o.date + ' ' + o._time,className:'fs-12 theme-light-font-color'}
                     ]
                 },
                 {flex:1},
@@ -218,7 +218,7 @@ export default class Wallet extends Component{
                     column:[
                         {flex:1},
                         {
-                            html:functions.splitPrice(o.amount) + ' تومان',align:'v',className:'fs-12 color605E5C bold',
+                            html:functions.splitPrice(o.amount) + ' تومان',align:'v',className:'fs-12 theme-medium-font-color bold',
                             style:{
                                 background:o.type === 'in'?'#5FD25533':undefined,
                                 color:o.type === 'in'?'#107C10':undefined
@@ -309,7 +309,7 @@ class BardashtPopup extends Component{
                                 layout={{
                                     style:{height:48,flex:'none'},gap:6,
                                     row:[
-                                        {html:'موجودی:',className:'fs-14 color605E5C bold',align:'v'},
+                                        {html:'موجودی:',className:'fs-14 theme-medium-font-color bold',align:'v'},
                                         {html:`${functions.splitPrice(mojoodi)} ریال`,className:'fs-14 color3B55A5 bold',align:'v'},
                                     ]
                                 }}

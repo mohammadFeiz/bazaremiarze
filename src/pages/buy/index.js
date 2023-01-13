@@ -105,7 +105,7 @@ export default class Buy extends Component {
           attrs:{onClick:()=>openPopup('category',{name:o.name,category:{products:o.products,name:o.name}})},
           column:[
             {size:200,html:<img src={o.src} alt='' height='100%'/>,align:'vh'},
-            {size:36,align:'vh',html:o.name,className:'color323130 fs-16 bold'}
+            {size:36,align:'vh',html:o.name,className:'theme-dark-font-color fs-16 bold'}
           ] 
         }
       })
@@ -119,7 +119,7 @@ export default class Buy extends Component {
     return {
       className: "box gap-no-color",style: { padding: 12 },show: families.length !== 0,
       column: [
-        {html: "محبوب ترین خانواده ها",className: "fs-14 color323130 bold",size: 36,align: "v"},
+        {html: "محبوب ترین خانواده ها",className: "fs-14 theme-dark-font-color bold",size: 36,align: "v"},
         {
           gap: 16,className:'ofx-auto',
           row: families.map((o) => {

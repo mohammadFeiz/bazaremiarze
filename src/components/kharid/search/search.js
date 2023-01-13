@@ -59,8 +59,8 @@ export default class Search extends Component {
               className: "popup-bg",
               column: [
                 {html:<SearchBox onChange={async (searchValue)=>await this.changeSearch(searchValue)}/>},
-                {size: 200,align: "vh",className: "fs-20 color323130 bold",show: false,html: "در میان ان کالا جستجو"},
-                {size: 48,align: "v",className: "fs-14 color323130 bold p-h-24",html: "محصولات"},
+                {size: 200,align: "vh",className: "fs-20 theme-dark-font-color bold",show: false,html: "در میان ان کالا جستجو"},
+                {size: 48,align: "v",className: "fs-14 theme-dark-font-color bold p-h-24",html: "محصولات"},
                 { size: 24 },
                 this.result_layout()
               ],

@@ -27,7 +27,7 @@ export default class Header extends Component{
                         {show:buttons.sidemenu === true,size: 60,html: getSvg(22),attrs: { onClick: () => SetState({ sidemenuOpen: true }) },align:'vh'},
                         {show:!!onClose,size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:onClose}},
                         {show:buttons.logo === true,html:getSvg('mybrxlogo'),align:'vh',attrs:{onClick:()=>onClose()}},
-                        {html: title,className: "fs-16 color605E5C",align:'v',show:!!title},
+                        {html: title,className: "fs-16 theme-medium-font-color",align:'v',show:!!title},
                         {flex:1},
                         {show:buttons.bazargahPower === true,size: 60,html: getSvg('power'),attrs: { onClick: () => bazargah.setActivity(false) },align:'vh'},
                         {

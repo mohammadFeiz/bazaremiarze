@@ -63,9 +63,9 @@ export default class CategorySlider extends Component{
               {
                 size:36,
                 row:[
-                  {html:title,className: "fs-14 color323130 bold",align: "v"},
+                  {html:title,className: "fs-14 theme-dark-font-color bold",align: "v"},
                   {flex:1},
-                  {show:showAll !== undefined && products !== undefined,html: "مشاهده همه",className: "fs-12 color3B55A5 bold",align: "v",onClick:()=>showAll()}
+                  {show:showAll !== undefined && products !== undefined,html: "مشاهده همه",className: "fs-12 theme-link-font-color bold",align: "v",onClick:()=>showAll()}
                 ]
               },
               this.products_layout(),

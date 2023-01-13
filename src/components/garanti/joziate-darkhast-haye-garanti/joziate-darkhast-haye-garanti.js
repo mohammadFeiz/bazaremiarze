@@ -117,7 +117,7 @@ export default class JoziateDarkhastHayeGaranti extends Component{
                                             value={sortValue}
                                             style={{background:'none'}}
                                             options={sorts}
-                                            optionClassName='"fs-12 color605E5C bold"'
+                                            optionClassName='"fs-12 theme-medium-font-color bold"'
                                             onChange={(value)=>this.sort(value)}
                                         />
                                     )

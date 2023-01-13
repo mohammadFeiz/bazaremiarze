@@ -42,11 +42,11 @@ export default class Home extends Component {
                 {
                     align:'h',row: [
                         { size: 36, align: 'vh', html: getSvg(icon) ,show:!!icon},
-                        { html: title, align: 'vh',className: 'color605E5C bold fs-14' },
+                        { html: title, align: 'vh',className: 'theme-medium-font-color bold fs-14' },
                     ]
                 },
                 { size: 12 },
-                { html: value, className: 'color605E5C bold fs-14',align:'h' },
+                { html: value, className: 'theme-medium-font-color bold fs-14',align:'h' },
                 {size:12}
             ]
         }
@@ -88,7 +88,7 @@ export default class Home extends Component {
         return {
             className:'p-h-12 of-visible',
             column:[
-                //{html: "پیش سفارشات",className: "fs-14 color323130 bold p-h-12",size: 48,align: "v"},
+                //{html: "پیش سفارشات",className: "fs-14 theme-dark-font-color bold p-h-12",size: 48,align: "v"},
                 {
                     size:72,className:'of-visible',
                     row: [
@@ -115,7 +115,7 @@ export default class Home extends Component {
                 {
                     className:'p-h-12',size:48,style:{borderRadius:guaranteeItems.length > 0 ?'14px 14px 0 0':'14px'},
                     row:[
-                        {html: "مرجوع کالای سوخته",className: "fs-14 color323130 bold",align: "v"},
+                        {html: "مرجوع کالای سوخته",className: "fs-14 theme-dark-font-color bold",align: "v"},
                         {flex:1},
                         {
                             align:'v',
@@ -123,7 +123,7 @@ export default class Home extends Component {
                                 <AIOButton
                                     text='ثبت درخواست جدید'
                                     caret={false}
-                                    className='color3B55A5 bold'
+                                    className='theme-link-font-color bold'
                                     style={{background:'none'}}
                                     before={<Icon path={mdiPlusBox} size={0.8}/>}
                                     type='button'
@@ -155,7 +155,7 @@ export default class Home extends Component {
                         {
                             html:'با ثبت درخواست مرجوع کالاهای سوخته خود سریع تر ازهر زمان کالای خود را مرجوع کنید',
                             align:'vh',
-                            className:'fs-14 color605E5C',
+                            className:'fs-14 theme-medium-font-color',
                             style:{textAlign:'center'}
                         },
                         {size:24},
@@ -167,7 +167,7 @@ export default class Home extends Component {
                 {
                     show:guaranteeItems.length > 0,
                     attrs:{onClick:()=>openPopup('joziate-darkhast-haye-garanti')},
-                    size:48,html:'مشاهده جزییات درخواست های گارانتی ها',className:'box color3B55A5 fs-12 bold',align:'vh',style:{borderRadius:'0 0 14px 14px'}
+                    size:48,html:'مشاهده جزییات درخواست های گارانتی ها',className:'box theme-link-font-color fs-12 bold',align:'vh',style:{borderRadius:'0 0 14px 14px'}
                 }
             ]
         }
@@ -181,8 +181,8 @@ export default class Home extends Component {
                     flex: 1,
                     column: [
                         {size:12},
-                        { align:'v',row: [{ html: '5',className: 'color3B55A5 fs-28 bold', align: 'v' }, { size: 6 }, { html: 'الماس', align: 'v',className: 'color323130 fs-18 bold'}]},
-                        { html: 'به ازای اخذ هر سفارش از بازارگاه',className: 'color605E5C bold fs-14',align:'v' },
+                        { align:'v',row: [{ html: '5',className: 'color3B55A5 fs-28 bold', align: 'v' }, { size: 6 }, { html: 'الماس', align: 'v',className: 'theme-dark-font-color fs-18 bold'}]},
+                        { html: 'به ازای اخذ هر سفارش از بازارگاه',className: 'theme-medium-font-color bold fs-14',align:'v' },
                         {size:12},
                         
                     ]
@@ -340,11 +340,11 @@ class Help extends Component{
                     className:'p-h-12',
                     column:[
                         {size:60,html:'راهنما',className:'fs-18 bold',align:'vh'},
-                        {size:48,html:'درحال بررسی',className:'color323130 fs-16 bold',align:'v'},
-                        {html:'سفارش هایی هستند که شما ثبت کرده اید و ویزیتور شما درحال بررسی کالاهای سفارش شما هست.',className:'color605E5C fs-14'},
+                        {size:48,html:'درحال بررسی',className:'theme-dark-font-color fs-16 bold',align:'v'},
+                        {html:'سفارش هایی هستند که شما ثبت کرده اید و ویزیتور شما درحال بررسی کالاهای سفارش شما هست.',className:'theme-medium-font-color fs-14'},
                         {size:12},
-                        {size:48,html:'در انتظار تایید',className:'color323130 fs-16 bold',align:'v'},
-                        {html:'سفارش هایی هستند که بعد از بررسی ویزیتور برای تایید و پرداخت به سمت شما برگشته است. سفارش هایی که ویزیتور مستقیما برای شما ثبت میکند نیز در این قسمت نمایش داده میشود',className:'color605E5C fs-14'},
+                        {size:48,html:'در انتظار تایید',className:'theme-dark-font-color fs-16 bold',align:'v'},
+                        {html:'سفارش هایی هستند که بعد از بررسی ویزیتور برای تایید و پرداخت به سمت شما برگشته است. سفارش هایی که ویزیتور مستقیما برای شما ثبت میکند نیز در این قسمت نمایش داده میشود',className:'theme-medium-font-color fs-14'},
                         {size:24}
                     ]
                 }}

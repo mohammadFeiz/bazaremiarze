@@ -131,13 +131,13 @@ export default class Cart extends Component{
             flex: 1,
             column: [
               { flex: 1 },
-              {align: "v",html: "مبلغ قابل پرداخت",className: "color5757656 fs-12"},
+              {align: "v",html: "مبلغ قابل پرداخت",className: "theme-medium-font-color fs-12"},
               {size:3},
               {
                 row:[
-                  {align: "v",html: this.splitPrice(total),className: "color323130 fs-14 bold"},
+                  {align: "v",html: this.splitPrice(total),className: "theme-dark-font-color fs-14 bold"},
                   {size:4},
-                  {align: "v",html: " ریال",className: "color323130 fs-12"}
+                  {align: "v",html: " ریال",className: "theme-dark-font-color fs-12"}
                 ]
               },
               { flex: 1 },

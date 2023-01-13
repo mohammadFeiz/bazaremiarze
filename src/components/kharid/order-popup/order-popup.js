@@ -167,14 +167,14 @@ export default class OrderPopup extends Component {
     }
     name_layout(){
       let {itemName} = this.props;
-      return {html:itemName,className:'fs-12 color605E5C bold'}
+      return {html:itemName,className:'fs-12 theme-medium-font-color bold'}
     }
     details_layout(){
       let {details = []} = this.props;
       if(!details.length){return false}
       return {
         column:details.map((d)=>{
-            return {size:20,align:'v',html:`${d[0]} : ${d[1]}`,className:'fs-10 colorA19F9D'}
+            return {size:20,align:'v',html:`${d[0]} : ${d[1]}`,className:'fs-10 theme-light-font-color'}
         })
       }
     }
@@ -185,7 +185,7 @@ export default class OrderPopup extends Component {
         gap:4,
         row:[
             {flex:1},
-            {html:<del>{functions.splitPrice(priceAfterVat)}</del>,className:'fs-14 colorA19F9D',align:'v'},
+            {html:<del>{functions.splitPrice(priceAfterVat)}</del>,className:'fs-14 theme-light-font-color',align:'v'},
             {html:<div style={{background:'#FFD335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{discountPercent + '%'}</div>,align:'v'},
         ]  
       }

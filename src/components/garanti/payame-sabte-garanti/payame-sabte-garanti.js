@@ -32,12 +32,12 @@ export default class PayameSabteGaranti extends Component {
     }
     subtext_layout(){
         let { subtext } = this.props;
-        return {html: subtext,className: "fs-14 color605E5C",align: "h"}
+        return {html: subtext,className: "fs-14 theme-medium-font-color",align: "h"}
     }
     time_layout(){
         let today = this.today;
         return {
-            size: 60,className: "fs-12 bold color605E5C",align: "v",
+            size: 60,className: "fs-12 bold theme-medium-font-color",align: "v",
             html: `ثبت درخواست در ${`${today[3]}:${today[4]} ${today[0]}/${today[1]}/${today[2]}`}`
         }
     }

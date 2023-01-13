@@ -1,12 +1,13 @@
 import Axios from "axios";
 import nosrcImage from './../images/no-src.png';
 import AIODate from './../npm/aio-date/aio-date';
+import bulbSrc from './../images/10w-bulb.png';
 export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) {
   return {
     async orders({type}){
+      return mockApis('orders',type);
       let time = getState().bazargah[{'wait_to_get':'forsate_akhze_sefareshe_bazargah','wait_to_send':'forsate_ersale_sefareshe_bazargah'}[type]];
       let res = await Axios.get(`${baseUrl}/OS/GetWithDistance?time=${time}&distance=100&status=${{'wait_to_get':'1','wait_to_send':'2'}[type]}`); // 1 for pending
-      //let res = await Axios.get(`${baseUrl}/OS/GetWithDistance?time=100000&cardCode=${userInfo.cardCode}&distance=100&status=${{'wait_to_get':'1','wait_to_send':'2'}[type]}`); // 1 for pending
       let data = [];
       try{data = res.data.data || [];}
       catch{data = []}
@@ -144,4 +145,61 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       return res.data.isSuccess;
     }
   }
+}
+
+
+function mockApis(api,parameter){
+  let data = {
+    orders:()=>{
+      let type = parameter;
+      if(type === 'wait_to_get'){return []}
+      else if (type === 'wait_to_send'){
+        return [
+          {
+              type:'wait_to_send',
+              sendStatus:{
+                  itemsChecked:{},//{'0':true,'1':false}
+                  delivererId:false,
+                  delivererType:'eco',
+                  isFinal:false
+              },
+              "amount":123456789,
+              distance:1000,
+              "benefit":110000,
+              "totalTime":10,
+              "address": 'آدرس',
+              "items":[
+                  {name:'نام1',src:bulbSrc,detail:'جزییات',id:'0'},
+                  {name:'نام2',src:bulbSrc,detail:'جزییات',id:'1'},
+                  {name:'نام3',src:bulbSrc,detail:'جزییات',id:'2'},
+              ],
+              "cityId": null,
+              "provinceId": null,
+              "buyerId": '10',
+              "receiverId": '10',
+              "buyerName": 'نام',
+              "receiverName": 'نام',
+              "buyerNumber": 12354,
+              "receiverNumber": 123546,
+              "orderId": '0',
+              "vendorId": '0',
+              "shippingAddress": 'آدرس',
+              "zipCode": '12345',
+              "optionalAddress": 'آدرس',
+              "city":'تهران',
+              "province": 'تهران',
+              "longitude": 51.338097,
+              "latitude": 35.699739,
+              "orderDate": new Date().getTime(),
+              "id": '0',
+              "createdDate": new Date().getTime() - 6000000,
+              "modifiedDate": null,
+              "isDeleted": false
+          }
+        ]
+        
+      }
+    }
+  }
+  return data[api]()
 }

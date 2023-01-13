@@ -130,8 +130,8 @@ export default class Product extends Component {
                     ],
                 },
                 { size: 12 },
-                { size: 36, html: name, className: "fs-14 color323130 bold p-h-12" },
-                { size: 36, html: "کد کالا : " + (code || ""), className: "fs-12 color605E5C p-h-12" },
+                { size: 36, html: name, className: "fs-14 theme-dark-font-color bold p-h-12" },
+                { size: 36, html: "کد کالا : " + (code || ""), className: "fs-12 theme-medium-font-color p-h-12" },
             ]
         };
     }
@@ -145,7 +145,7 @@ export default class Product extends Component {
                 {size:12},
                 {
                     row:[
-                        {html:`(${this.options.length}) انتخاب اقلام موجود`,align:'v',className:'p-h-12 color605E5C fs-14 bold',style:{direction:'ltr'}},
+                        {html:`(${this.options.length}) انتخاب اقلام موجود`,align:'v',className:'p-h-12 theme-medium-font-color fs-14 bold',style:{direction:'ltr'}},
                         {flex:1}
                     ]
                 },
@@ -182,7 +182,7 @@ export default class Product extends Component {
                         if(name === 'brand'){return false}
                         return {
                             column: [
-                                { html: name, align: "v", className: "fs-12 color605E5C bold h-24" },
+                                { html: name, align: "v", className: "fs-12 theme-medium-font-color bold h-24" },
                                 {size:6},
                                 {
                                     className: "ofx-auto", gap: 12,
@@ -219,7 +219,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
                 {
                     size: 36, childsProps: { align: 'v' },
                     onClick: (() => this.setState({ showDetails: !showDetails })),
-                    className:'color605E5C',
+                    className:'theme-medium-font-color',
                     row: [
                         { size: 24, align: 'vh', html: <Icon path={showDetails?mdiChevronDown:mdiChevronLeft} size={0.8}/> },
                         { html: 'مشخصات', className: "fs-14 bold" }
@@ -231,7 +231,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
                         <div className='w-100 br-4 of-hidden' style={{ display: "grid", gridTemplateColumns: "auto auto", gridGap: 1}}>
                             {details.map((o, i) => {
                                 if(o[0] === undefined || o[1] === undefined){return null}
-                                let props = { className: "fs-12 color605E5C p-v-6 p-h-12", style: { background: "#F4F4F4" } };
+                                let props = { className: "fs-12 theme-medium-font-color p-v-6 p-h-12", style: { background: "#F4F4F4" } };
                                 return (<Fragment key={i}><div {...props}>{o[0]}</div><div {...props}>{o[1]}</div></Fragment>);
                             })}
                         </div>
@@ -246,11 +246,11 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         return {
             className:'p-h-12 bgFFF',size:36,align:'v',
             row:[
-                {html:'مشاهده',className:'colorA19F9D fs-12 bold',align:'v'},
+                {html:'مشاهده',className:'theme-light-font-color fs-12 bold',align:'v'},
                 {size:4},
-                {html:'سبد خرید',className:'color3B55A5 fs-12 bold',align:'v',attrs:{onClick:()=>openPopup('cart')}},
+                {html:'سبد خرید',className:'theme-link-font-color fs-12 bold',align:'v',attrs:{onClick:()=>openPopup('cart')}},
                 {size:4},
-                {html:<Icon path={mdiChevronLeft} size={0.8} color={'#0094D4'}/>,align:'vh'}
+                {html:<Icon path={mdiChevronLeft} size={0.8}/>,align:'vh',className:'theme-link-font-color'}
             ]
         }
     }
@@ -297,7 +297,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
                 {
                     row: [
                         { flex: 1 },
-                        { show:!!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt,html: ()=><del>{functions.splitPrice(selectedVariant.Price * count)}</del>, className: "colorA19F9D" },
+                        { show:!!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt,html: ()=><del>{functions.splitPrice(selectedVariant.Price * count)}</del>, className: "theme-light-font-color" },
                         { size: 3 },
                         {
                             html: "%" + B1Dscnt,show:!!B1Dscnt,
@@ -318,9 +318,9 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
                 {
                     row: [
                         { flex: 1 },
-                        { html: functions.splitPrice(selectedVariant.FinalPrice * count), className: "color323130 bold" },
+                        { html: functions.splitPrice(selectedVariant.FinalPrice * count), className: "theme-dark-font-color bold" },
                         { size: 6 },
-                        { html: "ریال", className: "color323130 bold" },
+                        { html: "ریال", className: "theme-dark-font-color bold" },
                     ],
                 },
                 { flex: 1 },

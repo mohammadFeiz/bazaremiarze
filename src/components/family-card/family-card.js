@@ -31,7 +31,7 @@ export default class FamilyCard extends Component{
                     }},
                     column:[
                         {size:128,align:'vh',html:<img src={this.getSrc(title) || NoSrc} width={'100%'} className='w-100 h-100' alt=''/>,style:{padding:6,paddingBottom:0}},
-                        {align:'vh',html:title,className:'fs-12 p-v-6 p-h-12 color605E5C bold',style:{whiteSpace:'normal'}},
+                        {align:'vh',html:title,className:'fs-12 p-v-6 p-h-12 theme-medium-font-color bold',style:{whiteSpace:'normal'}},
                         {flex:1},
                         {size:12}
                     ]

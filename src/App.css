@@ -41,18 +41,6 @@ body{
 	background-image: url(./images/logo2.png);
 	background-size: 144px 144px;
 }
-.theme-card-bg{
-	background:#fff;
-}
-.theme-card-border-color{
-	background:#ddd;
-}
-.theme-box-shadow{
-	box-shadow:0px 2px 8px 0px rgb(153 153 153 / 21%);
-}
-.theme-border-radius{
-	border-radius:12px;
-}
 .bm-reload{
 	background-color: #0078d0;
 	border: 0;
@@ -91,19 +79,8 @@ body{
   .rsa-navigation{
 	background:#3b55a5;
   }
-  .rsa-navigation-item{
-	height:36px;
-  }
-  .rsa-navigation-item svg{
-	fill:#fff !important;
-  }
   .rsa-navigation-item svg path{
 	fill:#fff !important;
-  }
-  .rsa-navigation-item.active{
-	background:rgba(0,0,0,0.2);
-	height:36px;
-	color:#fff;
   }
   .rsa-sidemenu {
     box-shadow: -7px 0px 20px 0px rgb(0 0 0 / 15%);
@@ -164,13 +141,10 @@ body{
 	background:linear-gradient(180deg, #0033a9, #0039b2);
 }
 .rsa-bottom-menu{
-	height:48px;
-	margin:6px;
-	border-radius:8px;
 	box-shadow: 0px 0px 12px 0px rgb(0 0 0 / 25%);
 }
 .rsa-bottom-menu-item.active{
-	background: #3B55A5;
+	color: #3B55A5;
 }
 
 .otp-code{
@@ -298,15 +272,6 @@ button{
 }
 .bold{
 	font-weight: bold;
-}
-.color323130{
-	color:#323130;
-}
-.color605E5C{
-	color:#605E5C;
-}
-.colorA19F9D{
-	color:#A19F9D;
 }
 .colorC7E7F4{
 	color:#C7E7F4;

@@ -118,9 +118,15 @@ export default class Register extends Component{
                     onChange={(model)=>this.change(model)}
                     inputs={[
                         {label:'کد مشتری',type:'text',field:'model.cardCode',disabled:true,show:mode === 'edit'},
-                        {label:'نام',type:'text',field:'model.firstName',rowKey:'1',validations:[['required']],disabled:mode === 'edit'},
+                        {
+                            label:'نام',type:'text',field:'model.firstName',rowKey:'1',validations:[['required']],
+                            //disabled:mode === 'edit'
+                        },
                         {type:'html',html:()=>'',rowKey:'1',rowWidth:12},
-                        {label:'نام خانوادگی',type:'text',field:'model.lastName',rowKey:'1',validations:[['required']],disabled:mode === 'edit'},
+                        {
+                            label:'نام خانوادگی',type:'text',field:'model.lastName',rowKey:'1',validations:[['required']],
+                            //disabled:mode === 'edit'
+                        },
                         {label:'رمز عبور',type:'password',field:'model.password',validations:[['required'],['length>',5]],show:mode === 'register'},
                         {
                             label:'تکرار رمز عبور',type:'password',field:'model.re_password',

@@ -5,7 +5,7 @@ import bulbSrc from './../images/10w-bulb.png';
 export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) {
   return {
     async orders({type}){
-      return mockApis('orders',type);
+      //return mockApis('orders',type);
       let time = getState().bazargah[{'wait_to_get':'forsate_akhze_sefareshe_bazargah','wait_to_send':'forsate_ersale_sefareshe_bazargah'}[type]];
       let res = await Axios.get(`${baseUrl}/OS/GetWithDistance?time=${time}&distance=100&status=${{'wait_to_get':'1','wait_to_send':'2'}[type]}`); // 1 for pending
       let data = [];

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import RVD from "./../../../interfaces/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
 import functions from "./../../../functions";
+import NoSrc from './../../../images/no-src.png';
 export default class OrderPopup extends Component {
     static contextType = appContext;
     state = {details:{}}
@@ -49,7 +50,7 @@ export default class OrderPopup extends Component {
     async getDetails(){
       let {kharidApis} = this.context;
       let {order} = this.props;
-      let details = await kharidApis({api:'orderProducts',parameter:order})
+      let details = await kharidApis({api:'orderProducts',parameter:order,loading:false})
       this.setState({details})
     }
     async pardakht(){
@@ -104,14 +105,19 @@ export default class OrderPopup extends Component {
     }
     products_layout(){
       let {details = {}} = this.state;
-      let {products = []} = details;
+      let {products} = details;
+      let loading = false;
+      if(!products){
+        loading = true;
+        products = fakeData;
+      }
       return {
         gap: 2,className:'m-h-12 of-visible',
         column: products.map((o, i) => {
           return {
             className:'of-visible',
             html:(
-              <ProductCard {...o} index={i}
+              <ProductCard loading={loading} {...o} index={i}
                 isFirst={i === 0} isLast={i === products.length - 1}
               />
             )
@@ -153,7 +159,7 @@ export default class OrderPopup extends Component {
       }
     }
     image_layout(){
-      let {src} = this.props;
+      let {src = NoSrc} = this.props;
       return {flex:1,html:<img src={src} width={'100%'} alt=''/>}
     }
     count_layout(){
@@ -200,8 +206,10 @@ export default class OrderPopup extends Component {
       }
     }
     render(){
+      let {loading} = this.props;
       return (
         <RVD
+          loading={loading}
           layout={{
             className:'box gap-no-color',style:this.getStyle(),
             row:[
@@ -234,4 +242,17 @@ export default class OrderPopup extends Component {
     }
   }
 
-  
+  let fakeData = [
+    {
+      "lineNum": 0,"itemName": "پنل پلي كربنات 18 وات آفتابي توكار","itemCode": "7570","itemQty": 3,"itemGroupCode": 104,"price": 924000,
+      "priceAfterDiscount": 847706.422,"priceAfterVat": 924000,"discountPercent": 0,"discount": 0,"openQty": 3,      
+    },
+    {
+      "lineNum": 0,"itemName": "پنل پلي كربنات 18 وات آفتابي توكار","itemCode": "7570","itemQty": 3,"itemGroupCode": 104,"price": 924000,
+      "priceAfterDiscount": 847706.422,"priceAfterVat": 924000,"discountPercent": 0,"discount": 0,"openQty": 3,      
+    },
+    {
+      "lineNum": 0,"itemName": "پنل پلي كربنات 18 وات آفتابي توكار","itemCode": "7570","itemQty": 3,"itemGroupCode": 104,"price": 924000,
+      "priceAfterDiscount": 847706.422,"priceAfterVat": 924000,"discountPercent": 0,"discount": 0,"openQty": 3,      
+    },
+  ]

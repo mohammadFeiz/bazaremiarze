@@ -146,10 +146,11 @@ export default class ProductCard extends Component{
         },index * 100 + 100)
     }
     horizontal_layout(){
-        let {isLast,isFirst} = this.props;
+        let {isLast,isFirst,loading} = this.props;
         let {mounted} = this.state;
         return (
             <RVD
+                loading={loading}
                 layout={{
                     className:'box gap-no-color m-h-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
                     attrs:{onClick:()=>this.onClick()},
@@ -186,10 +187,11 @@ export default class ProductCard extends Component{
         )
     }
     vertical_layout(){
-        let {style,product} = this.props;
+        let {style,product,loading} = this.props;
         let {srcs = [],name} = product;
         return (
             <RVD
+                loading={loading}
                 layout={{
                     style:{...style},className:'bg-fff border-eee of-visible w-168 h-288 fs-14 br-12',
                     attrs:{onClick:()=>this.onClick()},

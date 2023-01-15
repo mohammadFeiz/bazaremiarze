@@ -319,7 +319,7 @@ var RChartContext = createContext();
         this.getMouseDetail(pos);
         return;
       }
-      var {onAdd,multiselect,addPopup} = this.props;
+      var {onAdd,multiselect} = this.props;
       this.mouseDownKey = this.mouseDetail.key;
       // اگر مد افزودن فعال بود و در موقعیت فعلی موس دیتا یا دیتا هایی آمادگی دریافت نقطه جدید در این موقعیت را داشتند
       if(onAdd && this.mouseDetail.addDataIndexes.length){

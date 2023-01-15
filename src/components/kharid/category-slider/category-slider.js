@@ -9,44 +9,16 @@ import ProductCard from './../product-card/product-card';
 export default class CategorySlider extends Component{
     products_layout(){
       let {products} = this.props;
-      if(!products){return this.productsLoading_layout()}
+      let loading = false;
+      if(!products){loading = true; products = [fakeProduct,fakeProduct,fakeProduct,fakeProduct,fakeProduct]}
       return {
         gap: 16,className:'ofx-auto ofy-visible',
         row: products.map((product,i) =>{
             return {
               html:(
                 <ProductCard 
-                    type='vertical' product={product} 
+                    type='vertical' product={product} loading={loading}
                     isFirst={i === 0} isLast={i === products.length - 1} 
-                />
-              )
-            }
-        }),
-      }
-    }
-    productsLoading_layout(){
-      return {
-        gap: 16,className:'ofx-auto',
-        row: new Array(3).fill(0).map(() =>{
-            return {
-              html:(
-                <RVD
-                  layout={{
-                      style:{opacity:0.5},
-                      className:'content-loading br-12 w-168 h-288',
-                      column:[
-                          {size:128,align:'vh',className:'p-12 p-b-0',html:<div className='w-100 h-100 br-8 bg-fff'></div>},
-                          {size:12},
-                          {html:<div className='w-100 h-12 bg-fff m-h-12'></div>},
-                          {size:12},
-                          {html:<div className='w-100 h-12 bg-fff m-r-12 m-l-36'></div>},
-                          {size:12},
-                          {html:<div className='w-100 h-12 bg-fff m-r-12 m-l-36'></div>},
-                          {flex:1},
-                          {html:<div className='w-100 h-12 bg-fff m-l-12 m-r-48'></div>},
-                          {size:12}
-                      ]
-                  }}
                 />
               )
             }
@@ -75,3 +47,19 @@ export default class CategorySlider extends Component{
       )
     }
   }
+let fakeProduct = {
+  "inStock": 15914,"details": [],"optionTypes": [],
+  "variants": [{"id": "23338","discountPrice": 0,"price": 0,"inStock": 15914,"srcs": [],"code": "9425","discountPercent": 0,"isDefault": true}],
+  "srcs": [],
+  "name": "باتری سکه ای بروکس",
+  "defaultVariant": {
+      "id": "23338","discountPrice": 0,"price": 0,"inStock": 15914,
+      "srcs": [],"code": "9425","discountPercent": 0,"isDefault": true
+  },
+  "price": 0,"discountPrice": 0,"discountPercent": 0,"id": "12666","ItemCode": "9425",
+  "OnHand": {"whsCode": "01","qty": 15804,"qtyLevel": 20000,"qtyLevRel": 1},
+  "Price": 527000,"B1Dscnt": 0,"FinalPrice": 505920,"PymntDscnt": 4,"CmpgnDscnt": 0
+}
+
+
+  

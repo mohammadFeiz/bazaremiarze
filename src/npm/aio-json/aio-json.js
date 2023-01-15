@@ -321,7 +321,6 @@ export default class AIOJson extends Component {
     return {column}
   }
   add(o,type,hasName){
-    debugger;
     let obj;
     if(type === 'text'){obj = {type,value:''}}
     else if(type === 'number'){obj = {type,value:0}}

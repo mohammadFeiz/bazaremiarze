@@ -75,7 +75,7 @@ export default class Wallet extends Component{
                         {row:[{html:' بدهکاری',align:'v'},{size:6}],show:userInfo.ballance < 0,className:'colorA4262C fs-16 bold'},
                         {html:userInfo.ballance < 0?functions.splitPrice(-userInfo.ballance):functions.splitPrice(userInfo.ballance),className:`color-fff ${userInfo.ballance < 0?'fs-16':'fs-28'} bold`,align:'v'},
                         {size:6},
-                        {html:'تومان',className:'fs-14 color-fff',align:'v'},
+                        {html:'ریال',className:'fs-14 color-fff',align:'v'},
                         {flex:1}
                     ]
                 },
@@ -218,7 +218,7 @@ export default class Wallet extends Component{
                     column:[
                         {flex:1},
                         {
-                            html:functions.splitPrice(o.amount) + ' تومان',align:'v',className:'fs-12 theme-medium-font-color bold',
+                            html:functions.splitPrice(o.amount) + ' ریال',align:'v',className:'fs-12 theme-medium-font-color bold',
                             style:{
                                 background:o.type === 'in'?'#5FD25533':undefined,
                                 color:o.type === 'in'?'#107C10':undefined

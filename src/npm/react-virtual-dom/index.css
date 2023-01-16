@@ -361,5 +361,22 @@
 .rvd-rotate-card.mounted{
   transform: rotateX(0deg) !important;
   opacity:1;
-  transition: 0.8s;
+  transition: 1s;
+}
+
+.rvd-loading {
+  background: linear-gradient(90deg, #eee, #eee, #eee, #eee, #fff, #eee, #eee, #eee, #eee);
+  background-size: 600% 600%;
+
+  animation: rvdloading 1.4s linear;
+  animation-iteration-count: infinite;
+  animation-timing-function:ease-in-out;
+  animation-direction:normal;
+  animation-fill-mode: forwards;
+}
+
+@keyframes rvdloading {
+  0%{background-position:0% 0%}
+  100%{background-position:100% 0%}
+  
 }

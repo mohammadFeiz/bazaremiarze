@@ -73,10 +73,30 @@ export default function AIODate(){
       convertToArray(o){
         if(Array.isArray(o)){return [...o]}
         else if(typeof o === 'string'){
-          let list = o.split($$.getSplitter(o));
+          let list;
+          if (o.indexOf("T") !== -1){
+            let [date,time] = o.split("T");
+            time = time.split(".")[0];
+            time = time.split(':');
+            date = date.split('-');
+            list = date.concat(time)
+          }
+          else {
+            list = o.split($$.getSplitter(o));
+          }
           return list.map((o)=>parseInt(o))
         }
         else{return false}
+      },
+      convertToString(o){
+        let list;
+        if(Array.isArray(o)){list = o}
+        else if(typeof o === 'string'){
+          list = $$.convertToArray(o);
+        }
+        else{return false}
+        let [year,month = 1,day = 1,hour = 0,minute = 0,second = 0] = list
+        return `${year}/${month}/${day} ${hour}:${minute}:${second}`
       },
       gregorianToJalali(o) {
         let [gy, gm, gd] = $$.convertToArray(o);
@@ -278,7 +298,7 @@ export default function AIODate(){
         }
       },
       getToday(calendarType,unit = 'day'){return $$.GetToday[calendarType](unit)},
-      getPassedTime:(time)=>{
+      getPassedTime(time){
         time = new Date(time).getTime();
         let now = new Date().getTime();
         let dif = now - time;
@@ -294,7 +314,7 @@ export default function AIODate(){
         let tenthseconds = Math.floor(dif / (100));
         return {days,hours,minutes,seconds,tenthseconds}
       },
-      getRemainingTime:(time)=>{
+      getRemainingTime(time){
         time = new Date(time).getTime();
         let now = new Date().getTime();
         let dif = time - now;
@@ -309,6 +329,30 @@ export default function AIODate(){
         dif -= seconds * (1000);
         let tenthseconds = Math.floor(dif / (100));
         return {days,hours,minutes,seconds,tenthseconds}
+      },
+      getDif(dif){
+        let days = Math.floor(dif / (24 * 60 * 60 * 1000));
+        dif -= days * (24 * 60 * 60 * 1000);
+        let hours = Math.floor(dif / (60 * 60 * 1000));
+        dif -= hours * (60 * 60 * 1000);
+        let minutes = Math.floor(dif / (60 * 1000));
+        dif -= minutes * (60 * 1000);
+        let seconds = Math.floor(dif / (1000));
+        dif -= seconds * (1000);
+        let tenthseconds = Math.floor(dif / (100));
+        return {days,hours,minutes,seconds,tenthseconds}
+      },
+      getDateOffset(time){
+        if(time[0] === '1'){
+          time = $$.jalaliToGregorian(time);
+        } 
+        time = $$.convertToString(time);
+        time = new Date(time).getTime();
+        let now = new Date().getTime();
+        let dif = time - now;
+        if(dif === 0){return {days:0,hours:0,minutes:0,seconds:0,tenthseconds:0,type:'now'}}
+        if(dif < 0 ){return {...$$.getDif(-dif),type:'passed'}}
+        if(dif > 0 ){return {...$$.getDif(dif),type:'remaining'}}
       }
     }
     return {
@@ -318,6 +362,7 @@ export default function AIODate(){
       convertToArray:$$.convertToArray,
       isEqual:$$.isEqual,
       isGreater:$$.isGreater,
+      getDateOffset:$$.getDateOffset,
       isLess:$$.isLess,
       isBetween:$$.isBetween,
       getByOffset:$$.getByOffset,

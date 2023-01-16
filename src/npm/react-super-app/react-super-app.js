@@ -1,5 +1,6 @@
 import React,{Component,createRef} from 'react';
 import AIOButton from './../../npm/aio-button/aio-button';
+import AIOStorage from './../../npm/aio-storage/aio-storage';
 import {Icon} from '@mdi/react';
 import {mdiMenu,mdiClose,mdiChevronRight,mdiChevronLeft,mdiCheckCircleOutline,mdiAlertOutline,mdiInformationOutline, mdiChevronDown} from '@mdi/js';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
@@ -10,6 +11,7 @@ export default class ReactSuperApp extends Component {
     constructor(props){
       super(props);
       let {touch = 'ontouchstart' in document.documentElement,splash,splashTime = 7000} = props;
+      this.storage = AIOStorage('rsa-cache')
       this.state = {
         navId:this.getNavId(),
         splash,
@@ -36,9 +38,34 @@ export default class ReactSuperApp extends Component {
           else{popups = popups.filter((o)=>o.id !== id);}
           this.setState({popups})
         },
+        changeTheme:(index)=>{
+          let {themes} = props;
+          this.theme = this.theme || 0;
+          if(index === 'init'){
+            this.theme = this.storage.load('theme',0);
+          }
+          else if(typeof(index) === 'number'){
+            this.theme = index;
+          }
+          else {
+            this.theme++;
+          }
+          this.storage.save(this.theme,'theme');
+          if(this.theme > themes.length - 1){this.theme = 0}
+          let target;
+          try{
+            target = themes[this.theme] || {};
+          }
+          catch{target = {}}
+          for(let prop in target){
+            document.documentElement.style.setProperty(prop, target[prop]);
+          }
+          
+        },
         setConfirm:this.setConfirm.bind(this),
         setNavId:(navId)=>this.setState({navId})
       }
+      if(props.themes){this.state.changeTheme('init')}
       if(splash){setTimeout(()=>this.setState({splash:false}),splashTime)}
       if(props.getActions){props.getActions({...this.state})}
     }

@@ -6,23 +6,27 @@ export default class OrdersHistory extends Component {
     static contextType = appContext;
     constructor(props) {
       super(props);
-      this.state = {activeTab:false,tabs:[]};
+      this.state = {activeTab:'در حال بررسی',tabs:fakeData,loading:true};
     }
     async componentDidMount() {
       let {kharidApis} = this.context;
       let {activeTab} = this.props;
       let tabs = await kharidApis({api:"ordersHistory"});
-      try{this.setState({tabs,activeTab:activeTab || tabs[0].text});}
+      try{this.setState({tabs,activeTab:activeTab || tabs[0].text,loading:false});}
       catch{return}
     }
     tabs_layout() {
-      let {tabs,activeTab} = this.state;
+      let {tabs,activeTab,loading} = this.state;
+      if(loading){return false}
       return {
         html:(
           <AIOButton 
             type='tabs' options={tabs} optionValue='option.text' value={activeTab} 
             optionAfter={(option)=><div className='tab-badge'>{option.orders.length}</div>}
-            onChange={(activeTab)=>this.setState({activeTab})}/>
+            onChange={(activeTab)=>{
+              if(activeTab === this.state.activeTab){return}
+              this.setState({activeTab})
+            }}/>
         )
       }
     }
@@ -33,7 +37,6 @@ export default class OrdersHistory extends Component {
     }
     orders_layout(){
       let { activeTab,tabs } = this.state;
-      if(activeTab === false){return false}
       let tab = tabs.filter(({text})=>text === activeTab)[0];
       let orders = tab.orders;
       if(!orders.length){
@@ -47,10 +50,18 @@ export default class OrdersHistory extends Component {
     }
     order_layout(order,index){
       let {openPopup} = this.context;
+      let {loading} = this.state;
       return {
         className:'of-visible',
-        html:<OrderCard order={order} index={index}/>,
-        attrs:{onClick:()=>openPopup('joziate-sefareshe-kharid',order)}
+        html:(
+          <OrderCard 
+            key={order.code + loading} 
+            order={order} 
+            index={index} 
+            loading={loading}
+            onClick={()=>openPopup('joziate-sefareshe-kharid',order)}
+          />
+        )
       }
     }
     render() {
@@ -111,9 +122,13 @@ export default class OrdersHistory extends Component {
     }
     render() {
       let {mounted} = this.state;
+      let {loading,onClick} = this.props;
+      if(loading){mounted = true}
       return (
         <RVD
+          loading={loading}
           layout={{
+            onClick,
             className: "box gap-no-color m-h-12 p-12 rvd-rotate-card" + (mounted?' mounted':''),
             column: [this.header_layout(),this.footer_layout(),],
           }}
@@ -121,3 +136,17 @@ export default class OrdersHistory extends Component {
       );
     }
   }
+
+  let fakeData = [
+    {
+      "text": "در حال بررسی",
+      "orders": [
+          {"code": 22655,"translate": "در حال بررسی","mainDocNum": 22395,"date": "1401/9/22","_time": "00:00:00","total": 5266800},
+          {"code": 22655,"translate": "در حال بررسی","mainDocNum": 22395,"date": "1401/9/22","_time": "00:00:00","total": 5266800},
+          {"code": 22655,"translate": "در حال بررسی","mainDocNum": 22395,"date": "1401/9/22","_time": "00:00:00","total": 5266800},
+          {"code": 22655,"translate": "در حال بررسی","mainDocNum": 22395,"date": "1401/9/22","_time": "00:00:00","total": 5266800},
+          {"code": 22655,"translate": "در حال بررسی","mainDocNum": 22395,"date": "1401/9/22","_time": "00:00:00","total": 5266800},
+          {"code": 22655,"translate": "در حال بررسی","mainDocNum": 22395,"date": "1401/9/22","_time": "00:00:00","total": 5266800}
+      ]
+  }
+  ]

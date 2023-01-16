@@ -130,14 +130,32 @@ export default class ReactVirtualDom extends Component {
   getClient(e){return this.touch?{x:e.changedTouches[0].clientX,y:e.changedTouches[0].clientY}:{x:e.clientX,y:e.clientY}}
   getHtml(obj,index,parentObj,isRoot){
     if(!obj || obj === null){return ''}
+    let {loading} = this.props;
     let {show = true} = obj;
     let Show = typeof show === 'function'?show():show;
     let parent = parentObj || {};
     if(!Show){return null}
     let {size,flex,childs,style,html,attrs,gapAttrs} = this.getProps(obj,index,parent,isRoot)
+    if(loading){attrs.onClick = undefined}
     if(parentObj){flex = flex || 'none'}
     var result;
-    if(!childs.length){result = <div {...attrs} style={{...style,flex}}>{html}</div>}
+    if(!childs.length){
+      result = (
+        <div {...attrs} style={{...style,flex}}>
+          {
+            loading && 
+            <div style={{opacity:0}}>{html}</div>
+          }
+          {
+            !loading && html
+          }
+          {
+            loading && html && 
+            <div className='rvd-loading' style={{position:'absolute',zIndex:10,left:0,top:0,width:'100%',height:'100%',transform:'scale(0.8)',borderRadius:8}}></div>
+          }
+        </div>
+      )
+    }
     else{
       let Style = {flex:!size?(flex || 1):undefined,...style};
       result = (

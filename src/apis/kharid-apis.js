@@ -812,6 +812,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           "b1Dscnt": 0,
           "cmpgnDscnt": 0,
           "pymntDscnt": 0,
+          "mainSku":i.mainSku,
           "onHand":onHand.length ? onHand[0] : {},
           //   "onHand": {
           //   "whsCode": "01",
@@ -845,7 +846,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         const defaultVariantImages=spreeResult.included.filter(x=>x.type==="image" && defaultVariantImagesId.includes(x.id));
 
         if(productDefaultVariantSku && productDefaultVariantId){
-          const itemFromB1=b1Result.find(x=>x.itemCode === productDefaultVariantSku);
+          const itemFromB1=b1Result.find(x=>x.itemCode === productDefaultVariantSku || x.mainSku === productDefaultVariantSku);
           const srcs=defaultVariantImages.map(x=>{
             return "https://shopback.miarze.com" + x.attributes.original_url;
           });

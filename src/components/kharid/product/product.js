@@ -3,21 +3,45 @@ import AIOButton from './../../../interfaces/aio-button/aio-button';
 import ProductCount from './../product-count/product-count';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import appContext from './../../../app-context';
+import Slider from './../../../npm/aio-slider/aio-slider';
 import getSvg from './../../../utils/getSvg';
-import { mdiChevronDown, mdiChevronLeft } from '@mdi/js';
+import { mdiChevronDown, mdiChevronLeft,mdiCheckCircle } from '@mdi/js';
 import {Icon} from '@mdi/react';
 import functions from './../../../functions';
 export default class Product extends Component {
     static contextType = appContext;
     componentDidMount(){
         this.mounted = true;
-        this.getVariants()
         let { product } = this.props;
-        let firstVariant = product.inStock ? (product.variants.filter((o) => o.inStock === null ? false : !!o.inStock)[0]) : undefined;
-        this.setState({
-            optionValues: firstVariant ? { ...firstVariant.optionValues } : undefined, showDetails: true,
-            selectedVariant: firstVariant, srcIndex: 0
-        });
+        if(product.type === 'forooshe_vije'){
+            let {variants} = product;
+            let variantId = variants[0].id;
+            this.setState({variantId,foroosheVije_count:this.get_foroosheVije_count(variantId)})
+        }
+        else{
+            this.getVariants()
+            let firstVariant = product.inStock ? (product.variants.filter((o) => o.inStock === null ? false : !!o.inStock)[0]) : undefined;
+            this.setState({
+                optionValues: firstVariant ? { ...firstVariant.optionValues } : undefined, showDetails: true,
+                selectedVariant: firstVariant, srcIndex: 0
+            });
+        }
+        
+    }
+    get_foroosheVije_count(variantId){
+        let {product} = this.props;
+        let {optionValues} = product;
+        let variant = this.get_foroosheVije_variant(variantId);
+        let {cartonQty,qtyInCarton} = variant;
+        let count = cartonQty * qtyInCarton;
+        return optionValues.map(({name,id},i)=>{
+            return {optionValueId:id,optionValueName:name,count:i === 0?count:0}
+        })
+    }
+    get_foroosheVije_variant(variantId = this.state.variantId){
+        let {product} = this.props;
+        let {variants} = product;
+        return variants.find(({id})=>variantId === id);
     }
     getVariants() {
         let { product } = this.props;
@@ -93,14 +117,22 @@ export default class Product extends Component {
         return inStock;
     }
     changeCount(count) {
-        let { changeCart } = this.context;
-        let { selectedVariant } = this.state;
         let {product} = this.props;
-        let variantId = selectedVariant.id;
-        changeCart(count, variantId,product);
+        let { changeCart } = this.context;
+        if(product.type === 'forooshe_vije'){
+            let {variantId} = this.state;
+            changeCart(count, variantId,product);
+        }
+        else{
+            let { selectedVariant } = this.state;
+            let variantId = selectedVariant.id;
+            changeCart(count, variantId,product);
+        }
+        
     }
     body_layout() {
         let { product } = this.props;
+        if(product.type === 'forooshe_vije'){return this.foroosheVije_layout()}
         let { name, optionTypes, details, srcs } = product;
         let { srcIndex,selectedVariant } = this.state;
         return {
@@ -109,6 +141,19 @@ export default class Product extends Component {
                 this.image_layout(name, selectedVariant.code, srcs[srcIndex]),
                 this.options_layout(),
                 this.optionTypes_layout(optionTypes),
+                this.details_layout(details),
+                
+            ],
+        };
+    }
+    foroosheVije_layout(){
+        let { product } = this.props;
+        let { name, details, src,code } = product;
+        return {
+            flex: 1,className: "ofy-auto",gap: 12,
+            column: [
+                this.image_layout(name, code, src),
+                this.foroosheVije_options_layout(),
                 this.details_layout(details),
                 
             ],
@@ -134,6 +179,83 @@ export default class Product extends Component {
                 { size: 36, html: "کد کالا : " + (code || ""), className: "fs-12 theme-medium-font-color p-h-12" },
             ]
         };
+    }
+    foroosheVije_options_layout(){
+        let {variantId,foroosheVije_count} = this.state;
+        let {product} = this.props;
+        let {unitPrice} = product;
+        let {cartonQty,qtyInCarton} = this.get_foroosheVije_variant();
+        let totalCount = cartonQty * qtyInCarton;
+        return {
+            className: 'theme-card-bg theme-box-shadow theme-border-radius m-h-12 p-12',
+            column:[
+                {html:'بسته خود را مشخص کنید',align:'v',className:'theme-dark-font-color fs-14 bold'},
+                {html:'بسته های بزرگ تر تخقیف های ارزنده تری دارند.',align:'v',className:'theme-medium-font-color fs-12'},
+                {size:12},
+                this.foroosheVije_variant_layout(),
+                {size:12},
+                {html:`قیمت واحد : ${functions.splitPrice(unitPrice)} ریال`,className:'theme-medium-font-color fs-12'},
+                {html:`تعداد : ${totalCount} عدد`,className:'theme-medium-font-color fs-12'},
+                {size:12},
+                {
+                    style:{color:'#107C10'},
+                    row:[
+                        {html:<Icon path={mdiCheckCircle} size={0.7}/>,align:'vh'},
+                        {size:6},
+                        {html:'موجودی کافی',className:'fs-14 bold',align:'v'}
+                    ]
+                },
+                {size:36,align:'v',html:<div style={{width:'100%',height:1,background:'#ddd'}}></div>},
+                {html:'2: رنگ کالاها را انتخاب کنید',align:'v',className:'theme-dark-font-color fs-14 bold'},
+                {html:'حال تصمیم بگیرید چه تعداد از هر رنگ کالا میخواهید. ',align:'v',className:'theme-medium-font-color fs-12'},
+                {
+                    gap:6,column:foroosheVije_count.map((o,i)=>{
+                        let used = 0;
+                        for(let j = 0; j < foroosheVije_count.length; j++){
+                            used += foroosheVije_count[j].count;
+                        }
+                        let remaining = totalCount - used;
+                        return {
+                            size:48,html:<ForoosheVijeSlider key={variantId} {...o} totalCount={totalCount} max={o.count + remaining} onChange={(value)=>{
+                                o.count = value;
+                                this.setState({foroosheVije_count})
+                            }}/>
+                        }
+                    })
+                }
+                
+            ]
+        }
+    }
+    foroosheVije_variant_layout(){
+        let {variantId} = this.state;
+        let {product} = this.props;
+        let {variants} = product;
+        return {
+            className:'ofx-auto',
+            row:variants.map(({id,cartonQty,finalPrice,discountPercent},i)=>{
+                let active = id === variantId;
+                let br = {borderTopLeftRadius:0,borderTopRightRadius:0,borderBottomLeftRadius:0,borderBottomRightRadius:0};
+                if(i === 0){br.borderTopRightRadius = 36; br.borderBottomRightRadius = 36}
+                if(i === variants.length - 1){br.borderTopLeftRadius = 36; br.borderBottomLeftRadius = 36}
+                return {
+                    onClick:()=>{
+                        this.setState({variantId:id,foroosheVije_count:this.get_foroosheVije_count(id)});
+                    },
+                    size:144,style:{border:'1px solid',padding:'6px 12px',...br,background:active?'#DCE1FF':'#fff'},
+                    column:[
+                        {html:`بسته ${cartonQty} کارتن`,className:'theme-dark-font-color fs-14 bold'},
+                        {
+                            row:[
+                                {html:<div style={{padding:'1px 3px',background:'#FDB913',color:'#fff',borderRadius:8}}>{`${discountPercent}%`}</div>,align:'v'},
+                                {size:6},
+                                {html:`${functions.splitPrice(finalPrice)} ریال`,className:'theme-dark-font-color fs-12 bold',align:'v'}
+                            ]
+                        }
+                    ]
+                }
+            })
+        }
     }
     options_layout() {
         let { product } = this.props;
@@ -213,6 +335,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
     }
     details_layout(details) {
         let { showDetails } = this.state;
+        if(!details){return false}
         return {
             className: "theme-card-bg theme-box-shadow theme-border-radius p-12 m-h-12",
             column: [
@@ -265,6 +388,8 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         };
     }
     addToCart_layout() {
+        let {product} = this.props;
+        if(product.type === 'forooshe_vije'){return this.foroosheVije_addToCart_layout()}
         let { getCartCountByVariantId } = this.context;
         let { selectedVariant } = this.state;
         if (!selectedVariant || !selectedVariant.inStock || selectedVariant.inStock === null) {
@@ -282,7 +407,25 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
             ]
         }
     }
+    foroosheVije_addToCart_layout() {
+        let { getCartCountByVariantId } = this.context;
+        let {variantId} = this.state;
+        let cartCount = getCartCountByVariantId(variantId);
+        let disabled = false;
+        return {
+            column:[
+                {
+                    flex:1,show:!!!cartCount,html: (<button onClick={() => this.changeCount(1)} className={"button-2" + (disabled ? " disabled" : "")}>افزودن به سبد خرید</button>),
+                    align: "v",
+                },
+                { flex:1,align:'v',show:!!cartCount, html: () => <ProductCount value={cartCount} onChange={(cartCount) => this.changeCount(cartCount)} max={undefined} /> },
+                
+            ]
+        }
+    }
     price_layout() {
+        let {product} = this.props;
+        if(product.type === 'forooshe_vije'){return this.foroosheVije_price_layout()}
         let { selectedVariant } = this.state;
         if (!selectedVariant || !selectedVariant.inStock || selectedVariant.inStock === null) {
             return { column: [{ flex: 1 }, { html: "ناموجود", className: "colorD83B01 bold fs-14" }, { flex: 1 }] };
@@ -327,6 +470,43 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
             ],
         };
     }
+    foroosheVije_price_layout() {
+        let {product} = this.props;
+        let variant = this.get_foroosheVije_variant();
+        let { getCartCountByVariantId } = this.context;
+        //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده
+        let cartCount = getCartCountByVariantId(variant.id) || 1; 
+        let {unitPrice} = product;
+        let {discountPercent,finalPrice,cartonQty,qtyInCarton} = variant;
+        let totalCount = cartonQty * qtyInCarton;
+        let realPrice = unitPrice * totalCount * cartCount;
+        return {
+            column: [
+                { flex: 1 },
+                {
+                    row: [
+                        { flex: 1 },
+                        { show:!!discountPercent,html: ()=><del>{functions.splitPrice(realPrice)}</del>, className: "theme-light-font-color" },
+                        { size: 3 },
+                        {
+                            html: "%" + discountPercent,show:!!discountPercent,
+                            style: { background: "#FDB913", color: "#fff", borderRadius: 8, padding: "0 3px" },
+                        },
+                        
+                    ],
+                },
+                {
+                    row: [
+                        { flex: 1 },
+                        { html: functions.splitPrice(finalPrice * cartCount), className: "theme-dark-font-color bold" },
+                        { size: 6 },
+                        { html: "ریال", className: "theme-dark-font-color bold" },
+                    ],
+                },
+                { flex: 1 },
+            ],
+        };
+    }
     render() {
         if(!this.mounted){return null}
         return (
@@ -343,5 +523,52 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
                 }}
             />
         );
+    }
+}
+
+class ForoosheVijeSlider extends Component{
+    state = {count:this.props.count}
+    render(){
+        let {count} = this.state;
+        let {optionValueName,totalCount,onChange = ()=>{},max} = this.props;
+        return (
+            <RVD
+                layout={{
+                    row:[
+                        {size:72,html:optionValueName,align:'v',className:'theme-medium-font-color fs-12 bold',align:'v'},
+                        {
+                            flex:1,
+                            html:(
+                                <Slider
+                                    attrs={{style:{padding:'0 30px'}}}
+                                    scaleStep={[max]}
+                                    scaleStyle={(value)=>{if(value === max){return {background:'#2BBA8F'}}}}
+                                    labelStep={[max]}
+                                    labelStyle={(value)=>{if(value === max){return {color:'#2BBA8F',fontSize:12,top:43}}}}
+                                    start={0} direction='left'
+                                    end={totalCount}
+                                    max={max}
+                                    points={[count]}
+                                    lineStyle={{height:4}}
+                                    showValue={false}
+                                    fillStyle={(index)=>{
+                                        if(index === 0){return {height:4,background:'#2BBA8F'}}
+                                    }}
+                                    pointStyle={{background:'#2BBA8F',width:16,height:16}}
+                                    onChange={(points,drag)=>{
+                                        this.setState({count:points[0]});
+                                        if(!drag){onChange(points[0])}
+                                    }}
+                                />
+                            ),
+                            align:'v'
+                        },
+                        {
+                            html:<div style={{background:'#2BBA8F',padding:'0 3px',color:'#fff',width:36,borderRadius:6}}>{count}</div>,align:'vh'
+                        }
+                    ]
+                }}
+            />
+        )
     }
 }

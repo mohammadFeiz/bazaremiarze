@@ -6,7 +6,9 @@
   overflow-y: hidden;
   flex-shrink: 0;
 }
-
+.rvd-root{
+  flex:1;
+}
 .rvd-gap {
   flex-shrink: 0;
 }
@@ -367,12 +369,18 @@
 .rvd-loading {
   background: linear-gradient(90deg, #eee, #eee, #eee, #eee, #fff, #eee, #eee, #eee, #eee);
   background-size: 600% 600%;
-
   animation: rvdloading 1.4s linear;
   animation-iteration-count: infinite;
   animation-timing-function:ease-in-out;
   animation-direction:normal;
   animation-fill-mode: forwards;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform:scale(0.8);
+  border-radius:8px;
 }
 
 @keyframes rvdloading {

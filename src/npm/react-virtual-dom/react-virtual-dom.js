@@ -12,10 +12,10 @@ export default class ReactVirtualDom extends Component {
     $(window).unbind(event, action);
     if(type === 'bind'){$(window).bind(event, action)}
   }
-  getClassName(obj,align,Attrs,attrs,Props,pointer){
-    let {rtl} = this.props;
+  getClassName(obj,align,Attrs,attrs,Props,pointer,isRoot){
     let className = RVDCLS.rvd;
     let gapClassName = RVDCLS.gap;
+    if(isRoot){className += ' rvd-root'}
     if(obj.gapAttrs && obj.gapAttrs.className){
       gapClassName += ' ' + obj.gapAttrs.className
     }
@@ -56,7 +56,7 @@ export default class ReactVirtualDom extends Component {
     }
     return {className,gapClassName};
   }
-  getProps(obj,index,parent,isRoot){
+  getProps(obj,index,parent = {},isRoot){
     let {childsAttrs = ()=>{return {}},childsProps = ()=>{return {}}} = parent;
     let {attrs = {},onResize,swapId} = obj;
     let Attrs = (typeof childsAttrs === 'function'?childsAttrs(obj,index):childsAttrs) || {};
@@ -73,27 +73,21 @@ export default class ReactVirtualDom extends Component {
     let axis;
     let gapStyle = {}
     if(parent.row){
-      if(size !== undefined){style.width = size}
+      if(size !== undefined){style.width = size; flex = undefined}
       gapStyle.width = parent.gap;
       if(size && onResize){gapStyle.cursor = 'col-resize';}
       axis = 'x';
     }
     else if(parent.column){
-      if(size !== undefined){style.height = size}
+      if(size !== undefined){style.height = size; flex = undefined}
       gapStyle.height = parent.gap;
       if(size && onResize){gapStyle.cursor = 'row-resize';}
       axis = 'y';
     }
-    if(obj.row){
-      childs = typeof obj.row === 'function'?obj.row():obj.row;
-    }
-    else if(obj.column){
-      childs = typeof obj.column === 'function'?obj.column():obj.column
-    }
-    if(obj.gapAttrs && obj.gapAttrs.style){
-      gapStyle = {...gapStyle,...obj.gapAttrs.style}
-    }
-    let {className,gapClassName} = this.getClassName(obj,align,Attrs,attrs,Props,pointer);
+    if(obj.row){childs = typeof obj.row === 'function'?obj.row():obj.row;}
+    else if(obj.column){childs = typeof obj.column === 'function'?obj.column():obj.column}
+    if(obj.gapAttrs && obj.gapAttrs.style){gapStyle = {...gapStyle,...obj.gapAttrs.style}}
+    let {className,gapClassName} = this.getClassName(obj,align,Attrs,attrs,Props,pointer,isRoot);
     let gapAttrs = {className:gapClassName,style:gapStyle,draggable:false,onDragStart:(e)=>{e.preventDefault(); return false}};
     if(size && onResize){
       gapAttrs[this.touch?'onTouchStart':'onMouseDown'] = (e)=>{
@@ -111,9 +105,7 @@ export default class ReactVirtualDom extends Component {
         }
         this.swapId = swapId;
       }
-      attrs.onDragOver = (e)=>{
-        e.preventDefault();
-      }
+      attrs.onDragOver = (e)=>e.preventDefault();
       attrs.onDrop = ()=>{
         let {onSwap = ()=>{}} = this.props;
         if(this.swapId === swapId){return;}
@@ -121,53 +113,28 @@ export default class ReactVirtualDom extends Component {
         this.swapId = false
       }
     } 
-    return {
-      size,flex,childs,style,html,dataId,
-      attrs:{onClick,...Attrs,...attrs,className,'data-id':dataId},
-      gapAttrs
+    attrs = {onClick,...Attrs,...attrs,style:{flex,...style},className,'data-id':dataId};
+    if(this.props.loading && html){
+      html = (
+        <>
+          <div style={{opacity:0}}>{html}</div>
+          <div className='rvd-loading'></div>  
+        </>
+      )
+      attrs.onClick = undefined
     }
+    return {childs,html,attrs,gapAttrs}
   }
   getClient(e){return this.touch?{x:e.changedTouches[0].clientX,y:e.changedTouches[0].clientY}:{x:e.clientX,y:e.clientY}}
-  getHtml(obj,index,parentObj,isRoot){
-    if(!obj || obj === null){return ''}
-    let {loading} = this.props;
-    let {show = true} = obj;
-    let Show = typeof show === 'function'?show():show;
-    let parent = parentObj || {};
-    if(!Show){return null}
-    let {size,flex,childs,style,html,attrs,gapAttrs} = this.getProps(obj,index,parent,isRoot)
-    if(loading){attrs.onClick = undefined}
-    if(parentObj){flex = flex || 'none'}
-    var result;
-    if(!childs.length){
-      result = (
-        <div {...attrs} style={{...style,flex}}>
-          {
-            loading && 
-            <div style={{opacity:0}}>{html}</div>
-          }
-          {
-            !loading && html
-          }
-          {
-            loading && html && 
-            <div className='rvd-loading' style={{position:'absolute',zIndex:10,left:0,top:0,width:'100%',height:'100%',transform:'scale(0.8)',borderRadius:8}}></div>
-          }
-        </div>
-      )
-    }
-    else{
-      let Style = {flex:!size?(flex || 1):undefined,...style};
-      result = (
-        <div {...attrs} style={Style}>
-          {childs.map((o,i)=><Fragment key={i}>{this.getHtml(o,i,obj)}</Fragment>)}
-        </div>
-      )
-    }
+  getLayout(obj,index,parent,isRoot){
+    if(!obj || obj === null || (typeof obj.show === 'function'?obj.show():obj.show) === false){return ''}
+    let {childs,html,attrs,gapAttrs} = this.getProps(obj,index,parent,isRoot)
     return (
       <Fragment key={index}>
-        {result}
-        {parent.gap !== undefined && <div {...gapAttrs}></div>}
+        <div {...attrs}>
+          {childs.length?childs.map((o,i)=><Fragment key={i}>{this.getLayout(o,i,obj,false)}</Fragment>):html}
+        </div>
+        {parent && parent.gap !== undefined && <div {...gapAttrs}></div>}
       </Fragment>
     ) 
   }
@@ -189,7 +156,7 @@ export default class ReactVirtualDom extends Component {
   }
   render(){
     var {gap,layout} = this.props;
-    return this.getHtml(layout,0,undefined,true);
+    return this.getLayout(layout,0,undefined,true);
   }
 }
 ReactVirtualDom.defaultProps = {gap:0,layout:{}};

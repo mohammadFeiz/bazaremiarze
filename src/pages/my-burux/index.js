@@ -80,7 +80,7 @@ export default class MyBurux extends Component{
                 },
                 {size:6},
                 {
-                    className:'m-h-12 of-visible',            
+                    className:'m-h-12 of-visible',       
                     html:(
                         <Card
                             type='card3' footer='مشاهده و ویرایش اطلاعات کاربری'

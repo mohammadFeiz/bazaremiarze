@@ -4,6 +4,8 @@ import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import ProductCard from './../product-card/product-card';
 import AIOButton from '../../../interfaces/aio-button/aio-button';
 import noItemSrc from './../../../images/not-found.png';
+import functions from '../../../functions';
+import ForoosheVijeCard from '../forooshe-vije-card/forooshe-vije-card';
 export default class Cart extends Component{
     static contextType = appContext;
     constructor(props){
@@ -23,14 +25,15 @@ export default class Cart extends Component{
       return res
     }
     getDetails(){
-      let { cart,changeCart,cartZIndex,fixPrice,getFactorDetails } = this.context,tabsDictionary = {};
+      let { cart,changeCart,fixPrice,getFactorDetails } = this.context,tabsDictionary = {};
       let variantIds = Object.keys(cart);
       for(let i = 0; i < variantIds.length; i++){
         let variantId = variantIds[i];
         let { product } = cart[variantId];
         let { campaign } = product;
         let tabId,tabTitle;
-        if(campaign){tabId = campaign.id; tabTitle = campaign.name}
+        if(product.type === 'forooshe_vije'){tabId = 'forooshe_vije'; tabTitle = 'فروش ویژه'}
+        else if(campaign){tabId = campaign.id; tabTitle = campaign.name}
         else{tabId = 'regular'; tabTitle = 'خرید عادی'}
         tabsDictionary[tabId] = tabsDictionary[tabId] || {id:tabId,title:tabTitle,cards:[],total:0,cartItems:[],totalDiscount:0,flex:1};
         tabsDictionary[tabId].cartItems.push(cart[variantId])
@@ -39,38 +42,48 @@ export default class Cart extends Component{
       this.tabs = [];
       for(let tabId in tabsDictionary){
         let tab = tabsDictionary[tabId]
-        let fixedItems = fixPrice(tab.cartItems.map(({product,count})=>{
-          let itemCode = product.defaultVariant.code;
-          return {itemCode,itemQty:count} 
-        }))
-        tab.cartItems = tab.cartItems.map((o,i)=>{
-          return {...o,product:{...o.product,...fixedItems[i]}}
-        })
+        if(tabId === 'forooshe_vije'){
+          let finalPrice = 0;
+          tab.cards = tab.cartItems.map(({product,count,variant})=>{
+            finalPrice += count * variant.finalPrice;
+            return <ForoosheVijeCard product={product} variantId={variant.id} count={count}/>
+          })
+          tab.finalPrice = finalPrice;
+        }
+        else{
+          let fixedItems = fixPrice(tab.cartItems.map(({product,count})=>{
+            let itemCode = product.defaultVariant.code;
+            return {itemCode,itemQty:count} 
+          }))
+          tab.cartItems = tab.cartItems.map((o,i)=>{
+            return {...o,product:{...o.product,...fixedItems[i]}}
+          })
+          tab.cards = tab.cartItems.map(({product,count,variant},i)=>{
+            let { optionTypes,campaign } = product;
+            let { optionValues } = variant;
+            tab.total += count * product.FinalPrice;
+            tab.totalDiscount += count * (product.Price - product.FinalPrice)
+            let details = [];
+            for (let j = 0; j < optionTypes.length; j++) {
+              let optionType = optionTypes[j];
+              details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
+            }
+            let props = {
+              product,details,count,type:'horizontal',
+              title:campaign?campaign.name:undefined,//2
+              isFirst:i === 0,isLast: i === tabsDictionary[tabId].cartItems.length - 1,
+              changeCount:(count) => changeCart(count,variant.id,product)
+            }
+            return <ProductCard {...props} index={i} showIsInCart={false}/>
+          })
+          let items = tab.cartItems.map((o)=>{
+            return { ItemCode: o.variant.code, ItemQty: o.count }
+          })
+          tab.items = items;
+          tab.factorDetails =  getFactorDetails(items);
+        }
         tab.badge = tab.cartItems.length;
-        tab.cards = tab.cartItems.map(({product,count,variant},i)=>{
-          let { optionTypes,campaign } = product;
-          let { optionValues } = variant;
-          tab.total += count * product.FinalPrice;
-          tab.totalDiscount += count * (product.Price - product.FinalPrice)
-          let details = [];
-          for (let j = 0; j < optionTypes.length; j++) {
-            let optionType = optionTypes[j];
-            details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
-          }
-          let props = {
-            product,details,count,type:'horizontal',
-            title:campaign?campaign.name:undefined,//2
-            isFirst:i === 0,isLast: i === tabsDictionary[tabId].cartItems.length - 1,
-            parentZIndex:cartZIndex,
-            changeCount:(count) => changeCart(count,variant.id,product)
-          }
-          return <ProductCard {...props} index={i} showIsInCart={false}/>
-        })
-        let items = tab.cartItems.map((o)=>{
-          return { ItemCode: o.variant.code, ItemQty: o.count }
-        })
-        tab.items = items;
-        tab.factorDetails =  getFactorDetails(items);
+        
         this.tabs.push(tab);
       }
       if(tabsDictionary[this.state.activeTabId]){
@@ -120,8 +133,22 @@ export default class Cart extends Component{
         ]
       }
     }
+    foroosheVije_sood(totalPrice){
+      let {cartItems} = this.tab;
+      let realPrice = 0;
+      for(let i = 0; i < cartItems.length; i++){
+        let {variant,product,count} = cartItems[i];
+        let {unitPrice} = product;
+        let {cartonQty,qtyInCarton} = variant;
+        let totalCount = count * cartonQty * qtyInCarton;
+        let totalPrice = totalCount * unitPrice;
+        realPrice += totalPrice;
+      }
+      return realPrice - totalPrice;
+    }
     payment_layout(){
       if(!this.tab){return false}
+      if(this.tab.id === 'forooshe_vije'){return this.foroosheVije_payment_layout()}
       let total = this.tab.factorDetails.DocumentTotal;
       let {continued} = this.state;
       return {
@@ -140,6 +167,34 @@ export default class Cart extends Component{
                   {align: "v",html: " ریال",className: "theme-dark-font-color fs-12"}
                 ]
               },
+              { flex: 1 },
+            ],
+          },
+          {html: <button disabled={continued} onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
+        ],
+      }
+    }
+    foroosheVije_payment_layout(){
+      let total = this.tab.finalPrice;
+      let {continued} = this.state;
+      let sood = this.foroosheVije_sood(total)
+      return {
+        size: 72,className: "bgFFF p-h-12 box-shadow-up",
+        row: [
+          {
+            flex: 1,
+            column: [
+              { flex: 1 },
+              {align: "v",html: "مبلغ قابل پرداخت",className: "theme-medium-font-color fs-12"},
+              {size:3},
+              {
+                row:[
+                  {align: "v",html: this.splitPrice(total),className: "theme-dark-font-color fs-14 bold"},
+                  {size:4},
+                  {align: "v",html: " ریال",className: "theme-dark-font-color fs-12"}
+                ]
+              },
+              {html:`سود شما از خرید : ${functions.splitPrice(sood)} ریال`,align:'v',className:'colorA4262C fs-10'},
               { flex: 1 },
             ],
           },

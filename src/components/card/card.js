@@ -15,9 +15,8 @@ class Card1 extends Component {
         return (
             <RVD
                 layout={{
-                    flex: 1,
                     className:'theme-border-radius theme-card-bg theme-box-shadow',
-                    attrs: { onClick },
+                    onClick,
                     column: [
                         { size: 12 },
                         { html: icon, align: 'vh', size: 40 },
@@ -44,7 +43,7 @@ class Card2 extends Component {
         return (
             <RVD
                 layout={{
-                    flex: 1,className:'theme-border-radius theme-card-bg theme-box-shadow',
+                    className:'theme-border-radius theme-card-bg theme-box-shadow',
                     onClick,
                     row: [
                         { size: 60, html: icon, align: 'vh' },

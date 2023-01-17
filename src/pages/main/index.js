@@ -156,13 +156,16 @@ export default class Main extends Component {
       else{
         newCart = {...cart}
         if(newCart[variantId] === undefined){
-          newCart[variantId] = {count,product,variant:product.variants.filter((o) => o.id === variantId)[0]}
+          let variant;
+          try{variant = product.variants.filter((o) => o.id === variantId)[0]}
+          catch{variant = undefined;}
+          newCart[variantId] = {count,product,variant}
         }
         else{newCart[variantId].count = count;}
       }
     }
-    clearTimeout(this.cartTimeout);
-    this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
+    //clearTimeout(this.cartTimeout);
+    //this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
     this.setState({cart:newCart});
   }
   getCartCountByVariantId(variantId) {
@@ -212,6 +215,11 @@ export default class Main extends Component {
     let campaigns = await kharidApis({api:"getCampaigns",loading:false});
     this.setState({ campaigns});
   }
+  async get_forooshe_vije() {
+    let {kharidApis} = this.state;
+    let forooshe_vije = await kharidApis({api:"forooshe_vije",loading:false});
+    this.setState({ forooshe_vije});
+  }
   async getBazargahOrders(){
     let {bazargah,bazargahApis} = this.state;
     bazargah.wait_to_get = await bazargahApis({api:'orders',parameter:{type:'wait_to_get'},loading:false});
@@ -230,6 +238,7 @@ export default class Main extends Component {
       
     }
     this.getCampaignsData();
+    this.get_forooshe_vije();
     if(bazargah.active){this.getBazargahOrders();}
     //let testedChance = await gardooneApis({type:"get_tested_chance"});
     let pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode,12 * 60 * 60 * 1000)

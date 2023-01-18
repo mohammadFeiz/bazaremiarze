@@ -931,28 +931,63 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       }
     },
     async forooshe_vije(){
+      let {userInfo} = getState();
+      let res = await Axios.get(`https://spreeapi.bpilot.ir/api/Spreegw/GetItemsDataRaw?cardCode=${userInfo.cardCode}`);
+      const allData=res.data;
+      let products=[];
+      for (const t1 of allData) {
+        const taxondepth0 = t1.taxons; // بسته یلدا
+        
+        for (const t1 of taxondepth0) { 
+          const taxondepth1 = t1.taxons; //سایر
+
+          for (const t2 of taxondepth1) {
+          const taxondepth2 = t2.taxons; // چسب
+
+          for (const t3 of taxondepth2) {
+            products.push({
+              type:'forooshe_vije',
+              name:t3.taxonname,
+              code:t3.taxonid,
+              unitPrice:123000,
+              details:[['توان','144'],['وزن','3 کیلوگرم']],
+              optionValues:[{name:'آفتابی',id:'1'},{name:'مهتابی',id:'2'},{name:'انبه ای',id:'3'},{name:'پوست پیازی',id:'4'}],
+              variants:[
+                {cartonQty:2,qtyInCarton:60,discountPercent:2,finalPrice:14464800,id:'1'},
+                {cartonQty:5,qtyInCarton:60,discountPercent:3,finalPrice:35793000,id:'2'},
+                {cartonQty:7,qtyInCarton:60,discountPercent:4,finalPrice:45593600,id:'3'},
+                {cartonQty:10,qtyInCarton:60,discountPercent:5,finalPrice:70110000,id:'4'} 
+              ],
+              src:nosrc
+            });
+          }
+          }
+        }
+      }
+
       return {
         type:'forooshe_vije',
         name:'فروش ویژه',
         src:foroosheVijeSrc,
         icon:foroosheVijeIcon,
-        products:[
-          {
-            type:'forooshe_vije',
-            name:'لامپ LED جنرال 10 وات بروکس',
-            code:'12345',
-            unitPrice:123000,
-            details:[['توان','144'],['وزن','3 کیلوگرم']],
-            optionValues:[{name:'آفتابی',id:'1'},{name:'مهتابی',id:'2'},{name:'انبه ای',id:'3'},{name:'پوست پیازی',id:'4'}],
-            variants:[
-              {cartonQty:2,qtyInCarton:60,discountPercent:2,finalPrice:14464800,id:'1'},
-              {cartonQty:5,qtyInCarton:60,discountPercent:3,finalPrice:35793000,id:'2'},
-              {cartonQty:7,qtyInCarton:60,discountPercent:4,finalPrice:45593600,id:'3'},
-              {cartonQty:10,qtyInCarton:60,discountPercent:5,finalPrice:70110000,id:'4'} 
-            ],
-            src:nosrc
-          }
-        ]
+        products:products
+        // [
+        //   {
+        //     type:'forooshe_vije',
+        //     name:'لامپ LED جنرال 10 وات بروکس',
+        //     code:'12345',
+        //     unitPrice:123000,
+        //     details:[['توان','144'],['وزن','3 کیلوگرم']],
+        //     optionValues:[{name:'آفتابی',id:'1'},{name:'مهتابی',id:'2'},{name:'انبه ای',id:'3'},{name:'پوست پیازی',id:'4'}],
+        //     variants:[
+        //       {cartonQty:2,qtyInCarton:60,discountPercent:2,finalPrice:14464800,id:'1'},
+        //       {cartonQty:5,qtyInCarton:60,discountPercent:3,finalPrice:35793000,id:'2'},
+        //       {cartonQty:7,qtyInCarton:60,discountPercent:4,finalPrice:45593600,id:'3'},
+        //       {cartonQty:10,qtyInCarton:60,discountPercent:5,finalPrice:70110000,id:'4'} 
+        //     ],
+        //     src:nosrc
+        //   }
+        // ]
       }
     }
   }

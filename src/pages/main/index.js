@@ -116,7 +116,7 @@ export default class Main extends Component {
       totalGuaranteeItems:0,
       guaranteeExistItems: [],
       popup: {},
-      showGaranti:false,
+      showGaranti:true,
       peygiriyeSefaresheKharid_tab:undefined,
       buy_view:undefined,//temporary state
     };

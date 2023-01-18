@@ -18,14 +18,16 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       // return [];
     },
     async kalahaye_mojood() {
-      let res = await Axios.get(`${baseUrl}/Guarantee/GetAllProducts`);
+      let res = await Axios.get(`${baseUrl}/Guarantee/GetItems`);
       if (!res || !res.data || !res.data.isSuccess || !res.data.data) {
-        console.error('Guarantee/GetAllProducts data error')
+        console.error('Guarantee/GetItems data error')
       }
       else if (!res.data.data.length) {
-        console.error('Guarantee/GetAllProducts list is empty')
+        console.error('Guarantee/GetItems list is empty')
       }
-      return res.data && res.data.isSuccess && res.data.data ? res.data.data : [];
+      return res.data && res.data.isSuccess && res.data.data ? res.data.data.map(x=>{
+        return {Code:x.RejectedCode,Name:x.RejectedName}
+      }) : [];
     },
     async sabte_kala(items) {
       let res = await Axios.post(`${baseUrl}/Guarantee`, { CardCode: userInfo.cardCode, Items: items });

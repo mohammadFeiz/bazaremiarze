@@ -15,7 +15,6 @@ export default class JoziateDarkhastHayeGaranti extends Component{
         this.state = {
             searchValue:'',
             sortValue:false,
-            mahsoolat_dic:{},
             sorts:[
                 {text:'قدیمی ترین',value:'0',before:(<Icon path={mdiArrowUp} size={0.8}/>)},
                 {text:'جدید ترین',value:'1',before:(<Icon path={mdiArrowDown} size={0.8}/>)},
@@ -23,17 +22,6 @@ export default class JoziateDarkhastHayeGaranti extends Component{
                 {text:'بیشترین اقلام',value:'3',before:(<Icon path={mdiArrowDown} size={0.8}/>)},
             ]
         }
-    }
-    async componentDidMount(){
-        let {guarantiApis} = this.context;
-        let {guaranteeItems} = this.context;
-        let {mahsoolat_dic} = this.state;
-        for(let i = 0; i < guaranteeItems.length; i++){
-            let {org_object,id} = tguaranteeItems[i];
-            let mahsoolat = await guarantiApis({api:'mahsoolate_garanti',parameter:org_object,loading:false});
-            mahsoolat_dic[id] = mahsoolat;
-        }
-        this.setState({mahsoolat_dic});
     }
     sort(sortValue){
         let {guaranteeItems,SetState} = this.context;
@@ -71,8 +59,8 @@ export default class JoziateDarkhastHayeGaranti extends Component{
         else if(sortValue === '2'){
             res = this.Sort(guaranteeItems,[
                 {dir:'inc',active:true,field:({id})=>{
-                    let {mahsoolat_dic} = this.state;
-                    let mahsoolat = mahsoolat_dic[id] || []
+                    let {garanti_products_dic} = this.context;
+                    let mahsoolat = garanti_products_dic[id] || []
                     return mahsoolat.length;
                 }}
             ])
@@ -80,8 +68,8 @@ export default class JoziateDarkhastHayeGaranti extends Component{
         else if(sortValue === '3'){
             res = this.Sort(guaranteeItems,[
                 {dir:'dec',active:true,field:({id})=>{
-                    let {mahsoolat_dic} = this.state;
-                    let mahsoolat = mahsoolat_dic[id] || []
+                    let {garanti_products_dic} = this.context;
+                    let mahsoolat = garanti_products_dic[id] || []
                     return mahsoolat.length;
                 }}
             ])
@@ -103,7 +91,7 @@ export default class JoziateDarkhastHayeGaranti extends Component{
         });
     }
     render(){
-        let {guaranteeItems} = this.context;
+        let {guaranteeItems,garanti_products_dic} = this.context;
         let {searchValue,sorts,sortValue} = this.state;
         return (
             <RVD
@@ -146,8 +134,7 @@ export default class JoziateDarkhastHayeGaranti extends Component{
                                 {
                                     gap:2,column:guaranteeItems.filter(({id})=>{
                                         if(!searchValue){return true}
-                                        let {mahsoolat_dic} = this.state;
-                                        let mahsoolat = mahsoolat_dic[id] || []
+                                        let mahsoolat = garanti_products_dic[id] || []
                     
                                         for(let i = 0; i < mahsoolat.length; i++){
                                             let {onvan} = mahsoolat[i];
@@ -165,6 +152,7 @@ export default class JoziateDarkhastHayeGaranti extends Component{
                                                     tarikh={o.tarikh}
                                                     saat={o.saat}
                                                     org_object={o.org_object}
+                                                    mahsoolat={garanti_products_dic[o.id] || []}
                                                 />
                                             )
                                         }

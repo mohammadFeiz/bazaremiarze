@@ -9,8 +9,15 @@ import appContext from '../../../app-context';
 //4 - tarikh => string
 //5 - saat => string
 //6 - org_object => object
+//7 - id => any
 export default class GarantiCard extends Component{
     static contextType = appContext;
+    state = {mahsoolat:[]}
+    async componentDidMount(){
+        let {garanti_products_dic} = this.context;
+        let {id} = this.props;
+        this.setState({mahsoolat:garanti_products_dic[id] || []});
+    }
     getColor(color){
         if(color === 'آفتابی'){return '#F9E695'}
         if(color === 'مهتابی'){return '#a0def8'}
@@ -23,7 +30,7 @@ export default class GarantiCard extends Component{
     }
     detail_layout(index){
         let size = 36;
-        let {mahsoolat} = this.props;
+        let {mahsoolat} = this.state;
         let {name,qty} = mahsoolat[index];
         let height = 0,top = 0;
         if(mahsoolat.length < 2){height = 0; top = 0;}
@@ -48,7 +55,7 @@ export default class GarantiCard extends Component{
     }
     render(){
         let {shomare_darkhast,tarikh,saat,isFirst,isLast,type = '1'} = this.props;
-        let {mahsoolat} = this.props;
+        let {mahsoolat} = this.state;
         if(type === '1'){
             return (
                 <RVD

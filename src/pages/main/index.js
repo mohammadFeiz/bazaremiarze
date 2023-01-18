@@ -113,6 +113,7 @@ export default class Main extends Component {
       ordersHistoryZIndex:0,
       order:false,
       guaranteeItems: [],
+      garanti_products_dic:{},
       guaranteeExistItems: [],
       popup: {},
       showGaranti:true,
@@ -226,6 +227,17 @@ export default class Main extends Component {
   showMessage(message){
     alert(message)
     //this.setState({message:this.state.messages.concat(message)});
+  }
+  async getGarantProducts(){
+    let {guarantiApis} = this.state;
+    let {guaranteeItems} = this.context;
+    let {garanti_products_dic} = this.state;
+    for(let i = 0; i < guaranteeItems.length; i++){
+        let {org_object,id} = tguaranteeItems[i];
+        let mahsoolat = await guarantiApis({api:'mahsoolate_garanti',parameter:org_object,loading:false});
+        garanti_products_dic[id] = mahsoolat;
+    }
+      this.setState({garanti_products_dic});
   }
   async componentDidMount() {
     let {bazargah,kharidApis,showGaranti} = this.state;

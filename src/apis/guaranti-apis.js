@@ -3,28 +3,24 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
   let {userInfo} = getState();
   return {
     async items() {
-      let res = await Axios.post(`${baseUrl}/Guarantee/GetAllGuarantees`, { CardCode: userInfo.cardCode });
+      let res = await Axios.get(`${baseUrl}/Guarantee/Requests?slpCode=${userInfo.slpcode}&page=${1}&perPage=${20}`);
       if(res.status === 401){return false}
       if (!res.data || !res.data.isSuccess || !res.data.data) {return {items:[],total:0}}
       
 
-      let items = res.data.data.Items;
+      let items = res.data.data.data;
+      console.log(items)
       items = items.map((o) => {
-        let {CreateTime,RequestID,StatusCode} = o;
-        
-        let {date,time} = getDateAndTime(CreateTime);
-        
-        let vaziat;
-        if(StatusCode.toString() === '0'){vaziat = {color:'#662D91',text:'در حال بررسی'}}
-        else if(StatusCode.toString() === '1'){vaziat = {color:'#005478',text:'اعلام به ویزیتور'}}
-        
+        let {CreationDate,RequestID} = o;
+        let {date,time} = getDateAndTime(CreationDate);
+
         return { 
-          vaziat,
+          vaziat:{color:'#662D91',text:o.Summary},
           tarikh:date,
           saat:time, 
           shomare_darkhast:RequestID,
           org_object:o,
-          id:'a' + Math.random()
+          id:RequestID
         }
       })
       return items
@@ -39,21 +35,21 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       }) 
     },
     async kalahaye_mojood() {
-      let res = await Axios.get(`${baseUrl}/Guarantee/GetAllProducts`);
+      let res = await Axios.get(`${baseUrl}/Guarantee/GetItems`);
       if (!res || !res.data || !res.data.isSuccess || !res.data.data) {
-        console.error('Guarantee/GetAllProducts data error')
+        console.error('Guarantee/GetItems data error')
       }
       else if (!res.data.data.length) {
-        console.error('Guarantee/GetAllProducts list is empty')
+        console.error('Guarantee/GetItems list is empty')
       }
       if(!res.data || !res.data.isSuccess || !res.data.data){return []}
-      return res.data.data.map(({Name,Code,Qty})=>{
+      return res.data.data.map((x)=>{
         return {
-          oovan:Name,
-          tedad:Qty,
-          code:Code
+          oovan:x.RejectedName,
+          tedad:0,
+          code:x.RejectedCode
         }
-      })
+      });
     },
     async sabte_kala(items) {
       let res = await Axios.post(`${baseUrl}/Guarantee`, { CardCode: userInfo.cardCode, Items: items });

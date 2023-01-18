@@ -2,6 +2,13 @@ import React,{Component} from 'react';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import bulb10w from './../../../images/no-src.png';
 import appContext from '../../../app-context';
+//props
+//1 - vaziat => { text : string , color : string }
+//2 - mahsoolat => [ { onvan:string, tedad : number } , ... ]
+//3 - shomare_darkhast => text | number 
+//4 - tarikh => string
+//5 - saat => string
+//6 - org_object => object
 export default class GarantiCard extends Component{
     static contextType = appContext;
     getColor(color){
@@ -10,23 +17,18 @@ export default class GarantiCard extends Component{
         if(color === 'یخی'){return '#edf0d8'}
     }
     getStatus(){
-        let {StatusCode,StatusText} = this.props;
-        let types = {'0':{text:'در حال بررسی',color:'#662D91'},'1':{text:'اعلام به ویزیتور',color:'#005478'}}
-        let color;
-        try{
-            color = types[StatusCode.toString()].color;
-        }
-        catch{color = '#000000'}
-        return <div style={{color,background:color + '30'}} className='fs-12 br-24 p-h-12'>{StatusText}</div>
+        let {vaziat} = this.props;
+        let {color,text} = vaziat;
+        return <div style={{color,background:color + '30'}} className='fs-12 br-24 p-h-12'>{text}</div>
     }
     detail_layout(index){
         let size = 36;
-        let {Details} = this.props;
-        let {Name,Quantity} = Details[index];
+        let {mahsoolat} = this.props;
+        let {name,qty} = mahsoolat[index];
         let height = 0,top = 0;
-        if(Details.length < 2){height = 0; top = 0;}
+        if(mahsoolat.length < 2){height = 0; top = 0;}
         else if(index === 0){height = size / 2; top = size / 2;}
-        else if(index === Details.length - 1){height = size / 2; top = 0;}
+        else if(index === mahsoolat.length - 1){height = size / 2; top = 0;}
         else {height = size; top = 0;}
         return {
             size,childsProps:{align:'v'},gap:12,
@@ -39,13 +41,14 @@ export default class GarantiCard extends Component{
                         </div>
                     )
                 },
-                {html:Name},
-                {html:Quantity + ' عدد'}
+                {html:name},
+                {html:qty + ' عدد'}
             ]
         }
     }
     render(){
-        let {RequestID,CreateTime,_time,Details,isFirst,isLast,type = '1'} = this.props;
+        let {shomare_darkhast,tarikh,saat,isFirst,isLast,type = '1'} = this.props;
+        let {mahsoolat} = this.props;
         if(type === '1'){
             return (
                 <RVD
@@ -62,15 +65,15 @@ export default class GarantiCard extends Component{
                                 size:48,childsProps:{align:'v'},
                                 row:[
                                     {html:'شماره درخواست :',className:'fs-14 theme-medium-font-color bold'},
-                                    {html:RequestID,className:'fs-14 theme-medium-font-color bold'},
+                                    {html:shomare_darkhast,className:'fs-14 theme-medium-font-color bold'},
                                     {flex:1},
-                                    {html:_time,className:'fs-12 theme-light-font-color'},
+                                    {html:saat,className:'fs-12 theme-light-font-color'},
                                     {size:6},
-                                    {html:CreateTime,className:'fs-12 theme-light-font-color'}
+                                    {html:tarikh,className:'fs-12 theme-light-font-color'}
                                 ]
                             },
                             {html:this.getStatus()},
-                            {column:Details.map((o,i)=>this.detail_layout(i))}
+                            {column:mahsoolat.map((o,i)=>this.detail_layout(i))}
                         ]
                     }}
                 />
@@ -92,7 +95,7 @@ export default class GarantiCard extends Component{
                                 childsProps:{align:'v'},
                                 row:[
                                     {html:'شماره گارانتی :',className:'fs-14 theme-dark-font-color bold'},
-                                    {html:RequestID,className:'fs-14 theme-dark-font-color bold'},
+                                    {html:shomare_darkhast,className:'fs-14 theme-dark-font-color bold'},
                                     {flex:1},
                                     {html:this.getStatus()}
                                 ]
@@ -101,7 +104,7 @@ export default class GarantiCard extends Component{
                                 childsProps:{align:'v'},
                                 row:[
                                     {html:'تاریخ ثبت :',className:'fs-12 theme-medium-font-color'},
-                                    {html:_time + ' - ' + CreateTime,className:'fs-12 theme-medium-font-color'},
+                                    {html:saat + ' - ' + tarikh,className:'fs-12 theme-medium-font-color'},
                                 ]
                             },
                             {size:12},
@@ -109,7 +112,7 @@ export default class GarantiCard extends Component{
                                 row:[
                                     {
                                         gap:6,
-                                        row:Details.slice(0,5).map((o,i)=>{
+                                        row:mahsoolat.slice(0,5).map((o,i)=>{
                                             let {images} = this.context;
                                             let src = images[o.Code] || bulb10w;
                                             return {
@@ -120,8 +123,8 @@ export default class GarantiCard extends Component{
                                     },
                                     {size:12},
                                     {
-                                        show:Details.length > 5,className:'theme-medium-font-color fs-12',align:'v',
-                                        html:'+' + (Details.length - 5)
+                                        show:mahsoolat.length > 5,className:'theme-medium-font-color fs-12',align:'v',
+                                        html:'+' + (mahsoolat.length - 5)
                                     }
                                 ]
                                 

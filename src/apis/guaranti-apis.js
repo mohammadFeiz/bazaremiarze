@@ -5,29 +5,48 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
     async items() {
       let res = await Axios.post(`${baseUrl}/Guarantee/GetAllGuarantees`, { CardCode: userInfo.cardCode });
       if(res.status === 401){return false}
-      if (res.data && res.data.isSuccess && res.data.data) {
-        let items = res.data.data.Items;
-        items = items.map((o) => {
-          let {date,time} = getDateAndTime(o.CreateTime);
-          return { ...o,CreateTime:date,_time:time, Details: o.Details.map((d) => { return { ...d } }) }
-        })
-        return {items,total:res.data.data.TotalItems}
-      }
-      else { return {items:[],total:0}; }
+      if (!res.data || !res.data.isSuccess || !res.data.data) {return {items:[],total:0}}
       
-      // return [];
+
+      let items = res.data.data.Items;
+      items = items.map((o) => {
+        let {CreateTime,RequestID,StatusCode} = o;
+        
+        let {date,time} = getDateAndTime(CreateTime);
+        
+        let vaziat;
+        if(StatusCode.toString() === '0'){vaziat = {color:'#662D91',text:'در حال بررسی'}}
+        else if(StatusCode.toString() === '1'){vaziat = {color:'#005478',text:'اعلام به ویزیتور'}}
+        
+        return { 
+          vaziat,
+          tarikh:date,
+          saat:time, 
+          shomare_darkhast:RequestID,
+          org_object:o,
+          id:'a' + Math.random()
+        }
+      })
+      return {items,total:res.data.data.TotalItems}
+    },
+    async mahsoolate_garanti(o){
+      let {Details} = o;
+      return Details.map(({Quantity,Name}) => {   
+        return {
+          onvan:Name,
+          tedad:Quantity,
+        } 
+      }) 
     },
     async kalahaye_mojood() {
-      let res = await Axios.get(`${baseUrl}/Guarantee/GetItems`);
+      let res = await Axios.get(`${baseUrl}/Guarantee/GetAllProducts`);
       if (!res || !res.data || !res.data.isSuccess || !res.data.data) {
-        console.error('Guarantee/GetItems data error')
+        console.error('Guarantee/GetAllProducts data error')
       }
       else if (!res.data.data.length) {
-        console.error('Guarantee/GetItems list is empty')
+        console.error('Guarantee/GetAllProducts list is empty')
       }
-      return res.data && res.data.isSuccess && res.data.data ? res.data.data.map(x=>{
-        return {Code:x.RejectedCode,Name:x.RejectedName}
-      }) : [];
+      return res.data && res.data.isSuccess && res.data.data ? res.data.data : [];
     },
     async sabte_kala(items) {
       let res = await Axios.post(`${baseUrl}/Guarantee`, { CardCode: userInfo.cardCode, Items: items });

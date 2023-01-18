@@ -15,6 +15,7 @@ export default class JoziateDarkhastHayeGaranti extends Component{
         this.state = {
             searchValue:'',
             sortValue:false,
+            mahsoolat_dic:{},
             sorts:[
                 {text:'قدیمی ترین',value:'0',before:(<Icon path={mdiArrowUp} size={0.8}/>)},
                 {text:'جدید ترین',value:'1',before:(<Icon path={mdiArrowDown} size={0.8}/>)},
@@ -23,52 +24,65 @@ export default class JoziateDarkhastHayeGaranti extends Component{
             ]
         }
     }
+    async componentDidMount(){
+        let {guarantiApis} = this.context;
+        let {guaranteeItems} = this.context;
+        let {mahsoolat_dic} = this.state;
+        for(let i = 0; i < guaranteeItems.length; i++){
+            let {org_object,id} = tguaranteeItems[i];
+            let mahsoolat = await guarantiApis({api:'mahsoolate_garanti',parameter:org_object,loading:false});
+            mahsoolat_dic[id] = mahsoolat;
+        }
+        this.setState({mahsoolat_dic});
+    }
     sort(sortValue){
         let {guaranteeItems,SetState} = this.context;
         let res;
         if(sortValue === '0'){
             res = this.Sort(guaranteeItems,[
-                {dir:'inc',active:true,field:(o)=>{
-                    let date = o.CreateTime.split('/');
-                    if(date[1].length === 1){date[1] = '0' + date[1]}
-                    if(date[2].length === 1){date[2] = '0' + date[2]}
-                    let time = o._time.split(':');
-                    if(time[0].length === 1){time[0] = '0' + time[0]}
-                    if(time[1].length === 1){time[1] = '0' + time[1]}
-                    if(time[2].length === 1){time[2] = '0' + time[2]}
-                    let num = date.join('') + time.join('');
+                {dir:'inc',active:true,field:({tarikh,saat})=>{
+                    tarikh = tarikh.split('/');
+                    if(tarikh[1].length === 1){tarikh[1] = '0' + tarikh[1]}
+                    if(tarikh[2].length === 1){tarikh[2] = '0' + tarikh[2]}
+                    saat = saat.split(':');
+                    if(saat[0].length === 1){saat[0] = '0' + saat[0]}
+                    if(saat[1].length === 1){saat[1] = '0' + saat[1]}
+                    if(saat[2].length === 1){saat[2] = '0' + saat[2]}
+                    let num = tarikh.join('') + saat.join('');
                     return +num
                 }}
             ])
         }
         else if(sortValue === '1'){
             res = this.Sort(guaranteeItems,[
-                {dir:'dec',active:true,field:(o)=>{
-                    let date = o.CreateTime.split('/');
-                    if(date[1].length === 1){date[1] = '0' + date[1]}
-                    if(date[2].length === 1){date[2] = '0' + date[2]}
-                    let time = o._time.split(':');
-                    if(time[0].length === 1){time[0] = '0' + time[0]}
-                    if(time[1].length === 1){time[1] = '0' + time[1]}
-                    if(time[2].length === 1){time[2] = '0' + time[2]}
-                    let num = date.join('') + time.join('');
+                {dir:'dec',active:true,field:({tarikh,saat})=>{
+                    tarikh = tarikh.split('/');
+                    if(tarikh[1].length === 1){tarikh[1] = '0' + tarikh[1]}
+                    if(tarikh[2].length === 1){tarikh[2] = '0' + tarikh[2]}
+                    saat = saat.split(':');
+                    if(saat[0].length === 1){saat[0] = '0' + saat[0]}
+                    if(saat[1].length === 1){saat[1] = '0' + saat[1]}
+                    if(saat[2].length === 1){saat[2] = '0' + saat[2]}
+                    let num = tarikh.join('') + saat.join('');
                     return +num
                 }}
             ])
         }
         else if(sortValue === '2'){
             res = this.Sort(guaranteeItems,[
-                {dir:'inc',active:true,field:(o)=>{
-                    let {Details = []} = o;
-                    return Details.length;
+                {dir:'inc',active:true,field:({id})=>{
+                    let {mahsoolat_dic} = this.state;
+                    let mahsoolat = mahsoolat_dic[id] || []
+                    return mahsoolat.length;
                 }}
             ])
         }
         else if(sortValue === '3'){
             res = this.Sort(guaranteeItems,[
-                {dir:'dec',active:true,field:(o)=>{
-                    let {Details = []} = o;
-                    return Details.length;
+                {dir:'dec',active:true,field:({id})=>{
+                    let {mahsoolat_dic} = this.state;
+                    let mahsoolat = mahsoolat_dic[id] || []
+                    return mahsoolat.length;
                 }}
             ])
         }
@@ -130,16 +144,29 @@ export default class JoziateDarkhastHayeGaranti extends Component{
                             flex:1,className:'ofy-auto',gap:12,show:guaranteeItems.length !== 0,
                             column:[
                                 {
-                                    gap:2,column:guaranteeItems.filter(({Details})=>{
+                                    gap:2,column:guaranteeItems.filter(({id})=>{
                                         if(!searchValue){return true}
-                                        for(let i = 0; i < Details.length; i++){
-                                            let {Name} = Details[i];
-                                            if(Name.indexOf(searchValue) !== -1){return true}
+                                        let {mahsoolat_dic} = this.state;
+                                        let mahsoolat = mahsoolat_dic[id] || []
+                    
+                                        for(let i = 0; i < mahsoolat.length; i++){
+                                            let {onvan} = mahsoolat[i];
+                                            if(onvan.indexOf(searchValue) !== -1){return true}
                                         }
                                         return false;
                                     }).map((o,i)=>{
                                         return {
-                                            html:<GarantiCard {...o} isFirst={i === 0} isLast={i === guaranteeItems.length - 1}/>
+                                            html:(
+                                                <GarantiCard 
+                                                    isFirst={i === 0} 
+                                                    isLast={i === guaranteeItems.length - 1}
+                                                    shomare_darkhast={o.shomare_darkhast}
+                                                    vaziat={o.vaziat}
+                                                    tarikh={o.tarikh}
+                                                    saat={o.saat}
+                                                    org_object={o.org_object}
+                                                />
+                                            )
                                         }
                                     })
                                 }

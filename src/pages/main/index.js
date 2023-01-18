@@ -113,7 +113,6 @@ export default class Main extends Component {
       ordersHistoryZIndex:0,
       order:false,
       guaranteeItems: [],
-      totalGuaranteeItems:0,
       guaranteeExistItems: [],
       popup: {},
       showGaranti:true,
@@ -201,12 +200,10 @@ export default class Main extends Component {
       this.props.logout();
       return;
     }
-    let {items,total} = res
     //this.getGuaranteeImages(items);
     let guaranteeExistItems = await guarantiApis({api:"kalahaye_mojood",loading:false});
     this.setState({
-      guaranteeItems:items,
-      totalGuaranteeItems:total,
+      guaranteeItems:res,
       guaranteeExistItems
     });
   }

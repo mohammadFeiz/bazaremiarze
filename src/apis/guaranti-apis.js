@@ -27,7 +27,7 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
           id:'a' + Math.random()
         }
       })
-      return {items,total:res.data.data.TotalItems}
+      return items
     },
     async mahsoolate_garanti(o){
       let {Details} = o;
@@ -46,7 +46,14 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       else if (!res.data.data.length) {
         console.error('Guarantee/GetAllProducts list is empty')
       }
-      return res.data && res.data.isSuccess && res.data.data ? res.data.data : [];
+      if(!res.data || !res.data.isSuccess || !res.data.data){return []}
+      return res.data.data.map(({Name,Code,Qty})=>{
+        return {
+          oovan:Name,
+          tedad:Qty,
+          code:Code
+        }
+      })
     },
     async sabte_kala(items) {
       let res = await Axios.post(`${baseUrl}/Guarantee`, { CardCode: userInfo.cardCode, Items: items });

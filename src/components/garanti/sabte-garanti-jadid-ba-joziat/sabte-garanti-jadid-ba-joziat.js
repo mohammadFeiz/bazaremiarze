@@ -13,10 +13,10 @@ export default class SabteGarantiJadidBaJoziat extends Component {
         this.state = {
             items: [],
             tableColumns: [
-                { title: "عنوان", field: 'row.Name' },
+                { title: "عنوان", field: 'row.onvan' },
                 {title:'رنگ',template:'color',width:42,justify:true},
                 {
-                    title: "تعداد", field: 'row.Qty', width: 100,
+                    title: "تعداد", field: 'row.tedad', width: 100,
                     template: 'count',justify:true
                 },
             ]
@@ -27,9 +27,9 @@ export default class SabteGarantiJadidBaJoziat extends Component {
         let { items } = this.state;
         let res = await guarantiApis({ api: "sabte_kala", parameter: items });
         if (res) {
-            let {items,total} = await guarantiApis({ api: "items" });
+            let guaranteeItems = await guarantiApis({ api: "items" });
             rsa_actions.removePopup('all');
-            SetState({guaranteeItems:items,totalGuaranteeItems:total})
+            SetState({guaranteeItems})
             openPopup('payame-sabte-garanti',{
                 text: "درخواست گارانتی شما با موفقیت ثبت شد",
                 subtext: "درخواست گارانتی شما تا 72 ساعت آینده بررسی خواهد شد"
@@ -39,8 +39,11 @@ export default class SabteGarantiJadidBaJoziat extends Component {
     }
     getColor(c){
         let color;
-        if(c){color = {'aftabi':'#ffd100','mahtabi':'#66b6ff','yakhi':'#f9ffd6'}[c];}
-        else {return '-'}
+        try{
+            if(c){color = {'aftabi':'#ffd100','mahtabi':'#66b6ff','yakhi':'#f9ffd6'}[c];}
+            else {return '-'}
+        }
+        catch{return '-'}
         return <div style={{width:16,height:16,background:color,borderRadius:'100%',border:'1px solid #ddd'}}></div>
     }
     table_layout() {
@@ -58,11 +61,11 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                     templates={{
                         count:(row) => {
                             return (
-                                <ProductCount value={row.Qty} onChange={(value) => {
+                                <ProductCount value={row.tedad} onChange={(value) => {
                                     let { items } = this.state;
                                     row.Qty = value;
                                     if(value === 0){
-                                        this.setState({ items: items.filter((o) => row.Code !== o.Code) })
+                                        this.setState({ items: items.filter((o) => row.code !== o.code) })
                                     }
                                     else{
                                         this.setState({ items });
@@ -70,13 +73,6 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                                     
                                 }} />
                             )
-                        },
-                        remove:(row)=>{
-                            return <Icon path={mdiClose} size={0.8} onClick={()=>{
-                                let { items } = this.state;
-                                
-                            }}/>
-                            
                         },
                         color:(row)=>{
                             return (
@@ -99,7 +95,9 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                             )
                         }
                     }}
-                    paging={false} columns={tableColumns} model={items} rtl={true}
+                    paging={false} columns={tableColumns} 
+                    model={items} 
+                    rtl={true}
                     toolbar={()=>{
                         return (
                             <AIOButton type='select' text="افزودن کالا" className='button-4' optionText='option.Name' optionValue='option.Code'
@@ -107,7 +105,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                                 options={guaranteeExistItems}
                                 onChange={(value, obj) => {
                                     let { items } = this.state;
-                                    items.push({ Name: obj.text, Code: obj.value, Qty: 1 });
+                                    items.push({ onvan: obj.text, code: obj.value, tedad: 1 });
                                     this.setState({ items });
                                 }}
                             />

@@ -29,12 +29,18 @@ export default class MyBurux extends Component{
                     openPopup('peygiriye-sefareshe-kharid')
                 }},
                 //{after:getSvg('chevronLeft'),text:'جایزه ها',icon:getSvg(15),onClick:()=>{}},
-                {after:getSvg('chevronLeft'),text:'جزییات درخواست های گارانتی',icon:getSvg(14,{className:'theme-medium-font-color'}),show:()=>this.context.showGaranti !== false,onClick:async ()=>{
-                    let {SetState,guarantiApis,openPopup} = this.context;
-                    let {items,total} = await guarantiApis({api:'items'});
-                    SetState({guaranteeItems:items,totalGuaranteeItems:total});
-                    openPopup('joziate-darkhast-haye-garanti'); 
-                }},
+                {
+                    after:getSvg('chevronLeft'),
+                    text:'جزییات درخواست های گارانتی',
+                    icon:getSvg(14,{className:'theme-medium-font-color'}),
+                    show:()=>this.context.showGaranti !== false,
+                    onClick:async ()=>{
+                        let {SetState,guarantiApis,openPopup} = this.context;
+                        let guaranteeItems = await guarantiApis({api:'items'});
+                        SetState({guaranteeItems});
+                        openPopup('joziate-darkhast-haye-garanti'); 
+                    }
+                },
                 //{after:getSvg('chevronLeft'),text:'قوانین و مقررات',icon:getSvg(16),onClick:()=>{}},
                 {after:getSvg('chevronLeft'),text:'خروج از حساب کاربری',icon:getSvg(17),onClick:()=>this.context.logout(),style:{color:'#A4262C'}},
             ]
@@ -45,7 +51,7 @@ export default class MyBurux extends Component{
         return {className:'m-h-12 of-visible',html:<Card type='card4' items={parts}/>}
     }
     getContent(){
-        let {totalGuaranteeItems,userInfo,openPopup,showGaranti} = this.context;
+        let {guaranteeItems,userInfo,openPopup,showGaranti} = this.context;
         let slpname,slpcode;
         try{
             slpname = userInfo.slpname || 'تایین نشده';
@@ -121,7 +127,7 @@ export default class MyBurux extends Component{
                             html:()=>(
                                 <Card
                                     type='card3'
-                                    rows={[[['کالا های گارانتی شده',totalGuaranteeItems + ' عدد']]]}
+                                    rows={[[['کالا های گارانتی شده',guaranteeItems.length + ' عدد']]]}
                                     footer={
                                         <AIOButton 
                                             type='button' caret={false} position='bottom' text='درخواست گارانتی جدید'

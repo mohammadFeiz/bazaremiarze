@@ -54,7 +54,7 @@ export default class SabteGarantiJadid extends Component {
         return (
             <RVD
                 layout={{
-                    className:'popup-bg',
+                    className:'theme-popup-bg',
                     column: [
                         {size:36},
                         this.image_layout(),

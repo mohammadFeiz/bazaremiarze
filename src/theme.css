@@ -1,26 +1,63 @@
-.theme-card-bg{
-	background:#fff;
+:root{
+	--theme-card-bg:#fff;
+	--theme-popup-bg:#f8f8f8;
+	--page-bg:#f8f8f8;
+	--page-header-bg:#fff;
+	--popup-header-bg:#fff;
+	--theme-border-radius:12px;
+	--theme-card-border-color:#ddd;
+	--theme-dark-font-color:#323130;
+	--theme-medium-font-color:#605E5C;
+	--theme-light-font-color:#A19F9D;
+	
+	
+	
+	/* --theme-popup-bg:red;
+	--page-bg:red;
+	--page-header-bg:green;
+	--popup-header-bg:green;
+	--theme-border-radius:16px;
+	--theme-card-border-color:yellow; 
+	--theme-dark-font-color:pink;
+	--theme-medium-font-color:orange;
+	--theme-light-font-color:yellow; 
+	--theme-card-bg:#333; */
+	
+	
+	
+	/*relatives*/
+	--theme-border-top-radius:var(--theme-border-radius) var(--theme-border-radius) 0 0;
+	--theme-border-bottom-radius:0 0 var(--theme-border-radius) var(--theme-border-radius);
 }
-.theme-card-border-color{
-	background:#ddd;
+.theme-card-bg{
+	background:var(--theme-card-bg);
+}
+.theme-card-border-bottom{
+	border-bottom:1px solid var(--theme-card-border-color);
+}
+.theme-gap-background{
+	background:var(--theme-card-border-color);
 }
 .theme-box-shadow{
 	box-shadow:0px 2px 8px 0px rgb(153 153 153 / 21%);
 }
 .theme-border-radius{
-	border-radius:12px;
+	border-radius:var(--theme-border-radius);
+}
+.theme-border-top-radius{
+	border-radius: var(--theme-border-top-radius);
+}
+.theme-border-bottom-radius{
+	border-radius: var(--theme-border-bottom-radius);
 }
 .theme-dark-font-color{
-	color:#323130;
-	/* color:red; */
+	color:var(--theme-dark-font-color);
 }
 .theme-medium-font-color{
-	color:#605E5C;
-	/* color:orange; */
+	color:var(--theme-medium-font-color);
 }
 .theme-light-font-color{
-	color:#A19F9D;
-	/* color:yellow; */
+	color:var(--theme-light-font-color);
 }
 .theme-link-font-color{
 	color:#3B55A5;
@@ -29,9 +66,22 @@
 .theme-color-fff{
 	color:#fff;
 }
+.page-bg{
+	background:var(--page-bg);
+}
+.rsa-popup-body{
+	background:var(--theme-popup-bg) !important;
+}
+.rsa-header{
+	background:var(--page-header-bg);
+}
+.rsa-popup-header{
+	background:var(--popup-header-bg);
+}
 .theme-input{
 	height:30px;
 	border:none;
 	color:#605E5C;
 	background:#f8f8f8;
 }
+

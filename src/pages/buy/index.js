@@ -137,7 +137,7 @@ export default class Buy extends Component {
       column:sliders.map(([key,name])=>{
         let products = this.state[key] || [];
         return {
-          className:'box gap-no-color of-visible',
+          className:'of-visible',
           style:{marginBottom:12},
           html:()=>(
             <CategorySlider 

@@ -90,13 +90,7 @@ export default class GarantiCard extends Component{
             return (
                 <RVD
                     layout={{
-                        className:'box gap-no-color p-12 ofx-hidden',
-                        style:{
-                            borderBottomLeftRadius:!isLast?0:undefined,
-                            borderBottomRightRadius:!isLast?0:undefined,
-                            borderTopLeftRadius:!isFirst?0:undefined,
-                            borderTopRightRadius:!isFirst?0:undefined,
-                        },
+                        className:'theme-card-bg gap-no-color p-12 ofx-hidden' + (isFirst?' theme-border-top-radius':''),
                         column:[
                             {
                                 childsProps:{align:'v'},

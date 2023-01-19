@@ -212,7 +212,7 @@ export default class Cart extends Component{
         return (
             <RVD 
               layout={{
-                flex: 1,className:'popup-bg',
+                flex: 1,className:'theme-popup-bg',
                 column: [this.tabs_layout(),this.products_layout(),this.payment_layout()]
               }}
             />

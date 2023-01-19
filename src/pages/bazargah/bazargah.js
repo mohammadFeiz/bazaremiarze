@@ -927,7 +927,7 @@ class JoziateSefaresheBazargah extends Component{
             <>
                 <RVD
                 layout={{
-                    className:'popup-bg',
+                    className:'theme-popup-bg',
                     style:{overflow:'hidden'},
                     column:[
                         this.header_layout(),

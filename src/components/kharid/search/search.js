@@ -56,7 +56,7 @@ export default class Search extends Component {
       return (
           <RVD
             layout={{
-              className: "popup-bg",
+              className: "theme-popup-bg",
               column: [
                 {html:<SearchBox onChange={async (searchValue)=>await this.changeSearch(searchValue)}/>},
                 {size: 200,align: "vh",className: "fs-20 theme-dark-font-color bold",show: false,html: "در میان ان کالا جستجو"},

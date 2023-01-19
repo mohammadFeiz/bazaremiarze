@@ -249,7 +249,7 @@ export default class Wallet extends Component{
             <>
                 <RVD
                     layout={{
-                        className:'popup-bg',
+                        className:'theme-popup-bg',
                         attrs:{ref:this.dom},
                         column:[
                             this.header_layout(),

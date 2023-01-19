@@ -70,14 +70,9 @@ class Card2 extends Component {
 }
 
 class Card3 extends Component {
-    cell_layout([title, value], isFirstRow, isFirstCell, isLastCell) {
+    cell_layout([title, value]) {
         return {
             flex: 1,
-            className:'theme-card-bg',
-            style: {
-                borderTopRightRadius: isFirstRow && isFirstCell ? 12 : undefined,
-                borderTopLeftRadius: isFirstRow && isLastCell ? 12 : undefined,
-            },
             column: [
                 { size: 12 },
                 { size: 24, align: 'vh', html: title, className: 'theme-light-font-color fs-12' },
@@ -87,18 +82,19 @@ class Card3 extends Component {
         }
     }
     row_layout(row, isFirstRow) {
-        return { flex: 1,gap:1, row: row.map((o, i) => this.cell_layout(o, isFirstRow, i === 0, i === row.length - 1)) }
+        return { flex: 1,gap:1,gapAttrs:{className:'theme-gap-background'}, row: row.map((o, i) => this.cell_layout(o, isFirstRow, i === 0, i === row.length - 1)) }
     }
     rows_layout(rows) {
-        return { gap: 1, column: rows.map((o, i) => this.row_layout(o, i === 0)) }
+        return { gap:1,gapAttrs:{className:'theme-gap-background'},column: rows.map((o, i) => this.row_layout(o, i === 0)) }
     }
     render() {
         let { rows, footer, onClick } = this.props;
         return (
             <RVD
                 layout={{
-                    className:'theme-card-border-color theme-border-radius theme-box-shadow',
-                    gap: 1,
+                    className:'theme-border-radius theme-box-shadow theme-card-bg',
+                    gap:1,
+                    gapAttrs:{className:'theme-gap-background'},
                     column: [
                         this.rows_layout(rows),
                         { show: !!footer, size: 40, align: 'vh', html: footer, className: 'theme-link-font-color fs-12 bold br-12 br-t-0 theme-card-bg', attrs: { onClick } }
@@ -114,7 +110,7 @@ class Card4 extends Component {
         if(show() === false){return false}
         return {
             onClick: () => onClick(),
-            className:'theme-card-bg theme-medium-font-color',
+            className:'theme-medium-font-color',
             size: 60, style,            
             row: [
                 { size: 60, html: icon, align: 'vh' },
@@ -135,7 +131,8 @@ class Card4 extends Component {
         return (
             <RVD
                 layout={{
-                    gap: 1,className:'theme-border-radius theme-box-shadow theme-card-border-color',
+                    gap: 1,gapAttrs:{className:'theme-gap-background'},
+                    className:'theme-card-bg theme-border-radius theme-box-shadow theme-card-border-color',
                     column: items.map((o) => this.item_layout(o))
                 }}
             />

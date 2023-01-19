@@ -12,9 +12,10 @@ export default class CategorySlider extends Component{
       let loading = false;
       if(!products){loading = true; products = [fakeProduct,fakeProduct,fakeProduct,fakeProduct,fakeProduct]}
       return {
-        gap: 16,className:'ofx-auto ofy-visible',
+        gap: 16,className:'ofx-auto p-b-12',
         row: products.map((product,i) =>{
             return {
+              className:'of-visible',
               html:(
                 <ProductCard 
                     type='vertical' product={product} loading={loading}
@@ -30,7 +31,7 @@ export default class CategorySlider extends Component{
       return (
         <RVD
           layout={{
-            style: { padding: 12 },className:'ofy-auto',
+            style: { padding: 12 },className:'ofx-visible',
             column: [
               {
                 size:36,

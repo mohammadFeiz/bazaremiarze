@@ -512,7 +512,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         return (
             <RVD
                 layout={{
-                    className: "popup-bg",
+                    className: "theme-popup-bg",
                     column: [
                         {size:12},
                         this.body_layout(),

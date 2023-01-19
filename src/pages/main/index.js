@@ -164,8 +164,8 @@ export default class Main extends Component {
         else{newCart[variantId].count = count;}
       }
     }
-    //clearTimeout(this.cartTimeout);
-    //this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
+    clearTimeout(this.cartTimeout);
+    this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
     this.setState({cart:newCart});
   }
   getCartCountByVariantId(variantId) {
@@ -233,7 +233,7 @@ export default class Main extends Component {
     let {guaranteeItems} = this.context;
     let {garanti_products_dic} = this.state;
     for(let i = 0; i < guaranteeItems.length; i++){
-        let {org_object,id} = tguaranteeItems[i];
+        let {org_object,id} = guaranteeItems[i];
         let mahsoolat = await guarantiApis({api:'mahsoolate_garanti',parameter:org_object,loading:false});
         garanti_products_dic[id] = mahsoolat;
     }

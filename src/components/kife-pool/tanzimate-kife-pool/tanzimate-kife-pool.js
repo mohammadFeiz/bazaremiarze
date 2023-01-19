@@ -59,7 +59,7 @@ export default class TanzimateKifePool extends Component{
         return (
             <RVD
                 layout={{
-                    className:'popup-bg',
+                    className:'theme-popup-bg',
                     column:[
                         this.cards_layout()
                     ]

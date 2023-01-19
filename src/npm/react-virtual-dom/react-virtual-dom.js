@@ -12,12 +12,12 @@ export default class ReactVirtualDom extends Component {
     $(window).unbind(event, action);
     if(type === 'bind'){$(window).bind(event, action)}
   }
-  getClassName(obj,align,Attrs,attrs,Props,pointer,isRoot){
+  getClassName(obj,align,Attrs,attrs,Props,pointer,isRoot,parent = {}){
     let className = RVDCLS.rvd;
     let gapClassName = RVDCLS.gap;
     if(isRoot){className += ' rvd-root'}
-    if(obj.gapAttrs && obj.gapAttrs.className){
-      gapClassName += ' ' + obj.gapAttrs.className
+    if(parent.gapAttrs && parent.gapAttrs.className){
+      gapClassName += ' ' + parent.gapAttrs.className
     }
     if(pointer){ className += ' ' + RVDCLS.pointer;}
     if(Attrs.className){ className += ' ' + Attrs.className}
@@ -86,8 +86,8 @@ export default class ReactVirtualDom extends Component {
     }
     if(obj.row){childs = typeof obj.row === 'function'?obj.row():obj.row;}
     else if(obj.column){childs = typeof obj.column === 'function'?obj.column():obj.column}
-    if(obj.gapAttrs && obj.gapAttrs.style){gapStyle = {...gapStyle,...obj.gapAttrs.style}}
-    let {className,gapClassName} = this.getClassName(obj,align,Attrs,attrs,Props,pointer,isRoot);
+    if(parent.gapAttrs && parent.gapAttrs.style){gapStyle = {...gapStyle,...obj.gapAttrs.style}}
+    let {className,gapClassName} = this.getClassName(obj,align,Attrs,attrs,Props,pointer,isRoot,parent);
     let gapAttrs = {className:gapClassName,style:gapStyle,draggable:false,onDragStart:(e)=>{e.preventDefault(); return false}};
     if(size && onResize){
       gapAttrs[this.touch?'onTouchStart':'onMouseDown'] = (e)=>{

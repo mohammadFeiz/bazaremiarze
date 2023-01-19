@@ -32,7 +32,7 @@ export default class CategoryView extends Component {
         return (
             <RVD
                 layout={{
-                    className:'popup-bg',
+                    className:'theme-popup-bg',
                     column: [
                         this.search_layout(),
                         {

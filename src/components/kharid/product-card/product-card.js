@@ -152,7 +152,7 @@ export default class ProductCard extends Component{
             <RVD
                 loading={loading}
                 layout={{
-                    className:'box gap-no-color m-h-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
+                    className:'theme-card-bg theme-box-shadow theme-border-radius gap-no-color m-h-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
                     attrs:{onClick:()=>this.onClick()},
                     style:{
                         padding:6,height:130,
@@ -193,7 +193,7 @@ export default class ProductCard extends Component{
             <RVD
                 loading={loading}
                 layout={{
-                    style:{...style},className:'bg-fff border-eee of-visible w-168 h-288 fs-14 br-12',
+                    style:{...style},className:'theme-card-bg theme-box-shadow of-visible w-168 h-288 fs-14 br-12',
                     attrs:{onClick:()=>this.onClick()},
                     column:[
                         {size:140,align:'vh',html:<img src={srcs[0] || NoSrc} width={'100%'} style={{width:'calc(100% - 24px)',height:'100%',borderRadius:8}} alt=''/>,style:{padding:6,paddingBottom:0}},

@@ -129,7 +129,7 @@ export default class OrderPopup extends Component {
       return (
         <RVD
           layout={{
-            className: "popup-bg",
+            className: "theme-popup-bg",
             column: [
               {size:12},
               {

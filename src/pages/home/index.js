@@ -135,14 +135,29 @@ export default class Home extends Component {
                     ]
                 },
                 {
-                    show:!!guaranteeItems.length,gap:1,column:guaranteeItems.slice(0,2).map((o,i)=>{
-                        return {
-                            html:<GarantiCard {...o} type='2'/>
+                    gap:1,
+                    gapAttrs:{className:'theme-gap-background'},
+                    show:guaranteeItems.length > 0,
+                    column:[
+                        {
+                            gap:1,
+                            gapAttrs:{className:'theme-gap-background'},
+                            show:!!guaranteeItems.length,column:guaranteeItems.slice(0,2).map((o,i)=>{
+                                return {
+                                    html:<GarantiCard {...o} type='2' isFirst={i === 0}/>
+                                }
+                            })
+                        },
+                        {
+                            attrs:{onClick:()=>openPopup('joziate-darkhast-haye-garanti')},
+                            size:48,html:'مشاهده جزییات درخواست های گارانتی ها',
+                            className:'theme-card-bg theme-border-bottom-radius theme-link-font-color fs-12 bold',
+                            align:'vh'
                         }
-                    })
+                    ]
                 },
                 {
-                    className:'box',
+                    className:'',
                     show:!!!guaranteeItems.length,
                     column:[
                         {size:24},
@@ -161,14 +176,8 @@ export default class Home extends Component {
                         {size:24},
                         
                     ]
-                },
+                },                
                 
-                {size:1},
-                {
-                    show:guaranteeItems.length > 0,
-                    attrs:{onClick:()=>openPopup('joziate-darkhast-haye-garanti')},
-                    size:48,html:'مشاهده جزییات درخواست های گارانتی ها',className:'box theme-link-font-color fs-12 bold',align:'vh',style:{borderRadius:'0 0 14px 14px'}
-                }
             ]
         }
     }

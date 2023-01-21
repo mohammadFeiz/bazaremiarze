@@ -117,7 +117,7 @@ export default class ForoosheVijeCard extends Component{
         return (
             <RVD
                 layout={{
-                    className:'theme-box-shadow theme-card-bg theme-border-radius m-h-12 p-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
+                    className:'theme-box-shadow theme-card-bg theme-border-radius theme-gap-h p-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
                     attrs:{onClick:()=>this.onClick()},
                     column:[
                         this.label_layout(),

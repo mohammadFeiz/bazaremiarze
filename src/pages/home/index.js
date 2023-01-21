@@ -57,7 +57,7 @@ export default class Home extends Component {
     cartAndWallet_layout(){
         let {userInfo,cart,openPopup} = this.context;
         return {
-            className:'p-h-12 of-visible',
+            className:'of-visible theme-gap-h',
             row: [
                 {
                     className:'of-visible',flex:1,
@@ -86,7 +86,7 @@ export default class Home extends Component {
         let {preOrders} = this.state;
         if(!preOrders){return false}
         return {
-            className:'p-h-12 of-visible',
+            className:'theme-gap-h of-visible',
             column:[
                 //{html: "پیش سفارشات",className: "fs-14 theme-dark-font-color bold p-h-12",size: 48,align: "v"},
                 {
@@ -110,7 +110,7 @@ export default class Home extends Component {
         let {guaranteeItems = [],openPopup,showGaranti} = this.context;
         if(showGaranti === false){return false}
         return {
-            className:'p-h-12 m-t-12 of-visible',
+            className:'theme-gap-h m-t-12 of-visible',
             column:[
                 {
                     className:'p-h-12',size:48,style:{borderRadius:guaranteeItems.length > 0 ?'14px 14px 0 0':'14px'},
@@ -157,7 +157,7 @@ export default class Home extends Component {
                     ]
                 },
                 {
-                    className:'',
+                    className:'theme-card-bg theme-border-radius theme-box-shadow',
                     show:!!!guaranteeItems.length,
                     column:[
                         {size:24},
@@ -202,7 +202,7 @@ export default class Home extends Component {
         }
     }
     bazargah_layout(){
-        return {className:'of-visible',html:<Bazargah renderInHome={true}/>}
+        return {className:'of-visible theme-gap-h',html:<Bazargah renderInHome={true}/>}
     }
     getContent() {
         let {testedChance} = this.state;
@@ -215,10 +215,11 @@ export default class Home extends Component {
                     column: [
                         this.billboard_layout(),
                         this.cartAndWallet_layout(),
-                        { size: 12 },
+                        { className: 'theme-vertical-gap'},
                         this.preOrders_layout(),
-                        { size: 12 },
+                        { className: 'theme-vertical-gap'},
                         this.bazargah_layout(),
+                        { className: 'theme-vertical-gap'},
                         this.garanti_layout(),
                         { size: 12 },
                         //this.score_layout(),

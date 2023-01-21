@@ -72,7 +72,7 @@ export default class Map extends Component{
         <RVD
           layout={{
             style:{zIndex:10,position:'absolute',background:'rgba(255,255,255,.5)',bottom:12,left:12,width:'calc(100% - 24px)',border:'1px solid #ddd'},
-            className:'box-shadow of-visible br-6 p-v-6',align:'vh',
+            className:'theme-box-shadow of-visible br-6 p-v-6',align:'vh',
             column:[
                 //{html:`latitude:${latitude.toFixed(6)} - Lonitude:${longitude.toFixed(6)}`,style:{width:'100%',fontSize:12,borderRadius:5},align:'h',className:'color3B55A5'},
                 //{size:6},

@@ -69,7 +69,7 @@ export default class OrderPopup extends Component {
       let {details = {}} = this.state;
       details.basePrice = details.basePrice || 0
       return {
-        className: "box gap-no-color m-h-12 p-12",gap: 12,
+        className: "box gap-no-color theme-gap-h p-12",gap: 12,
         column: [
           this.getRow("پیش فاکتور", order.mainDocNum),
           this.getRow("تاریخ ثبت", order.date),
@@ -112,7 +112,7 @@ export default class OrderPopup extends Component {
         products = fakeData;
       }
       return {
-        gap: 2,className:'m-h-12 of-visible',
+        gap: 2,className:'theme-gap-h of-visible',
         column: products.map((o, i) => {
           return {
             className:'of-visible',
@@ -131,11 +131,12 @@ export default class OrderPopup extends Component {
           layout={{
             className: "theme-popup-bg",
             column: [
-              {size:12},
+              {className:'theme-vertical-gap'},
               {
-                flex: 1,className: "ofy-auto",gap: 12,
+                flex: 1,className: "ofy-auto",
                 column: [
                   this.details_layout(),
+                  {className:'theme-vertical-gap'},
                   this.products_layout(),
                 ],
               },

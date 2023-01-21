@@ -97,7 +97,7 @@ class Card3 extends Component {
                     gapAttrs:{className:'theme-gap-background'},
                     column: [
                         this.rows_layout(rows),
-                        { show: !!footer, size: 40, align: 'vh', html: footer, className: 'theme-link-font-color fs-12 bold br-12 br-t-0 theme-card-bg', attrs: { onClick } }
+                        { show: !!footer, size: 40, align: 'vh', html: footer, className: 'theme-link-font-color fs-12 bold br-12 br-t-0', attrs: { onClick } }
                     ]
                 }}
             />

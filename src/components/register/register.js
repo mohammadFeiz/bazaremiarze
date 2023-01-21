@@ -47,7 +47,7 @@ export default class Register extends Component{
     header_layout(){
         let {mode} = this.props;
         return {
-            className:'box-shadow of-visible',size:60,style:{marginBottom:12,background:'#fff'},
+            className:'theme-box-shadow of-visible',size:60,style:{marginBottom:12,background:'#fff'},
             row:[
                 {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>this.onClose()}},
                 {flex:1,html:mode === 'edit'?'ویرایش اطلاعات کاربری':'ثبت نام',className:'fs-16 theme-medium-font-color',align:'v'}
@@ -240,7 +240,7 @@ class ShowMap extends Component{
     header_layout(){
         let {onClose} = this.props;
         return {
-            className:'box-shadow of-visible',size:60,style:{background:'#fff'},
+            className:'theme-box-shadow of-visible',size:60,style:{background:'#fff'},
             row:[
                 {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>onClose()}},
                 {flex:1,html:'انتخاب موقعیت فروشگاه',className:'fs-16 theme-medium-font-color',align:'v'}

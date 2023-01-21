@@ -209,7 +209,7 @@ export default class Shipping extends Component{
       mablaghe_ghabele_pardakht = mablaghe_ghabele_pardakht - mablaghe_takhfife_pardakhte_online;
       
       return {
-        className:'p-h-12 bg-fff box-shadow-up',
+        className:'p-h-12 bg-fff theme-box-shadow',
         style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
         column:[
           {

@@ -37,7 +37,7 @@ export default class SabteGarantiJadid extends Component {
         return {
             attrs:{onClick},
             style:{background:'#EFF0FF',paddingLeft:0},
-            className:'p-12 m-h-12 br-8 box-shadow',
+            className:'p-12 theme-gap-h br-8 theme-box-shadow',
             row:[
                 {
                     flex:1,

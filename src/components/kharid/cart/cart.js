@@ -152,7 +152,7 @@ export default class Cart extends Component{
       let total = this.tab.factorDetails.DocumentTotal;
       let {continued} = this.state;
       return {
-        size: 72,className: "bgFFF p-h-12 box-shadow-up",
+        size: 72,className: "bgFFF p-h-12 theme-box-shadow",
         row: [
           {
             flex: 1,
@@ -179,7 +179,7 @@ export default class Cart extends Component{
       let {continued} = this.state;
       let sood = this.foroosheVije_sood(total)
       return {
-        size: 72,className: "bgFFF p-h-12 box-shadow-up",
+        size: 72,className: "bgFFF p-h-12 theme-box-shadow",
         row: [
           {
             flex: 1,

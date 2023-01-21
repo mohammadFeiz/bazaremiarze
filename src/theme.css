@@ -9,8 +9,9 @@
 	--theme-dark-font-color:#323130;
 	--theme-medium-font-color:#605E5C;
 	--theme-light-font-color:#A19F9D;
-	
-	
+	--theme-box-shadow:0px 2px 8px 0px rgb(153 153 153 / 21%);
+	--theme-card-border:none;
+	--theme-gap:12px;
 	
 	/* --theme-popup-bg:red;
 	--page-bg:red;
@@ -29,17 +30,24 @@
 	--theme-border-top-radius:var(--theme-border-radius) var(--theme-border-radius) 0 0;
 	--theme-border-bottom-radius:0 0 var(--theme-border-radius) var(--theme-border-radius);
 }
+.theme-gap{
+	margin:var(--theme-gap);
+}
+.theme-vertical-gap{
+	height:var(--theme-gap) !important;
+}
+.theme-gap-h{
+	margin:0 var(--theme-gap);
+}
 .theme-card-bg{
 	background:var(--theme-card-bg);
-}
-.theme-card-border-bottom{
-	border-bottom:1px solid var(--theme-card-border-color);
+	border:var(--theme-card-border)
 }
 .theme-gap-background{
 	background:var(--theme-card-border-color);
 }
 .theme-box-shadow{
-	box-shadow:0px 2px 8px 0px rgb(153 153 153 / 21%);
+	box-shadow:var(--theme-box-shadow);
 }
 .theme-border-radius{
 	border-radius:var(--theme-border-radius);

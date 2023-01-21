@@ -50,7 +50,7 @@ export default class PayameSabteGaranti extends Component {
         return (
             <RVD
                 layout={{
-                    className: "p-24 bgFFF br-24 box-shadow",
+                    className: "p-24 bgFFF br-24 theme-box-shadow",
                     style: { width: '100%', height: '100%', boxSizing: 'border-box' },
                     column: [
                         this.header_layout(),

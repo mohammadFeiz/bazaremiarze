@@ -46,7 +46,7 @@ export default class OrdersHistory extends Component {
       }
       let column = orders.map((o,i)=>this.order_layout(o,i))
       column.push({size:300})
-      return {flex: 1,gap: 12,className:'ofy-auto',column}
+      return {flex: 1,gap: 12,gapAttrs:{className:'theme-vertical-gap'},className:'ofy-auto',column}
     }
     order_layout(order,index){
       let {openPopup} = this.context;
@@ -129,7 +129,7 @@ export default class OrdersHistory extends Component {
           loading={loading}
           layout={{
             onClick,
-            className: "box gap-no-color m-h-12 p-12 rvd-rotate-card" + (mounted?' mounted':''),
+            className: "theme-card-bg theme-box-shadow theme-border-radius theme-gap-h p-12 rvd-rotate-card" + (mounted?' mounted':''),
             column: [this.header_layout(),this.footer_layout(),],
           }}
         />

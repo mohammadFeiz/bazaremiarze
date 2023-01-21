@@ -144,7 +144,7 @@ export default class Bazargah extends Component{
                             ]
                         },
                         {
-                            className:'theme-box-shadow theme-card-bg theme-border-radius m-h-12 p-h-12 fs-14 theme-medium-font-color',show:bazargah.wait_to_get.length === 0,
+                            className:'theme-box-shadow theme-card-bg theme-border-radius p-h-12 fs-14 theme-medium-font-color',show:bazargah.wait_to_get.length === 0,
                             column:[
                                 {size:12},
                                 {
@@ -415,7 +415,7 @@ class JoziateSefaresheBazargah extends Component{
     header_layout(){
         return {
             style:{height:60},
-            className:'box-shadow bg-fff of-visible',
+            className:'theme-box-shadow bg-fff of-visible',
             row:[
                 {size:60,html:<Icon path={mdiChevronRight} size={1}/>,align:'vh',attrs:{onClick:()=>this.getInfo('onBack')()}},
                 {html: this.getInfo('title'),className: "fs-16 theme-medium-font-color",align:'v'}

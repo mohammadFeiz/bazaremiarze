@@ -51,7 +51,7 @@ export default class MyBurux extends Component{
         return {className:'m-h-12 of-visible',html:<Card type='card4' items={parts}/>}
     }
     getContent(){
-        let {guaranteeItems,userInfo,openPopup,showGaranti} = this.context;
+        let {guaranteeItems = [],userInfo,openPopup,showGaranti} = this.context;
         let slpname,slpcode;
         try{
             slpname = userInfo.slpname || 'تایین نشده';

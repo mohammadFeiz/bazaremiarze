@@ -126,7 +126,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
         return {
             attrs:{onClick},
             style:{background:'#EFF0FF',paddingLeft:0},
-            className:'m-h-12 br-8 box-shadow',
+            className:'theme-gap-h br-8 theme-box-shadow',
             row:[
                 {
                     flex:1,

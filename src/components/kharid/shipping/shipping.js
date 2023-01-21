@@ -117,7 +117,8 @@ export default class Shipping extends Component{
       let {userInfo,shipping} = this.context;
       this.setState({
         campaign:shipping.title,
-        name:userInfo.cardName,
+        //name:userInfo.cardName,
+        name:`${userInfo.firstName} ${userInfo.lastName}`,
         code:userInfo.cardCode,
         address:userInfo.address,
         phone:userInfo.phone1,

@@ -421,7 +421,8 @@ export default class Main extends Component {
     }
   }
   getProfileName(userInfo){
-    let str = userInfo.cardName;
+    //let str = userInfo.cardName;
+    let str = `${userInfo.firstName} ${userInfo.lastName}`;
     if(!str){return 'پروفایل'}
     if(str.length <= 12){return str}
     return <marquee behavior='scroll' scrollamount={3} direction='right'>{str}</marquee> 

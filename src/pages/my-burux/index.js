@@ -80,7 +80,8 @@ export default class MyBurux extends Component{
                     size:36,
                     row:[
                         {flex:1},
-                        {className:'theme-dark-font-color fs-20 bold',html:userInfo.cardName,align:'vh'},
+                        //{className:'theme-dark-font-color fs-20 bold',html:userInfo.cardName,align:'vh'},
+                        {className:'theme-dark-font-color fs-20 bold',html:`${userInfo.firstName} ${userInfo.lastName}`,align:'vh'},
                         {flex:1}
                     ]
                 },

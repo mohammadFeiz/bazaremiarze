@@ -134,7 +134,6 @@ export default class AIOButton extends Component {
       else{
         let renderIndex = +active.attr('datarenderindex');
         renderIndex += dir;
-        console.log(renderIndex,options.length)
         if(dir === 1){if(renderIndex >= options.length){renderIndex = 0;}}
         else{if(renderIndex < 0){renderIndex = options.length - 1;}}
         options.removeClass('active');

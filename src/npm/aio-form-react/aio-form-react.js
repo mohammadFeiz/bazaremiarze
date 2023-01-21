@@ -652,26 +652,18 @@ class Input extends Component{
     let {options,type} = this.props;
     let {error,prevValue,value} = this.state;   
     if (this.props.value !== prevValue) {setTimeout(() => {
-        if(value === undefined){
-            this.state.value = undefined;
-            this.state.prevValue = undefined;
-            this.setState({value:undefined,prevValue:undefined})
-        }
-        else{
-            this.setState({value:this.props.value,prevValue:this.props.value})
-        }
-        
+      this.setState({value:this.props.value,prevValue:this.props.value});
     }, 0);}
     if(error !== false){
       return <div className='aio-form-inline-error aio-form-input' onClick={()=>this.setState({error:false})}>{error}</div>
     }
-    let props = { ...this.props, value, onChange: (e) => this.onChange(e.target.value) ,ref:this.dom};
+    let props = { ...this.props, onChange: (e) => this.onChange(e.target.value) ,ref:this.dom};
     let uid = 'a' + Math.random();
     return type === 'textarea' ? (
-      <textarea {...props} />
+      <textarea {...props} value={value === undefined?'':value}/>
     ) : (
       <>
-        <input {...props} list={uid}/>
+        <input {...props} value={value === undefined?'':value} list={uid}/>
         {Array.isArray(options) && options.length !== 0 && this.getOptions(uid)}
       </>
     );

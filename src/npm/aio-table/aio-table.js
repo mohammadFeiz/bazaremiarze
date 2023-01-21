@@ -353,7 +353,6 @@ export default class Table extends Component {
       e.preventDefault();
       let sign = ((e.keyCode === 37?-1:1) * (rtl?-1:1)) === 1?'next':'prev';
       let next = focusedInput[sign](`[data-row-id='${rowId}']`);
-      console.log(next.length)
       if(next.length){next.focus().select();}
     }
   }
@@ -456,8 +455,7 @@ export default class Table extends Component {
     let {prevColumns} = this.state;
     let columnsStr = JSON.stringify(columns);
     if(columnsStr !== prevColumns){
-      let newColumns = JSON.parse(columnsStr);
-      setTimeout(()=>this.setState({columns:newColumns,prevColumns:columnsStr},()=>this.updateColumnsByStorageKey()),0)
+      setTimeout(()=>this.setState({columns,prevColumns:columnsStr},()=>this.updateColumnsByStorageKey()),0)
     }
     this.setColumnIds()
     //پیجینگ را زود تر می سازیم که دیفالت هاش محاسبه بشه
@@ -669,7 +667,6 @@ class TableUnit extends Component{
     }
   }
   onSwap(f,t){
-    debugger;
   }
   render(){
     let {rowGap} = this.context,{cellsType,onScroll} = this.props;
@@ -1450,6 +1447,7 @@ let functions = {
     this['scroll' + index] = false;
   },
   getValueByField(row,column,field){
+    
     try{
       if(field === undefined){field = column.field}
       let type = typeof field;

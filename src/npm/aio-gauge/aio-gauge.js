@@ -160,7 +160,6 @@ export default class RGauger extends Component{
   } 
   getValueByField(field,value){
     let props = this.props;
-    if(field === 'value === 60?"orange":"#aaa"'){console.log('value',value)}
     try{
       let type = typeof field;
       if(type === 'function'){return field(props);}

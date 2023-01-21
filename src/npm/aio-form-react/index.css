@@ -148,7 +148,6 @@
 .aio-form-input-radio.disabled,
 .aio-form-input-select.disabled,
 .aio-form-input-multiselect.disabled {
-  opacity: 1;
 }
 
 .aio-form-input-table {

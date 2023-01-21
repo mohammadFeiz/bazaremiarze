@@ -78,7 +78,7 @@ export default class Main extends Component {
     }
     this.dateCalculator = dateCalculator();
     let backOffice = {
-      forsate_ersale_sefareshe_bazargah:60,
+      forsate_ersale_sefareshe_bazargah:16 * 60,
       forsate_akhze_sefareshe_bazargah:90
     }
     this.state = {

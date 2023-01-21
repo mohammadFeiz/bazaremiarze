@@ -987,7 +987,7 @@ class Pricing {
                 if (camrule?.camCanHaveB1Dis ?? false) {
                     if (camrule.priceList) {
                         if (!DocAfterB1.marketingdetails) {
-                            DocAfterB1.marketingdetails = new MarketingDetails();
+                            DocAfterB1.marketingdetails = {};
                         }
                         DocAfterB1.marketingdetails.PriceList = camrule.priceList;
                     }

@@ -66,10 +66,11 @@ export default class Noorvare3 extends Component{
     }
     footer_layout(){
         let {step} = this.state;
+        let {onSubmit} = this.props;
         if(step === 4){
             return {
                 size:60,
-                onClick:()=>this.onClose(),
+                onClick:()=>onSubmit(),
                 className:'m-h-12',html:<div className='align-vh w-100 h-36 bg3B55A5 color-fff br-8'>با شرایط و ضوابط موافقم</div>,align:'vh'
             }
         }

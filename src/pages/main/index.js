@@ -445,7 +445,16 @@ export default class Main extends Component {
       baseUrl:this.props.baseUrl
     };
     if(noorvare3){
-      return <Noorvare3 changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} onClose={()=>this.setState({noorvare3:false})}/>
+      return (
+        <Noorvare3 
+          changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} 
+          onClose={()=>this.setState({noorvare3:false})}
+          onSubmit={()=>{
+            this.noorvare3Storage.save(!value,'show')
+            this.setState({noorvare3:false})
+          }}
+        />
+      )
     }
     return (
       <appContext.Provider value={context}>

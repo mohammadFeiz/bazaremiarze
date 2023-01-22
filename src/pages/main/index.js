@@ -5,6 +5,7 @@ import Home from "./../home/index";
 import Buy from "./../buy/index";
 import Bazargah from "../bazargah/bazargah";
 import MyBurux from "./../my-burux/index";
+import Noorvare3 from './../../pages/noorvare3/noorvare3';
 
 //popups/////////////////////////////////////
 import OrdersHistory from "./../../components/kharid/orders-history/orders-history";
@@ -25,7 +26,7 @@ import RSA from './../../npm/react-super-app/react-super-app';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import AIOService from './../../npm/aio-service/aio-service';
 import AIOButton from './../../interfaces/aio-button/aio-button';
-
+import AIOStorage from './../../npm/aio-storage/aio-storage';
 
 
 import getSvg from "../../utils/getSvg";
@@ -81,7 +82,10 @@ export default class Main extends Component {
       forsate_ersale_sefareshe_bazargah:16 * 60,
       forsate_akhze_sefareshe_bazargah:90
     }
+    this.noorvare3Storage = AIOStorage('noorvare3');
+    let noorvare3 = this.noorvare3Storage.load('show',true)
     this.state = {
+      noorvare3,
       opacity:100,theme:'light',
       bazargah:{
         setActivity:async (state)=>{
@@ -429,7 +433,7 @@ export default class Main extends Component {
   }
   render() {
     let {userInfo,logout} = this.props;
-    let {opacity,theme} = this.state;
+    let {opacity,theme,noorvare3} = this.state;
     console.log('opacity',opacity);
     let context = {
       ...this.state,
@@ -440,6 +444,9 @@ export default class Main extends Component {
       logout: this.props.logout,
       baseUrl:this.props.baseUrl
     };
+    if(noorvare3){
+      return <Noorvare3 changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} onClose={()=>this.setState({noorvare3:false})}/>
+    }
     return (
       <appContext.Provider value={context}>
         <RSA

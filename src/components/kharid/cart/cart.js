@@ -137,9 +137,8 @@ export default class Cart extends Component{
       let {cartItems} = this.tab;
       let realPrice = 0;
       for(let i = 0; i < cartItems.length; i++){
-        let {variant,product,count} = cartItems[i];
-        let {unitPrice} = product;
-        let {cartonQty,qtyInCarton} = variant;
+        let {variant,count} = cartItems[i];
+        let {cartonQty,qtyInCarton,unitPrice} = variant;
         let totalCount = count * cartonQty * qtyInCarton;
         let totalPrice = totalCount * unitPrice;
         realPrice += totalPrice;

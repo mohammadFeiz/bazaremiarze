@@ -967,7 +967,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
                 type:'forooshe_vije',
                 name:t3.taxonname,
                 code:t3.taxonid,
-                unitPrice:0,
                 details:[['توان','144'],['وزن','3 کیلوگرم']],
                 // optionValues:[{name:'آفتابی',id:'1'},{name:'مهتابی',id:'2'},{name:'انبه ای',id:'3'},{name:'پوست پیازی',id:'4'}],
                 optionValues,

@@ -182,9 +182,7 @@ export default class Product extends Component {
     }
     foroosheVije_options_layout(){
         let {variantId,foroosheVije_count} = this.state;
-        let {product} = this.props;
-        let {unitPrice} = product;
-        let {cartonQty,qtyInCarton} = this.get_foroosheVije_variant();
+        let {cartonQty,qtyInCarton,unitPrice} = this.get_foroosheVije_variant();
         let totalCount = cartonQty * qtyInCarton;
         return {
             className: 'theme-card-bg theme-box-shadow theme-border-radius m-h-12 p-12',
@@ -471,13 +469,11 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         };
     }
     foroosheVije_price_layout() {
-        let {product} = this.props;
         let variant = this.get_foroosheVije_variant();
         let { getCartCountByVariantId } = this.context;
         //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده
         let cartCount = getCartCountByVariantId(variant.id) || 1; 
-        let {unitPrice} = product;
-        let {discountPercent,finalPrice,cartonQty,qtyInCarton} = variant;
+        let {discountPercent,finalPrice,cartonQty,qtyInCarton,unitPrice} = variant;
         let totalCount = cartonQty * qtyInCarton;
         let realPrice = unitPrice * totalCount * cartCount;
         return {

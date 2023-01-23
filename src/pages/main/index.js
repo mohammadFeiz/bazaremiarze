@@ -80,7 +80,7 @@ export default class Main extends Component {
     this.dateCalculator = dateCalculator();
     let backOffice = {
       forsate_ersale_sefareshe_bazargah:16 * 60,
-      forsate_akhze_sefareshe_bazargah:90
+      forsate_akhze_sefareshe_bazargah:24 * 60
     }
     this.noorvare3Storage = AIOStorage('noorvare3');
     let noorvare3 = this.noorvare3Storage.load('show',true)

@@ -133,7 +133,7 @@ export default class Buy extends Component {
     let {openPopup} = this.context;
     let sliders = [['newOrders','جدید ترین محصولات'],['bestSellings','پر فروش ترین محصولات'],['recommendeds','پیشنهاد سفارش']]
     return {
-      className:'m-h-12 of-visible',
+      className:'of-visible',
       column:sliders.map(([key,name])=>{
         let products = this.state[key] || [];
         return {

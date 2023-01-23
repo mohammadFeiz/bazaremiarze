@@ -5,11 +5,11 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
     async items() {
       let res = await Axios.get(`${baseUrl}/Guarantee/Requests?slpCode=${userInfo.slpcode}&page=${1}&perPage=${20}`);
       if(res.status === 401){return false}
-      if (!res.data || !res.data.isSuccess || !res.data.data) {return {items:[],total:0}}
+      if (res.data === null || !res.data || !res.data.isSuccess || !res.data.data) {return []}
       
 
       let items = res.data.data.data;
-      console.log(items)
+      if(!Array.isArray(items)){return []}
       items = items.map((o) => {
         let {CreationDate,RequestID} = o;
         let {date,time} = getDateAndTime(CreationDate);

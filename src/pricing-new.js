@@ -1,6 +1,5 @@
-﻿"use strict";
-
-class Pricing {
+﻿
+export default class Pricing {
     "use strict";
     //dbrequest = {};
     updateInterval = 10 * 60 * 1000; // 10min

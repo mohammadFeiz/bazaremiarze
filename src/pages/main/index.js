@@ -449,7 +449,7 @@ export default class Main extends Component {
         <Noorvare3 
           changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} 
           onClose={()=>this.setState({noorvare3:false})}
-          onSubmit={()=>{
+          onSubmit={(value)=>{
             this.noorvare3Storage.save(!value,'show')
             this.setState({noorvare3:false})
           }}

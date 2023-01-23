@@ -10,6 +10,7 @@
 	--theme-medium-font-color:#605E5C;
 	--theme-light-font-color:#A19F9D;
 	--theme-box-shadow:0px 2px 8px 0px rgb(153 153 153 / 21%);
+	--theme-box-shadow:none;
 	--theme-card-border:none;
 	--theme-gap:12px;
 	

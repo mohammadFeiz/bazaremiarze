@@ -120,7 +120,7 @@ export default class Main extends Component {
       garanti_products_dic:{},
       guaranteeExistItems: [],
       popup: {},
-      showGaranti:false,
+      showGaranti:true,
       peygiriyeSefaresheKharid_tab:undefined,
       buy_view:undefined,//temporary state
     };

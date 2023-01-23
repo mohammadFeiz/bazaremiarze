@@ -2,7 +2,10 @@ import React,{Component} from "react";
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import {Icon} from "@mdi/react";
 import {mdiChevronLeft, mdiChevronRight, mdiClose} from '@mdi/js';
-import imgsrc from './../../images/noorvare3.png';
+import imgsrc0 from './../../images/0.png';
+import imgsrc1 from './../../images/1.png';
+import imgsrc2 from './../../images/2.png';
+import imgsrc3 from './../../images/3.png';
 import alertsrc from './../../images/alert.png';
 export default class Noorvare3 extends Component{
     constructor(props){
@@ -46,8 +49,10 @@ export default class Noorvare3 extends Component{
         }
     }
     billboard_layout(){
+        let {step} = this.state;
+        let src = [imgsrc0,imgsrc1,imgsrc2,imgsrc3][step];
         return {
-            html:<img src={imgsrc} width='100%' alt=''/>
+            html:<img src={src} width='100%' alt=''/>
         }
     }
     titr_layout(){

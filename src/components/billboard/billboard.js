@@ -11,7 +11,7 @@ export default class Billboard extends Component{
     async onClick(campaign){
         let {kharidApis,openPopup} = this.context;
         if(campaign.type === 'forooshe_vije'){
-            //openPopup('category',{category:{products:campaign.products,name:campaign.name,src:campaign.src},name:campaign.name})
+            openPopup('category',{category:{products:campaign.products,name:campaign.name,src:campaign.src},name:campaign.name})
         }
         else{
             let products = await kharidApis({api:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.id});
@@ -47,7 +47,6 @@ export default class Billboard extends Component{
         }
     }
     campaign_layout(campaign,index){
-        if(campaign.type === 'forooshe_vije'){return false}
         return {
             flex:1,align:'h',
             attrs:{onClick:async ()=>this.onClick(campaign)},

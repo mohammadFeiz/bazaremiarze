@@ -9,6 +9,8 @@ import Awards from './../awards/index';
 import Card from '../../components/card/card';
 import Billboard from '../../components/billboard/billboard';
 import blankGuarantee from './../../images/blank-guarantee.png';
+import Noor1 from './../../images/noor1.png';
+import Noor2 from './../../images/noor2.png';
 import Bazargah from '../bazargah/bazargah';
 import './index.css';
 import Icon from '@mdi/react';
@@ -26,6 +28,9 @@ export default class Home extends Component {
             showCallPopup:false,
             preOrders: { waitOfVisitor: 0, waitOfPey: 0 }
         }
+        setInterval(()=>{
+
+        },1000)
     }
     async getPreOrders() {
         let {kharidApis} = this.context;
@@ -206,7 +211,13 @@ export default class Home extends Component {
     }
     noorvare3_layout(){
         return {
-            html:<img src={''} width='100%' alt=''/>
+            html:<NoorvareBillboard/>,
+            className:'theme-gap-h theme-border-radius',
+            style:{boxShadow:'0px 2px 8px 0px rgb(153 153 153 / 21%)'},
+            onClick:()=>{
+                let {SetState} = this.context;
+                SetState({noorvare3:true})
+            }
         }
     }
     getContent() {
@@ -366,6 +377,21 @@ class Help extends Component{
                     ]
                 }}
             />
+        )
+    }
+}
+
+
+class NoorvareBillboard extends Component{
+    constructor(props){
+        super(props);
+        this.state = {mode:1}
+        setInterval(()=>this.setState({mode:this.state.mode * -1}),500) 
+    }
+    render(){
+        let {mode} = this.state;
+        return (
+            <img src={mode === 1?Noor1:Noor2} width='100%' alt=''/>
         )
     }
 }

@@ -955,7 +955,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
                 const itemPrice=t3Item.itemcodes[0].Price;
                 const itemStep=t3Item.itemcodes[0].Step;
                 const itemQytInCarton=itemStep*2;
-                variants.push({cartonQty:(itemTotalQty/itemQytInCarton),qtyInCarton:itemQytInCarton,discountPercent:0,finalPrice:t3Item.price,id:t3Item.itemid,unitPrice:t3Item.itemPrice});
+                variants.push({cartonQty:(itemTotalQty/itemQytInCarton),qtyInCarton:itemQytInCarton,discountPercent:0,finalPrice:t3Item.price,id:t3Item.itemid,unitPrice:itemPrice});
                 
                 optionValues=t3Item.itemcodes[0].Variants.map(x=>{
                   return {name:x.Name,id:x.Code};

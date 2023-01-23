@@ -333,6 +333,8 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
     }
     details_layout(details) {
         let { showDetails } = this.state;
+        let {product} = this.props;
+        if(product.type === 'forooshe_vije'){return false}
         if(!details){return false}
         return {
             className: "theme-card-bg theme-box-shadow theme-border-radius p-12 m-h-12",

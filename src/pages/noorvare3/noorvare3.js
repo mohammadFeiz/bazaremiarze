@@ -1,7 +1,7 @@
 import React,{Component} from "react";
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import {Icon} from "@mdi/react";
-import {mdiChevronLeft, mdiClose} from '@mdi/js';
+import {mdiChevronLeft, mdiChevronRight, mdiClose} from '@mdi/js';
 import imgsrc from './../../images/noorvare3.png';
 import alertsrc from './../../images/alert.png';
 export default class Noorvare3 extends Component{
@@ -54,7 +54,7 @@ export default class Noorvare3 extends Component{
         let {titrs,step} = this.state;
         if(step > 3){return false}
         return {
-            html:titrs[step],className:'color3B55A5 fs-32 bold p-12'
+            html:titrs[step],className:'color3B55A5 fs-32 bold p-12',style:{textAlign:'right'}
         }
     }
     text_layout(){
@@ -75,15 +75,18 @@ export default class Noorvare3 extends Component{
             }
         }
         return {
-            size:60,
+            size:84,
             row:[
                 {size:24},
-                {html:'رد کردن',className:'fs-10 theme-medium-font-color',align:'vh',onClick:()=>this.changeStep(1),show:step <= 2},
-                {html:(<div className='align-vh w-120 h-48 bg3B55A5 color-fff br-36'>شروع کنید</div>),show:step === 3,align:'vh',onClick:()=>this.changeStep(1)},
-                {flex:1,align:'vh',html:<Dots length={5} index={step}/>},
                 {
                     align:'vh',onClick:()=>this.changeStep(-1),
-                    html:<div className='align-vh w-48 h-48 bg3B55A5 color-fff br-100'><Icon path={mdiChevronLeft} size={1}/></div>
+                    html:<div className='align-vh w-72 h-48 theme-medium-font-color br-36' style={{opacity:step === 0?0:1}}><Icon path={mdiChevronRight} size={1}/>قبلی</div>
+                },
+                {flex:1,align:'vh',html:<Dots length={5} index={step}/>},
+                {html:(<div className='align-vh w-120 h-48 bg3B55A5 color-fff br-36'>شروع کنید</div>),show:step === 3,align:'vh',onClick:()=>this.changeStep(1)},
+                {
+                    align:'vh',onClick:()=>this.changeStep(1),show:step <= 2,
+                    html:<div className='align-vh w-96 h-48 bg3B55A5 color-fff br-36'>بعدی<Icon path={mdiChevronLeft} size={1}/></div>
                 },
                 {size:12}
 
@@ -127,11 +130,11 @@ export default class Noorvare3 extends Component{
                         },
                         {
                             show:step === 4,
-                            flex:1,className:'p-12',
+                            flex:1,className:'p-12 ofy-auto',
                             column:[
                                 {html:<img src={alertsrc} width='72' alt=''/>},
                                 {size:48,html:'شرایط و ضوابط',align:'v',className:'fs-16 theme-dark-font-color bold'},
-                                {flex:1,html:sharayet,style:{textAlign:'right'},className:'ofy-auto'}
+                                {html:sharayet,style:{textAlign:'right'},className:''}
                             ]
                         },
                         this.footer_layout(),
@@ -149,7 +152,6 @@ class Dots extends Component{
         return (
             <RVD
                 layout={{
-                    style:{direction:'ltr'},
                     flex:1,align:'vh',
                     row:Array(length).fill(0).map((o,i)=>{
                         let active = i === index;

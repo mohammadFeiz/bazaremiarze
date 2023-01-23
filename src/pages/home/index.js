@@ -204,6 +204,11 @@ export default class Home extends Component {
     bazargah_layout(){
         return {className:'of-visible theme-gap-h',html:<Bazargah renderInHome={true}/>}
     }
+    noorvare3_layout(){
+        return {
+            html:<img src={''} width='100%' alt=''/>
+        }
+    }
     getContent() {
         let {testedChance} = this.state;
         return {
@@ -217,6 +222,8 @@ export default class Home extends Component {
                         this.cartAndWallet_layout(),
                         { className: 'theme-vertical-gap'},
                         this.preOrders_layout(),
+                        { className: 'theme-vertical-gap'},
+                        this.noorvare3_layout(),
                         { className: 'theme-vertical-gap'},
                         this.bazargah_layout(),
                         { className: 'theme-vertical-gap'},

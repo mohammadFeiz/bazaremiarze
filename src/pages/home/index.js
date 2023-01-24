@@ -386,7 +386,7 @@ class NoorvareBillboard extends Component{
     constructor(props){
         super(props);
         this.state = {mode:1}
-        setInterval(()=>this.setState({mode:this.state.mode * -1}),50) 
+        setInterval(()=>this.setState({mode:this.state.mode * -1}),1000) 
     }
     render(){
         let {mode} = this.state;

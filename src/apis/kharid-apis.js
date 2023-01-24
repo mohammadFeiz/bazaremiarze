@@ -5,6 +5,9 @@ import foroosheVijeSrc from './../images/forooshe-vije.png';
 import foroosheVijeIcon from './../images/forooshe-vije-icon.png';
 export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOServiceShowAlert,baseUrl}) {
   return {
+    async taide_noorvare(name){
+      debugger
+    },
     async ordersHistory() {
       let {userInfo} = getState();
       let res = await Axios.post(`${baseUrl}/BOne/GetOrders`, {

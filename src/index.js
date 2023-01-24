@@ -5,8 +5,11 @@ import Axios from 'axios';
 import Register from './components/register/register';
 import RVD from './interfaces/react-virtual-dom/react-virtual-dom';
 import Loading from './components/loading/index';
+import getSvg from './utils/getSvg';
 import {Icon} from '@mdi/react';
 import { mdiAlert } from '@mdi/js';
+import landsrc1 from './images/land1.png';
+import landsrc2 from './images/land2.png';
 import logo from './images/logo5.png';
 import {OTPLogin} from './npm/aio-login/aio-login';
 import $ from 'jquery';
@@ -22,7 +25,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";
-    this.state = { isAutenticated: false, registered: false,pageError:false,userInfo:{}}
+    this.state = { isAutenticated: false, registered: false,pageError:false,userInfo:{},landing:false}
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,6 +169,10 @@ class App extends Component {
   }
   render() {
     if (!this.mounted) { return <Loading/> }
+    let {landing} = this.state;
+    if(landing){
+      return <Landing onClose={()=>this.setState({landing:false})}/>
+    }
     let { isAutenticated, userInfo, token, registered ,pageError} = this.state;
     if(pageError){
       return (
@@ -253,7 +260,36 @@ class App extends Component {
     )
   }
 }
-
+class Landing extends Component{
+  constructor(props){
+    super(props);
+    this.state = {img:1}
+    setInterval(()=>{
+      this.setState({img:this.state.img * -1})
+    },1000)
+  }
+  render(){
+    let {img} = this.state;
+    let {onClose} = this.props;
+    return(
+      <RVD
+        layout={{
+          className:'fullscreen',
+          column:[
+            {html:getSvg('mybrxlogo'),align:'vh',size:96},
+            {html:<img src={img === 1?landsrc1:landsrc2} alt='' width='100%' height='100%' className='br-12' style={{maxWidth:400}}/>,align:'vh'},
+            {html:'می ارزه; مجری جشنواره نورواره بروکس ',className:'fs-24 bold m-h-12',style:{textAlign:'right'}},
+            {size:12},
+            {html:'یک همکاری فوق العاده با بروکس! جشنواره نورواره 3 با تخفیف های باورنکردنی برای تحول فروش شما شروع شد.',className:'fs-16 m-h-12',style:{textAlign:'right'}},
+            {flex:1},
+            {html:<button className='button-2 m-h-12' onClick={()=>onClose()}>ورود به بازار می ارزه</button>},
+            {size:12}
+          ]
+        }}
+      />
+    )
+  }
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

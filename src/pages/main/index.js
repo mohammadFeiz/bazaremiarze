@@ -47,6 +47,7 @@ import PayameSabteGaranti from "../../components/garanti/payame-sabte-garanti/pa
 import SignalR from '../../singalR/signalR';
 import Splash from "../../components/spalsh/splash";
 import "./index.css";
+import axios from "axios";
 export default class Main extends Component {
   constructor(props) {
     super(props);
@@ -449,9 +450,11 @@ export default class Main extends Component {
         <Noorvare3 
           changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} 
           onClose={()=>this.setState({noorvare3:false})}
-          onSubmit={(value)=>{
+          onSubmit={async (value)=>{
             this.noorvare3Storage.save(!value,'show')
-            this.setState({noorvare3:false})
+            this.setState({noorvare3:false});
+            let {kharidApis} = this.state;
+            kharidApis({api:'taide_noorvare',parameter:'noorvare3'})
           }}
         />
       )

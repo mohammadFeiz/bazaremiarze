@@ -435,7 +435,7 @@ class JoziateSefaresheBazargah extends Component{
     details_layout(){
         if(!this.getVisibility('details')){return false}
         let {order} = this.props;
-        let {orderId,createdDate,receiverName,receiverNumber,shippingAddress,amount,benefit} = order;
+        let {orderId,createdDate,receiverName,receiverNumber,shippingAddress,amount,benefit,city} = order;
         return {
             column:[
                 {
@@ -445,6 +445,7 @@ class JoziateSefaresheBazargah extends Component{
                         this.detailRow_layout('کد سفارش',orderId),
                         this.detailRow_layout('تاریخ ثبت',createdDate),
                         this.detailRow_layout('تحویل گیرنده',receiverName),
+                        this.detailRow_layout('شهر',city),
                         //this.detailRow_layout('موبایل',receiverNumber),
                         {
                             column:[
@@ -616,7 +617,7 @@ class JoziateSefaresheBazargah extends Component{
                         <AIOButton
                             type={'radio'}
                             style={{width:'100%'}}
-                            options={[{text:'اکو پیک',value:'eco',subtext:'مخصوص تهران'},{text:'شخصی',value:'shakhsi'}]}
+                            options={[{text:'شخصی',value:'shakhsi'}]}
                             optionStyle='{width:"100%",borderBottom:"1px solid #ddd"}'
                             optionClassName='fs-14 theme-medium-font-color'
                             value={sendStatus.delivererType}

@@ -32,10 +32,9 @@ export default class Product extends Component {
         let {product} = this.props;
         let {optionValues} = product;
         let variant = this.get_foroosheVije_variant(variantId);
-        let {cartonQty,qtyInCarton} = variant;
-        let count = cartonQty * qtyInCarton;
-        return optionValues.map(({name,id},i)=>{
-            return {optionValueId:id,optionValueName:name,count:i === 0?count:0}
+        let {totalQty} = variant;
+        return optionValues.map(({name,id,step},i)=>{
+            return {optionValueId:id,optionValueName:name,count:i === 0?totalQty:0,step}
         })
     }
     get_foroosheVije_variant(variantId = this.state.variantId){
@@ -182,8 +181,8 @@ export default class Product extends Component {
     }
     foroosheVije_options_layout(){
         let {variantId,foroosheVije_count} = this.state;
-        let {cartonQty,qtyInCarton,unitPrice} = this.get_foroosheVije_variant();
-        let totalCount = cartonQty * qtyInCarton;
+        let v = this.get_foroosheVije_variant();
+        let {totalQty,unitPrice} = v;
         return {
             className: 'theme-card-bg theme-box-shadow theme-border-radius m-h-12 p-12',
             column:[
@@ -193,7 +192,7 @@ export default class Product extends Component {
                 this.foroosheVije_variant_layout(),
                 {size:12},
                 {html:`قیمت واحد : ${functions.splitPrice(unitPrice)} ریال`,className:'theme-medium-font-color fs-12'},
-                {html:`تعداد : ${totalCount} عدد`,className:'theme-medium-font-color fs-12'},
+                {html:`تعداد : ${totalQty} عدد`,className:'theme-medium-font-color fs-12'},
                 {size:12},
                 {
                     style:{color:'#107C10'},
@@ -212,9 +211,9 @@ export default class Product extends Component {
                         for(let j = 0; j < foroosheVije_count.length; j++){
                             used += foroosheVije_count[j].count;
                         }
-                        let remaining = totalCount - used;
+                        let remaining = totalQty - used;
                         return {
-                            size:48,html:<ForoosheVijeSlider key={variantId} {...o} totalCount={totalCount} max={o.count + remaining} onChange={(value)=>{
+                            size:48,html:<ForoosheVijeSlider key={variantId} {...o} totalQty={totalQty} max={o.count + remaining} onChange={(value)=>{
                                 o.count = value;
                                 this.setState({foroosheVije_count})
                             }}/>
@@ -231,7 +230,7 @@ export default class Product extends Component {
         let {variants} = product;
         return {
             className:'ofx-auto',
-            row:variants.map(({id,cartonQty,finalPrice,discountPercent},i)=>{
+            row:variants.map(({id,name,finalPrice,discountPercent},i)=>{
                 let active = id === variantId;
                 let br = {borderTopLeftRadius:0,borderTopRightRadius:0,borderBottomLeftRadius:0,borderBottomRightRadius:0};
                 if(i === 0){br.borderTopRightRadius = 36; br.borderBottomRightRadius = 36}
@@ -242,11 +241,9 @@ export default class Product extends Component {
                     },
                     size:144,style:{border:'1px solid',padding:'6px 12px',...br,background:active?'#DCE1FF':'#fff'},
                     column:[
-                        {html:`بسته ${cartonQty} کارتن`,className:'theme-dark-font-color fs-14 bold'},
+                        {html:name,className:'theme-dark-font-color fs-14 bold'},
                         {
                             row:[
-                                {html:<div style={{padding:'1px 3px',background:'#FDB913',color:'#fff',borderRadius:8}}>{`${discountPercent}%`}</div>,align:'v'},
-                                {size:6},
                                 {html:`${functions.splitPrice(finalPrice)} ریال`,className:'theme-dark-font-color fs-12 bold',align:'v'}
                             ]
                         }
@@ -475,24 +472,10 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         let { getCartCountByVariantId } = this.context;
         //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده
         let cartCount = getCartCountByVariantId(variant.id) || 1; 
-        let {discountPercent,finalPrice,cartonQty,qtyInCarton,unitPrice} = variant;
-        let totalCount = cartonQty * qtyInCarton;
-        let realPrice = unitPrice * totalCount * cartCount;
+        let {finalPrice} = variant;
         return {
             column: [
                 { flex: 1 },
-                {
-                    row: [
-                        { flex: 1 },
-                        { show:!!discountPercent,html: ()=><del>{functions.splitPrice(realPrice)}</del>, className: "theme-light-font-color" },
-                        { size: 3 },
-                        {
-                            html: "%" + discountPercent,show:!!discountPercent,
-                            style: { background: "#FDB913", color: "#fff", borderRadius: 8, padding: "0 3px" },
-                        },
-                        
-                    ],
-                },
                 {
                     row: [
                         { flex: 1 },
@@ -528,7 +511,7 @@ class ForoosheVijeSlider extends Component{
     state = {count:this.props.count}
     render(){
         let {count} = this.state;
-        let {optionValueName,totalCount,onChange = ()=>{},max} = this.props;
+        let {optionValueName,totalQty,onChange = ()=>{},max,step} = this.props;
         return (
             <RVD
                 layout={{
@@ -544,8 +527,9 @@ class ForoosheVijeSlider extends Component{
                                     labelStep={[max]}
                                     labelStyle={(value)=>{if(value === max){return {color:'#2BBA8F',fontSize:12,top:43}}}}
                                     start={0} direction='left'
-                                    end={totalCount}
+                                    end={totalQty}
                                     max={max}
+                                    step={step}
                                     points={[count]}
                                     lineStyle={{height:4}}
                                     showValue={false}

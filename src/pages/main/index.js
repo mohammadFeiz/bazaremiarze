@@ -451,7 +451,7 @@ export default class Main extends Component {
           changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} 
           onClose={()=>this.setState({noorvare3:false})}
           onSubmit={async (value)=>{
-            this.noorvare3Storage.save(!value,'show')
+            this.noorvare3Storage.save(false,'show')
             this.setState({noorvare3:false});
             let {kharidApis} = this.state;
             kharidApis({api:'taide_noorvare',parameter:'noorvare3'})

@@ -44,17 +44,15 @@ export default class ForoosheVijeCard extends Component{
             return {
                 gap:3,
                 row:[
-                    {html:'بسته حاوی',className:'fs-12 theme-medium-font-color'},
-                    {html:variant.cartonQty,className:'fs-12 theme-dark-font-color bold'},
-                    {html:'کارتن',className:'fs-12 theme-medium-font-color'},
-                    {html:variant.qtyInCarton,className:'fs-12 theme-dark-font-color bold'},
-                    {html:'تایی',className:'fs-12 theme-medium-font-color'}
+                    {html:variant.variant.name,className:'fs-12 theme-dark-font-color bold'},
+                    {html:variant.totalQty,className:'fs-12 theme-dark-font-color bold'},
+                    {html:'عدد',className:'fs-12 theme-medium-font-color'}
                     
                 ]
             } 
         }
-        let qtys = variants.map(({cartonQty})=>cartonQty);
-        return {html:`بسته های ${qtys.toString()} کارتن`,className:'fs-12 theme-medium-font-color'}
+        let names = variants.map(({name})=>name);
+        return {html:names.join(' - '),className:'fs-12 theme-medium-font-color',style:{textAlign:'right'}}
     }
     price_layout(){
         let {product,variantId} = this.props;

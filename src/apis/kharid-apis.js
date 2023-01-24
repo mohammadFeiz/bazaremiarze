@@ -949,19 +949,22 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
             for (const t3 of taxondepth2) {
               const taxondepth3Items=t3.items;
-              if(taxondepth3Items==undefined) continue;
-              
+              if(!Array.isArray(taxondepth3Items)) continue;
               let variants=[];
               let optionValues=[];
+              let src;
               for (const t3Item of taxondepth3Items) {
-                const itemTotalQty=t3Item.itemcodes[0].Qty;
-                const itemPrice=t3Item.itemcodes[0].Price;
-                const itemStep=t3Item.itemcodes[0].Step;
-                const itemQytInCarton=itemStep*2;
-                variants.push({cartonQty:(itemTotalQty/itemQytInCarton),qtyInCarton:itemQytInCarton,discountPercent:0,finalPrice:t3Item.price,id:t3Item.itemid,unitPrice:itemPrice});
+                if(!src){src = t3Item.imageurl;}
+                variants.push({
+                  name:t3Item.itemname,
+                  totalQty:t3Item.itemcodes[0].Qty,
+                  finalPrice:t3Item.price,
+                  id:t3Item.itemid,
+                  unitPrice:t3Item.itemcodes[0].Price
+                });
                 
                 optionValues=t3Item.itemcodes[0].Variants.map(x=>{
-                  return {name:x.Name,id:x.Code};
+                  return {name:x.Name,id:x.Code,step:x.Step};
                 });
               }
               
@@ -975,7 +978,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
                 optionValues,
                 // variants:{cartonQty:(itemTotalQty/itemQytInCarton),qtyInCarton:itemQytInCarton,discountPercent:0,finalPrice:t3Item.price,id:t3Item.itemid},
                 variants,
-                src:nosrc
+                src:src || nosrc
               });
             }
           }

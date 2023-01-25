@@ -31,12 +31,10 @@ export default class Product extends Component {
     get_foroosheVije_count(variantId){
         let {product} = this.props;
         let {optionValues} = product;
-        let {getCartCountByVariantId} = this.context;
-        let cartCount = getCartCountByVariantId(variantId);
         let variant = this.get_foroosheVije_variant(variantId);
         let {totalQty} = variant;
         return optionValues.map(({name,id,step},i)=>{
-            return {optionValueId:id,optionValueName:name,count:i === 0?totalQty * cartCount:0,step}
+            return {optionValueId:id,optionValueName:name,count:i === 0?totalQty:0,step}
         })
     }
     get_foroosheVije_variant(variantId = this.state.variantId){
@@ -216,13 +214,12 @@ export default class Product extends Component {
                         for(let j = 0; j < foroosheVije_count.length; j++){
                             used += foroosheVije_count[j].count;
                         }
-                        let remaining = (totalQty * cartCount) - used;
+                        let remaining = totalQty - used;
                         return {
                             size:48,
                             html:(
                                 <ForoosheVijeSlider 
-                                    cartCount={cartCount}
-                                    key={variantId} {...o} totalQty={totalQty * cartCount} max={o.count + remaining} 
+                                    key={variantId} {...o} totalQty={totalQty} max={o.count + remaining} 
                                     onChange={(value)=>{
                                         o.count = value;
                                         this.setState({foroosheVije_count})

@@ -955,6 +955,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
               let src;
               for (const t3Item of taxondepth3Items) {
                 if(!src){src = t3Item.imageurl;}
+                if(!t3Item.itemcodes[0].Qty){debugger;}
                 variants.push({
                   name:t3Item.itemname,
                   totalQty:t3Item.itemcodes[0].Qty,
@@ -984,7 +985,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           }
         }
       }
-
       return {
         type:'forooshe_vije',
         name:'فروش ویژه',

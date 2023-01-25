@@ -176,7 +176,6 @@ export default class Cart extends Component{
     foroosheVije_payment_layout(){
       let total = this.tab.finalPrice;
       let {continued} = this.state;
-      let sood = this.foroosheVije_sood(total)
       return {
         size: 72,className: "bgFFF p-h-12 theme-box-shadow",
         row: [
@@ -193,7 +192,6 @@ export default class Cart extends Component{
                   {align: "v",html: " ریال",className: "theme-dark-font-color fs-12"}
                 ]
               },
-              {html:`سود شما از خرید : ${functions.splitPrice(sood)} ریال`,align:'v',className:'colorA4262C fs-10'},
               { flex: 1 },
             ],
           },

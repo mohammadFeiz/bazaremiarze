@@ -54,12 +54,12 @@ export default class MyBurux extends Component{
         let {guaranteeItems = [],userInfo,openPopup,showGaranti} = this.context;
         let slpname,slpcode;
         try{
-            slpname = userInfo.slpname || 'تایین نشده';
-            slpcode = userInfo.slpcode || 'تایین نشده';
+            slpname = userInfo.slpname || 'تعیین نشده';
+            slpcode = userInfo.slpcode || 'تعیین نشده';
         }
         catch{
-            slpname = 'تایین نشده';
-            slpcode = 'تایین نشده';
+            slpname = 'تعیین نشده';
+            slpcode = 'تعیین نشده';
         }
         return {
             flex:1,className:'page-bg ofy-auto',

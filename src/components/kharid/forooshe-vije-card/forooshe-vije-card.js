@@ -44,7 +44,7 @@ export default class ForoosheVijeCard extends Component{
             return {
                 gap:3,
                 row:[
-                    {html:variant.variant.name,className:'fs-12 theme-dark-font-color bold'},
+                    {html:variant.name,className:'fs-12 theme-dark-font-color bold'},
                     {html:variant.totalQty,className:'fs-12 theme-dark-font-color bold'},
                     {html:'عدد',className:'fs-12 theme-medium-font-color'}
                     

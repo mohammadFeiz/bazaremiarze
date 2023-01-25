@@ -362,7 +362,7 @@ export default class Main extends Component {
     else if(type === 'product'){
       addPopup({
         body:()=><Product product={parameter}/>,
-        title:'خرید کالا',id:'product',
+        title:parameter.name,id:'product',
         header:()=><Header type='popup' popupId='product'/>
       })
     }

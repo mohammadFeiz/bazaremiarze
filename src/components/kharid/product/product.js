@@ -31,10 +31,12 @@ export default class Product extends Component {
     get_foroosheVije_count(variantId){
         let {product} = this.props;
         let {optionValues} = product;
+        let {getCartCountByVariantId} = this.context;
+        let cartCount = getCartCountByVariantId(variantId);
         let variant = this.get_foroosheVije_variant(variantId);
         let {totalQty} = variant;
         return optionValues.map(({name,id,step},i)=>{
-            return {optionValueId:id,optionValueName:name,count:i === 0?totalQty:0,step}
+            return {optionValueId:id,optionValueName:name,count:i === 0?totalQty * cartCount:0,step}
         })
     }
     get_foroosheVije_variant(variantId = this.state.variantId){
@@ -181,6 +183,9 @@ export default class Product extends Component {
     }
     foroosheVije_options_layout(){
         let {variantId,foroosheVije_count} = this.state;
+        let {product} = this.props;
+        let {getCartCountByVariantId} = this.context;
+        let cartCount = getCartCountByVariantId(variantId);
         let v = this.get_foroosheVije_variant();
         let {totalQty,unitPrice} = v;
         return {
@@ -191,8 +196,8 @@ export default class Product extends Component {
                 {size:12},
                 this.foroosheVije_variant_layout(),
                 {size:12},
-                {html:`قیمت واحد : ${functions.splitPrice(unitPrice)} ریال`,className:'theme-medium-font-color fs-12'},
-                {html:`تعداد : ${totalQty} عدد`,className:'theme-medium-font-color fs-12'},
+                {html:`قیمت واحد محصول : ${functions.splitPrice(unitPrice)} ریال`,className:'theme-medium-font-color fs-12'},
+                {html:`تعداد محصول در بسته : ${totalQty} عدد`,className:'theme-medium-font-color fs-12'},
                 {size:12},
                 {
                     style:{color:'#107C10'},
@@ -203,7 +208,7 @@ export default class Product extends Component {
                     ]
                 },
                 {size:36,align:'v',html:<div style={{width:'100%',height:1,background:'#ddd'}}></div>},
-                {html:'2: رنگ کالاها را انتخاب کنید',align:'v',className:'theme-dark-font-color fs-14 bold'},
+                {html:`2: رنگ کالاها در ${product.name} را انتخاب کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
                 {html:'حال تصمیم بگیرید چه تعداد از هر رنگ کالا میخواهید. ',align:'v',className:'theme-medium-font-color fs-12'},
                 {
                     gap:6,column:foroosheVije_count.map((o,i)=>{
@@ -211,12 +216,19 @@ export default class Product extends Component {
                         for(let j = 0; j < foroosheVije_count.length; j++){
                             used += foroosheVije_count[j].count;
                         }
-                        let remaining = totalQty - used;
+                        let remaining = (totalQty * cartCount) - used;
                         return {
-                            size:48,html:<ForoosheVijeSlider key={variantId} {...o} totalQty={totalQty} max={o.count + remaining} onChange={(value)=>{
-                                o.count = value;
-                                this.setState({foroosheVije_count})
-                            }}/>
+                            size:48,
+                            html:(
+                                <ForoosheVijeSlider 
+                                    cartCount={cartCount}
+                                    key={variantId} {...o} totalQty={totalQty * cartCount} max={o.count + remaining} 
+                                    onChange={(value)=>{
+                                        o.count = value;
+                                        this.setState({foroosheVije_count})
+                                    }}
+                                />
+                            )
                         }
                     })
                 }
@@ -512,6 +524,7 @@ class ForoosheVijeSlider extends Component{
     render(){
         let {count} = this.state;
         let {optionValueName,totalQty,onChange = ()=>{},max,step} = this.props;
+        let percent = (count / totalQty * 100).toFixed(0); 
         return (
             <RVD
                 layout={{
@@ -544,6 +557,9 @@ class ForoosheVijeSlider extends Component{
                                 />
                             ),
                             align:'v'
+                        },
+                        {
+                            html:<div style={{padding:'0 3px',color:'#666',width:24,borderRadius:6,fontSize:10}}>{percent + '%'}</div>,align:'vh'
                         },
                         {
                             html:<div style={{background:'#2BBA8F',padding:'0 3px',color:'#fff',width:36,borderRadius:6}}>{count}</div>,align:'vh'

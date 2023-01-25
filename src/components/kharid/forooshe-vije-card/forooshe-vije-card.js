@@ -3,9 +3,12 @@ import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import ProductCount from "../product-count/product-count";
 import functions from "../../../functions";
 import appContext from "../../../app-context";
+import {Icon} from '@mdi/react';
+import {mdiDelete} from '@mdi/js';
+import $ from 'jquery';
 export default class ForoosheVijeCard extends Component{
     static contextType = appContext;
-    state = {mounted:false}
+    state = {mounted:false,removeMode:false}
     onClick(){
         let {openPopup} = this.context;
         let {product} = this.props;
@@ -110,13 +113,65 @@ export default class ForoosheVijeCard extends Component{
             this.setState({mounted:true})
         },index * 100 + 100)
     }
+    timer(){
+        this.time = 0;
+        this.interval = setInterval(()=>{
+            this.time++;
+            if(this.time > 50){
+                clearInterval(this.interval);
+                this.setState({removeMode:true})
+            }
+        },10)
+    }
+    cancelRemoveMode(){
+        this.setState({removeMode:false})
+    }
+    remove_layout(){
+        let {removeMode} = this.state;
+        if(!removeMode){return false}
+        let {changeCart} = this.context;
+        let {product,variantId} = this.props;
+        
+        return {
+            style:{zIndex:10,position:'absolute',width:'100%',height:'100%',left:0,top:0,background:'rgba(255,255,255,0.9)'},
+            html:(
+                <RVD
+                    layout={{
+                        column:[
+                            {flex:1,onClick:()=>this.cancelRemoveMode()},
+                            {
+                                row:[
+                                    {flex:1,onClick:()=>this.cancelRemoveMode()},
+                                    {
+                                        html:<Icon path={mdiDelete} size={1} style={{padding:16,background:'#A4262C',color:'#fff',borderRadius:'100%'}}/>,align:'vh',
+                                        onClick:changeCart('remove',variantId,product)
+                                    },
+                                    {flex:1,onClick:()=>this.cancelRemoveMode()}
+                                ]
+                            },
+                            {flex:1,onClick:()=>this.cancelRemoveMode()}
+                        ]
+                    }}
+                />
+            )
+        }
+    }
+    mounseup(){
+        clearInterval(this.interval);
+    }
     render(){
-        let {mounted} = this.state;
+        let {mounted,removeMode} = this.state;
         return (
             <RVD
                 layout={{
                     className:'theme-box-shadow theme-card-bg theme-border-radius theme-gap-h p-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
-                    attrs:{onClick:()=>this.onClick()},
+                    attrs:{
+                        onMouseDown:()=>{
+                            this.timer();
+                            $(window).bind('mouseup',$.proxy(this.mounseup,this))
+                        }
+                    },
+                    onClick:()=>{if(!removeMode){this.onClick()}},
                     column:[
                         this.label_layout(),
                         {size:6},

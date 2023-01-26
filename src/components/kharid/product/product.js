@@ -479,6 +479,7 @@ class ForoosheVije extends Component {
         let v = this.getVariant();
         if(!v){return false}
         let {foroosheVije_count} = this.state;
+        if(!foroosheVije_count){return false}
         let {packQty} = foroosheVije_count;
         let {totalQty} = v;
         totalQty *= packQty;
@@ -488,7 +489,7 @@ class ForoosheVije extends Component {
     }
     qtyInPacks_layout(){
         let {variantId,foroosheVije_count} = this.state;
-        if(!variantId){return false}
+        if(!variantId || !foroosheVije_count){return false}
         let {qtyInPack,packQty} = foroosheVije_count;
         if(!packQty){return false}
         let {product} = this.props;
@@ -570,7 +571,7 @@ class ForoosheVije extends Component {
     }
     price_layout() {
         let { variantId,foroosheVije_count } = this.state;
-        if(!variantId){return false}
+        if(!variantId || !foroosheVije_count){return false}
         let variant = this.getVariant(variantId);
         //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده
         let {packCount} = foroosheVije_count;

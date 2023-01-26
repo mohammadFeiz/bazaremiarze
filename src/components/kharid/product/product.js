@@ -574,8 +574,8 @@ class ForoosheVije extends Component {
         if(!variantId || !foroosheVije_count){return false}
         let variant = this.getVariant(variantId);
         //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده
-        let {packCount} = foroosheVije_count;
-        packCount = packCount || 1; 
+        let {packQty} = foroosheVije_count;
+        packQty = packQty || 1; 
         let {finalPrice} = variant;
         return {
             column: [
@@ -583,7 +583,7 @@ class ForoosheVije extends Component {
                 {
                     row: [
                         { flex: 1 },
-                        { html: functions.splitPrice(finalPrice * packCount), className: "theme-dark-font-color bold" },
+                        { html: functions.splitPrice(finalPrice * packQty), className: "theme-dark-font-color bold" },
                         { size: 6 },
                         { html: "ریال", className: "theme-dark-font-color bold" },
                     ],

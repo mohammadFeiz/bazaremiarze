@@ -45,11 +45,17 @@ export default class Billboard extends Component{
     campaigns_layout(){
         let {campaigns,forooshe_vije,belex} = this.context,{renderIn} = this.props;
         if(renderIn !== 'buy'){return false}
-
+        let list = [...campaigns];
+        if(forooshe_vije){
+            list.push(forooshe_vije)
+        }
+        if(belex){
+            list.push(belex)
+        }
         return {
             column:[
                 {html:'جشنواره ها',className:'fs-14 bold theme-dark-font-color p-h-24',size:36,align:'v'},
-                {row:campaigns.concat(forooshe_vije,belex).map((campaign,i)=>this.campaign_layout(campaign,i))},
+                {row:list.map((campaign,i)=>this.campaign_layout(campaign,i))},
                 {size:12}
             ]
         }

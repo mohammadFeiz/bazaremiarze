@@ -610,7 +610,7 @@ class ForoosheVije extends Component {
             newCart = {...cart}
             if(newCart[variantId] === undefined){
                 let variant = this.getVariant();
-                newCart[variantId] = {foroosheVije_count,product,variant}
+                newCart[variantId] = {foroosheVije_count,product,variantId:variant.id}
             }
             else{newCart[variantId].foroosheVije_count = foroosheVije_count;}
         }

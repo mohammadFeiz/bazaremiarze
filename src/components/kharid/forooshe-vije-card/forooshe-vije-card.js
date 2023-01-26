@@ -11,8 +11,8 @@ export default class ForoosheVijeCard extends Component{
     state = {mounted:false,removeMode:false}
     onClick(){
         let {openPopup} = this.context;
-        let {product} = this.props;
-        openPopup('product',product)
+        let {product,variantId} = this.props;
+        openPopup('product',{product,variantId})
     }
     label_layout(){
         return {

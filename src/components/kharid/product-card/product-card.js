@@ -137,7 +137,7 @@ export default class ProductCard extends Component{
             product = await kharidApis({api:'getProductFullDetail',parameter:{id:product.id,code:product.defaultVariant.code,product}})
             product.hasFullDetail = true;
         }
-        openPopup('product',product)
+        openPopup('product',{product})
     }
     componentDidMount(){
         let {index = 0} = this.props;

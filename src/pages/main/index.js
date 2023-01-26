@@ -258,8 +258,8 @@ export default class Main extends Component {
       this.getGuaranteeItems();
       
     }
-    this.getCampaignsData();
-    this.get_forooshe_vije();
+    //this.getCampaignsData();
+    //this.get_forooshe_vije();
     this.get_belex();
     if(bazargah.active){this.getBazargahOrders();}
     //let testedChance = await gardooneApis({type:"get_tested_chance"});
@@ -461,20 +461,20 @@ export default class Main extends Component {
       logout: this.props.logout,
       baseUrl:this.props.baseUrl
     };
-    if(noorvare3){
-      return (
-        <Noorvare3 
-          changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} 
-          onClose={()=>this.setState({noorvare3:false})}
-          onSubmit={async (value)=>{
-            this.noorvare3Storage.save(false,'show')
-            this.setState({noorvare3:false});
-            let {kharidApis} = this.state;
-            kharidApis({api:'taide_noorvare',parameter:'noorvare3'})
-          }}
-        />
-      )
-    }
+    // if(noorvare3){
+    //   return (
+    //     <Noorvare3 
+    //       changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} 
+    //       onClose={()=>this.setState({noorvare3:false})}
+    //       onSubmit={async (value)=>{
+    //         this.noorvare3Storage.save(false,'show')
+    //         this.setState({noorvare3:false});
+    //         let {kharidApis} = this.state;
+    //         kharidApis({api:'taide_noorvare',parameter:'noorvare3'})
+    //       }}
+    //     />
+    //   )
+    // }
     return (
       <appContext.Provider value={context}>
         <RSA

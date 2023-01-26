@@ -44,9 +44,11 @@ export default class Cart extends Component{
         let tab = tabsDictionary[tabId]
         if(tabId === 'forooshe_vije'){
           let finalPrice = 0;
-          tab.cards = tab.cartItems.map(({product,count,variant})=>{
-            finalPrice += count * variant.finalPrice;
-            return <ForoosheVijeCard product={product} variantId={variant.id} count={count}/>
+          tab.cards = tab.cartItems.map(({product,foroosheVije_count,variantId})=>{
+            let variant = product.variants.find(({id})=>id === variantId);
+            if(!variant){variant = product.variants[0]}
+            finalPrice += foroosheVije_count.packQty * variant.finalPrice;
+            return <ForoosheVijeCard product={product} variantId={variantId} count={foroosheVije_count}/>
           })
           tab.finalPrice = finalPrice;
         }

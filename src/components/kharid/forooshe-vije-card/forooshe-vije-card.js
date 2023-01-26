@@ -103,9 +103,13 @@ export default class ForoosheVijeCard extends Component{
     }
     count_layout(){
         let {product,count,variantId} = this.props;
+        if(!variantId){variantId = product.variants[0].id}
         if(!count){return false}
         let {changeCart} = this.context;
-        return {align:'vh',html:<ProductCount style={{flex:'none'}} value={count} onChange={(count)=>changeCart(count,variantId,product)}/>}
+        return {align:'vh',html:'حذف',onClick:(e)=>{
+            e.stopPropagation();
+            changeCart(0,variantId,product)
+        }}
     }
     componentDidMount(){
         let {index = 0} = this.props;

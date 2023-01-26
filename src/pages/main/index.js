@@ -121,7 +121,7 @@ export default class Main extends Component {
       garanti_products_dic:{},
       guaranteeExistItems: [],
       popup: {},
-      showGaranti:true,
+      showGaranti:false,
       peygiriyeSefaresheKharid_tab:undefined,
       buy_view:undefined,//temporary state
     };
@@ -145,6 +145,7 @@ export default class Main extends Component {
     this.setState({opacity})
   }
   changeCart(count,variantId,product){
+    debugger;
     let {cart,kharidApis} = this.state;
     let newCart;
     if(typeof count === 'object'){

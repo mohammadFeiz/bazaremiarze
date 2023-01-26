@@ -43,7 +43,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       //   {docStatus:'Settlled',mainDocEntry:'123456',mainDocNum:'53453',mainDocisDraft:false,mainDocTotal:10},
       //   {docStatus:'SettledWithBadDept',mainDocEntry:'123456',mainDocNum:'53453',mainDocisDraft:false,mainDocTotal:10},
       // ]
-      
+
       let tabs = [
         {text:'در حال بررسی',orders:[]},
         {text:'در انتظار پرداخت',orders:[]},
@@ -77,11 +77,11 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         //Settlled:[590,'نا مشخص'],
         //SettledWithBadDept:[580,'نا مشخص'],
       }
-      
+
       for (let i = 0; i < results.length; i++){
         let order = results[i];
         let {date,time} = getDateAndTime(order.mainDocDate);
-        if(!statuses[order.docStatus]){continue} 
+        if(!statuses[order.docStatus]){continue}
         let tab = tabs.find(({text})=>text === statuses[order.docStatus][1]);
         tab.orders.push({
           code: order.mainDocEntry,
@@ -92,7 +92,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           mainDocType: order.mainDocType,
           date,
           _time:time,
-          total: order.mainDocTotal, 
+          total: order.mainDocTotal,
         })
       }
       return tabs;
@@ -124,7 +124,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         PurchaseQuotation: 540000006,
         PurchaseRequest: 1470000113,
       };
-      
+
       const campaignDictionary = {
         NA: 1,
         LinearSpecialSale: 2,
@@ -145,21 +145,21 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         "isDraft": order.mainDocisDraft
       });
       let result = res.data.data.results;
-            
+
       let Skus = [];
       const products = result.marketingLines.map((i) => {
         Skus.push(i.itemCode)
         return {...i,src: nosrcImage,details: []};
       })
-      
-      let srcs = await Axios.post(`${baseUrl}/Spree/Products`, { 
+
+      let srcs = await Axios.post(`${baseUrl}/Spree/Products`, {
         Skus:Skus.toString(),
         PerPage:250,
         Include: "default_variant,images" });
       const included=srcs.data.data.included;
 
       for (const item of srcs.data.data.data) {
-        
+
         const defaultVariantId = item.relationships.default_variant.data.id;
         const defaultVariantImagesId = item.relationships.images.data.map(x=>x.id);
         const defaultVariant=included.find(x=>x.type==="variant" && x.id===defaultVariantId);
@@ -225,7 +225,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     },
     async joziatepeygiriyesefareshekharid(order) {
       let { userInfo } = getState();
-      let res = await Axios.post(`${baseUrl}/BOne/GetDocument`, {"docentry": order.docEntry,"DocType": order.docType,"isDraft": order.isDraft}); 
+      let res = await Axios.post(`${baseUrl}/BOne/GetDocument`, {"docentry": order.docEntry,"DocType": order.docType,"isDraft": order.isDraft});
       let result = res.data.data.results;
       let total = 0, basePrice = 0, visitorName, paymentMethod;
       let { marketingLines = [], marketingdetails = {}, paymentdetails = {} } = result;
@@ -356,7 +356,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       let res = await this.getProductsByTaxonId({ Taxons: id});
       const finalRes=getState().updateProductPrice(res,campaignId);
       console.log(finalRes);
-      return finalRes.map((o) => { 
+      return finalRes.map((o) => {
         let res = { ...o, campaign }
         return this.updateCampaignPrice(id,res)
       });
@@ -426,7 +426,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     async getCategoryItems(category) {
       // let items = await this.getTaxonProducts({ Taxons: category.id.toString() });
       // return getState().updateProductPrice(items,'kharidApis => getCategoryItems')
-      
+
       let items = await this.getProductsByTaxonId({ Taxons: category.id.toString() });
       return getState().updateProductPrice(items,'kharidApis => getCategoryItems')
     },
@@ -483,7 +483,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         discountPercent,
         isDefault: defaultVariantId === id
       };
-   
+
     },
     sortIncluded(spreeResult) {
       let sorted = { include_optionTypes: {}, include_details: {}, include_srcs: {}, meta_optionTypes: {}, include_variants: {} }
@@ -505,12 +505,12 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     getMappedAllProducts({ spreeResult, b1Result, loadType }) {
 
       if(loadType===0){
-        
+
         const included=spreeResult.included;
         let finalResult =[];
 
         for (const item of spreeResult.data) {
-          
+
           const defaultVariantId = item.relationships.default_variant.data.id;
           const defaultVariantImagesId = item.relationships.images.data.map(x=>x.id);
           const defaultVariant=included.find(x=>x.type==="variant" && x.id===defaultVariantId);
@@ -661,7 +661,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       let optionTypes = [];
       const defaultVariantId=product.defaultVariant.code;
       let { include_optionTypes, include_variants, include_details, include_srcs, meta_optionTypes } = this.sortIncluded(res.data.data);
-      
+
       for (let i = 0; i < relationships.option_types.data.length; i++) {
         let { id } = relationships.option_types.data[i];
         id = id.toString();
@@ -707,7 +707,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           ...price
         });
       }
-      
+
       for (let i = 0; i < relationships.product_properties.data.length; i++) {
         let detail = relationships.product_properties.data[i];
         let { id } = detail;
@@ -727,9 +727,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
     },
     async sabte_belex(){
-      
+
     },
-    
+
     async refreshB1Rules() {
       await Axios.get(`${baseUrl}/BOne/RefreshRules`);
     },
@@ -848,7 +848,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         // 12314 ,
         // 12395
         if( product.id=="12395") continue;
-        
+
         if(product.relationships.default_variant==undefined || product.relationships.default_variant.data==undefined) continue;
 
         const productDefaultVariantId=product.relationships.default_variant.data.id;
@@ -862,7 +862,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           const srcs=defaultVariantImages.map(x=>{
             return "https://shopback.miarze.com" + x.attributes.original_url;
           });
-  
+
           if(itemFromB1 != undefined && itemFromB1) {
             const defVariantFinalResult={
               "id": productDefaultVariantId,
@@ -922,7 +922,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       }
     },
     async pardakhte_kharid({order}){
-    
+
       let res = await Axios.post(`${baseUrl}/payment/request`,{
         "Price":order.total,
         "IsDraft":order.mainDocisDraft,
@@ -932,16 +932,149 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         "CallbackUrl":"https://uiretailerapp.bbeta."+"ir/"
         // "CallbackUrl":"http://localhost:3000/"
       });
-      
+
       if(res.data.isSuccess){
         let {getUserInfo} = getState();
         getUserInfo()
-      
+
         window.location.href = res.data.data;
       }
     },
     async belex(){
+      let res = await Axios.get(`https://spreeapi.bpilot.ir/api/Spreegw/GetItemsDataRaw?campaign=8`);
+      if(res.data.isvalid !=undefined && !res.data.isvalid) debugger;
+      // else{
+      //   localStorage.setItem("TESTTT",JSON.stringify(res.data));
+      // }
 
+      // let allData=JSON.parse(localStorage.getItem("TESTTT"));
+      let allData=res.data;
+      allData=allData[0];
+      allData=allData.taxons;
+
+      var items=[];
+      for (const i1 of allData) {
+        if(i1.items) items.push(i1.items.filter(x=>x.itemcodes!=null));
+        if(!i1.taxons) continue;
+        for (const i2 of i1.taxons) {
+
+          if(i2.items) items.push(i2.items.filter(x=>x.itemcodes!=null));
+          if(!i2.taxons) continue;
+          for (const i3 of i2.taxons) {
+
+              if(i3.items) items.push(i3.items.filter(x=>x.itemcodes!=null));
+              if(!i3.taxons) continue;
+              for (const i4 of i3.taxons){
+
+                if(i4.items) items.push(i4.items.filter(x=>x.itemcodes!=null));
+                if(!i4.taxons) continue;
+                for (const i5 of i4.taxons){
+
+                  if(i5.items) items.push(i5.items.filter(x=>x.itemcodes!=null));
+                  if(!i5.taxons) continue;
+                    for (const i6 of i5.taxons){
+
+                      if(i6.items) items.push(i6.items.filter(x=>x.itemcodes!=null));
+                      if(!i6.taxons) continue;
+
+                        for (const i7 of i6.taxons){
+
+                          if(i7.items) items.push(i7.items.filter(x=>x.itemcodes!=null));
+                          if(!i7.taxons) continue;
+                        }
+                    }
+                }
+              }
+          }
+        }
+      }
+      console.log(items)
+
+      let tarhha=[];
+      for (const item of items) {
+
+        if(item.length){
+
+          for (const subItem of item) {
+
+            // var subProduct = {
+            //   name:subItem.itemname,
+            //   id:subItem.itemid,
+            //   finalPrice:subItem.price,
+            //   products:subItem.itemcodes.map(x=>{
+            //     return {mainsku:x.mainsku,name:x.Name,unitPrice:x.Price,qty:x.Qty,step:x.Step,variants:x.Variants}
+            //   })
+            // };
+
+            tarhha.push({
+              type:'belex',
+              name:subItem.itemname,
+              code:subItem.itemcode,
+              price:subItem.price,
+              variants:subItem.itemcodes.map(x=>{
+                return {mainsku:x.mainsku,name:x.Name,unitPrice:x.Price,qty:x.Qty,step:x.Step,variants:x.Variants}
+              }),
+              src:subItem.imageurl
+            });   
+          }
+        }
+      }
+
+      // for (const tarh of allData) {
+      //   let t={masterName:tarh.taxonname,details:[]}
+
+      //   for (const iterator of tarh.taxons) {
+      //     let tt={name:iterator.taxonname,taxons:[]};
+      //     for (const tax of iterator.taxons) {
+      //       if(!tax.items || tax.items==null) return {};
+      //       tt.taxons.push({taxonname: tax.taxonname,
+      //         taxonId:tax.taxonid,
+      //         taxonItems:tax.items.map(x=>{
+      //           if(!x.itemcodes || x.itemcodes==null) return {};
+      //           return {
+      //             itemCode:x.itemcode,
+      //             itemId:x.itemid,
+      //             itemName:x.itemname,
+      //             itemPrice:x.price,
+      //             itemImage:x.imageurl,
+      //             itemCodes:x.itemcodes.map(xx=>{
+      //               if(!xx.Variants || xx.Variants==null) return {};
+      //               return {
+      //                 name:xx.Name,
+      //                 qty:xx.Qty,
+      //                 step:xx.Step,
+      //                 price:xx.Price,
+      //                 variants:xx.Variants.map(xxx=>{
+      //                   return {
+      //                     code:xxx.Code,
+      //                     name:xxx.Name,
+      //                     step:xxx.Step,
+      //                     priceCoef:xxx.PriceCoef,
+      //                     qtyCoef:xxx.QtyCoef
+      //                   };
+      //                 })
+      //               };
+      //             })
+      //           }
+      //         })
+      //       });
+
+      //     }
+
+      //     t.details.push(tt);
+      //   }
+
+      //   tarhha.push(t);
+      // }
+      
+      console.log(tarhha)
+      return {
+        type:'belex',
+        name:'بلکس 23 شیراز',
+        src:foroosheVijeSrc,
+        icon:foroosheVijeIcon,
+        tarhha
+      }
     },
     async forooshe_vije(){
       let {userInfo} = getState();
@@ -950,8 +1083,8 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       let products=[];
       for (const t1 of allData) {
         const taxondepth0 = t1.taxons; // بسته یلدا
-        
-        for (const t1 of taxondepth0) { 
+
+        for (const t1 of taxondepth0) {
           const taxondepth1 = t1.taxons; //سایر
 
           for (const t2 of taxondepth1) {
@@ -973,12 +1106,12 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
                   id:t3Item.itemid,
                   unitPrice:t3Item.itemcodes[0].Price
                 });
-                
+
                 optionValues=t3Item.itemcodes[0].Variants.map(x=>{
                   return {name:x.Name,id:x.Code,step:x.Step};
                 });
               }
-              
+
 
               products.push({
                 type:'forooshe_vije',
@@ -1013,7 +1146,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         //       {cartonQty:2,qtyInCarton:60,discountPercent:2,finalPrice:14464800,id:'1'},
         //       {cartonQty:5,qtyInCarton:60,discountPercent:3,finalPrice:35793000,id:'2'},
         //       {cartonQty:7,qtyInCarton:60,discountPercent:4,finalPrice:45593600,id:'3'},
-        //       {cartonQty:10,qtyInCarton:60,discountPercent:5,finalPrice:70110000,id:'4'} 
+        //       {cartonQty:10,qtyInCarton:60,discountPercent:5,finalPrice:70110000,id:'4'}
         //     ],
         //     src:nosrc
         //   }

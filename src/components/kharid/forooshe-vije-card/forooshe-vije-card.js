@@ -8,7 +8,7 @@ import {mdiDelete} from '@mdi/js';
 import $ from 'jquery';
 export default class ForoosheVijeCard extends Component{
     static contextType = appContext;
-    state = {mounted:false,removeMode:false}
+    state = {mounted:false,removeMode:true}
     onClick(){
         let {openPopup} = this.context;
         let {product,variantId} = this.props;
@@ -148,7 +148,7 @@ export default class ForoosheVijeCard extends Component{
                                     {flex:1,onClick:()=>this.cancelRemoveMode()},
                                     {
                                         html:<Icon path={mdiDelete} size={1} style={{padding:16,background:'#A4262C',color:'#fff',borderRadius:'100%'}}/>,align:'vh',
-                                        onClick:changeCart('remove',variantId,product)
+                                        onClick:()=>changeCart(0,variantId,product)
                                     },
                                     {flex:1,onClick:()=>this.cancelRemoveMode()}
                                 ]
@@ -178,6 +178,7 @@ export default class ForoosheVijeCard extends Component{
                     onClick:()=>{if(!removeMode){this.onClick()}},
                     column:[
                         this.label_layout(),
+                        this.remove_layout(),
                         {size:6},
                         {
                             row:[

@@ -1,9 +1,9 @@
 import React,{Component} from 'react';
-import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
-import functions from './../../../functions';
-import AIOButton from './../../../interfaces/aio-button/aio-button';
-import appContext from './../../../app-context';
-export default class Shipping extends Component{
+  import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
+  import functions from './../../../functions';
+  import AIOButton from './../../../interfaces/aio-button/aio-button';
+  import appContext from './../../../app-context';
+  export class BelexShipping extends Component{
     static contextType = appContext;
     constructor(props){
       super(props);
@@ -18,54 +18,25 @@ export default class Shipping extends Component{
         PayDueDate:'ByDelivery',
         PayDueDate_options:[
           {value:'ByDelivery',text:'نقد'},
-          // {value:'By15Days',text:'چک 15 روزه'},
-          // {value:'ByMonth',text:'چک 30 روزه'},
-          // {value:'By45Days',text:'چک 45 روزه'},
-          // {value:'By60Days',text:'چک 60 روزه'},
-          {value:'Cash25_TowMonth75',text:'25% نقد و 75% چک دو ماهه'},
-          {value:'Cach50_ThreeMonth50',text:'50% نقد و چک سه ماهه'},
+          {value:'Cash20_ThreeMonth80',text:'20% نقد و 80% چک سه ماهه'},
+          {value:'Cash30_FourMonth70',text:'30% نقد و 70% چک چهار ماهه'},
+          {value:'Cash50_FiveMonth50',text:'50% نقد و 50% چک پنج ماهه'},
           
         ],
         PayDueDate_map:{
-          ByDelivery:1, // نقد --->*
-          // By15Days:2, // *
-          // ByMonth:3,// *
-          // By45Days:4, // *
-          // NotSet:5,
-          // By60Days:6,//*
-          // By75Days:7,
-          // By3Months:8,
-          // By3_5Months:9,
-          // By4Months:10,
-          // By4_5Months:11,
-          // By5Months:12,
-          // By5_5Months:13,
-          // By6Months:14,
-          Cash25_TowMonth75:15,
-          Cach50_ThreeMonth50:16
+          ByDelivery:1,
+          Cash20_ThreeMonth80:17,
+          Cash30_FourMonth70:18,
+          Cash50_FiveMonth50:19,
         },
         PaymentTime:'ByOnlineOrder',
         PaymentTime_options:[
           {value:'ByOnlineOrder',text:'اینترنتی'},
-          {value:'ByOrder',text:'واریز قبل ارسال'},
-          {value:'ByDelivery',text:'واریز پای بار'},
+          {value:'ByPos',text:'دستگاه پوز'}//////////////////////
         ],
         PaymentTime_map:{
-            ByOrder:1,
-            ByDelivery:2,
-            ByGuarantee:3,
-            ByCredit:4,
             ByOnlineOrder:5,
-            NotSet:6
-        },
-        SettleType:'ByDelivery',
-        SettleType_options:[
-          {value:'ByDelivery',text:'نقد'},
-          {value:'Cheque',text:'چک'}
-        ],
-        SettleType_map:{
-          ByDelivery:1,
-          Cheque:2,
+            ByPos:6/////////////////////////////
         },
         DeliveryType:'BRXDistribution',
         DeliveryType_options:[
@@ -85,7 +56,7 @@ export default class Shipping extends Component{
       }
     }
     details_layout(){
-      let {name,code,campaign,basePrice,customerGroup} = this.state;
+      let {name,code,campaign,customerGroup} = this.state;
       return {
         className:'box p-12 m-h-12',
         column:[
@@ -122,7 +93,8 @@ export default class Shipping extends Component{
         code:userInfo.cardCode,
         address:userInfo.address,
         phone:userInfo.phone1,
-        customerGroup:userInfo.groupName
+        customerGroup:userInfo.groupName,
+        finalPrice:shipping.finalPrice
       })
     }
     address_layout(){
@@ -188,26 +160,17 @@ export default class Shipping extends Component{
       catch{return 0}
     }
     amount_layout(){
-      let {getFactorDetails,shipping} = this.context;
-      let {address} = this.state;
-      let {onSend} = this.props;
+      let {address,finalPrice} = this.state;
+      let {kharidApis} = this.context;
       
       let {
         PayDueDate_map,PayDueDate,
-        SettleType_map,SettleType,
         DeliveryType_map,DeliveryType,
         PaymentTime_map,PaymentTime,
       } = this.state;
       PayDueDate = PayDueDate_map[PayDueDate];
-      SettleType = SettleType_map[SettleType];
       DeliveryType = DeliveryType_map[DeliveryType];
       PaymentTime = PaymentTime_map[PaymentTime];
-      let factorDetails = getFactorDetails(shipping.items,{PayDueDate,PaymentTime,SettleType,DeliveryType})
-      let discount = factorDetails.marketingdetails.DocumentDiscount;
-      let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent
-      let mablaghe_ghabele_pardakht = factorDetails.DocumentTotal;
-      let mablaghe_takhfife_pardakhte_online = (mablaghe_ghabele_pardakht * darsade_takhfife_pardakhte_online) / 100;
-      mablaghe_ghabele_pardakht = mablaghe_ghabele_pardakht - mablaghe_takhfife_pardakhte_online;
       
       return {
         className:'p-h-12 bg-fff theme-box-shadow',
@@ -216,35 +179,9 @@ export default class Shipping extends Component{
           {
             size:28,childsProps:{align:'v'},
             row:[
-              {html:'تخفیف:',className:'colorFDB913 fs-14'},
-              {flex:1},
-              {html:functions.splitPrice(discount) + ' ریال',className:'colorFDB913 fs-14'}
-            ]
-          },
-          {
-            size:28,childsProps:{align:'v'},
-            row:[
-              {html:'تخفیف نحوه پرداخت:',className:'color00B5A5 fs-14'},
-              {flex:1},
-              {html:`(${darsade_takhfife_pardakhte_online} %)`,className:'color00B5A5 fs-14'},
-              {size:6},
-              {html:functions.splitPrice(this.fix(mablaghe_takhfife_pardakhte_online)) + ' ریال',className:'color00B5A5 fs-14'},
-            ]
-          },
-          {
-            size:28,childsProps:{align:'v'},
-            row:[
-              {html:'قیمت کالاها:',className:'theme-medium-font-color fs-14'},
-              {flex:1},
-              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht + discount + mablaghe_takhfife_pardakhte_online)) + ' ریال',className:'theme-medium-font-color fs-14'}
-            ]
-          },
-          {
-            size:28,childsProps:{align:'v'},
-            row:[
               {html:'مبلغ قابل پرداخت:',className:'theme-dark-font-color bold fs-16'},
               {flex:1},
-              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال',className:'theme-dark-font-color bold fs-16'}
+              {html:functions.splitPrice(this.fix(finalPrice)) + ' ریال',className:'theme-dark-font-color bold fs-16'}
             ]
           },
           {size:6},
@@ -253,16 +190,37 @@ export default class Shipping extends Component{
             html:(
               <button 
                 className="button-2" 
-                onClick={()=>onSend({address,SettleType,PaymentTime,DeliveryType,PayDueDate})}
-              >ارسال برای ویزیتور</button>
+                onClick={()=>{
+                  this.onSubmit({address,PaymentTime,DeliveryType,PayDueDate})
+                }}
+              >{PaymentTime === 'ByOnlineOrder'?'پرداخت':'ثبت'}</button>
             )
           },
           {size:12}
         ]
       }
     }
+    async onSubmit({address,PaymentTime,DeliveryType,PayDueDate}){
+      let {shipping,kharidApis,cart,rsa_actions,changeCart} = this.context;
+      let {cartItems} = shipping;
+      let orderNumber = await kharidApis({
+        api:PaymentTime === 'ByOnlineOrder'?"pardakhte_belex":'sabte_belex',
+        parameter:{address,PaymentTime,DeliveryType,PayDueDate}
+      })
+      if(orderNumber){
+        let variantIds = cartItems.map((o)=>o.variantId)
+        let newCart = {};
+        for(let prop in cart){
+          if(variantIds.indexOf(prop) === -1){
+            newCart[prop] = cart[prop]
+          }
+        }
+        rsa_actions.removePopup('all');
+        changeCart(newCart)
+        // this.openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
+      }
+    }
     render(){
-      let {PaymentTime} = this.state;
       return (
         <>
           <RVD
@@ -284,7 +242,7 @@ export default class Shipping extends Component{
                   {size:12},
                   this.options_layout('PaymentTime','زمان پرداخت',),
                   {size:12},
-                  this.options_layout('PayDueDate','مهلت تسویه',PaymentTime !== 'ByOnlineOrder'),
+                  this.options_layout('PayDueDate','مهلت تسویه'),
                   {size:12},
                   this.products_layout(),
                   {size:12},
@@ -298,7 +256,5 @@ export default class Shipping extends Component{
       )
     }
   }
-
-
 
   

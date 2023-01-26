@@ -11,6 +11,7 @@ import Noorvare3 from './../../pages/noorvare3/noorvare3';
 import OrdersHistory from "./../../components/kharid/orders-history/orders-history";
 import SabteGarantiJadid from "../../components/garanti/sabte-garanti-jadid/sabte-garanti-jadid";
 import Shipping from './../../components/kharid/shipping/shipping';
+import BelexShipping from './../../components/kharid/belex-shipping/belex-shipping';
 import Wallet from "../../popups/wallet/wallet";
 import TanzimateKifePool from "../../components/kife-pool/tanzimate-kife-pool/tanzimate-kife-pool";
 import Cart from "./../../components/kharid/cart/cart";
@@ -224,6 +225,11 @@ export default class Main extends Component {
     let forooshe_vije = await kharidApis({api:"forooshe_vije",loading:false});
     this.setState({ forooshe_vije});
   }
+  async get_belex() {
+    let {kharidApis} = this.state;
+    let belex = await kharidApis({api:"belex",loading:false});
+    this.setState({ belex});
+  }
   async getBazargahOrders(){
     let {bazargah,bazargahApis} = this.state;
     bazargah.wait_to_get = await bazargahApis({api:'orders',parameter:{type:'wait_to_get'},loading:false});
@@ -254,6 +260,7 @@ export default class Main extends Component {
     }
     this.getCampaignsData();
     this.get_forooshe_vije();
+    this.get_belex();
     if(bazargah.active){this.getBazargahOrders();}
     //let testedChance = await gardooneApis({type:"get_tested_chance"});
     let pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode,12 * 60 * 60 * 1000)
@@ -381,10 +388,18 @@ export default class Main extends Component {
     }
     else if(type === 'shipping'){
       this.setState({shipping:parameter},()=>{
-        addPopup({
-          body:()=><Shipping onSend={(o)=>this.ersal_baraye_vizitor(o)}/>,
-          title:'ادامه فرایند خرید'
-        })
+        if(parameter.id === 'belex'){
+          addPopup({
+            body:()=><BelexShipping/>,
+            title:'ادامه فرایند خرید'
+          })
+        }
+        else {
+          addPopup({
+            body:()=><Shipping onSend={(o)=>this.ersal_baraye_vizitor(o)}/>,
+            title:'ادامه فرایند خرید'
+          })
+        }
       })
     }
     else if(type === 'sefareshe-ersal-shode-baraye-vizitor'){

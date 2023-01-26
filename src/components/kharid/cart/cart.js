@@ -6,6 +6,7 @@ import AIOButton from '../../../interfaces/aio-button/aio-button';
 import noItemSrc from './../../../images/not-found.png';
 import functions from '../../../functions';
 import ForoosheVijeCard from '../forooshe-vije-card/forooshe-vije-card';
+import BelexCard from '../belex-card/belex-card';
 export default class Cart extends Component{
     static contextType = appContext;
     constructor(props){
@@ -33,11 +34,13 @@ export default class Cart extends Component{
         let { campaign } = product;
         let tabId,tabTitle;
         if(product.type === 'forooshe_vije'){tabId = 'forooshe_vije'; tabTitle = 'فروش ویژه'}
+        else if(product.type === 'belex'){tabId = 'belex'; tabTitle = 'بلکس 23 شیراز'}
         else if(campaign){tabId = campaign.id; tabTitle = campaign.name}
         else{tabId = 'regular'; tabTitle = 'خرید عادی'}
         tabsDictionary[tabId] = tabsDictionary[tabId] || {id:tabId,title:tabTitle,cards:[],total:0,cartItems:[],totalDiscount:0,flex:1};
         tabsDictionary[tabId].cartItems.push(cart[variantId])
         tabsDictionary[tabId].badge++;
+        tabsDictionary[tabId].id = tabId;
       }
       this.tabs = [];
       for(let tabId in tabsDictionary){
@@ -48,6 +51,15 @@ export default class Cart extends Component{
             let variant = product.variants.find(({id})=>id === variantId);
             finalPrice += foroosheVije_count.packQty * variant.finalPrice;
             return <ForoosheVijeCard product={product} variantId={variantId} count={foroosheVije_count}/>
+          })
+          tab.finalPrice = finalPrice;
+        }
+        if(tabId === 'belex'){
+          let finalPrice = 0;
+          tab.cards = tab.cartItems.map(({product,belex_count,variantId})=>{
+            let variant = product.variants.find(({id})=>id === variantId);
+            finalPrice += belex_count.packQty * variant.finalPrice;
+            return <BelexCard product={product} variantId={variantId} count={belex_count}/>
           })
           tab.finalPrice = finalPrice;
         }
@@ -134,21 +146,10 @@ export default class Cart extends Component{
         ]
       }
     }
-    foroosheVije_sood(totalPrice){
-      let {cartItems} = this.tab;
-      let realPrice = 0;
-      for(let i = 0; i < cartItems.length; i++){
-        let {variant,count} = cartItems[i];
-        let {totalQty,unitPrice} = variant;
-        let totalCount = count * totalQty;
-        let totalPrice = totalCount * unitPrice;
-        realPrice += totalPrice;
-      }
-      return realPrice - totalPrice;
-    }
     payment_layout(){
       if(!this.tab){return false}
       if(this.tab.id === 'forooshe_vije'){return this.foroosheVije_payment_layout()}
+      if(this.tab.id === 'belex'){return this.belex_payment_layout()}
       let total = this.tab.factorDetails.DocumentTotal;
       let {continued} = this.state;
       return {
@@ -175,6 +176,32 @@ export default class Cart extends Component{
       }
     }
     foroosheVije_payment_layout(){
+      let total = this.tab.finalPrice;
+      let {continued} = this.state;
+      return {
+        size: 72,className: "bgFFF p-h-12 theme-box-shadow",
+        row: [
+          {
+            flex: 1,
+            column: [
+              { flex: 1 },
+              {align: "v",html: "مبلغ قابل پرداخت",className: "theme-medium-font-color fs-12"},
+              {size:3},
+              {
+                row:[
+                  {align: "v",html: this.splitPrice(total),className: "theme-dark-font-color fs-14 bold"},
+                  {size:4},
+                  {align: "v",html: " ریال",className: "theme-dark-font-color fs-12"}
+                ]
+              },
+              { flex: 1 },
+            ],
+          },
+          {html: <button disabled={continued} onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
+        ],
+      }
+    }
+    belex_payment_layout(){
       let total = this.tab.finalPrice;
       let {continued} = this.state;
       return {

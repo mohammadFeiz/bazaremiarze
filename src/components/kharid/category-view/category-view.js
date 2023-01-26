@@ -3,6 +3,7 @@ import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import ProductCard from './../product-card/product-card';
 import SearchBox from './../../../components/search-box/index';
 import ForoosheVijeCard from '../forooshe-vije-card/forooshe-vije-card';
+import BelexCard from '../belex-card/belex-card';
 export default class CategoryView extends Component {
     constructor(props) {
         super(props);
@@ -23,6 +24,9 @@ export default class CategoryView extends Component {
         if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
         if(product.type === 'forooshe_vije'){
             return {html:<ForoosheVijeCard index={index} product={product}/>,className:'of-visible'}    
+        }
+        if(product.type === 'belex'){
+            return {html:<BelexCard index={index} product={product}/>,className:'of-visible'}    
         }
         return {html:<ProductCard index={index} product={product} isFirst={true} isLast={true} type='horizontal' />,className:'of-visible'}
     }

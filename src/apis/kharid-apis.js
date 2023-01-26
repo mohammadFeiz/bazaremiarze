@@ -723,6 +723,13 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
       return product;
     },
+    async pardakhte_belex(){
+
+    },
+    async sabte_belex(){
+      
+    },
+    
     async refreshB1Rules() {
       await Axios.get(`${baseUrl}/BOne/RefreshRules`);
     },
@@ -932,6 +939,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       
         window.location.href = res.data.data;
       }
+    },
+    async belex(){
+
     },
     async forooshe_vije(){
       let {userInfo} = getState();

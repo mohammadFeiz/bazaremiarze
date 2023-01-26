@@ -12,6 +12,7 @@ export default class Product extends Component{
     render(){
         let { product } = this.props;
         if(product.type === 'forooshe_vije'){return <ForoosheVije {...this.props}/>}
+        if(product.type === 'belex'){return <Belex {...this.props}/>}
         return <ProductReqular {...this.props}/>
     }
 }
@@ -613,6 +614,331 @@ class ForoosheVije extends Component {
                 newCart[variantId] = {foroosheVije_count,product,variantId:variant.id}
             }
             else{newCart[variantId].foroosheVije_count = foroosheVije_count;}
+        }
+        
+        await kharidApis({api:'setCart',parameter:newCart,loading:false})
+        SetState({cart:newCart});
+        
+    }
+    cart_layout() {
+        let {variantId} = this.state;
+        if(!variantId){return false}
+        let {cart} = this.context;
+        let isFull = this.isFull()
+        return {
+            column:[
+                {
+                    flex:1,show:!cart[variantId],html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>افزودن به سبد خرید</button>),
+                    align: "v",
+                },
+                {
+                    flex:1,show:!!cart[variantId],html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>ویرایش سبد خرید</button>),
+                    align: "v",
+                },
+                
+                
+            ]
+        }
+    }
+    render() {
+        if(!this.mounted){return null}
+        let { product } = this.props;
+        let { name, src,code } = product;
+        return (
+            <RVD
+                layout={{
+                    className: "theme-popup-bg",
+                    column: [
+                        {size:12},
+                        {
+                            flex: 1,className: "ofy-auto",gap: 12,
+                            column: [
+                                this.image_layout(name, code, src),
+                                {
+                                    className: 'theme-card-bg theme-box-shadow theme-border-radius m-h-12 p-12',
+                                    column:[
+                                        this.packs_layout(),
+                                        {size:36,align:'v',html:<div style={{width:'100%',height:1,background:'#ddd'}}></div>},
+                                        this.packQty_layout(),
+                                        {size:36,align:'v',html:<div style={{width:'100%',height:1,background:'#ddd'}}></div>},
+                                        this.qtyInPacks_layout()
+                                    ]
+                                }                                
+                            ]
+                        },
+                        {size:12},
+                        this.showCart_layout(), 
+                        {
+                            size: 80, style: { boxShadow:'0 0px 6px 1px rgba(0,0,0,.1)' }, className: "p-h-24 bg-fff",
+                            row: [
+                                this.cart_layout(),
+                                { flex: 1 },
+                                this.price_layout()
+                            ],
+                        }
+                    ]
+                }}
+            />
+        );
+    }
+}
+
+
+class Belex extends Component {
+    static contextType = appContext;
+    state = {}
+    componentDidMount(){
+        this.mounted = true;
+        let {cart} = this.context;
+        let { variantId } = this.props;
+        let belex_count = false;
+        if(variantId){belex_count = cart[variantId].belex_count}
+        this.setState({variantId,belex_count})
+    }
+    changeVariant(variantId){
+        let {cart} = this.context;
+        let belex_count;
+        if(cart[variantId]){belex_count = cart[variantId].belex_count}
+        else{
+            let {product} = this.props;
+            let {optionValues} = product;
+            let variant = this.getVariant(variantId);
+            let {totalQty} = variant;
+            let qtyInPack = optionValues.map(({name,id,step},i)=>{
+                return {optionValueId:id,optionValueName:name,count:i === 0?totalQty:0,step}
+            })
+            belex_count = {packQty:0,qtyInPack}
+        }
+        this.setState({belex_count,variantId})
+    }
+    getVariant(variantId = this.state.variantId){
+        if(!variantId){return false}
+        let {product} = this.props;
+        let {variants} = product;
+        return variants.find(({id})=>variantId === id);
+    }
+    changeCount(belex_count) {
+        this.setState({belex_count})
+    }
+    image_layout(name, code, src) {
+        let { product } = this.props, { srcIndex } = this.state;
+        return {
+            size: 346, className: "theme-box-shadow theme-card-bg theme-border-radius m-h-12",
+            column: [
+                { size: 24 },
+                {
+                    flex: 1, style: { overflow: 'hidden' },
+                    childsProps: { align: "vh" },
+                    row: [
+                        { size: 36, html: getSvg("chevronLeft", { flip: true }), style: { opacity: srcIndex === 0 ? 0.5 : 1 } },
+                        { flex: 1, html: <img src={src} alt="" height="100%" /> },
+                        { size: 36, html: getSvg("chevronLeft"), style: { opacity: srcIndex === product ? 0.5 : 1 } },
+                    ],
+                },
+                { size: 12 },
+                { size: 36, html: name, className: "fs-14 theme-dark-font-color bold p-h-12" },
+                { size: 36, html: "کد کالا : " + (code || ""), className: "fs-12 theme-medium-font-color p-h-12" },
+            ]
+        };
+    }
+    packs_layout(){
+        let {product} = this.props;
+        let {variants} = product;
+        let {variantId} = this.state;
+        let variant;
+        if(variantId){
+            variant = this.getVariant()
+        }
+        
+        return {
+            column:[
+                {html:'بسته خود را مشخص کنید',align:'v',className:'theme-dark-font-color fs-14 bold'},
+                {html:'بسته های بزرگ تر تخقیف های ارزنده تری دارند.',align:'v',className:'theme-medium-font-color fs-12'},
+                {size:12},
+                {className:'ofx-auto',row:variants.map((o,i)=>this.pack_layout(o,i))},
+                {size:12},
+                {show:!!variant,html:()=>`قیمت واحد محصول : ${functions.splitPrice(variant.unitPrice)} ریال`,className:'theme-medium-font-color fs-12'},
+                {show:!!variant,html:()=>`تعداد محصول در بسته : ${variant.totalQty} عدد`,className:'theme-medium-font-color fs-12'},
+                {show:!!variant,size:12},
+                {
+                    show:!!variant,
+                    style:{color:'#107C10'},
+                    row:[
+                        {html:<Icon path={mdiCheckCircle} size={0.7}/>,align:'vh'},
+                        {size:6},
+                        {html:'موجودی کافی',className:'fs-14 bold',align:'v'}
+                    ]
+                }
+            ]
+        }
+    }
+    packQty_layout(){
+        let {variantId,belex_count} = this.state;
+        if(!variantId || !belex_count){return false}
+        let {packQty} = belex_count;
+        return {
+            column:[
+                {html:`2: تعداد بسته را مشخص کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+                {
+                    html:(
+                        <input type ='number' value={packQty} onChange={(e)=>{
+                            let value = +e.target.value;
+                            if(isNaN(value)){value = ''}
+                            belex_count.packQty = value;
+                            this.changeCount(belex_count)
+                        }}/>
+                    )
+                }
+            ]
+        }
+    }
+    getSelectedCount(){
+        let {belex_count} = this.state;
+        let {qtyInPack} = belex_count;
+        let count = 0;
+        for(let i = 0; i < qtyInPack.length; i++){
+            count += qtyInPack[i].count || 0;
+        }
+        return count;
+    }
+    isFull(){
+        let v = this.getVariant();
+        if(!v){return false}
+        let {belex_count} = this.state;
+        if(!belex_count){return false}
+        let {packQty} = belex_count;
+        let {totalQty} = v;
+        totalQty *= packQty;
+        let selectedCount = this.getSelectedCount();
+        return selectedCount === totalQty;
+        
+    }
+    qtyInPacks_layout(){
+        let {variantId,belex_count} = this.state;
+        if(!variantId || !belex_count){return false}
+        let {qtyInPack,packQty} = belex_count;
+        if(!packQty){return false}
+        let {product} = this.props;
+        let v = this.getVariant();
+        let {totalQty} = v;
+        totalQty *= packQty;
+        let selectedCount = this.getSelectedCount();
+        let isFull = this.isFull();
+        return {
+            column:[
+                {html:`3: رنگ کالاها در ${packQty + ' ' + v.name} را انتخاب کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+                {
+                    gap:6,column:qtyInPack.map((o,i)=>{
+                        let used = 0;
+                        for(let j = 0; j < qtyInPack.length; j++){
+                            used += qtyInPack[j].count;
+                        }
+                        let remaining = totalQty - used;
+                        return {
+                            size:48,
+                            html:(
+                                <ForoosheVijeSlider 
+                                    key={variantId} {...o} totalQty={totalQty} max={o.count + remaining} 
+                                    onChange={(value)=>{
+                                        o.count = value;
+                                        this.changeCount(belex_count)
+                                    }}
+                                />
+                            )
+                        }
+                    })
+                },
+                {size:12}, 
+                {
+                    style:{color:isFull?'#107C10':'#d0000a'},
+                    row:[
+                        {html:<Icon path={isFull?mdiCheckCircle:mdiAlertCircle} size={0.7}/>},
+                        {size:6},
+                        {html:`${selectedCount + ' عدد'} از ${totalQty + ' عدد'} کالا تعیین رنگ شده`,align:'v',className:'fs-14 bold'}
+                    ]
+                },
+            ]
+        }
+    }
+    pack_layout({id,name,finalPrice},i){
+        let {variantId} = this.state;
+        let {product} = this.props;
+        let {variants} = product;
+        let active = id === variantId;
+        let br = {borderTopLeftRadius:0,borderTopRightRadius:0,borderBottomLeftRadius:0,borderBottomRightRadius:0};
+        if(i === 0){br.borderTopRightRadius = 36; br.borderBottomRightRadius = 36}
+        if(i === variants.length - 1){br.borderTopLeftRadius = 36; br.borderBottomLeftRadius = 36}
+        return {
+            onClick:()=>this.changeVariant(id),
+            size:144,style:{border:'1px solid',padding:'6px 12px',...br,background:active?'#DCE1FF':'#fff'},
+            column:[
+                {html:name,className:'theme-dark-font-color fs-14 bold',style:{textAlign:'right'}},
+                {
+                    row:[
+                        {html:`${functions.splitPrice(finalPrice)} ریال`,className:'theme-dark-font-color fs-12 bold',align:'v'}
+                    ]
+                }
+            ]
+        }
+    }
+    showCart_layout(){
+        let { cart,openPopup } = this.context;
+        if(!Object.keys(cart).length){return false}
+        return {
+            className:'p-h-12 bgFFF',size:36,align:'v',
+            row:[
+                {html:'مشاهده',className:'theme-light-font-color fs-12 bold',align:'v'},
+                {size:4},
+                {html:'سبد خرید',className:'theme-link-font-color fs-12 bold',align:'v',attrs:{onClick:()=>openPopup('cart')}},
+                {size:4},
+                {html:<Icon path={mdiChevronLeft} size={0.8}/>,align:'vh',className:'theme-link-font-color'}
+            ]
+        }
+    }
+    price_layout() {
+        let { variantId,belex_count } = this.state;
+        if(!variantId || !belex_count){return false}
+        let variant = this.getVariant(variantId);
+        //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده
+        let {packQty} = belex_count;
+        packQty = packQty || 1; 
+        let {finalPrice} = variant;
+        return {
+            column: [
+                { flex: 1 },
+                {
+                    row: [
+                        { flex: 1 },
+                        { html: functions.splitPrice(finalPrice * packQty), className: "theme-dark-font-color bold" },
+                        { size: 6 },
+                        { html: "ریال", className: "theme-dark-font-color bold" },
+                    ],
+                },
+                { flex: 1 },
+            ],
+        };
+    }
+    async updateCart(){
+        let {belex_count} = this.state;
+        let {packQty} = belex_count;
+        let {product} = this.props;
+        let {variantId} = this.state;
+        let {cart,kharidApis,SetState} = this.context;
+        let newCart;
+        if(packQty === 0){
+            let res = {};
+            for(let prop in cart){
+                if(prop.toString() !== variantId.toString()){res[prop] = cart[prop]}
+            }
+            newCart = res;
+        }
+        else{
+            newCart = {...cart}
+            if(newCart[variantId] === undefined){
+                let variant = this.getVariant();
+                newCart[variantId] = {belex_count,product,variantId:variant.id}
+            }
+            else{newCart[variantId].belex_count = belex_count;}
         }
         
         await kharidApis({api:'setCart',parameter:newCart,loading:false})

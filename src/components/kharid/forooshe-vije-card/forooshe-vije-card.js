@@ -8,7 +8,7 @@ import {mdiDelete} from '@mdi/js';
 import $ from 'jquery';
 export default class ForoosheVijeCard extends Component{
     static contextType = appContext;
-    state = {mounted:false,removeMode:true}
+    state = {mounted:false,removeMode:false}
     onClick(){
         let {openPopup} = this.context;
         let {product,variantId} = this.props;

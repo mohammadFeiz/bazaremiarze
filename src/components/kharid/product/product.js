@@ -448,7 +448,7 @@ class ForoosheVije extends Component {
     }
     packQty_layout(){
         let {variantId,foroosheVije_count} = this.state;
-        if(!variantId){return false}
+        if(!variantId || !foroosheVije_count){return false}
         let {packQty} = foroosheVije_count;
         return {
             column:[

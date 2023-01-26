@@ -11,7 +11,7 @@ import Noorvare3 from './../../pages/noorvare3/noorvare3';
 import OrdersHistory from "./../../components/kharid/orders-history/orders-history";
 import SabteGarantiJadid from "../../components/garanti/sabte-garanti-jadid/sabte-garanti-jadid";
 import Shipping from './../../components/kharid/shipping/shipping';
-import BelexShipping from './../../components/kharid/belex-shipping/belex-shipping';
+import BelexShipping from './../../components/kharid/shipping/belex-shipping';
 import Wallet from "../../popups/wallet/wallet";
 import TanzimateKifePool from "../../components/kife-pool/tanzimate-kife-pool/tanzimate-kife-pool";
 import Cart from "./../../components/kharid/cart/cart";

@@ -3,7 +3,7 @@ import React,{Component} from 'react';
   import functions from './../../../functions';
   import AIOButton from './../../../interfaces/aio-button/aio-button';
   import appContext from './../../../app-context';
-  export class BelexShipping extends Component{
+  export default class BelexShipping extends Component{
     static contextType = appContext;
     constructor(props){
       super(props);

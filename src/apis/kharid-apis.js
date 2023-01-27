@@ -726,7 +726,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       return product;
     },
     async pardakhte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate,shipping,ghabele_pardakht}){
-
       let {userInfo} = getState();
       let arr=[];
       for(const cart of shipping.cartItems){
@@ -754,12 +753,14 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       try { registredOrder=res.data.data[0] }
       catch { return false }
 
-      await this.pardakhte_kharid({order:{
+      let resss = await this.pardakhte_kharid({order:{
         total:ghabele_pardakht,
         mainDocisDraft:registredOrder.isDraft,
         mainDocNum:registredOrder.docNum,
         code:registredOrder.docEntry
       }});
+      return resss
+
     },
     async sabte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate,shipping}){
       let {userInfo} = getState();

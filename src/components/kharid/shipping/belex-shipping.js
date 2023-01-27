@@ -329,7 +329,7 @@ import React,{Component} from 'react';
         }
       })
       if(orderNumber){
-        let variantIds = cartItems.map((o)=>o.variantId)
+        let variantIds = cartItems.map((o)=>o.product.code)
         let newCart = {};
         for(let prop in cart){
           if(variantIds.indexOf(prop) === -1){

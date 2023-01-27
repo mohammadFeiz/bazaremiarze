@@ -21,7 +21,7 @@ import React,{Component} from 'react';
           {value:'Cash20_ThreeMonth80',text:'20% نقد و 80% چک سه ماهه (4.8% تخفیف بیشتر)'},
           {value:'Cash30_FourMonth70',text:'30% نقد و 70% چک چهار ماهه (3.6% تخفیف بیشتر)'},
           {value:'Cash50_FiveMonth50',text:'50% نقد و 50% چک پنج ماهه (4.5% تخفیف بیشتر)'},
-          {value:'??????',text:'????????????',show:false},
+          {value:'Cash50_OneMonth50',text:'50% نقد و 50% چک یک ماهه (10.5% تخفیف بیشتر)',show:false}
           
         ],
         PayDueDate_map:{
@@ -29,7 +29,7 @@ import React,{Component} from 'react';
           Cash20_ThreeMonth80:17,
           Cash30_FourMonth70:18,
           Cash50_FiveMonth50:19,
-          //????????
+          Cash50_OneMonth50:20,
         },
         // PaymentTime:'ByOnlineOrder',
         // PaymentTime_options:[
@@ -105,9 +105,7 @@ import React,{Component} from 'react';
           break;
         }
       }
-      debugger;
       if(hasCable){this.state.PayDueDate_options[4].show = true}
-      debugger;
       this.setState({
         hasCable,
         campaign:shipping.title,

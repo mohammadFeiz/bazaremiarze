@@ -1327,63 +1327,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
                             ]
                         },
                         {
-                            "taxonid": 172,
-                            "parnetid": 173,
-                            "taxonname": "فیوز مینیاتوری",
-                            "metadescription": "",
-                            "Depth": 2,
-                            "Position": 0,
-                            "items": null,
-                            "taxons": [
-                                {
-                                    "taxonid": 179,
-                                    "parnetid": 172,
-                                    "taxonname": "بسته ترکیبی فیوز",
-                                    "metadescription": null,
-                                    "Depth": 3,
-                                    "Position": 0,
-                                    "items": [
-                                        {
-                                            "Position": 1,
-                                            "itemname": "(فیوز مینیاتوری 10 بچه کارتن(120پل",
-                                            "metadescription": "",
-                                            "description": "",
-                                            "itemcode": "shirazfioz",
-                                            "itemid": 451,
-                                            "price": 10000.00,
-                                            "totalremained": null,
-                                            "itemcodes": null,
-                                            "imageurl": null
-                                        },
-                                        {
-                                            "Position": 2,
-                                            "itemname": "(فیوز مینیاتوری 50 بچه کارتن(600پل",
-                                            "metadescription": "",
-                                            "description": "",
-                                            "itemcode": "shirazfiuzz",
-                                            "itemid": 453,
-                                            "price": 10000.00,
-                                            "totalremained": null,
-                                            "itemcodes": null,
-                                            "imageurl": null
-                                        },
-                                        {
-                                            "Position": 3,
-                                            "itemname": "(فیوز مینیاتوری 30 بچه کارتن(360پل",
-                                            "metadescription": "",
-                                            "description": "",
-                                            "itemcode": "shirazfiuz",
-                                            "itemid": 452,
-                                            "price": 10000.00,
-                                            "totalremained": null,
-                                            "itemcodes": null,
-                                            "imageurl": null
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
                             "taxonid": 151,
                             "parnetid": 173,
                             "taxonname": "باتری",

@@ -314,7 +314,7 @@ import React,{Component} from 'react';
         DeliveryType,
         PayDueDate
       }){
-      let {shipping,kharidApis,cart,rsa_actions,changeCart} = this.context;
+      let {shipping,kharidApis,cart,rsa_actions,changeCart,openPopup} = this.context;
       let {cartItems} = shipping;
       let orderNumber = await kharidApis({
         api:SettleType === 16?"pardakhte_belex":'sabte_belex',
@@ -338,7 +338,7 @@ import React,{Component} from 'react';
         }
         rsa_actions.removePopup('all');
         changeCart(newCart)
-        // this.openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
+        openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
       }
     }
     render(){

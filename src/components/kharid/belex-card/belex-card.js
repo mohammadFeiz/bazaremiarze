@@ -24,14 +24,14 @@ export default class BelexCard extends Component{
         }       
     }
     image_layout(){
-        let {product} = this.props;
+        let {product,count} = this.props;
         let {src = ''} = product;
         return {
             column:[
                 {
                     flex:1,size:114,html:<img src={src} alt='' width='100%' height='100%' className='br-12'/>
                 },
-                {html:<Icon path={mdiDelete} size={0.8}/>,style:{color:'#d0000a'},onClick:(e)=>this.remove(e),align:'h'}
+                //{show:!!count,html:<Icon path={mdiDelete} size={0.8}/>,style:{color:'#d0000a'},onClick:(e)=>this.remove(e),align:'h'}
             ]
         }
     }
@@ -79,7 +79,6 @@ export default class BelexCard extends Component{
         }
     }
     remove(e){
-        debugger;
         e.stopPropagation()
         let {product,count,variantId} = this.props;
         if(!variantId){variantId = product.variants[0].id}

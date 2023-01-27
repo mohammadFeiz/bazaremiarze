@@ -98,14 +98,27 @@ import React,{Component} from 'react';
     async componentDidMount(){
       let {userInfo,shipping} = this.context;
       let hasCable = false;
-      for(let i = 0; i < shipping.cartItems.length; i++){
-        let product = shipping.cartItems[i].product;
-        if(product.cableCategory){
-          hasCable = true;
-          break;
+      try{
+        for(let i = 0; i < shipping.cartItems.length; i++){
+          let product = shipping.cartItems[i].product;
+          if(product.cableCategory){
+            hasCable = true;
+            break;
+          }
         }
+        if(hasCable){this.state.PayDueDate_options[4].show = true}
       }
-      if(hasCable){this.state.PayDueDate_options[4].show = true}
+      catch{
+        debugger;
+        for(let i = 0; i < shipping.cartItems.length; i++){
+          let product = shipping.cartItems[i].product;
+          if(product.cableCategory){
+            hasCable = true;
+            break;
+          }
+        }
+        if(hasCable){this.state.PayDueDate_options[4].show = true}
+      }
       this.setState({
         hasCable,
         campaign:shipping.title,

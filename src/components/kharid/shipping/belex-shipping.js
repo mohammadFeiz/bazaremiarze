@@ -17,10 +17,10 @@ import React,{Component} from 'react';
         phone:'09123534314',
         PayDueDate:'ByDelivery',
         PayDueDate_options:[
-          {value:'ByDelivery',text:'نقد'},
-          {value:'Cash20_ThreeMonth80',text:'20% نقد و 80% چک سه ماهه'},
-          {value:'Cash30_FourMonth70',text:'30% نقد و 70% چک چهار ماهه'},
-          {value:'Cash50_FiveMonth50',text:'50% نقد و 50% چک پنج ماهه'},
+          {value:'ByDelivery',text:'نقد (12% تخفیف بیشتر)'},
+          {value:'Cash20_ThreeMonth80',text:'20% نقد و 80% چک سه ماهه (4.8% تخفیف بیشتر)'},
+          {value:'Cash30_FourMonth70',text:'30% نقد و 70% چک چهار ماهه (3.6% تخفیف بیشتر)'},
+          {value:'Cash50_FiveMonth50',text:'50% نقد و 50% چک پنج ماهه (4.5% تخفیف بیشتر)'},
           
         ],
         PayDueDate_map:{
@@ -53,26 +53,14 @@ import React,{Component} from 'react';
           BySalesMan:15,//پخش توسط ویزیتور
           NotSet:16,
         },
-        SettleType:'ByDelivery',
+        SettleType:'Online',
         SettleType_options:[
-          {value:'Cash',text:'نقد'},
-          {value:'Cheque',text:'چک'},
           {value:'Pos',text:'دستگاه پوز'},
           {value:'Online',text:'آنلاین'},
-          {value:'Card',text:'کارت به کارت'},
-          {value:'Pos_Cheque',text:'دستگاه پوز و چک'},
-          {value:'Online_Cheque',text:'آنلاین و چک'},
-          {value:'Card_Cheque',text:'کارت به کارت و چک'},
         ],
         SettleType_map:{
-          Cash:1,
-          Cheque:2,
           Pos:8,
           Online:16,
-          Card:32,
-          Pos_Cheque:10,
-          Online_Cheque:18,
-          Card_Cheque:34
         },
       }
     }
@@ -180,6 +168,37 @@ import React,{Component} from 'react';
       try{return +value.toFixed(0)}
       catch{return 0}
     }
+    getDiscount(amount){
+      let {PayDueDate} = this.state;
+      let discountPrice;
+      let price;
+      let ghabele_pardakht;
+      if(PayDueDate === 'ByDelivery'){
+        discountPrice = amount * 12 / 100;
+        discountPrice = this.fix(discountPrice);
+        price = amount - discountPrice;
+        ghabele_pardakht = this.fix(price * 100 / 100)
+      }
+      if(PayDueDate === 'Cash20_ThreeMonth80'){
+        discountPrice = amount * 4.8 / 100;
+        discountPrice = this.fix(discountPrice);
+        price = amount - discountPrice;
+        ghabele_pardakht = this.fix(price * 20 / 100)
+      }
+      if(PayDueDate === 'Cash30_FourMonth70'){
+        discountPrice = amount * 3.6 / 100;
+        discountPrice = this.fix(discountPrice);
+        price = amount - discountPrice;
+        ghabele_pardakht = this.fix(price * 30 / 100)
+      }
+      if(PayDueDate === 'Cash50_FiveMonth50'){
+        discountPrice = amount * 4.5 / 100;
+        discountPrice = this.fix(discountPrice);
+        price = amount - discountPrice;
+        ghabele_pardakht = this.fix(price * 50 / 100)
+      }
+      return {discountPrice,price,ghabele_pardakht}
+    }
     amount_layout(){
       let {address,finalPrice} = this.state;
       let {kharidApis} = this.context;
@@ -194,7 +213,8 @@ import React,{Component} from 'react';
       DeliveryType = DeliveryType_map[DeliveryType];
       SettleType = SettleType_map[SettleType]
       //PaymentTime = PaymentTime_map[PaymentTime];
-      
+      let {discountPrice,price,ghabele_pardakht} = this.getDiscount(finalPrice);
+      this.ghabele_pardakht = ghabele_pardakht
       return {
         className:'p-h-12 bg-fff theme-box-shadow',
         style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
@@ -202,9 +222,33 @@ import React,{Component} from 'react';
           {
             size:28,childsProps:{align:'v'},
             row:[
-              {html:'مبلغ قابل پرداخت:',className:'theme-dark-font-color bold fs-16'},
+              {html:'جمع کل سبد خرید :',className:'theme-dark-font-color bold fs-14'},
               {flex:1},
-              {html:functions.splitPrice(this.fix(finalPrice)) + ' ریال',className:'theme-dark-font-color bold fs-16'}
+              {html:functions.splitPrice(this.fix(finalPrice)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
+            ]
+          },
+          {
+            size:28,childsProps:{align:'v'},
+            row:[
+              {html:'تخفیف نحوه پرداخت :',className:'theme-dark-font-color bold fs-14'},
+              {flex:1},
+              {html:functions.splitPrice(this.fix(discountPrice)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
+            ]
+          },
+          {
+            size:28,childsProps:{align:'v'},
+            row:[
+              {html:'مبلغ قابل پرداخت:',className:'theme-dark-font-color bold fs-14'},
+              {flex:1},
+              {html:functions.splitPrice(this.fix(price)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
+            ]
+          },
+          {
+            size:28,childsProps:{align:'v'},
+            row:[
+              {html:'مبلغ نحوه پرداخت نقد :',className:'theme-dark-font-color bold fs-14'},
+              {flex:1},
+              {html:functions.splitPrice(this.fix(ghabele_pardakht)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
             ]
           },
           {size:6},
@@ -219,10 +263,11 @@ import React,{Component} from 'react';
                     //PaymentTime,
                     SettleType,
                     DeliveryType,
-                    PayDueDate
+                    PayDueDate,
+                    ghabele_pardakht:this.ghabele_pardakht
                   })
                 }}
-              >{SettleType === 'Online' || SettleType === 'Online_Cheque'?'پرداخت':'ثبت'}</button>
+              >{(SettleType === 16?'پرداخت':'ثبت') + ' ' + functions.splitPrice(this.ghabele_pardakht) + ' ریال'}</button>
             )
           },
           {size:12}
@@ -239,7 +284,7 @@ import React,{Component} from 'react';
       let {shipping,kharidApis,cart,rsa_actions,changeCart} = this.context;
       let {cartItems} = shipping;
       let orderNumber = await kharidApis({
-        api:SettleType === 'Online' || SettleType === 'Online_Cheque'?"pardakhte_belex":'sabte_belex',
+        api:SettleType === 16?"pardakhte_belex":'sabte_belex',
         parameter:{
           address,
           //PaymentTime,
@@ -281,9 +326,9 @@ import React,{Component} from 'react';
                   {size:12},
                   this.options_layout('DeliveryType','نحوه ارسال'),
                   {size:12},
-                  this.options_layout('PayDueDate','مهلت تسویه'),
+                  this.options_layout('PayDueDate','نحوه پرداخت'),
                   {size:12},
-                  this.options_layout('SettleType','نحوه پرداخت'),
+                  this.options_layout('SettleType','نحوه پرداخت نقد'),
                   {size:12},
                   // this.options_layout('PaymentTime','زمان پرداخت',),
                   // {size:12},

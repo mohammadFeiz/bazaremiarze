@@ -58,7 +58,7 @@ export default class Cart extends Component{
           let finalPrice = 0;
           tab.cards = tab.cartItems.map(({product,belex_count})=>{
             finalPrice += belex_count.packQty * product.price;
-            return <BelexCard product={product} count={belex_count}/>
+            return <BelexCard key={product.code} product={product} count={belex_count}/>
           })
           tab.finalPrice = finalPrice;
         }

@@ -291,7 +291,8 @@ import React,{Component} from 'react';
           SettleType,
           DeliveryType,
           PayDueDate,
-          shipping
+          shipping,
+          ghabele_pardakht:this.ghabele_pardakht
         }
       })
       if(orderNumber){

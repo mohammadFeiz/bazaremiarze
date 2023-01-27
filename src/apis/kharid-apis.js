@@ -725,11 +725,69 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
       return product;
     },
-    async pardakhte_belex(){
+    async pardakhte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate,shipping,ghabele_pardakht}){
 
+      let {userInfo} = getState();
+      let arr=[];
+      for(const cart of shipping.cartItems){
+        const items=cart.belex_count.qtyInPacks;
+        for (const key in items) {
+          arr=arr.concat(items[key])
+        }
+      }
+
+      let body = {
+        "marketdoc":{
+          "DocType":17,
+          // "CardCode":userInfo.cardCode,
+          "CardCode":"c50000",
+          "CardGroupCode": userInfo.groupCode,
+          "MarketingLines":arr.map((o)=>{
+            return { ItemCode: o.optionValueId, ItemQty: o.count, Price: o.unitPrice }
+          }),
+          "DeliverAddress":address,
+          "marketingdetails":{Campaign:19}
+        },
+        SettleType,PaymentTime:6,DeliveryType,PayDueDate
+      }
+      let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
+      let registredOrder;
+      try { registredOrder=res.data.data[0] }
+      catch { return false }
+
+      await this.pardakhte_kharid({order:{
+        total:ghabele_pardakht,
+        mainDocisDraft:registredOrder.isDraft,
+        mainDocNum:registredOrder.docNum,
+        code:registredOrder.docEntry
+      }});
     },
-    async sabte_belex(){
+    async sabte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate,shipping}){
+      let {userInfo} = getState();
+      let arr=[];
+      for(const cart of shipping.cartItems){
+        const items=cart.belex_count.qtyInPacks;
+        for (const key in items) {
+          arr=arr.concat(items[key])
+        }
+      }
 
+      let body = {
+        "marketdoc":{
+          "DocType":17,
+          "CardCode":userInfo.cardCode,
+          "CardGroupCode": userInfo.groupCode,
+          "MarketingLines":arr.map((o)=>{
+            return { ItemCode: o.optionValueId, ItemQty: o.count, Price: o.unitPrice }
+          }),
+          "DeliverAddress":address,
+          "marketingdetails":{Campaign:19}
+        },
+        SettleType,PaymentTime:6,DeliveryType,PayDueDate
+      }
+      let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
+      try { return res.data.data[0].docNum }
+      catch { return false }
     },
 
     async refreshB1Rules() {
@@ -955,7 +1013,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       allData=allData.taxons;
 
       var items=[];
-      for (const i1 of allData) {
+      for (const i1 of allData.filter(x=>x.taxonid!=159)) {
         if(i1.items) items.push(i1.items.filter(x=>x.itemcodes!=null));
         if(!i1.taxons) continue;
         for (const i2 of i1.taxons) {
@@ -990,7 +1048,43 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           }
         }
       }
-      console.log(items)
+
+      var cableItems=[];
+      for (const i1 of allData.filter(x=>x.taxonid==159)) {
+        if(i1.items) cableItems.push(i1.items.filter(x=>x.itemcodes!=null));
+        if(!i1.taxons) continue;
+        for (const i2 of i1.taxons) {
+
+          if(i2.items) cableItems.push(i2.items.filter(x=>x.itemcodes!=null));
+          if(!i2.taxons) continue;
+          for (const i3 of i2.taxons) {
+
+              if(i3.items) cableItems.push(i3.items.filter(x=>x.itemcodes!=null));
+              if(!i3.taxons) continue;
+              for (const i4 of i3.taxons){
+
+                if(i4.items) cableItems.push(i4.items.filter(x=>x.itemcodes!=null));
+                if(!i4.taxons) continue;
+                for (const i5 of i4.taxons){
+
+                  if(i5.items) cableItems.push(i5.items.filter(x=>x.itemcodes!=null));
+                  if(!i5.taxons) continue;
+                    for (const i6 of i5.taxons){
+
+                      if(i6.items) cableItems.push(i6.items.filter(x=>x.itemcodes!=null));
+                      if(!i6.taxons) continue;
+
+                        for (const i7 of i6.taxons){
+
+                          if(i7.items) cableItems.push(i7.items.filter(x=>x.itemcodes!=null));
+                          if(!i7.taxons) continue;
+                        }
+                    }
+                }
+              }
+          }
+        }
+      }
 
       let products=[];
       for (const item of items) {
@@ -1013,6 +1107,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
               name:subItem.itemname,
               code:subItem.itemcode,
               price:subItem.price,
+              cableCategory:false,
               variants:subItem.itemcodes.map(x=>{
                 return {
                   mainsku:x.mainsku,name:x.Name,unitPrice:x.Price,qty:x.Qty,step:x.Step,variants:x.Variants,
@@ -1025,6 +1120,30 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         }
       }
 
+      for (const item of cableItems) {
+
+        if(item.length){
+
+          for (const subItem of item) {
+
+            products.push({
+              type:'belex',
+              name:subItem.itemname,
+              code:subItem.itemcode,
+              price:subItem.price,
+              cableCategory:true,
+              variants:subItem.itemcodes.map(x=>{
+                return {
+                  mainsku:x.mainsku,name:x.Name,unitPrice:x.Price,qty:x.Qty,step:x.Step,variants:x.Variants,
+                  id:x.Name
+                }
+              }),
+              src:subItem.imageurl
+            });   
+          }
+        }
+      }
+      
       // for (const tarh of allData) {
       //   let t={masterName:tarh.taxonname,details:[]}
 
@@ -1071,7 +1190,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
       //   products.push(t);
       // }
-      
       console.log(products)
       return {
         type:'belex',

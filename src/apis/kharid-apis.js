@@ -3,6 +3,8 @@ import nosrcImage from './../images/no-src.png';
 import nosrc from './../images/no-src.png';
 import foroosheVijeSrc from './../images/forooshe-vije.png';
 import foroosheVijeIcon from './../images/forooshe-vije-icon.png';
+import belexbillboard from './../images/belex-billboard.png';
+import belexIcon from './../images/belex-icon.png';
 export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOServiceShowAlert,baseUrl}) {
   return {
     async taide_noorvare(name){
@@ -1074,8 +1076,8 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       return {
         type:'belex',
         name:'بلکس 23 شیراز',
-        src:foroosheVijeSrc,
-        icon:foroosheVijeIcon,
+        src:belexbillboard,
+        icon:belexIcon,
         products
       }
     },

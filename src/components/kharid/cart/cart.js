@@ -222,7 +222,7 @@ export default class Cart extends Component{
               { flex: 1 },
             ],
           },
-          {html: <button disabled={continued} onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
+          {html: <button onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
         ],
       }
     }

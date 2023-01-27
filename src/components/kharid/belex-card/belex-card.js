@@ -31,6 +31,7 @@ export default class BelexCard extends Component{
                 {
                     flex:1,size:114,html:<img src={src} alt='' width='100%' height='100%' className='br-12'/>
                 },
+                {html:<Icon path={mdiDelete} size={0.8}/>,style:{color:'#d0000a'},onClick:(e)=>this.remove(e),align:'h'}
             ]
         }
     }
@@ -77,12 +78,14 @@ export default class BelexCard extends Component{
             ]
         }
     }
-    remove(){
+    remove(e){
+        debugger;
+        e.stopPropagation()
         let {product,count,variantId} = this.props;
         if(!variantId){variantId = product.variants[0].id}
         if(!count){return false}
         let {changeCart} = this.context;
-        changeCart(0,variantId,product)
+        changeCart(0,product.code,product)
         
     }
     componentDidMount(){
@@ -91,7 +94,7 @@ export default class BelexCard extends Component{
             this.setState({mounted:true})
         },index * 100 + 100)
     }
-    timer(){
+    timer(e){
         this.time = 0;
         this.interval = setInterval(()=>{
             this.time++;
@@ -164,12 +167,7 @@ export default class BelexCard extends Component{
             <RVD
                 layout={{
                     className:'theme-box-shadow theme-card-bg theme-border-radius theme-gap-h p-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
-                    attrs:{
-                        onMouseDown:count?()=>{
-                            this.timer();
-                            $(window).bind('mouseup',$.proxy(this.mounseup,this))
-                        }:undefined
-                    },
+                    attrs,
                     onClick:()=>{if(!removeMode){this.onClick()}},
                     column:[
                         this.label_layout(),

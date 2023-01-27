@@ -838,7 +838,10 @@ class Belex extends Component {
                 let isFull = this.isFull(id,qty);
                 return {
                     column:[
-                        {html:`رنگ کالاها در ${packQty + ' بسته ' + name} را انتخاب کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+                        {
+                            html:`رنگ کالاها در ${packQty + ' بسته ' + name} را انتخاب کنید`,
+                            align:'v',
+                            className:'theme-dark-font-color fs-14 bold'},
                         {
                             gap:6,column:qtyInPack.map((o,i)=>{
                                 let used = 0;
@@ -869,6 +872,9 @@ class Belex extends Component {
                                 {html:`${selectedCount + ' عدد'} از ${qty + ' عدد'} کالا تعیین رنگ شده`,align:'v',className:'fs-14 bold'}
                             ]
                         },
+                        {size:36},
+                        {html:<div style={{height:6,background:'#f8f8f8',width:'100%'}}></div>},
+                        {size:36}
                     ]
                 }
             })

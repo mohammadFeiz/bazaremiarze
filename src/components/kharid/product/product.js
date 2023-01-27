@@ -1055,9 +1055,13 @@ class ForoosheVijeSlider extends Component{
                                             step={step}
                                             points={[count]}
                                             lineStyle={{height:4}}
-                                            showValue={false}
+                                            showValue={true}
                                             fillStyle={(index)=>{
                                                 if(index === 0){return {height:4,background:'#2BBA8F'}}
+                                            }}
+                                            valueStyle={{
+                                                background:'#2BBA8F',height:14,top:-24,
+                                                display:'flex',alignItems:'center',fontSize:12
                                             }}
                                             pointStyle={{background:'#2BBA8F',width:16,height:16,zIndex:1000}}
                                             onChange={(points,drag)=>{
@@ -1071,9 +1075,9 @@ class ForoosheVijeSlider extends Component{
                                 {
                                     html:<div style={{padding:'0 3px',color:'#666',width:24,borderRadius:6,fontSize:10}}>{percent + '%'}</div>,align:'vh'
                                 },
-                                {
-                                    html:<div style={{background:'#2BBA8F',padding:'0 3px',color:'#fff',width:36,borderRadius:6}}>{count}</div>,align:'vh'
-                                }
+                                // {
+                                //     html:<div style={{background:'#2BBA8F',padding:'0 3px',color:'#fff',width:36,borderRadius:6}}>{count}</div>,align:'vh'
+                                // }
                             ]
                         }
                     ]

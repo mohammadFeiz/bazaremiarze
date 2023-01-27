@@ -222,6 +222,14 @@ import React,{Component} from 'react';
         price = amount - discountPrice;
         ghabele_pardakht = this.fix(price * 50 / 100)
       }
+      if(PayDueDate === 'Cash50_OneMonth50'){
+        discountPrice = amount * 10.5 / 100;
+        discountPrice = this.fix(discountPrice);
+        price = amount - discountPrice;
+        ghabele_pardakht = this.fix(price * 50 / 100)
+      }
+
+
       return {discountPrice,price,ghabele_pardakht}
     }
     amount_layout(){

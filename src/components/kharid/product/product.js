@@ -5,7 +5,7 @@ import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import appContext from './../../../app-context';
 import Slider from './../../../npm/aio-slider/aio-slider';
 import getSvg from './../../../utils/getSvg';
-import { mdiChevronDown, mdiChevronLeft,mdiCheckCircle, mdiAlertCircle, mdiPlusBoxOutline, mdiMinusBoxOutline } from '@mdi/js';
+import { mdiChevronDown, mdiChevronLeft,mdiCheckCircle, mdiAlertCircle, mdiPlusBoxOutline, mdiMinusBoxOutline, mdiMinus, mdiPlus } from '@mdi/js';
 import {Icon} from '@mdi/react';
 import functions from './../../../functions';
 import cartonSrc from './../../../images/belex-box.jpg';
@@ -766,18 +766,30 @@ class Belex extends Component {
         if(!belex_count){return false}
         let {packQty,qtyInPacks} = belex_count;
         return {
-            row:[
-                {html:`تعداد بسته را مشخص کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+            align:'v',
+            style:{borderRadius:6,background:'#DCE1FF',padding:'0 12px'},
+            column:[
+                {size:12},
+                {align:'v',html:`تعداد بسته را مشخص کنید :`,align:'v',className:'theme-dark-font-color fs-14 bold'},
                 {size:12},
                 {
-                    size:40,html:<Icon path={mdiPlusBoxOutline} size={1}/>,align:'vh',onClick:()=>this.changePackQty(1)
+                    row:[
+                        {
+                            size:40,html:<Icon path={mdiPlus} size={1}/>,align:'vh',onClick:()=>this.changePackQty(1),
+                            style:{background:'#3B55A5',height:40,color:'#fff',borderRadius:6}
+                        },
+                        {size:6},
+                        {
+                            size:48,html:packQty,align:'vh'  
+                        },
+                        {size:6},
+                        {
+                            align:'v',size:40,html:<Icon path={mdiMinus} size={1}/>,align:'vh',onClick:()=>this.changePackQty(-1),
+                            style:{background:'#3B55A5',height:40,color:'#fff',borderRadius:6}
+                        }
+                    ]
                 },
-                {
-                    size:48,html:packQty,align:'vh'  
-                },
-                {
-                    size:40,html:<Icon path={mdiMinusBoxOutline} size={1}/>,align:'vh',onClick:()=>this.changePackQty(-1)
-                },
+                {size:12}
             ]
         }
     }
@@ -956,15 +968,11 @@ class Belex extends Component {
         return {
             column:[
                 {
-                    flex:1,show:!cart[product.code],html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>افزودن به سبد خرید</button>),
-                    align: "v",
-                },
-                {
                     flex:1,show:!!cart[product.code],html: (
                         <button 
-                            onClick={() => this.updateCart(true)} className={"button-2"}
-                            style={{color:'#d0000a',background:'none',fontWeight:'bold'}}
-                        >حذف از سبد خرید</button>
+                            className={"button-2"}
+                            style={{color:'#d0000a',background:'none',fontWeight:'bold',padding:0}}
+                        >موجود در سبد خرید</button>
                     ),
                     align: "v",
                 },

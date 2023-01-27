@@ -38,7 +38,7 @@ export default class BelexCard extends Component{
     name_layout(){
         let {product} = this.props;
         let {name} = product;
-        return {html:name,className:'fs-14 theme-dark-font-color bold'}
+        return {html:name,className:'fs-14 theme-dark-font-color bold',style:{textAlign:'right'}}
     }
     detail_layout(){
         let {product,count} = this.props;
@@ -60,7 +60,7 @@ export default class BelexCard extends Component{
         return {html:names.join(' - '),className:'fs-12 theme-medium-font-color',style:{textAlign:'right'}}
     }
     price_layout(){
-        let {product,variantId} = this.props;
+        let {product} = this.props;
         return {
             size:36,
             row:[

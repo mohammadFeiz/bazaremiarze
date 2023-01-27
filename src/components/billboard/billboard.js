@@ -35,7 +35,7 @@ export default class Billboard extends Component{
                 openPopup('category',{category:forooshe_vije})
             }}/>)
         }
-        if(renderIn === 'buy' && belex){
+        if(belex){
             items.push(<img src={belex.src} alt="" width='100%' onClick={()=>{
                 openPopup('category',{category:belex})
             }}/>)

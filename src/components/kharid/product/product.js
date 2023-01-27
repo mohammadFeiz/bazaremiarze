@@ -965,7 +965,7 @@ class Belex extends Component {
                     flex:1,show:!!cart[product.code],html: (
                         <button 
                             onClick={() => this.updateCart(true)} className={"button-2"}
-                            style={{background:'#d0000a'}}
+                            style={{color:'#d0000a',background:'none',fontWeight:'bold'}}
                         >حذف از سبد خرید</button>
                     ),
                     align: "v",

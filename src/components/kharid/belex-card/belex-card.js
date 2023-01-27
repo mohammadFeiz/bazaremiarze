@@ -71,7 +71,7 @@ export default class BelexCard extends Component{
                         {flex:1},
                         {html:functions.splitPrice(product.price)},
                         {size:3},
-                        {html:'تومان'}
+                        {html:'ریال'}
                     ]
                 },
                 

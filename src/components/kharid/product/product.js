@@ -1055,7 +1055,7 @@ class ForoosheVijeSlider extends Component{
                                     fillStyle={(index)=>{
                                         if(index === 0){return {height:4,background:'#2BBA8F'}}
                                     }}
-                                    pointStyle={{background:'#2BBA8F',width:16,height:16}}
+                                    pointStyle={{background:'#2BBA8F',width:16,height:16,zIndex:1000}}
                                     onChange={(points,drag)=>{
                                         this.setState({count:points[0]});
                                         if(!drag){onChange(points[0])}

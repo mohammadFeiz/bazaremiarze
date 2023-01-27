@@ -290,7 +290,8 @@ import React,{Component} from 'react';
           //PaymentTime,
           SettleType,
           DeliveryType,
-          PayDueDate
+          PayDueDate,
+          shipping
         }
       })
       if(orderNumber){

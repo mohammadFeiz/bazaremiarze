@@ -705,7 +705,7 @@ class Belex extends Component {
         for(let i = 0; i < variants.length; i++){
             let variant = variants[i];
             qtyInPacks[variant.id] = variant.variants.map((o,j)=>{   
-                return {optionValueId:o.Code,optionValueName:o.Name,count:j === 0?variant.qty:0,step:o.step}
+                return {optionValueId:o.Code,optionValueName:o.Name,count:j === 0?variant.qty:0,step:o.Step}
             })
         }
         return {packQty,qtyInPacks};

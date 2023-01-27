@@ -29,15 +29,15 @@ import React,{Component} from 'react';
           Cash30_FourMonth70:18,
           Cash50_FiveMonth50:19,
         },
-        PaymentTime:'ByOnlineOrder',
-        PaymentTime_options:[
-          {value:'ByOnlineOrder',text:'اینترنتی'},
-          {value:'ByPos',text:'دستگاه پوز'}//////////////////////
-        ],
-        PaymentTime_map:{
-            ByOnlineOrder:5,
-            ByPos:6/////////////////////////////
-        },
+        // PaymentTime:'ByOnlineOrder',
+        // PaymentTime_options:[
+        //   {value:'ByOnlineOrder',text:'اینترنتی'},
+        //   {value:'ByPos',text:'دستگاه پوز'}//////////////////////
+        // ],
+        // PaymentTime_map:{
+        //     ByOnlineOrder:5,
+        //     ByPos:6/////////////////////////////
+        // },
         DeliveryType:'BRXDistribution',
         DeliveryType_options:[
           {value:'BRXDistribution',text:'ماشین توزیع بروکس'},
@@ -52,7 +52,28 @@ import React,{Component} from 'react';
           HotDelivery:14,//پخش گرم
           BySalesMan:15,//پخش توسط ویزیتور
           NotSet:16,
-        }
+        },
+        SettleType:'ByDelivery',
+        SettleType_options:[
+          {value:'Cash',text:'نقد'},
+          {value:'Cheque',text:'چک'},
+          {value:'Pos',text:'دستگاه پوز'},
+          {value:'Online',text:'آنلاین'},
+          {value:'Card',text:'کارت به کارت'},
+          {value:'Pos_Cheque',text:'دستگاه پوز و چک'},
+          {value:'Online_Cheque',text:'آنلاین و چک'},
+          {value:'Card_Cheque',text:'کارت به کارت و چک'},
+        ],
+        SettleType_map:{
+          Cash:1,
+          Cheque:2,
+          Pos:8,
+          Online:16,
+          Card:32,
+          Pos_Cheque:10,
+          Online_Cheque:18,
+          Card_Cheque:34
+        },
       }
     }
     details_layout(){
@@ -165,12 +186,14 @@ import React,{Component} from 'react';
       
       let {
         PayDueDate_map,PayDueDate,
+        SettleType_map,SettleType,
         DeliveryType_map,DeliveryType,
-        PaymentTime_map,PaymentTime,
+        //PaymentTime_map,PaymentTime,
       } = this.state;
       PayDueDate = PayDueDate_map[PayDueDate];
       DeliveryType = DeliveryType_map[DeliveryType];
-      PaymentTime = PaymentTime_map[PaymentTime];
+      SettleType = SettleType_map[SettleType]
+      //PaymentTime = PaymentTime_map[PaymentTime];
       
       return {
         className:'p-h-12 bg-fff theme-box-shadow',
@@ -191,21 +214,39 @@ import React,{Component} from 'react';
               <button 
                 className="button-2" 
                 onClick={()=>{
-                  this.onSubmit({address,PaymentTime,DeliveryType,PayDueDate})
+                  this.onSubmit({
+                    address,
+                    //PaymentTime,
+                    SettleType,
+                    DeliveryType,
+                    PayDueDate
+                  })
                 }}
-              >{PaymentTime === 'ByOnlineOrder'?'پرداخت':'ثبت'}</button>
+              >{SettleType === 'Online' || SettleType === 'Online_Cheque'?'پرداخت':'ثبت'}</button>
             )
           },
           {size:12}
         ]
       }
     }
-    async onSubmit({address,PaymentTime,DeliveryType,PayDueDate}){
+    async onSubmit({
+        address,
+        //PaymentTime,
+        SettleType,
+        DeliveryType,
+        PayDueDate
+      }){
       let {shipping,kharidApis,cart,rsa_actions,changeCart} = this.context;
       let {cartItems} = shipping;
       let orderNumber = await kharidApis({
-        api:PaymentTime === 'ByOnlineOrder'?"pardakhte_belex":'sabte_belex',
-        parameter:{address,PaymentTime,DeliveryType,PayDueDate}
+        api:SettleType === 'Online' || SettleType === 'Online_Cheque'?"pardakhte_belex":'sabte_belex',
+        parameter:{
+          address,
+          //PaymentTime,
+          SettleType,
+          DeliveryType,
+          PayDueDate
+        }
       })
       if(orderNumber){
         let variantIds = cartItems.map((o)=>o.variantId)
@@ -240,10 +281,12 @@ import React,{Component} from 'react';
                   {size:12},
                   this.options_layout('DeliveryType','نحوه ارسال'),
                   {size:12},
-                  this.options_layout('PaymentTime','زمان پرداخت',),
-                  {size:12},
                   this.options_layout('PayDueDate','مهلت تسویه'),
                   {size:12},
+                  this.options_layout('SettleType','نحوه پرداخت'),
+                  {size:12},
+                  // this.options_layout('PaymentTime','زمان پرداخت',),
+                  // {size:12},
                   this.products_layout(),
                   {size:12},
                 ],

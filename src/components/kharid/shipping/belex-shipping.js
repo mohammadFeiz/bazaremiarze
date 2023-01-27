@@ -20,7 +20,7 @@ import React,{Component} from 'react';
           {value:'ByDelivery',text:'نقد (12% تخفیف بیشتر)'},
           {value:'Cash20_ThreeMonth80',text:'20% نقد و 80% چک سه ماهه (4.8% تخفیف بیشتر)'},
           {value:'Cash30_FourMonth70',text:'30% نقد و 70% چک چهار ماهه (3.6% تخفیف بیشتر)'},
-          {value:'Cash50_FiveMonth50',text:'50% نقد و 50% چک پنج ماهه (4.5% تخفیف بیشتر)'},
+          {value:'Cash50_FiveMonth50',text:'50% نقد و 50% چک پنج ماهه (4.5% تخفیف بیشتر)',show:false},
           
         ],
         PayDueDate_map:{
@@ -95,6 +95,8 @@ import React,{Component} from 'react';
     }
     async componentDidMount(){
       let {userInfo,shipping} = this.context;
+      debugger;
+      debugger;
       this.setState({
         campaign:shipping.title,
         //name:userInfo.cardName,

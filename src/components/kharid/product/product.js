@@ -5,7 +5,7 @@ import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import appContext from './../../../app-context';
 import Slider from './../../../npm/aio-slider/aio-slider';
 import getSvg from './../../../utils/getSvg';
-import { mdiChevronDown, mdiChevronLeft,mdiCheckCircle, mdiAlertCircle } from '@mdi/js';
+import { mdiChevronDown, mdiChevronLeft,mdiCheckCircle, mdiAlertCircle, mdiPlusBoxOutline, mdiMinusBoxOutline, mdiMinus, mdiPlus } from '@mdi/js';
 import {Icon} from '@mdi/react';
 import functions from './../../../functions';
 import cartonSrc from './../../../images/belex-box.jpg';
@@ -738,48 +738,58 @@ class Belex extends Component {
             ]
         };
     }
-    
+    changePackQty(v){
+        let {belex_count} = this.state;
+        let {packQty,qtyInPacks} = belex_count;
+        let {product} = this.props;
+        packQty = packQty || 0;
+        packQty += v;
+        if(packQty < 0){packQty = 0}
+        if(packQty > 40){packQty = 40}
+        belex_count.packQty = packQty;
+        for(let i = 0; i < product.variants.length; i++){
+            let variant = product.variants[i];
+            let qtyInPack = qtyInPacks[variant.id];
+            let used = 0;
+            for(let j = 0; j < qtyInPack.length; j++){
+                used += qtyInPack[j].count;
+            }
+            let remaining = (variant.qty * (belex_count.packQty || 0)) - used;
+            if(remaining){
+                qtyInPack[0].count += remaining; 
+            } 
+        }
+        this.changeCount(belex_count)
+    }
     packQty_layout(){
         let {belex_count} = this.state;
         if(!belex_count){return false}
         let {packQty,qtyInPacks} = belex_count;
         return {
-            row:[
-                {html:`تعداد بسته را مشخص کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+            align:'v',
+            style:{borderRadius:6,background:'#DCE1FF',padding:'0 12px'},
+            column:[
+                {size:12},
+                {align:'v',html:`تعداد بسته را مشخص کنید :`,align:'v',className:'theme-dark-font-color fs-14 bold'},
                 {size:12},
                 {
-                    html:(
-                        <input 
-                            type ='number' 
-                            value={packQty} 
-                            style={{
-                                border:'1px solid #ddd',
-                                borderRadius: 4,
-                                height:24,
-                                width:72,
-                                outline:'none'
-                            }}
-                            onChange={(e)=>{
-                            let {product} = this.props;
-                            let value = +e.target.value;
-                            if(isNaN(value)){value = ''}
-                            belex_count.packQty = value;
-                            for(let i = 0; i < product.variants.length; i++){
-                                let variant = product.variants[i];
-                                let qtyInPack = qtyInPacks[variant.id];
-                                let used = 0;
-                                for(let j = 0; j < qtyInPack.length; j++){
-                                    used += qtyInPack[j].count;
-                                }
-                                let remaining = (variant.qty * (belex_count.packQty || 0)) - used;
-                                if(remaining){
-                                    qtyInPack[0].count += remaining; 
-                                } 
-                            }
-                            this.changeCount(belex_count)
-                        }}/>
-                    )
-                }
+                    row:[
+                        {
+                            size:40,html:<Icon path={mdiPlus} size={1}/>,align:'vh',onClick:()=>this.changePackQty(1),
+                            style:{background:'#3B55A5',height:40,color:'#fff',borderRadius:6}
+                        },
+                        {size:6},
+                        {
+                            size:48,html:packQty,align:'vh'  
+                        },
+                        {size:6},
+                        {
+                            align:'v',size:40,html:<Icon path={mdiMinus} size={1}/>,align:'vh',onClick:()=>this.changePackQty(-1),
+                            style:{background:'#3B55A5',height:40,color:'#fff',borderRadius:6}
+                        }
+                    ]
+                },
+                {size:12}
             ]
         }
     }
@@ -958,15 +968,11 @@ class Belex extends Component {
         return {
             column:[
                 {
-                    flex:1,show:!cart[product.code],html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>افزودن به سبد خرید</button>),
-                    align: "v",
-                },
-                {
                     flex:1,show:!!cart[product.code],html: (
                         <button 
-                            onClick={() => this.updateCart(true)} className={"button-2"}
-                            style={{color:'#d0000a',background:'none',fontWeight:'bold'}}
-                        >حذف از سبد خرید</button>
+                            className={"button-2"}
+                            style={{color:'#d0000a',background:'none',fontWeight:'bold',padding:0}}
+                        >موجود در سبد خرید</button>
                     ),
                     align: "v",
                 },
@@ -1057,9 +1063,13 @@ class ForoosheVijeSlider extends Component{
                                             step={step}
                                             points={[count]}
                                             lineStyle={{height:4}}
-                                            showValue={false}
+                                            showValue={true}
                                             fillStyle={(index)=>{
                                                 if(index === 0){return {height:4,background:'#2BBA8F'}}
+                                            }}
+                                            valueStyle={{
+                                                background:'#2BBA8F',height:14,top:-24,
+                                                display:'flex',alignItems:'center',fontSize:12
                                             }}
                                             pointStyle={{background:'#2BBA8F',width:16,height:16,zIndex:1000}}
                                             onChange={(points,drag)=>{
@@ -1073,9 +1083,9 @@ class ForoosheVijeSlider extends Component{
                                 {
                                     html:<div style={{padding:'0 3px',color:'#666',width:24,borderRadius:6,fontSize:10}}>{percent + '%'}</div>,align:'vh'
                                 },
-                                {
-                                    html:<div style={{background:'#2BBA8F',padding:'0 3px',color:'#fff',width:36,borderRadius:6}}>{count}</div>,align:'vh'
-                                }
+                                // {
+                                //     html:<div style={{background:'#2BBA8F',padding:'0 3px',color:'#fff',width:36,borderRadius:6}}>{count}</div>,align:'vh'
+                                // }
                             ]
                         }
                     ]

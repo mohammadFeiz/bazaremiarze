@@ -739,8 +739,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       let body = {
         "marketdoc":{
           "DocType":17,
-          // "CardCode":userInfo.cardCode,
-          "CardCode":"c50000",
+          "CardCode":userInfo.cardCode,
           "CardGroupCode": userInfo.groupCode,
           "MarketingLines":arr.map((o)=>{
             return { ItemCode: o.optionValueId, ItemQty: o.count, Price: o.unitPrice }

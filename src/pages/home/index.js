@@ -64,15 +64,15 @@ export default class Home extends Component {
         return {
             className:'of-visible theme-gap-h',
             row: [
-                {
-                    className:'of-visible',flex:1,
-                    html:(
-                        <Card
-                            type='card1' title='کیف پول' value={functions.splitPrice(Math.max(userInfo.ballance * 10,0))} unit='ریال'
-                            icon={getSvg(29,{width:30,height:30})} onClick={()=>openPopup('wallet')}
-                        />
-                    )
-                },
+                // {
+                //     className:'of-visible',flex:1,
+                //     html:(
+                //         <Card
+                //             type='card1' title='کیف پول' value={functions.splitPrice(Math.max(userInfo.ballance * 10,0))} unit='ریال'
+                //             icon={getSvg(29,{width:30,height:30})} onClick={()=>openPopup('wallet')}
+                //         />
+                //     )
+                // },
                 {size:12},
                 {
                     className:'of-visible',flex:1,

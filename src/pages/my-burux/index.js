@@ -113,16 +113,16 @@ export default class MyBurux extends Component{
                 {
                     className:'m-h-12 of-visible',gap:12,
                     row:[
-                        {
-                            flex:1,className:'of-visible', 
-                            html:(
-                                <Card
-                                    type='card3' footer='جزییات کیف پول'
-                                    rows={[[['کیف پول',functions.splitPrice(Math.max(userInfo.ballance * 10,0)) + ' ریال']]]}
-                                    onClick={()=>this.setState({showWallet:true})}
-                                />
-                            )
-                        },
+                        // {
+                        //     flex:1,className:'of-visible', 
+                        //     html:(
+                        //         <Card
+                        //             type='card3' footer='جزییات کیف پول'
+                        //             rows={[[['کیف پول',functions.splitPrice(Math.max(userInfo.ballance * 10,0)) + ' ریال']]]}
+                        //             onClick={()=>this.setState({showWallet:true})}
+                        //         />
+                        //     )
+                        // },
                         {
                             flex:1,className:'of-visible',show:showGaranti !== false,          
                             html:()=>(

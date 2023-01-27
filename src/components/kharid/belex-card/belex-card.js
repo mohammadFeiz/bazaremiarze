@@ -17,7 +17,7 @@ export default class BelexCard extends Component{
     label_layout(){
         return {
             row:[
-                {html:'فروش ویژه بسته',style:{color:'#FDB913'},className:'fs-12 bold',align:'v'},
+                {html:'همایش بلکس شیراز',style:{color:'#FDB913'},className:'fs-12 bold',align:'v'},
                 {size:3},
                 {flex:1,html:(<div style={{height:2,width:'1100%',background:'#FDB913'}}></div>),align:'v'}
             ]
@@ -40,76 +40,50 @@ export default class BelexCard extends Component{
         return {html:name,className:'fs-14 theme-dark-font-color bold'}
     }
     detail_layout(){
-        let {product,variantId} = this.props;
+        let {product,count} = this.props;
         let {variants} = product;
-        if(variantId){
-            let variant = variants.find(({id})=>variantId === id)
-            return {
-                gap:3,
-                row:[
-                    {html:variant.name,className:'fs-12 theme-dark-font-color bold'},
-                    {html:variant.totalQty,className:'fs-12 theme-dark-font-color bold'},
-                    {html:'عدد',className:'fs-12 theme-medium-font-color'}
-                    
-                ]
-            } 
+        if(count){
+            let str = '';
+            for(let prop in count.qtyInPacks){
+                str += ` ${prop}`;
+                for(let i = 0; i < count.qtyInPacks[prop].length; i++){
+                    let o = count.qtyInPacks[prop][i];
+                    str += ` ${o.count} عدد ${o.optionValueName}`
+                }
+                str+=' *** '
+            }
+            return {html:str,className:'fs-12 theme-medium-font-color',style:{textAlign:'right'}}
+             
         }
         let names = variants.map(({name})=>name);
         return {html:names.join(' - '),className:'fs-12 theme-medium-font-color',style:{textAlign:'right'}}
     }
     price_layout(){
         let {product,variantId} = this.props;
-        let {variants} = product;
-        let variant;
-        if(variantId){
-            variant = variants.find(({id})=>variantId === id);
-        }
-        let min = Infinity;
-        let max = -Infinity;
-        for(let i = 0; i < variants.length; i++){
-            let {finalPrice} = variants[i];
-            if(finalPrice < min){min = finalPrice}
-            if(finalPrice > max){max = finalPrice}
-        }
         return {
             size:36,
             row:[
                 {
-                    show:!variantId,flex:1,className:'fs-14 bold theme-dark-font-color',
+                    flex:1,className:'fs-14 bold theme-dark-font-color',
                     align:'v',
                     row:[
                         {flex:1},
-                        {html:functions.splitPrice(min)},
-                        {size:3},
-                        {html:'تا',className:'fs-12 theme-medium-font-color'},
-                        {size:3},
-                        {html:functions.splitPrice(max)},
+                        {html:functions.splitPrice(product.price)},
                         {size:3},
                         {html:'تومان'}
                     ]
                 },
-                {
-                    show:!!variantId,flex:1,className:'fs-14 bold theme-dark-font-color',
-                    align:'v',
-                    row:[
-                        {flex:1},
-                        {html:()=>functions.splitPrice(variant.finalPrice)},
-                        {size:3},
-                        {html:'تومان'}
-                    ]
-                }
+                
             ]
         }
     }
-    count_layout(){
+    remove(){
         let {product,count,variantId} = this.props;
         if(!variantId){variantId = product.variants[0].id}
         if(!count){return false}
         let {changeCart} = this.context;
-        return {align:'vh',html:'حذف',onClick:(e)=>{
-            e.stopPropagation();
-            changeCart(0,variantId,product)
-        }}
+        changeCart(0,variantId,product)
+        
     }
     componentDidMount(){
         let {index = 0} = this.props;
@@ -134,7 +108,6 @@ export default class BelexCard extends Component{
         let {removeMode} = this.state;
         if(!removeMode){return false}
         let {changeCart} = this.context;
-        let {product,variantId} = this.props;
         
         return {
             style:{zIndex:10,position:'absolute',width:'100%',height:'100%',left:0,top:0,background:'rgba(255,255,255,0.9)'},
@@ -148,7 +121,10 @@ export default class BelexCard extends Component{
                                     {flex:1,onClick:()=>this.cancelRemoveMode()},
                                     {
                                         html:<Icon path={mdiDelete} size={1} style={{padding:16,background:'#A4262C',color:'#fff',borderRadius:'100%'}}/>,align:'vh',
-                                        onClick:()=>changeCart(0,variantId,product)
+                                        onClick:()=>{
+                                            let {product} = this.props;
+                                            changeCart(0,product.code,product)
+                                        }
                                     },
                                     {flex:1,onClick:()=>this.cancelRemoveMode()}
                                 ]
@@ -162,18 +138,37 @@ export default class BelexCard extends Component{
     }
     mounseup(){
         clearInterval(this.interval);
+        $(window).unbind('mouseup',this.mounseup)
+        $(window).unbind('touchend',this.mounseup)
     }
     render(){
         let {mounted,removeMode} = this.state;
+        let {count} = this.props;
+        let touch = 'ontouchstart' in document.documentElement;
+        let attrs = {};
+        if(count){
+            if(touch){
+                attrs.onTouchStart = ()=>{
+                    this.timer();
+                    $(window).bind('touchend',$.proxy(this.mounseup,this))
+                }
+            }
+            else {
+                attrs.onMouseDown = ()=>{
+                    this.timer();
+                    $(window).bind('mouseup',$.proxy(this.mounseup,this))
+                }
+            }
+        }
         return (
             <RVD
                 layout={{
                     className:'theme-box-shadow theme-card-bg theme-border-radius theme-gap-h p-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
                     attrs:{
-                        onMouseDown:()=>{
+                        onMouseDown:count?()=>{
                             this.timer();
                             $(window).bind('mouseup',$.proxy(this.mounseup,this))
-                        }
+                        }:undefined
                     },
                     onClick:()=>{if(!removeMode){this.onClick()}},
                     column:[
@@ -185,7 +180,6 @@ export default class BelexCard extends Component{
                                 {
                                     size:114,column:[
                                         this.image_layout(),
-                                        this.count_layout(),
                                     ]
                                 },
                                 {size:12},

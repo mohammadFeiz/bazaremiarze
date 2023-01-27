@@ -56,10 +56,9 @@ export default class Cart extends Component{
         }
         else if(tabId === 'belex'){
           let finalPrice = 0;
-          tab.cards = tab.cartItems.map(({product,belex_count,variantId})=>{
-            let variant = product.variants.find(({id})=>id === variantId);
-            finalPrice += belex_count.packQty * variant.finalPrice;
-            return <BelexCard product={product} variantId={variantId} count={belex_count}/>
+          tab.cards = tab.cartItems.map(({product,belex_count})=>{
+            finalPrice += belex_count.packQty * product.price;
+            return <BelexCard product={product} count={belex_count}/>
           })
           tab.finalPrice = finalPrice;
         }

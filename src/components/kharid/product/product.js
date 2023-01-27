@@ -8,6 +8,7 @@ import getSvg from './../../../utils/getSvg';
 import { mdiChevronDown, mdiChevronLeft,mdiCheckCircle, mdiAlertCircle } from '@mdi/js';
 import {Icon} from '@mdi/react';
 import functions from './../../../functions';
+import cartonSrc from './../../../images/belex-box.jpg';
 export default class Product extends Component{
     render(){
         let { product } = this.props;
@@ -690,35 +691,31 @@ class Belex extends Component {
     componentDidMount(){
         this.mounted = true;
         let {cart} = this.context;
-        let { variantId } = this.props;
-        let belex_count = false;
-        if(variantId){belex_count = cart[variantId].belex_count}
-        this.setState({variantId,belex_count})
-    }
-    changeVariant(variantId){
-        let {cart} = this.context;
+        let { product } = this.props;
         let belex_count;
-        if(cart[variantId]){belex_count = cart[variantId].belex_count}
-        else{
-            let {product} = this.props;
-            let {optionValues} = product;
-            let variant = this.getVariant(variantId);
-            let {totalQty} = variant;
-            let qtyInPack = optionValues.map(({name,id,step},i)=>{
-                return {optionValueId:id,optionValueName:name,count:i === 0?totalQty:0,step}
-            })
-            belex_count = {packQty:0,qtyInPack}
-        }
-        this.setState({belex_count,variantId})
+        if(cart[product.code]){belex_count = cart[product.code].belex_count}
+        else {belex_count = this.getQtyInPacks()}
+        this.setState({belex_count})
     }
-    getVariant(variantId = this.state.variantId){
-        if(!variantId){return false}
+    getQtyInPacks(){
         let {product} = this.props;
         let {variants} = product;
-        return variants.find(({id})=>variantId === id);
+        let qtyInPacks = {};
+        let packQty = 0
+        for(let i = 0; i < variants.length; i++){
+            let variant = variants[i];
+            qtyInPacks[variant.id] = variant.variants.map((o,j)=>{   
+                return {optionValueId:o.Code,optionValueName:o.Name,count:j === 0?variant.qty:0,step:o.step}
+            })
+        }
+        return {packQty,qtyInPacks};
     }
     changeCount(belex_count) {
-        this.setState({belex_count})
+        this.setState({belex_count});
+        clearTimeout(this.cartTimeout);
+        this.cartTimeout = setTimeout(()=>{
+            this.updateCart()
+        },1000)
     }
     image_layout(name, code, src) {
         let { product } = this.props, { srcIndex } = this.state;
@@ -741,50 +738,44 @@ class Belex extends Component {
             ]
         };
     }
-    packs_layout(){
-        let {product} = this.props;
-        let {variants} = product;
-        let {variantId} = this.state;
-        let variant;
-        if(variantId){
-            variant = this.getVariant()
-        }
-        
-        return {
-            column:[
-                {html:'بسته خود را مشخص کنید',align:'v',className:'theme-dark-font-color fs-14 bold'},
-                {html:'بسته های بزرگ تر تخقیف های ارزنده تری دارند.',align:'v',className:'theme-medium-font-color fs-12'},
-                {size:12},
-                {className:'ofx-auto',row:variants.map((o,i)=>this.pack_layout(o,i))},
-                {size:12},
-                {show:!!variant,html:()=>`قیمت واحد محصول : ${functions.splitPrice(variant.unitPrice)} ریال`,className:'theme-medium-font-color fs-12'},
-                {show:!!variant,html:()=>`تعداد محصول در بسته : ${variant.totalQty} عدد`,className:'theme-medium-font-color fs-12'},
-                {show:!!variant,size:12},
-                {
-                    show:!!variant,
-                    style:{color:'#107C10'},
-                    row:[
-                        {html:<Icon path={mdiCheckCircle} size={0.7}/>,align:'vh'},
-                        {size:6},
-                        {html:'موجودی کافی',className:'fs-14 bold',align:'v'}
-                    ]
-                }
-            ]
-        }
-    }
+    
     packQty_layout(){
-        let {variantId,belex_count} = this.state;
-        if(!variantId || !belex_count){return false}
-        let {packQty} = belex_count;
+        let {belex_count} = this.state;
+        if(!belex_count){return false}
+        let {packQty,qtyInPacks} = belex_count;
         return {
-            column:[
-                {html:`2: تعداد بسته را مشخص کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+            row:[
+                {html:`تعداد بسته را مشخص کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+                {size:12},
                 {
                     html:(
-                        <input type ='number' value={packQty} onChange={(e)=>{
+                        <input 
+                            type ='number' 
+                            value={packQty} 
+                            style={{
+                                border:'1px solid #ddd',
+                                borderRadius: 4,
+                                height:24,
+                                width:72,
+                                outline:'none'
+                            }}
+                            onChange={(e)=>{
+                            let {product} = this.props;
                             let value = +e.target.value;
                             if(isNaN(value)){value = ''}
                             belex_count.packQty = value;
+                            for(let i = 0; i < product.variants.length; i++){
+                                let variant = product.variants[i];
+                                let qtyInPack = qtyInPacks[variant.id];
+                                let used = 0;
+                                for(let j = 0; j < qtyInPack.length; j++){
+                                    used += qtyInPack[j].count;
+                                }
+                                let remaining = (variant.qty * (belex_count.packQty || 0)) - used;
+                                if(remaining){
+                                    qtyInPack[0].count += remaining; 
+                                } 
+                            }
                             this.changeCount(belex_count)
                         }}/>
                     )
@@ -792,93 +783,95 @@ class Belex extends Component {
             ]
         }
     }
-    getSelectedCount(){
+    packDetails_layout(){
+        let {product} = this.props;
+        return {
+            className:'theme-card-bg m-h-12 p-12 theme-border-radius theme-box-shadow',
+            column:[
+                {html:`اقلام داخل هر یک بسته`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+                {size:12},
+                {
+                    column:product.variants.map((o)=>{
+                        return {
+                            row:[
+                                {align:'vh',html:<img src={cartonSrc} alt='' width='30'/>},
+                                {size:6},
+                                {
+                                    align:'v',html:`تعداد ${o.qty} عدد ${o.name}`,className:'theme-medium-font-color fs-12'
+                                }
+                            ]
+                        }
+                    })
+                }
+            ]
+        }
+    }
+    getSelectedCount(id){
         let {belex_count} = this.state;
-        let {qtyInPack} = belex_count;
+        let {qtyInPacks} = belex_count;
+        let qtyInPack = qtyInPacks[id];
         let count = 0;
         for(let i = 0; i < qtyInPack.length; i++){
             count += qtyInPack[i].count || 0;
         }
         return count;
     }
-    isFull(){
-        let v = this.getVariant();
-        if(!v){return false}
+    isFull(id,qty){
         let {belex_count} = this.state;
         if(!belex_count){return false}
-        let {packQty} = belex_count;
-        let {totalQty} = v;
-        totalQty *= packQty;
-        let selectedCount = this.getSelectedCount();
-        return selectedCount === totalQty;
+        let selectedCount = this.getSelectedCount(id);
+        return selectedCount === qty;
         
     }
     qtyInPacks_layout(){
-        let {variantId,belex_count} = this.state;
-        if(!variantId || !belex_count){return false}
-        let {qtyInPack,packQty} = belex_count;
+        let {belex_count} = this.state;
+        if(!belex_count){return false}
+        let {qtyInPacks,packQty} = belex_count;
         if(!packQty){return false}
         let {product} = this.props;
-        let v = this.getVariant();
-        let {totalQty} = v;
-        totalQty *= packQty;
-        let selectedCount = this.getSelectedCount();
-        let isFull = this.isFull();
         return {
-            column:[
-                {html:`3: رنگ کالاها در ${packQty + ' ' + v.name} را انتخاب کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
-                {
-                    gap:6,column:qtyInPack.map((o,i)=>{
-                        let used = 0;
-                        for(let j = 0; j < qtyInPack.length; j++){
-                            used += qtyInPack[j].count;
-                        }
-                        let remaining = totalQty - used;
-                        return {
-                            size:48,
-                            html:(
-                                <ForoosheVijeSlider 
-                                    key={variantId} {...o} totalQty={totalQty} max={o.count + remaining} 
-                                    onChange={(value)=>{
-                                        o.count = value;
-                                        this.changeCount(belex_count)
-                                    }}
-                                />
-                            )
-                        }
-                    })
-                },
-                {size:12}, 
-                {
-                    style:{color:isFull?'#107C10':'#d0000a'},
-                    row:[
-                        {html:<Icon path={isFull?mdiCheckCircle:mdiAlertCircle} size={0.7}/>},
-                        {size:6},
-                        {html:`${selectedCount + ' عدد'} از ${totalQty + ' عدد'} کالا تعیین رنگ شده`,align:'v',className:'fs-14 bold'}
-                    ]
-                },
-            ]
-        }
-    }
-    pack_layout({id,name,finalPrice},i){
-        let {variantId} = this.state;
-        let {product} = this.props;
-        let {variants} = product;
-        let active = id === variantId;
-        let br = {borderTopLeftRadius:0,borderTopRightRadius:0,borderBottomLeftRadius:0,borderBottomRightRadius:0};
-        if(i === 0){br.borderTopRightRadius = 36; br.borderBottomRightRadius = 36}
-        if(i === variants.length - 1){br.borderTopLeftRadius = 36; br.borderBottomLeftRadius = 36}
-        return {
-            onClick:()=>this.changeVariant(id),
-            size:144,style:{border:'1px solid',padding:'6px 12px',...br,background:active?'#DCE1FF':'#fff'},
-            column:[
-                {html:name,className:'theme-dark-font-color fs-14 bold',style:{textAlign:'right'}},
-                {
-                    row:[
-                        {html:`${functions.splitPrice(finalPrice)} ریال`,className:'theme-dark-font-color fs-12 bold',align:'v'}
+            column:product.variants.map((variant)=>{
+                let {qty,name,id} = variant;
+                qty *= packQty;
+                let qtyInPack = qtyInPacks[id]
+                let selectedCount = this.getSelectedCount(id);
+                let isFull = this.isFull(id,qty);
+                return {
+                    column:[
+                        {html:`رنگ کالاها در ${packQty + ' بسته ' + name} را انتخاب کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+                        {
+                            gap:6,column:qtyInPack.map((o,i)=>{
+                                let used = 0;
+                                for(let j = 0; j < qtyInPack.length; j++){
+                                    used += qtyInPack[j].count;
+                                }
+                                let remaining = qty - used;
+                                return {
+                                    size:48,
+                                    html:(
+                                        <ForoosheVijeSlider 
+                                            key={product.code} {...o} totalQty={qty} max={o.count + remaining} 
+                                            onChange={(value)=>{
+                                                o.count = value;
+                                                this.changeCount(belex_count)
+                                            }}
+                                        />
+                                    )
+                                }
+                            })
+                        },
+                        {size:12}, 
+                        {
+                            style:{color:isFull?'#107C10':'#d0000a'},
+                            row:[
+                                {html:<Icon path={isFull?mdiCheckCircle:mdiAlertCircle} size={0.7}/>},
+                                {size:6},
+                                {html:`${selectedCount + ' عدد'} از ${qty + ' عدد'} کالا تعیین رنگ شده`,align:'v',className:'fs-14 bold'}
+                            ]
+                        },
                     ]
                 }
-            ]
+            })
         }
     }
     showCart_layout(){
@@ -896,20 +889,19 @@ class Belex extends Component {
         }
     }
     price_layout() {
-        let { variantId,belex_count } = this.state;
-        if(!variantId || !belex_count){return false}
-        let variant = this.getVariant(variantId);
+        let { belex_count } = this.state;
+        if(!belex_count){return false}
         //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده
         let {packQty} = belex_count;
         packQty = packQty || 1; 
-        let {finalPrice} = variant;
+        let {product} = this.props;
         return {
             column: [
                 { flex: 1 },
                 {
                     row: [
                         { flex: 1 },
-                        { html: functions.splitPrice(finalPrice * packQty), className: "theme-dark-font-color bold" },
+                        { html: functions.splitPrice(product.price * packQty), className: "theme-dark-font-color bold" },
                         { size: 6 },
                         { html: "ریال", className: "theme-dark-font-color bold" },
                     ],
@@ -918,27 +910,25 @@ class Belex extends Component {
             ],
         };
     }
-    async updateCart(){
+    async updateCart(remove){
         let {belex_count} = this.state;
         let {packQty} = belex_count;
         let {product} = this.props;
-        let {variantId} = this.state;
         let {cart,kharidApis,SetState} = this.context;
         let newCart;
-        if(packQty === 0){
+        if(packQty === 0 || remove){
             let res = {};
             for(let prop in cart){
-                if(prop.toString() !== variantId.toString()){res[prop] = cart[prop]}
+                if(prop.toString() !== product.code.toString()){res[prop] = cart[prop]}
             }
             newCart = res;
         }
         else{
             newCart = {...cart}
-            if(newCart[variantId] === undefined){
-                let variant = this.getVariant();
-                newCart[variantId] = {belex_count,product,variantId:variant.id}
+            if(newCart[product.code] === undefined){
+                newCart[product.code] = {belex_count,product}
             }
-            else{newCart[variantId].belex_count = belex_count;}
+            else{newCart[product.code].belex_count = belex_count;}
         }
         
         await kharidApis({api:'setCart',parameter:newCart,loading:false})
@@ -946,18 +936,31 @@ class Belex extends Component {
         
     }
     cart_layout() {
-        let {variantId} = this.state;
-        if(!variantId){return false}
         let {cart} = this.context;
-        let isFull = this.isFull()
+        let {product} = this.props;
+        let {belex_count} = this.state;
+        if(!belex_count){return false}
+        let isFull = true;
+        for(let i = 0; i < product.variants.length; i++){
+            let variant = product.variants[i];
+            if(!this.isFull(variant.id,variant.qty * belex_count.packQty)){
+                isFull = false;
+                break;
+            }
+        }
         return {
             column:[
                 {
-                    flex:1,show:!cart[variantId],html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>افزودن به سبد خرید</button>),
+                    flex:1,show:!cart[product.code],html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>افزودن به سبد خرید</button>),
                     align: "v",
                 },
                 {
-                    flex:1,show:!!cart[variantId],html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>ویرایش سبد خرید</button>),
+                    flex:1,show:!!cart[product.code],html: (
+                        <button 
+                            onClick={() => this.updateCart(true)} className={"button-2"}
+                            style={{background:'#d0000a'}}
+                        >حذف از سبد خرید</button>
+                    ),
                     align: "v",
                 },
                 
@@ -979,11 +982,11 @@ class Belex extends Component {
                             flex: 1,className: "ofy-auto",gap: 12,
                             column: [
                                 this.image_layout(name, code, src),
+                                this.packDetails_layout(),
                                 {
                                     className: 'theme-card-bg theme-box-shadow theme-border-radius m-h-12 p-12',
                                     column:[
-                                        this.packs_layout(),
-                                        {size:36,align:'v',html:<div style={{width:'100%',height:1,background:'#ddd'}}></div>},
+                                        //{size:36,align:'v',html:<div style={{width:'100%',height:1,background:'#ddd'}}></div>},
                                         this.packQty_layout(),
                                         {size:36,align:'v',html:<div style={{width:'100%',height:1,background:'#ddd'}}></div>},
                                         this.qtyInPacks_layout()
@@ -1009,16 +1012,24 @@ class Belex extends Component {
 }
 
 class ForoosheVijeSlider extends Component{
-    state = {count:this.props.count}
+    state = {count:this.props.count,prevCount:this.props.count}
     render(){
-        let {count} = this.state;
+        let {count,prevCount} = this.state;
+        if(this.props.count !== prevCount){
+            setTimeout(()=>{
+                this.setState({
+                    count:this.props.count,
+                    prevCount:this.props.count
+                })
+            },0)
+        }
         let {optionValueName,totalQty,onChange = ()=>{},max,step} = this.props;
         let percent = (count / totalQty * 100).toFixed(0); 
         return (
             <RVD
                 layout={{
                     row:[
-                        {size:72,html:optionValueName,align:'v',className:'theme-medium-font-color fs-12 bold',align:'v'},
+                        {size:72,html:optionValueName,align:'v',className:'theme-medium-font-color fs-12 bold'},
                         {
                             flex:1,
                             html:(

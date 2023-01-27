@@ -146,7 +146,6 @@ export default class Main extends Component {
     this.setState({opacity})
   }
   changeCart(count,variantId,product){
-    debugger;
     let {cart,kharidApis} = this.state;
     let newCart;
     if(typeof count === 'object'){

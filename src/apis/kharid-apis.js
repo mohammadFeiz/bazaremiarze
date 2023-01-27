@@ -990,7 +990,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       }
       console.log(items)
 
-      let tarhha=[];
+      let products=[];
       for (const item of items) {
 
         if(item.length){
@@ -1006,13 +1006,16 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             //   })
             // };
 
-            tarhha.push({
+            products.push({
               type:'belex',
               name:subItem.itemname,
               code:subItem.itemcode,
               price:subItem.price,
               variants:subItem.itemcodes.map(x=>{
-                return {mainsku:x.mainsku,name:x.Name,unitPrice:x.Price,qty:x.Qty,step:x.Step,variants:x.Variants}
+                return {
+                  mainsku:x.mainsku,name:x.Name,unitPrice:x.Price,qty:x.Qty,step:x.Step,variants:x.Variants,
+                  id:x.Name
+                }
               }),
               src:subItem.imageurl
             });   
@@ -1064,16 +1067,16 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       //     t.details.push(tt);
       //   }
 
-      //   tarhha.push(t);
+      //   products.push(t);
       // }
       
-      console.log(tarhha)
+      console.log(products)
       return {
         type:'belex',
         name:'بلکس 23 شیراز',
         src:foroosheVijeSrc,
         icon:foroosheVijeIcon,
-        tarhha
+        products
       }
     },
     async forooshe_vije(){

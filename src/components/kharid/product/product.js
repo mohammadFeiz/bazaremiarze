@@ -842,6 +842,7 @@ class Belex extends Component {
                             html:`رنگ کالاها در ${packQty + ' بسته ' + name} را انتخاب کنید`,
                             align:'v',
                             className:'theme-dark-font-color fs-14 bold'},
+                            {size:12},
                         {
                             gap:6,column:qtyInPack.map((o,i)=>{
                                 let used = 0;
@@ -850,7 +851,7 @@ class Belex extends Component {
                                 }
                                 let remaining = qty - used;
                                 return {
-                                    size:48,
+                                    size:72,
                                     html:(
                                         <ForoosheVijeSlider 
                                             key={product.code} {...o} totalQty={qty} max={o.count + remaining} 
@@ -1031,44 +1032,51 @@ class ForoosheVijeSlider extends Component{
         }
         let {optionValueName,totalQty,onChange = ()=>{},max,step} = this.props;
         let percent = (count / totalQty * 100).toFixed(0); 
+        
+                        
         return (
             <RVD
                 layout={{
-                    row:[
-                        {size:72,html:optionValueName,align:'v',className:'theme-medium-font-color fs-12 bold'},
+                    column:[
+                        {html:optionValueName,align:'v',className:'theme-medium-font-color fs-12 bold'},
                         {
-                            flex:1,
-                            html:(
-                                <Slider
-                                    attrs={{style:{padding:'0 30px'}}}
-                                    scaleStep={[max]}
-                                    scaleStyle={(value)=>{if(value === max){return {background:'#2BBA8F'}}}}
-                                    labelStep={[max]}
-                                    labelStyle={(value)=>{if(value === max){return {color:'#2BBA8F',fontSize:12,top:43}}}}
-                                    start={0} direction='left'
-                                    end={totalQty}
-                                    max={max}
-                                    step={step}
-                                    points={[count]}
-                                    lineStyle={{height:4}}
-                                    showValue={false}
-                                    fillStyle={(index)=>{
-                                        if(index === 0){return {height:4,background:'#2BBA8F'}}
-                                    }}
-                                    pointStyle={{background:'#2BBA8F',width:16,height:16,zIndex:1000}}
-                                    onChange={(points,drag)=>{
-                                        this.setState({count:points[0]});
-                                        if(!drag){onChange(points[0])}
-                                    }}
-                                />
-                            ),
-                            align:'v'
-                        },
-                        {
-                            html:<div style={{padding:'0 3px',color:'#666',width:24,borderRadius:6,fontSize:10}}>{percent + '%'}</div>,align:'vh'
-                        },
-                        {
-                            html:<div style={{background:'#2BBA8F',padding:'0 3px',color:'#fff',width:36,borderRadius:6}}>{count}</div>,align:'vh'
+                            
+                            row:[
+                                {
+                                    flex:1,
+                                    html:(
+                                        <Slider
+                                            attrs={{style:{padding:'0 30px'}}}
+                                            scaleStep={[max]}
+                                            scaleStyle={(value)=>{if(value === max){return {background:'#2BBA8F'}}}}
+                                            labelStep={[max]}
+                                            labelStyle={(value)=>{if(value === max){return {color:'#2BBA8F',fontSize:12,top:43}}}}
+                                            start={0} direction='left'
+                                            end={totalQty}
+                                            max={max}
+                                            step={step}
+                                            points={[count]}
+                                            lineStyle={{height:4}}
+                                            showValue={false}
+                                            fillStyle={(index)=>{
+                                                if(index === 0){return {height:4,background:'#2BBA8F'}}
+                                            }}
+                                            pointStyle={{background:'#2BBA8F',width:16,height:16,zIndex:1000}}
+                                            onChange={(points,drag)=>{
+                                                this.setState({count:points[0]});
+                                                if(!drag){onChange(points[0])}
+                                            }}
+                                        />
+                                    ),
+                                    align:'v'
+                                },
+                                {
+                                    html:<div style={{padding:'0 3px',color:'#666',width:24,borderRadius:6,fontSize:10}}>{percent + '%'}</div>,align:'vh'
+                                },
+                                {
+                                    html:<div style={{background:'#2BBA8F',padding:'0 3px',color:'#fff',width:36,borderRadius:6}}>{count}</div>,align:'vh'
+                                }
+                            ]
                         }
                     ]
                 }}

@@ -84,33 +84,20 @@ export default class Shipping extends Component{
         }
       }
     }
-    details_layout(){
-      let {name,code,campaign,basePrice,customerGroup} = this.state;
+    details_layout(list){
       return {
         className:'box p-12 m-h-12',
-        column:[
-          {
-            size:36,childsProps:{align:'v'},
+        column:list.map(([key,value,attrs = {}])=>{
+          let {className = 'theme-medium-font-color fs-14',style} = attrs;
+          return {
+            size:36,childsProps:{align:'v'},style,
             row:[
-              {html:'نام مشتری:',className:'theme-light-font-color fs-14'},
-              {html:name,className:'fs-14'},
+              {html:key + ':',className},
               {flex:1},
-              {html:'نام کمپین:',className:'theme-light-font-color fs-14'},
-              {html:campaign,className:'fs-14'}
+              {html:value,className} 
             ]
-          },
-          {
-            size:36,childsProps:{align:'v'},
-            row:[
-              {html:'کد مشتری:',className:'theme-light-font-color fs-14'},
-              {html:code,className:'fs-14'},
-              {flex:1},
-              {html:'گروه مشتری:',className:'theme-light-font-color fs-14'},
-              {html:customerGroup,className:'fs-14'},
-            ]
-          },
-          
-        ]
+          }
+        })
       }
     }
     async componentDidMount(){
@@ -208,45 +195,32 @@ export default class Shipping extends Component{
       let mablaghe_ghabele_pardakht = factorDetails.DocumentTotal;
       let mablaghe_takhfife_pardakhte_online = (mablaghe_ghabele_pardakht * darsade_takhfife_pardakhte_online) / 100;
       mablaghe_ghabele_pardakht = mablaghe_ghabele_pardakht - mablaghe_takhfife_pardakhte_online;
-      
       return {
         className:'p-h-12 bg-fff theme-box-shadow',
         style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
         column:[
-          {
-            size:28,childsProps:{align:'v'},
-            row:[
-              {html:'تخفیف:',className:'colorFDB913 fs-14'},
-              {flex:1},
-              {html:functions.splitPrice(discount) + ' ریال',className:'colorFDB913 fs-14'}
+          this.details_layout([
+            [
+              'تخفیف',
+              functions.splitPrice(discount) + ' ریال',
+              {className:'colorFDB913 fs-14'}
+            ],
+            [
+              'تخفیف نحوه پرداخت',
+              `${functions.splitPrice(this.fix(mablaghe_takhfife_pardakhte_online)) + ' ریال'} (${darsade_takhfife_pardakhte_online} %)`,
+              {className:'color00B5A5 fs-14'}
+            ],
+            [
+              'قیمت کالاها',
+              functions.splitPrice(this.fix(mablaghe_ghabele_pardakht + discount + mablaghe_takhfife_pardakhte_online)) + ' ریال',
+              {className:'theme-medium-font-color fs-14'}
+            ],
+            [
+              'مبلغ قابل پرداخت',
+              functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال',
+              {className:'theme-dark-font-color bold fs-16'}
             ]
-          },
-          {
-            size:28,childsProps:{align:'v'},
-            row:[
-              {html:'تخفیف نحوه پرداخت:',className:'color00B5A5 fs-14'},
-              {flex:1},
-              {html:`(${darsade_takhfife_pardakhte_online} %)`,className:'color00B5A5 fs-14'},
-              {size:6},
-              {html:functions.splitPrice(this.fix(mablaghe_takhfife_pardakhte_online)) + ' ریال',className:'color00B5A5 fs-14'},
-            ]
-          },
-          {
-            size:28,childsProps:{align:'v'},
-            row:[
-              {html:'قیمت کالاها:',className:'theme-medium-font-color fs-14'},
-              {flex:1},
-              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht + discount + mablaghe_takhfife_pardakhte_online)) + ' ریال',className:'theme-medium-font-color fs-14'}
-            ]
-          },
-          {
-            size:28,childsProps:{align:'v'},
-            row:[
-              {html:'مبلغ قابل پرداخت:',className:'theme-dark-font-color bold fs-16'},
-              {flex:1},
-              {html:functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال',className:'theme-dark-font-color bold fs-16'}
-            ]
-          },
+          ]),
           {size:6},
           {
             size:36,align:'vh',className:'theme-medium-font-color fs-14 bold',
@@ -263,6 +237,7 @@ export default class Shipping extends Component{
     }
     render(){
       let {PaymentTime} = this.state;
+      let {name,code,campaign,customerGroup} = this.state;
       return (
         <>
           <RVD
@@ -274,7 +249,7 @@ export default class Shipping extends Component{
                 flex:1,className:'ofy-auto',
                 column:[
                   {size:12},
-                  this.details_layout(),
+                  this.details_layout([['نام مشتری',name],['نام کمپین',campaign],['کد مشتری',code],['گروه مشتری',customerGroup]]),
                   {size:12},
                   this.address_layout(),
                   {size:12},

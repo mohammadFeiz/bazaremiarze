@@ -30,7 +30,7 @@ export default class Billboard extends Component{
                 openPopup('sabte-garanti-jadid')
             }}/>)
         }
-        if(renderIn === 'buy' && forooshe_vije){
+        if(forooshe_vije){
             items.push(<img src={forooshe_vije.src} alt="" width='100%' className='forooshe-vije-billboard' onClick={()=>{
                 openPopup('category',{category:forooshe_vije})
             }}/>)

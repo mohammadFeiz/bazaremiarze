@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 
+import backOffice from './../../back-office';
 //pages//////////////////////////////////
 import Home from "./../home/index";
 import Buy from "./../buy/index";
 import Bazargah from "../bazargah/bazargah";
-import MyBurux from "./../my-burux/index";
+import Profile from "./../profile/profile";
 import Noorvare3 from './../../pages/noorvare3/noorvare3';
 
 //popups/////////////////////////////////////
@@ -80,25 +81,18 @@ export default class Main extends Component {
       images = JSON.parse(images);
     }
     this.dateCalculator = dateCalculator();
-    let backOffice = {
-      forsate_ersale_sefareshe_bazargah:16 * 60,
-      forsate_akhze_sefareshe_bazargah:24 * 60
-    }
     this.noorvare3Storage = AIOStorage('noorvare3');
     let noorvare3 = this.noorvare3Storage.load('show',true)
     this.state = {
+      backOffice,
+      setBackOffice:(backOffice)=>{
+        this.setState({backOffice})
+      },
       noorvare3,
       opacity:100,theme:'light',
-      bazargah:{
-        setActivity:async (state)=>{
-          let {bazargahApis,bazargah} = this.state;
-          let res = await bazargahApis({api:'activity',parameter:state})
-          this.setState({bazargah:{...bazargah,active:res}})
-        },
-        // active:this.props.userInfo.isBazargahActive,
-        active:true,
-        forsate_ersale_sefareshe_bazargah:backOffice.forsate_ersale_sefareshe_bazargah,
-        forsate_akhze_sefareshe_bazargah:backOffice.forsate_akhze_sefareshe_bazargah
+      bazargahOrders:{
+        wait_to_get:undefined,
+        wait_to_send:undefined
       },
       SetState: (obj) => this.setState(obj),
       showMessage:this.showMessage.bind(this),
@@ -122,7 +116,6 @@ export default class Main extends Component {
       garanti_products_dic:{},
       guaranteeExistItems: [],
       popup: {},
-      showGaranti:false,
       peygiriyeSefaresheKharid_tab:undefined,
       buy_view:undefined,//temporary state
     };
@@ -230,10 +223,10 @@ export default class Main extends Component {
     this.setState({ belex});
   }
   async getBazargahOrders(){
-    let {bazargah,bazargahApis} = this.state;
-    bazargah.wait_to_get = await bazargahApis({api:'orders',parameter:{type:'wait_to_get'},loading:false});
-    bazargah.wait_to_send = await bazargahApis({api:'orders',parameter:{type:'wait_to_send'},loading:false});
-    this.setState({bazargah})
+    let {bazargahOrders,bazargahApis} = this.state;
+    bazargahOrders.wait_to_get = await bazargahApis({api:'orders',parameter:{type:'wait_to_get'},loading:false});
+    bazargahOrders.wait_to_send = await bazargahApis({api:'orders',parameter:{type:'wait_to_send'},loading:false});
+    this.setState({bazargahOrders})
   }
   showMessage(message){
     alert(message)
@@ -251,16 +244,13 @@ export default class Main extends Component {
       this.setState({garanti_products_dic});
   }
   async componentDidMount() {
-    let {bazargah,kharidApis,showGaranti} = this.state;
+    let {kharidApis,backOffice} = this.state;
     let {userInfo} = this.props;
-    if(showGaranti){
-      this.getGuaranteeItems();
-      
-    }
-    this.getCampaignsData();
-    this.get_forooshe_vije();
-    //this.get_belex();
-    if(bazargah.active){this.getBazargahOrders();}
+    if(backOffice.activeManager.garanti){this.getGuaranteeItems();}
+    if(backOffice.activeManager.campaigns){this.getCampaignsData();}
+    if(backOffice.activeManager.forooshe_vije){this.get_forooshe_vije();}
+    if(backOffice.activeManager.belex){this.get_belex();}
+    if(backOffice.activeManager.bazargah){this.getBazargahOrders();}
     //let testedChance = await gardooneApis({type:"get_tested_chance"});
     let pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode,12 * 60 * 60 * 1000)
     pricing.startservice().then((value) => { return value; });
@@ -449,7 +439,7 @@ export default class Main extends Component {
   }
   render() {
     let {userInfo,logout} = this.props;
-    let {opacity,theme,noorvare3} = this.state;
+    let {opacity,theme,noorvare3,backOffice} = this.state;
     console.log('opacity',opacity);
     let context = {
       ...this.state,
@@ -460,20 +450,20 @@ export default class Main extends Component {
       logout: this.props.logout,
       baseUrl:this.props.baseUrl
     };
-    // if(noorvare3){
-    //   return (
-    //     <Noorvare3 
-    //       changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} 
-    //       onClose={()=>this.setState({noorvare3:false})}
-    //       onSubmit={async (value)=>{
-    //         this.noorvare3Storage.save(false,'show')
-    //         this.setState({noorvare3:false});
-    //         let {kharidApis} = this.state;
-    //         kharidApis({api:'taide_noorvare',parameter:'noorvare3'})
-    //       }}
-    //     />
-    //   )
-    // }
+    if(noorvare3 && backOffice.activeManager.noorvare3){
+      return (
+        <Noorvare3 
+          changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} 
+          onClose={()=>this.setState({noorvare3:false})}
+          onSubmit={async (value)=>{
+            this.noorvare3Storage.save(false,'show')
+            this.setState({noorvare3:false});
+            let {kharidApis} = this.state;
+            kharidApis({api:'taide_noorvare',parameter:'noorvare3'})
+          }}
+        />
+      )
+    }
     return (
       <appContext.Provider value={context}>
         <RSA
@@ -491,7 +481,7 @@ export default class Main extends Component {
           sides={[
             { text: 'بازارگاه', icon: ()=> <Icon path={mdiCellphoneMarker} size={0.8}/>,onClick:()=>this.state.rsa_actions.setNavId('bazargah')},
             { text: 'پیگیری سفارش خرید', icon: ()=> <Icon path={mdiClipboardList} size={0.8} />,onClick:()=>this.openPopup('peygiriye-sefareshe-kharid')},
-            { text: 'درخواست گارانتی', icon: ()=> <Icon path={mdiShieldCheck} size={0.8} />,onClick:()=>this.openPopup('sabte-garanti-jadid'),show:()=>this.state.showGaranti !== false},
+            { text: 'درخواست گارانتی', icon: ()=> <Icon path={mdiShieldCheck} size={0.8} />,onClick:()=>this.openPopup('sabte-garanti-jadid'),show:()=>!!backOffice.activeManager.garanti},
             { text: 'خروج از حساب کاربری', icon: ()=> <Icon path={mdiExitToApp} size={0.8} />,className:'colorFDB913',onClick:()=>logout() }
           ]}
           navHeader={()=>{
@@ -515,10 +505,11 @@ export default class Main extends Component {
             if (navId === "khane") {return <Home />;}
             if (navId === "kharid") {return <Buy/>;}
             if (navId === "bazargah") {return <Bazargah/>;}
-            if (navId === "profile") {return <MyBurux />;}
+            if (navId === "profile") {return <Profile />;}
           }}
           getActions={({setConfirm,addPopup,removePopup,setNavId})=>{
-            this.setState({rsa_actions:{setConfirm,addPopup,removePopup,setNavId}})
+            this.state.rsa_actions = {setConfirm,addPopup,removePopup,setNavId};
+            this.setState({rsa_actions:this.state.rsa_actions})
           }}
           splash={()=><Splash/>}
           splashTime={7000}
@@ -599,9 +590,9 @@ class Header extends Component{
     }
   }
   bazargahPower_layout(){
-    let {bazargah} = this.context;
+    let {backOffice} = this.context;
     let {navId,type} = this.props;
-    if(type !== 'page' || navId !== 'bazargah' || !bazargah.active){return false}
+    if(type !== 'page' || navId !== 'bazargah' || !backOffice.activeManager.bazargah){return false}
     return {
       html:(
         <AIOButton
@@ -609,7 +600,11 @@ class Header extends Component{
           className='header-icon'
           style={{ background: "none",color:'#605E5C' }} 
           text={<Icon path={mdiPower} size={0.7}/>} 
-          onClick={()=>bazargah.setActivity(false)}
+          onClick={async ()=>{
+            let {bazargahApis,setBackOffice,backOffice} = this.context;
+            let res = await bazargahApis({api:'activity',parameter:false})
+            setBackOffice({...backOffice,activeManager:{...backOffice.activeManager,bazargah:res}})
+          }}
         />
       )
     }

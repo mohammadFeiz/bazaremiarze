@@ -17,7 +17,7 @@ export default function SignalR(getState) {
     let $$={
         start(){
             connection.on("BazargahOrder", async (order)=> {
-                let {SetState,bazargah,showMessage,userInfo,bazargahApis} = getState();                
+                let {SetState,bazargahOrders,showMessage,userInfo,bazargahApis} = getState();                
                 let type;
                 if(order.status === 'Pending' || order.status===1){type = 'wait_to_get'}
                 else if(order.status === 'Taken'  || order.status===2){type = 'wait_to_send'}
@@ -25,19 +25,19 @@ export default function SignalR(getState) {
                 order = await bazargahApis({api:'bazargahItem',parameter:{order,type}})
                 if(order === false){return;}
                 if(type === 'wait_to_get'){
-                    bazargah.wait_to_get = bazargah.wait_to_get || [];
-                    bazargah.wait_to_get.push(order);
+                    bazargahOrders.wait_to_get = bazargahOrders.wait_to_get || [];
+                    bazargahOrders.wait_to_get.push(order);
                     showMessage('سفارش جدیدی در بازارگاه دارید')
                 }
                 else if(type === 'wait_to_send'){
-                    bazargah.wait_to_get = bazargah.wait_to_get || [];
-                    bazargah.wait_to_get = bazargah.wait_to_get.filter((o)=>o.orderId !== order.orderId)
+                    bazargahOrders.wait_to_get = bazargahOrders.wait_to_get || [];
+                    bazargahOrders.wait_to_get = bazargahOrders.wait_to_get.filter((o)=>o.orderId !== order.orderId)
                     if(userInfo.osVendorId === order.cardCode){
-                        bazargah.wait_to_send = bazargah.wait_to_send || [];
-                        bazargah.wait_to_send.push(order) 
+                        bazargahOrders.wait_to_send = bazargahOrders.wait_to_send || [];
+                        bazargahOrders.wait_to_send.push(order) 
                     }
                 }
-                SetState({bazargah})
+                SetState({bazargahOrders})
             });
             
             connection.start().then(function () {

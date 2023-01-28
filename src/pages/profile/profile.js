@@ -1,20 +1,19 @@
 import React,{Component} from 'react';
-import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
-import headerSvg from './../../images/header-svg';
-import footerSvg from './../../images/footer-svg';
-import getSvg from './../../utils/getSvg';
+import RVD from '../../interfaces/react-virtual-dom/react-virtual-dom';
+import headerSvg from '../../images/header-svg';
+import footerSvg from '../../images/footer-svg';
+import getSvg from '../../utils/getSvg';
 import appContext from '../../app-context';
 import functions from '../../functions';
 import {Icon} from '@mdi/react';
 import {mdiAccountCircle} from '@mdi/js';
-import AIOButton from './../../interfaces/aio-button/aio-button';
-import SabteGarantiJadid from '../../components/garanti/sabte-garanti-jadid/sabte-garanti-jadid';
+import AIOButton from '../../interfaces/aio-button/aio-button';
 import Popup from '../../components/popup/popup';
 import Register from '../../components/register/register';
 import Card from '../../components/card/card';
 import Wallet from '../../popups/wallet/wallet';
-import './index.css';
-export default class MyBurux extends Component{
+import './profile.css';
+export default class Profile extends Component{
     static contextType = appContext;
     constructor(props){
         super(props);
@@ -33,7 +32,7 @@ export default class MyBurux extends Component{
                     after:getSvg('chevronLeft'),
                     text:'جزییات درخواست های گارانتی',
                     icon:getSvg(14,{className:'theme-medium-font-color'}),
-                    show:()=>this.context.showGaranti !== false,
+                    show:()=>!!this.context.backOffice.activeManager.garanti,
                     onClick:async ()=>{
                         let {SetState,guarantiApis,openPopup} = this.context;
                         let guaranteeItems = await guarantiApis({api:'items'});
@@ -51,7 +50,7 @@ export default class MyBurux extends Component{
         return {className:'m-h-12 of-visible',html:<Card type='card4' items={parts}/>}
     }
     getContent(){
-        let {guaranteeItems = [],userInfo,openPopup,showGaranti} = this.context;
+        let {guaranteeItems = [],userInfo,openPopup,backOffice} = this.context;
         let slpname,slpcode;
         try{
             slpname = userInfo.slpname || 'تعیین نشده';
@@ -113,18 +112,19 @@ export default class MyBurux extends Component{
                 {
                     className:'m-h-12 of-visible',gap:12,
                     row:[
-                        // {
-                        //     flex:1,className:'of-visible', 
-                        //     html:(
-                        //         <Card
-                        //             type='card3' footer='جزییات کیف پول'
-                        //             rows={[[['کیف پول',functions.splitPrice(Math.max(userInfo.ballance * 10,0)) + ' ریال']]]}
-                        //             onClick={()=>this.setState({showWallet:true})}
-                        //         />
-                        //     )
-                        // },
                         {
-                            flex:1,className:'of-visible',show:showGaranti !== false,          
+                            show:!!backOffice.activeManager.wallet,
+                            flex:1,className:'of-visible', 
+                            html:()=>(
+                                <Card
+                                    type='card3' footer='جزییات کیف پول'
+                                    rows={[[['کیف پول',functions.splitPrice(Math.max(userInfo.ballance * 10,0)) + ' ریال']]]}
+                                    onClick={()=>this.setState({showWallet:true})}
+                                />
+                            )
+                        },
+                        {
+                            flex:1,className:'of-visible',show:!!backOffice.activeManager.garanti,          
                             html:()=>(
                                 <Card
                                     type='card3'

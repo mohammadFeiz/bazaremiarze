@@ -36,8 +36,8 @@ export default class Bazargah extends Component{
             body:()=><JoziateSefaresheBazargah order={o} onClose={(openOrder)=>{
                 rsa_actions.removePopup()
                 if(openOrder){
-                    let {bazargah} = this.context;
-                    let {wait_to_send = []} = bazargah;
+                    let {bazargahOrders} = this.context;
+                    let {wait_to_send = []} = bazargahOrders;
                     let order = wait_to_send.find((x)=>x.orderId === o.orderId);
                     if(order){this.openDetails(order)}
                 }
@@ -46,29 +46,29 @@ export default class Bazargah extends Component{
         })
     }
     wait_to_get_layout(){
-        let {bazargah,SetState} = this.context;
+        let {SetState,backOffice,bazargahOrders} = this.context;
         let {activeTabId} = this.state;
-        if(activeTabId !== 0 || !bazargah.active){return false}
-        if(!bazargah.wait_to_get){
+        if(activeTabId !== 0 || !backOffice.activeManager.bazargah){return false}
+        if(!bazargahOrders.wait_to_get){
             return {
                 size:400,html:'در حال بارگزاری',className:'fs-12 theme-medium-font-color',align:'vh'
             }
         }
-        if(bazargah.wait_to_get.length === 0){
+        if(bazargahOrders.wait_to_get.length === 0){
             return {
                 size:400,html:<img src={bazargahNoItemSrc}/>,align:'vh'
             }
         }
         return {
             gap:12,flex:1,className:'ofy-auto',
-            column:bazargah.wait_to_get.map((o,i)=>{
+            column:bazargahOrders.wait_to_get.map((o,i)=>{
                 return {
                     className:'of-visible',
                     html:(
                         <BazargahCard key={o.orderId} {...o} 
                             onExpired={()=>{
-                                bazargah.wait_to_get = bazargah.wait_to_get.filter((oo)=>o.orderId !== oo.orderId)
-                                SetState({bazargah})
+                                bazargahOrders.wait_to_get = bazargahOrders.wait_to_get.filter((oo)=>o.orderId !== oo.orderId)
+                                SetState({bazargahOrders})
                             }}
                             onShowDetails={()=>this.openDetails(o)}
                         />
@@ -78,11 +78,11 @@ export default class Bazargah extends Component{
         }
     }
     wait_to_send_layout(){
-        let {SetState,bazargah} = this.context;
-        if(!bazargah.active){return false}
+        let {SetState,bazargahOrders,backOffice} = this.context;
+        if(!backOffice.activeManager.bazargah){return false}
         let {activeTabId} = this.state;
         if(activeTabId !== 1){return false}
-        let {wait_to_send} = bazargah;
+        let {wait_to_send} = bazargahOrders;
         if(!wait_to_send){return {size:96,align:'vh',html:'در حال بارگزاری'}}
         if(wait_to_send.length === 0){return {size:96,align:'vh',html:'موردی وجود ندارد'}}
         return {
@@ -95,8 +95,8 @@ export default class Bazargah extends Component{
                             {...o} 
                             onSend={()=>this.openDetails(o)} 
                             onExpired={()=>{
-                                bazargah.wait_to_send = bazargah.wait_to_send.filter((oo)=>o.orderId !== oo.orderId)
-                                SetState({bazargah})
+                                bazargahOrders.wait_to_send = bazargahOrders.wait_to_send.filter((oo)=>o.orderId !== oo.orderId)
+                                SetState({bazargahOrders})
                             }}
                         />
                     )
@@ -105,16 +105,16 @@ export default class Bazargah extends Component{
         }
     }
     tabs_layout(){
-        let {bazargah} = this.context;
-        if(!bazargah.active){return false}
+        let {bazargahOrders,backOffice} = this.context;
+        if(!backOffice.activeManager.bazargah){return false}
         let {activeTabId} = this.state;
         return {
             html:(
                 <AIOButton 
                     type='tabs' 
                     options={[
-                        {text:'اطراف من',value:0,badge:bazargah.wait_to_get.length},
-                        {text:'اخذ شده',value:1,badge:bazargah.wait_to_send.length}
+                        {text:'اطراف من',value:0,badge:bazargahOrders.wait_to_get.length},
+                        {text:'اخذ شده',value:1,badge:bazargahOrders.wait_to_send.length}
                     ]}  
                     optionStyle={{flex:1}}
                     value={activeTabId} 
@@ -125,8 +125,8 @@ export default class Bazargah extends Component{
         }
     }
     renderInHome(){
-        let {bazargah,SetState,rsa_actions} = this.context;
-        if(!bazargah.active || !bazargah.wait_to_get){return false}
+        let {bazargahOrders,SetState,rsa_actions = {},backOffice} = this.context;
+        if(!backOffice.activeManager.bazargah || !bazargahOrders.wait_to_get){return false}
         let {setNavId} = rsa_actions;
         return (
             <RVD
@@ -138,13 +138,13 @@ export default class Bazargah extends Component{
                             size:48,className:'p-h-12',
                             row:[
                                 {html: "بازارگاه",className: "fs-14 theme-dark-font-color bold p-h-12",align: "v"},
-                                {html:<div className='my-burux-badge bg3B55A5'>{bazargah.wait_to_get.length}</div>,align:'vh'},
+                                {html:<div className='my-burux-badge bg3B55A5'>{bazargahOrders.wait_to_get.length}</div>,align:'vh'},
                                 {flex:1},
-                                {html:'مشاهده همه',align:'v',className:'color3B55A5 fs-12 bold',show:!!bazargah.wait_to_get.length,attrs:{onClick:()=>setNavId('bazargah')}}
+                                {html:'مشاهده همه',align:'v',className:'color3B55A5 fs-12 bold',show:!!bazargahOrders.wait_to_get.length,attrs:{onClick:()=>setNavId('bazargah')}}
                             ]
                         },
                         {
-                            className:'theme-box-shadow theme-card-bg theme-border-radius p-h-12 fs-14 theme-medium-font-color',show:bazargah.wait_to_get.length === 0,
+                            className:'theme-box-shadow theme-card-bg theme-border-radius p-h-12 fs-14 theme-medium-font-color',show:bazargahOrders.wait_to_get.length === 0,
                             column:[
                                 {size:12},
                                 {
@@ -157,17 +157,17 @@ export default class Bazargah extends Component{
                             ]
                         },
                         {
-                            show:!!bazargah.wait_to_get.length, 
+                            show:!!bazargahOrders.wait_to_get.length, 
                             html:(
                                 <AIOContentSlider
                                     autoSlide={5000} arrow={false}
-                                    items={bazargah.wait_to_get.map((o,i)=>{
+                                    items={bazargahOrders.wait_to_get.map((o,i)=>{
                                         return (
                                             <BazargahCard 
                                                 {...o} items={false} address={false} 
                                                 onExpired={()=>{
-                                                    bazargah.wait_to_get = bazargah.wait_to_get.filter((oo)=>o.orderId !== oo.orderId)
-                                                    SetState({bazargah})
+                                                    bazargahOrders.wait_to_get = bazargahOrders.wait_to_get.filter((oo)=>o.orderId !== oo.orderId)
+                                                    SetState({bazargahOrders})
                                                 }}
                                                 onShowDetails={()=>this.openDetails(o)}
                                             />
@@ -182,12 +182,16 @@ export default class Bazargah extends Component{
         )
     }
     bazargahPower_layout(){
-        let {bazargah} = this.context;
-        if(bazargah.active){return false}
+        let {backOffice} = this.context;
+        if(backOffice.activeManager.bazargah){return false}
         return {
             html:getSvg('bazargahPower'),
             attrs:{
-                onClick:()=>bazargah.setActivity(true)
+                onClick:async ()=>{
+                    let {bazargahApis,setBackOffice,backOffice} = this.context;
+                    let res = await bazargahApis({api:'activity',parameter:true})
+                    setBackOffice({...backOffice,activeManager:{...backOffice.activeManager,bazargah:res}})
+                }
             }
         }
     }
@@ -855,9 +859,9 @@ class JoziateSefaresheBazargah extends Component{
                                 let res = await bazargahApis({api:'taide_code_tahvil',parameter:{deliveredCode,orderId,dynamicCode:`${code0}${code1}${code2}`}})
                                 if(res){
                                     rsa_actions.setConfirm({type:'success',text:'سفارش با موفقیت تحویل داده شد',subtext:'مبلغ ارسال این سفارش به کیف پول شما واریز می گردد'});
-                                    let {bazargah} = this.context;
-                                    bazargah.wait_to_send = bazargah.wait_to_send.filter((o)=>o.orderId !== orderId);
-                                    SetState({bazargah})
+                                    let {bazargahOrders} = this.context;
+                                    bazargahOrders.wait_to_send = bazargahOrders.wait_to_send.filter((o)=>o.orderId !== orderId);
+                                    SetState({bazargahOrders})
                                     setNavId('khane')
                                 }
                                 else{

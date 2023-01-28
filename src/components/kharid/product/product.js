@@ -502,7 +502,11 @@ class ForoosheVije extends Component {
         let isFull = this.isFull();
         return {
             column:[
-                {html:`3: رنگ کالاها در ${packQty + ' ' + v.name} را انتخاب کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+                {
+                    html:`3: رنگ کالاها در ${packQty + ' ' + v.name} را انتخاب کنید`,
+                    align:'v',className:'theme-dark-font-color fs-14 bold',
+                },
+                {size:12},
                 {
                     gap:6,column:qtyInPack.map((o,i)=>{
                         let used = 0;
@@ -511,7 +515,7 @@ class ForoosheVije extends Component {
                         }
                         let remaining = totalQty - used;
                         return {
-                            size:48,
+                            size:72,
                             html:(
                                 <ForoosheVijeSlider 
                                     key={variantId} {...o} totalQty={totalQty} max={o.count + remaining} 
@@ -851,8 +855,9 @@ class Belex extends Component {
                         {
                             html:`رنگ کالاها در ${packQty + ' بسته ' + name} را انتخاب کنید`,
                             align:'v',
-                            className:'theme-dark-font-color fs-14 bold'},
-                            {size:12},
+                            className:'theme-dark-font-color fs-14 bold'
+                        },
+                        {size:12},
                         {
                             gap:6,column:qtyInPack.map((o,i)=>{
                                 let used = 0;

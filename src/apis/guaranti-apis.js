@@ -45,7 +45,7 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       if(!res.data || !res.data.isSuccess || !res.data.data){return []}
       return res.data.data.map((x)=>{
         return {
-          oovan:x.RejectedName,
+          onvan:x.RejectedName,
           tedad:0,
           code:x.RejectedCode
         }

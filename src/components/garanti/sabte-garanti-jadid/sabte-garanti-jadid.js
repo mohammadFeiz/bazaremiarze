@@ -67,12 +67,12 @@ export default class SabteGarantiJadid extends Component {
                             'با وارد کردن جزئیات کالاهای سوخته درخواست شما حداکثر تا 72 ساعت بررسی میشود',
                             () => this.continueWithSubmit()
                         ),
-                        {size:12},
-                        this.panel_layout(
-                            'ثبت درخواست بدون اعلام جزئیات',
-                            'درصورت عدم تکمیل جزئیات کالاهای سوخته درخواست شما در مراجعه بعدی ویزیتور بررسی میشود',
-                            () => this.continueWithoutSubmit()
-                        ),
+                        // {size:12},
+                        // this.panel_layout(
+                        //     'ثبت درخواست بدون اعلام جزئیات',
+                        //     'درصورت عدم تکمیل جزئیات کالاهای سوخته درخواست شما در مراجعه بعدی ویزیتور بررسی میشود',
+                        //     () => this.continueWithoutSubmit()
+                        // ),
                         { size: 24 }
                     ]
                 }}

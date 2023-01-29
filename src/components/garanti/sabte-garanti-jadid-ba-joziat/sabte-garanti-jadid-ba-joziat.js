@@ -100,9 +100,10 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                     rtl={true}
                     toolbar={()=>{
                         return (
-                            <AIOButton type='select' text="افزودن کالا" className='button-4' optionText='option.Name' optionValue='option.Code'
+                            <AIOButton type='select' text="افزودن کالا" className='button-4' optionText='option.onvan' optionValue='option.code'
                                 popupAttrs={{ style: { maxHeight: 400, bottom: 0, top: 'unset', position: 'fixed', left: 0, width: '100%' }}}
                                 options={guaranteeExistItems}
+                                
                                 onChange={(value, obj) => {
                                     let { items } = this.state;
                                     items.push({ onvan: obj.text, code: obj.value, tedad: 1 });

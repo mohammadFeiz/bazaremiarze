@@ -452,21 +452,42 @@ class ForoosheVije extends Component {
         let {variantId,foroosheVije_count} = this.state;
         if(!variantId || !foroosheVije_count){return false}
         let {packQty} = foroosheVije_count;
+        
         return {
+            align:'v',
+            style:{borderRadius:6,background:'#DCE1FF',padding:'0 12px'},
             column:[
-                {html:`2: تعداد بسته را مشخص کنید`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+                {size:12},
+                {align:'v',html:`تعداد بسته را مشخص کنید :`,align:'v',className:'theme-dark-font-color fs-14 bold'},
+                {size:12},
                 {
-                    html:(
-                        <input type ='number' value={packQty} onChange={(e)=>{
-                            let value = +e.target.value;
-                            if(isNaN(value)){value = ''}
-                            foroosheVije_count.packQty = value;
-                            this.changeCount(foroosheVije_count)
-                        }}/>
-                    )
-                }
+                    row:[
+                        {
+                            size:40,html:<Icon path={mdiPlus} size={1}/>,align:'vh',onClick:()=>this.changePackQty(1),
+                            style:{background:'#3B55A5',height:40,color:'#fff',borderRadius:6}
+                        },
+                        {size:6},
+                        {
+                            size:48,html:packQty,align:'vh'  
+                        },
+                        {size:6},
+                        {
+                            align:'v',size:40,html:<Icon path={mdiMinus} size={1}/>,align:'vh',onClick:()=>this.changePackQty(-1),
+                            style:{background:'#3B55A5',height:40,color:'#fff',borderRadius:6}
+                        }
+                    ]
+                },
+                {size:12}
             ]
         }
+    }
+    changePackQty(v){
+        let {foroosheVije_count} = this.state;
+        let {packQty} = foroosheVije_count;
+        packQty += v;
+        if(packQty < 0){packQty = 0}
+        foroosheVije_count.packQty = packQty;
+        this.changeCount(foroosheVije_count)
     }
     getSelectedCount(){
         let {foroosheVije_count} = this.state;

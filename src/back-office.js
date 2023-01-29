@@ -1,6 +1,6 @@
 export default {
     activeManager:{
-        garanti:false,
+        garanti:true,
         belex:false,
         forooshe_vije:true,
         campaigns:true,

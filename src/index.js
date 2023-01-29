@@ -25,7 +25,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";
-    this.state = { isAutenticated: false, registered: false,pageError:false,userInfo:{},landing:false}
+    this.state = { isAutenticated: false, registered: false,pageError:false,userInfo:{},landing:true}
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -277,10 +277,22 @@ class Landing extends Component{
           className:'fullscreen',
           column:[
             {html:getSvg('mybrxlogo'),align:'vh',size:96},
-            {html:<img src={img === 1?landsrc1:landsrc2} alt='' width='100%' height='100%' className='br-12' style={{maxWidth:400}}/>,align:'vh'},
+            {html:<img src={img === 1?landsrc1:landsrc2} alt='' width='100%' height='100%' className='br-12' style={{maxWidth:460}}/>,align:'vh'},
             {html:'می ارزه; مجری جشنواره نورواره بروکس ',className:'fs-24 bold m-h-12',style:{textAlign:'right'}},
             {size:12},
-            {html:'یک همکاری فوق العاده با بروکس! جشنواره نورواره 3 با تخفیف های باورنکردنی برای تحول فروش شما شروع شد.',className:'fs-16 m-h-12',style:{textAlign:'right'}},
+            {
+              html:`
+یار قدیمی بروکس
+همه مون سال سخت و متفاوتی رو گذروندیم و خیلی تغییر کردیم به همین خاطر اجرای نورواره امسال رو از چند جهت متفاوت کردیم :
+تخفیف های باور نکردنی
+اعطای لامپ رایگان
+حذف دریافت لامپ سوخته
+مشتری اینترنتی علاوه بر حضوری
+
+مثل همیشه نیازمند همراهی گرمتون هستیم
+              `,
+              className:'fs-16 m-h-12',style:{textAlign:'right'}},
+            {html:''},
             {flex:1},
             {html:<button className='button-2 m-h-12' onClick={()=>onClose()}>ورود به بازار می ارزه</button>},
             {size:12}

@@ -459,7 +459,10 @@ export default class Main extends Component {
             this.noorvare3Storage.save(false,'show')
             this.setState({noorvare3:false});
             let {kharidApis} = this.state;
-            kharidApis({api:'taide_noorvare',parameter:'noorvare3'})
+            kharidApis({api:'taide_noorvare',parameter:'noorvare3'});
+            let {updateUserInfo} = this.props;
+            debugger;
+            updateUserInfo({noorvareh3Agreement:true});
           }}
         />
       )

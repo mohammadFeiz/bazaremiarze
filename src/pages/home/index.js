@@ -12,6 +12,7 @@ import blankGuarantee from './../../images/blank-guarantee.png';
 import Noor1 from './../../images/noor1.png';
 import Noor2 from './../../images/noor2.png';
 import Bazargah from '../bazargah/bazargah';
+import afterSrc from './../../images/after.png';
 import './index.css';
 import Icon from '@mdi/react';
 import { mdiPlusBox } from '@mdi/js';
@@ -211,11 +212,20 @@ export default class Home extends Component {
         return {className:'of-visible theme-gap-h',html:<Bazargah renderInHome={true}/>}
     }
     noorvare3_layout(){
+        let {backOffice,userInfo} = this.context;
+        console.log(userInfo)
+        let registered = userInfo.noorvareh3Agreement;
+        if(!backOffice.activeManager.noorvare3){
+            return false
+        }
         return {
-            html:<NoorvareBillboard/>,
+            html:<NoorvareBillboard after={registered}/>,
             className:'theme-gap-h theme-border-radius',
             style:{boxShadow:'0px 2px 8px 0px rgb(153 153 153 / 21%)'},
             onClick:()=>{
+                if(registered){
+                    return false
+                }
                 let {SetState} = this.context;
                 SetState({noorvare3:true})
             }
@@ -235,7 +245,7 @@ export default class Home extends Component {
                         { className: 'theme-vertical-gap'},
                         this.preOrders_layout(),
                         { className: 'theme-vertical-gap'},
-                        // this.noorvare3_layout(),
+                        this.noorvare3_layout(),
                         // { className: 'theme-vertical-gap'},
                         this.bazargah_layout(),
                         { className: 'theme-vertical-gap'},
@@ -387,12 +397,16 @@ class NoorvareBillboard extends Component{
     constructor(props){
         super(props);
         this.state = {mode:1}
-        setInterval(()=>this.setState({mode:this.state.mode * -1}),1000) 
+        this.interval = setInterval(()=>this.setState({mode:this.state.mode * -1}),1000) 
     }
     render(){
         let {mode} = this.state;
+        let {after} = this.props;
+        if(after){
+            clearInterval(this.interval)
+        }
         return (
-            <img src={mode === 1?Noor1:Noor2} width='100%' alt=''/>
+            <img src={after?afterSrc:(mode === 1?Noor1:Noor2)} width='100%' alt=''/>
         )
     }
 }

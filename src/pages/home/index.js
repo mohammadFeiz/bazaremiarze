@@ -75,7 +75,7 @@ export default class Home extends Component {
                         />
                     )
                 },
-                {size:12},
+                {size:12,show:!!backOffice.activeManager.wallet},
                 {
                     className:'of-visible',flex:1,
                     html:(
@@ -241,11 +241,12 @@ export default class Home extends Component {
                     flex:1,className:'ofy-auto',
                     column: [
                         this.billboard_layout(),
+                        this.noorvare3_layout(),
+                        { className: 'theme-vertical-gap'},
                         this.cartAndWallet_layout(),
                         { className: 'theme-vertical-gap'},
                         this.preOrders_layout(),
                         { className: 'theme-vertical-gap'},
-                        this.noorvare3_layout(),
                         // { className: 'theme-vertical-gap'},
                         this.bazargah_layout(),
                         { className: 'theme-vertical-gap'},

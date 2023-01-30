@@ -18,7 +18,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                     title: "تعداد", field: 'row.tedad', width: 100,
                     template: 'count',justify:true
                 },
-                {title:'رنگ',template:'color',width:60,justify:true},
+                {title:'رنگ',template:'color',width:42,justify:true},
                 {width:12}
             ]
         };
@@ -46,7 +46,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
             else {return '-'}
         }
         catch{return '-'}
-        return <div style={{width:26,height:26,background:color,borderRadius:'100%',border:'1px solid #ddd'}}></div>
+        return <div style={{width:20,height:20,background:color,borderRadius:'100%',border:'1px solid #ddd'}}></div>
     }
     table_layout() {
         let { guaranteeExistItems } = this.context;
@@ -82,10 +82,9 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                                     before:this.getColor(text),value,text
                                 }
                             })
-                            options.splice(0,0,{before:this.getColor(false),value:false,text:'انتخاب نشده'})
                             return (
                                 <AIOButton
-                                    type='select' caret={true}
+                                    type='select' caret={false}
                                     style={{background:'none'}}
                                     text={this.getColor(row.lightColor)}
                                     options={options}
@@ -110,7 +109,14 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                                 
                                 onChange={(value, obj) => {
                                     let { items } = this.state;
-                                    items.push({ onvan: obj.text, code: obj.value, tedad: 1,optionValues:obj.option.optionValues });
+                                    items.push({ 
+                                        onvan: obj.text, 
+                                        code: obj.value, 
+                                        tedad: 1,
+                                        lightCode:obj.option.optionValues[0].value,
+                                        lightColor:obj.option.optionValues[0].text,
+                                        optionValues:obj.option.optionValues 
+                                    });
                                     this.setState({ items });
                                 }}
                             />

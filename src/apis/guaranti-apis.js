@@ -55,7 +55,6 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       });
     },
     async sabte_kala(items) {
-      debugger
       let res = await Axios.post(`${baseUrl}/Guarantee`, { CardCode: userInfo.cardCode, Items: items });
       return !!res.data && !!res.data.isSuccess
     },

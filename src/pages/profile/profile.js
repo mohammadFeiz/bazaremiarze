@@ -34,7 +34,7 @@ export default class Profile extends Component{
                     after:getSvg('chevronLeft'),
                     text:'جزییات درخواست های گارانتی',
                     icon:getSvg(14,{className:'theme-medium-font-color'}),
-                    show:()=>!!this.context.backOffice.activeManager.garanti,
+                    show:()=>!!this.context.backOffice.activeManager.garanti && !!this.context.userInfo.slpcode,
                     onClick:async ()=>{
                         let {SetState,guarantiApis,openPopup} = this.context;
                         let guaranteeItems = await guarantiApis({api:'items'});
@@ -138,7 +138,7 @@ export default class Profile extends Component{
                             )
                         },
                         {
-                            flex:1,className:'of-visible',show:!!backOffice.activeManager.garanti,          
+                            flex:1,className:'of-visible',show:!!backOffice.activeManager.garanti && !!userInfo.slpcode,          
                             html:()=>(
                                 <Card
                                     type='card3'

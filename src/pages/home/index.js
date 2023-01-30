@@ -114,8 +114,8 @@ export default class Home extends Component {
         }
     }
     garanti_layout(){
-        let {guaranteeItems = [],openPopup,backOffice} = this.context;
-        if(!backOffice.activeManager.garanti){return false}
+        let {guaranteeItems = [],openPopup,backOffice,userInfo} = this.context;
+        if(!backOffice.activeManager.garanti || !userInfo.slpcode){return false}
         return {
             className:'theme-gap-h m-t-12 of-visible',
             column:[

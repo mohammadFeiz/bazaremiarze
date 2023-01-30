@@ -246,7 +246,7 @@ export default class Main extends Component {
   async componentDidMount() {
     let {kharidApis,backOffice} = this.state;
     let {userInfo} = this.props;
-    if(backOffice.activeManager.garanti){this.getGuaranteeItems();}
+    if(backOffice.activeManager.garanti && userInfo.slpcode){this.getGuaranteeItems();}
     if(backOffice.activeManager.campaigns){this.getCampaignsData();}
     if(backOffice.activeManager.forooshe_vije){this.get_forooshe_vije();}
     if(backOffice.activeManager.belex){this.get_belex();}
@@ -484,7 +484,7 @@ export default class Main extends Component {
           sides={[
             { text: 'بازارگاه', icon: ()=> <Icon path={mdiCellphoneMarker} size={0.8}/>,onClick:()=>this.state.rsa_actions.setNavId('bazargah')},
             { text: 'پیگیری سفارش خرید', icon: ()=> <Icon path={mdiClipboardList} size={0.8} />,onClick:()=>this.openPopup('peygiriye-sefareshe-kharid')},
-            { text: 'درخواست گارانتی', icon: ()=> <Icon path={mdiShieldCheck} size={0.8} />,onClick:()=>this.openPopup('sabte-garanti-jadid'),show:()=>!!backOffice.activeManager.garanti},
+            { text: 'درخواست گارانتی', icon: ()=> <Icon path={mdiShieldCheck} size={0.8} />,onClick:()=>this.openPopup('sabte-garanti-jadid'),show:()=>!!backOffice.activeManager.garanti && userInfo.slpcode},
             { text: 'خروج از حساب کاربری', icon: ()=> <Icon path={mdiExitToApp} size={0.8} />,className:'colorFDB913',onClick:()=>logout() }
           ]}
           navHeader={()=>{

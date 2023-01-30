@@ -82,7 +82,8 @@ export default class Main extends Component {
     }
     this.dateCalculator = dateCalculator();
     this.noorvare3Storage = AIOStorage('noorvare3');
-    let noorvare3 = this.noorvare3Storage.load('show',true)
+    let noorvare3 = !!!props.userInfo.noorvareh3Agreement;
+    if(!this.noorvare3Storage.load('show',true)){noorvare3 = false}
     this.state = {
       backOffice,
       setBackOffice:(backOffice)=>{

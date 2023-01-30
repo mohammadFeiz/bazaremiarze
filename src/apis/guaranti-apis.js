@@ -48,15 +48,36 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
           onvan:x.RejectedName,
           tedad:0,
           code:x.RejectedCode,
-          optionValues:x.variants.map((o)=>{
+          optionValues:x.Variants.map((o)=>{
             return {value:o.ItemCode,text:o.ItemColor}
           })
         }
       });
     },
     async sabte_kala(items) {
-      let res = await Axios.post(`${baseUrl}/Guarantee`, { CardCode: userInfo.cardCode, Items: items });
-      return !!res.data && !!res.data.isSuccess
+debugger;
+      let res = await Axios.post(`${baseUrl}/Guarantee/Equivalent`, { SlpCode: userInfo.slpcode,
+         Detail: items.map(x=>{
+          return {
+            ItemCode:x.code,
+            Quantity:items.reduce((partialSum, a) => partialSum + a.Qty, 0),
+            Variants:items.map(a=>{
+              return {ItemCode:a.lightCode, ItemQty:a.Qty};
+            })
+           };
+         })});
+
+            // let res = await Axios.post(`${baseUrl}/Guarantee/Equivalent`, { SlpCode: userInfo.slpcode,
+      //    Detail: {
+      //     ItemCode:x.code,Quantity:items.reduce((partialSum, a) => partialSum + a.Qty, 0),
+      //     Variants: items.map(x=>{
+      //       return {
+      //         ItemCode:x.lightCode,
+      //         ItemQty:x.Qty
+      //       }
+      //     })
+      //   }});
+      return !!res.data && !!res.data.isSuccess;
     },
     async getImages(itemCodes) {
       let res = await Axios.get(`${baseUrl}/Guarantee/GetGuaranteesImages?ids=${itemCodes.toString()}`); // itemCodes => itemCode of products, seprtaed by comma

@@ -115,7 +115,8 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                                         tedad: 1,
                                         lightCode:obj.option.optionValues[0].value,
                                         lightColor:obj.option.optionValues[0].text,
-                                        optionValues:obj.option.optionValues 
+                                        optionValues:obj.option.optionValues,
+                                        Qty:1
                                     });
                                     this.setState({ items });
                                 }}

@@ -47,11 +47,15 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
         return {
           onvan:x.RejectedName,
           tedad:0,
-          code:x.RejectedCode
+          code:x.RejectedCode,
+          optionValues:x.variants.map((o)=>{
+            return {value:o.ItemCode,text:o.ItemColor}
+          })
         }
       });
     },
     async sabte_kala(items) {
+      debugger
       let res = await Axios.post(`${baseUrl}/Guarantee`, { CardCode: userInfo.cardCode, Items: items });
       return !!res.data && !!res.data.isSuccess
     },

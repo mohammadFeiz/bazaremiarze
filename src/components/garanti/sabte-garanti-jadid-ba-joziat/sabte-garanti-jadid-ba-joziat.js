@@ -14,11 +14,12 @@ export default class SabteGarantiJadidBaJoziat extends Component {
             items: [],
             tableColumns: [
                 { title: "عنوان", field: 'row.onvan' },
-                {title:'رنگ',template:'color',width:42,justify:true},
                 {
                     title: "تعداد", field: 'row.tedad', width: 100,
                     template: 'count',justify:true
                 },
+                {title:'رنگ',template:'color',width:60,justify:true},
+                {width:12}
             ]
         };
     }
@@ -38,13 +39,14 @@ export default class SabteGarantiJadidBaJoziat extends Component {
         else {openPopup('payame-sabte-garanti',{text: "خطا"});}
     }
     getColor(c){
+        let {backOffice} = this.context;
         let color;
         try{
-            if(c){color = {'aftabi':'#ffd100','mahtabi':'#66b6ff','yakhi':'#f9ffd6'}[c];}
+            if(c){color = backOffice.colors[c];}
             else {return '-'}
         }
         catch{return '-'}
-        return <div style={{width:16,height:16,background:color,borderRadius:'100%',border:'1px solid #ddd'}}></div>
+        return <div style={{width:26,height:26,background:color,borderRadius:'100%',border:'1px solid #ddd'}}></div>
     }
     table_layout() {
         let { guaranteeExistItems } = this.context;
@@ -56,7 +58,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                     className='m-12'
                     style={{padding:0}}
                     headerHeight={36}
-                    rowHeight={48}
+                    rowHeight={60}
                     columnGap={1}
                     templates={{
                         count:(row) => {
@@ -75,20 +77,22 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                             )
                         },
                         color:(row)=>{
+                            let options = row.optionValues.map(({text,value})=>{
+                                return {
+                                    before:this.getColor(text),value,text
+                                }
+                            })
+                            options.splice(0,0,{before:this.getColor(false),value:false,text:'انتخاب نشده'})
                             return (
                                 <AIOButton
-                                    type='select' caret={false}
+                                    type='select' caret={true}
                                     style={{background:'none'}}
                                     text={this.getColor(row.lightColor)}
-                                    options={[
-                                        {before:this.getColor(false),value:false,text:'انتخاب نشده'},
-                                        {before:this.getColor('mahtabi'),value:'mahtabi',text:'مهتابی'},
-                                        {before:this.getColor('aftabi'),value:'aftabi',text:'آفتابی'},
-                                        {before:this.getColor('yakhi'),value:'yakhi',text:'یخی'},
-                                    ]}
-                                    onChange={(value)=>{
+                                    options={options}
+                                    onChange={(value,obj)=>{
                                         let {items} = this.state;
-                                        row.lightColor = value;
+                                        row.lightColor = obj.text;
+                                        row.lightCode = value
                                         this.setState({items})
                                     }}
                                 />
@@ -106,7 +110,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                                 
                                 onChange={(value, obj) => {
                                     let { items } = this.state;
-                                    items.push({ onvan: obj.text, code: obj.value, tedad: 1 });
+                                    items.push({ onvan: obj.text, code: obj.value, tedad: 1,optionValues:obj.option.optionValues });
                                     this.setState({ items });
                                 }}
                             />

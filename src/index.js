@@ -169,10 +169,6 @@ class App extends Component {
   }
   render() {
     if (!this.mounted) { return <Loading /> }
-    let { landing } = this.state;
-    if (landing) {
-      return <Landing onClose={() => this.setState({ landing: false })} />
-    }
     let { isAutenticated, userInfo, token, registered, pageError } = this.state;
     if (pageError) {
       return (
@@ -231,7 +227,11 @@ class App extends Component {
 
       )
     }
-
+    let { landing } = this.state;
+    if (landing) {
+      return <Landing onClose={() => this.setState({ landing: false })} />
+    }
+    
     return (
       <RVD
         layout={{

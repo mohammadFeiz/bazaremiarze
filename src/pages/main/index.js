@@ -13,6 +13,7 @@ import OrdersHistory from "./../../components/kharid/orders-history/orders-histo
 import SabteGarantiJadid from "../../components/garanti/sabte-garanti-jadid/sabte-garanti-jadid";
 import Shipping from './../../components/kharid/shipping/shipping';
 import BelexShipping from './../../components/kharid/shipping/belex-shipping';
+import ForoosheVijeShipping from './../../components/kharid/shipping/foroosheVije-shipping';
 import Wallet from "../../popups/wallet/wallet";
 import TanzimateKifePool from "../../components/kife-pool/tanzimate-kife-pool/tanzimate-kife-pool";
 import Cart from "./../../components/kharid/cart/cart";
@@ -381,6 +382,12 @@ export default class Main extends Component {
         if(parameter.id === 'belex'){
           addPopup({
             body:()=><BelexShipping/>,
+            title:'ادامه فرایند خرید'
+          })
+        }
+        else if(parameter.id === 'forooshe_vije'){
+          addPopup({
+            body:()=><ForoosheVijeShipping/>,
             title:'ادامه فرایند خرید'
           })
         }

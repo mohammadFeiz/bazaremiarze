@@ -725,6 +725,12 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
       return product;
     },
+    async pardakhte_foroosheVije(){
+
+    },
+    async sabte_foroosheVije(){
+
+    },
     async pardakhte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate,shipping,ghabele_pardakht}){
       let {userInfo} = getState();
       let arr=[];

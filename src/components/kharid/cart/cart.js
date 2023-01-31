@@ -50,7 +50,7 @@ export default class Cart extends Component{
           tab.cards = tab.cartItems.map(({product,foroosheVije_count,variantId})=>{
             let variant = product.variants.find(({id})=>id === variantId);
             finalPrice += foroosheVije_count.packQty * variant.finalPrice;
-            return <ForoosheVijeCard product={product} variantId={variantId} count={foroosheVije_count}/>
+            return <ForoosheVijeCard product={product} variantId={variantId} count={foroosheVije_count} type='cart'/>
           })
           tab.finalPrice = finalPrice;
         }

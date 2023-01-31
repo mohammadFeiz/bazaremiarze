@@ -104,7 +104,8 @@ function Service(services,loader) {
     if(!loading.length){loading = $('.aio-service-loading')}
     loading.remove()
   }
-  return async ({ api,callback, parameter, loading = true, cache, cacheName,def,validation,loadingParent = 'body' }) => {
+  return async (obj) => {
+    let { api,callback, parameter, loading = true, cache, cacheName,def,validation,loadingParent = 'body',errorMessage,successMessage,types = []} = obj
     let loadingId;
     if (loading) {
       loadingId = 'b' + Math.random()
@@ -139,6 +140,34 @@ function Service(services,loader) {
       }
     }
     if(callback){callback(result)}
+    if(types.length){
+      let isMatch = false;
+      for(let i = 0; i < types.length; i++){
+        let type = types[i];
+        let Type = typeof result;
+        if(type === true && result === true){isMatch = true; break;}
+        if(type === 'boolean' && Type === 'boolean'){isMatch = true; break;}
+        if(type === 'array' && Array.isArray(result)){isMatch = true; break;}
+        if(type === 'object' && !Array.isArray(result) && Type === 'object'){isMatch = true; break;}
+        if(type === 'undefined' && Type === 'undefined'){isMatch = true; break;}
+        if(type === 'string' && Type === 'string'){isMatch = true; break;}
+        if(type === 'number' && Type === 'number'){isMatch = true; break;}
+        if(type === 'function' && Type === 'function'){isMatch = true; break;}
+      }
+      if(!isMatch){
+        AIOServiceShowAlert({type:'error',text:`apis().${api}`,subtext:`should return ${types.join(' or ')}`});
+        return def;
+      }
+    }
+    if(typeof result === 'string' && errorMessage){
+      AIOServiceShowAlert({type:'error',text:typeof errorMessage === 'function'?errorMessage():errorMessage,subtext:result});
+      return def;
+    }
+    if(successMessage){
+      successMessage = typeof successMessage === 'function'?successMessage():successMessage
+      if(!Array.isArray(successMessage)){successMessage = [successMessage]}
+      AIOServiceShowAlert({type:'success',text:successMessage[0],subtext:successMessage[1]});
+    }
     return result;
   }
 }

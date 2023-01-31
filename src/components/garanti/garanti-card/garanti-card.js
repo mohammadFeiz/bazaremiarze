@@ -38,8 +38,7 @@ export default class GarantiCard extends Component{
         else if(index === mahsoolat.length - 1){height = size / 2; top = 0;}
         else {height = size; top = 0;}
         return {
-            size,childsProps:{align:'v'},gap:12,
-            childsAttrs:{className:'fs-12 theme-medium-font-color'},
+            size,childsProps:{align:'v',className:'fs-12 theme-medium-font-color'},gap:12,
             row:[
                 {
                     html:(

@@ -83,7 +83,7 @@ export default class ProductCard extends Component{
         let {inStock,Price,B1Dscnt = 0,CmpgnDscnt = 0,PymntDscnt = 0,FinalPrice} = product;
         if(!Price || !inStock){return false}
         return {
-            childsAttrs:{align:'v'},gap:4,className:'p-h-12',
+            gap:4,className:'p-h-12',
             row:[
                 {flex:1},
                 {show:!!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt,html:<del>{this.splitPrice(Price)}</del>,className:'fs-14 theme-light-font-color'},

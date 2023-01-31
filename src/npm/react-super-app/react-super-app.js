@@ -12,6 +12,11 @@ export default class ReactSuperApp extends Component {
       super(props);
       let {touch = 'ontouchstart' in document.documentElement,splash,splashTime = 7000} = props;
       this.storage = AIOStorage('rsa-cache')
+      window.oncontextmenu = function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      };
       this.state = {
         navId:this.getNavId(),
         splash,
@@ -69,6 +74,7 @@ export default class ReactSuperApp extends Component {
       if(splash){setTimeout(()=>this.setState({splash:false}),splashTime)}
       if(props.getActions){props.getActions({...this.state})}
     }
+    
     setConfirm(obj){
       let confirm;
       let {type} = obj;
@@ -246,10 +252,10 @@ export default class ReactSuperApp extends Component {
       let {navId,onChange} = this.props;
       let active = id === navId;
       return {
-          flex:1,className:'rsa-bottom-menu-item' + (active?' active':''),attrs:{onClick:()=>onChange(id)},
+          flex:1,className:'rsa-bottom-menu-item of-visible' + (active?' active':''),attrs:{onClick:()=>onChange(id)},
           column:[
             {flex:2},
-            {show:!!icon,html:()=>icon(active),align:'vh'},
+            {show:!!icon,html:()=>icon(active),align:'vh',className:'of-visible'},
             {flex:1},
             {html:text,align:'vh',className:'rsa-bottom-menu-item-text'},
             {flex:1}

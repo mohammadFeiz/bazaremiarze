@@ -117,16 +117,6 @@ export default class ForoosheVijeCard extends Component{
             this.setState({mounted:true})
         },index * 100 + 100)
     }
-    timer(){
-        this.time = 0;
-        this.interval = setInterval(()=>{
-            this.time++;
-            if(this.time > 50){
-                clearInterval(this.interval);
-                this.setState({removeMode:true})
-            }
-        },10)
-    }
     cancelRemoveMode(){
         this.setState({removeMode:false})
     }
@@ -160,21 +150,12 @@ export default class ForoosheVijeCard extends Component{
             )
         }
     }
-    mounseup(){
-        clearInterval(this.interval);
-    }
     render(){
         let {mounted,removeMode} = this.state;
         return (
             <RVD
                 layout={{
                     className:'theme-box-shadow theme-card-bg theme-border-radius theme-gap-h p-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
-                    attrs:{
-                        onMouseDown:()=>{
-                            this.timer();
-                            $(window).bind('mouseup',$.proxy(this.mounseup,this))
-                        }
-                    },
                     onClick:()=>{if(!removeMode){this.onClick()}},
                     column:[
                         this.label_layout(),
@@ -191,6 +172,7 @@ export default class ForoosheVijeCard extends Component{
                                 {size:12},
                                 {
                                     flex:1,
+                                    longTouch:()=>this.setState({removeMode:true}),
                                     column:[
                                         this.name_layout(),
                                         {size:6},

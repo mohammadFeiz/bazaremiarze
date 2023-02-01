@@ -197,7 +197,7 @@ export default class Noorvare3 extends Component{
                             column:[
                                 {html:<img src={alertsrc} width='72' alt=''/>},
                                 {size:48,html:'تعهدنامه نورواره ۳',align:'v',className:'fs-16 theme-dark-font-color bold'},
-                                {html:sharayet,style:{textAlign:'right'},className:''}
+                                {html:sharayet(),style:{textAlign:'right'},className:''}
                             ]
                         },
                         this.footer_layout(),

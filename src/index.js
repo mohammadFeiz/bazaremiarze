@@ -232,6 +232,7 @@ class App extends Component {
       return <Landing onClose={() => this.setState({ landing: false })} />
     }
     
+
     return (
       <RVD
         layout={{
@@ -252,17 +253,17 @@ class App extends Component {
               )
             },
             {
-              align:'vh',
-              html:(
-                <a style={{color:'#fff',height:24,margin:0}} href="tel:02175116" className='fs-14'>
+              align: 'vh',
+              html: (
+                <a style={{ color: '#fff', height: 24, margin: 0 }} href="tel:02175116" className='fs-14'>
                   تماس با پشتیبانی
                 </a>
               )
             },
             {
-              align:'vh',
-              html:(
-                <a style={{color:'#fff',height:30,margin:0}} href="tel:02175116">
+              align: 'vh',
+              html: (
+                <a style={{ color: '#fff', height: 30, margin: 0 }} href="tel:02175116">
                   021-75116
                 </a>
               )
@@ -285,63 +286,74 @@ class Landing extends Component {
   render() {
     let { img } = this.state;
     let { onClose } = this.props;
-    let bullet = <div style={{width:6,height:6,background:'#333',borderRadius:'100%'}}></div>;
+    let bullet = <div style={{ width: 6, height: 6, background: '#333', borderRadius: '100%' }}></div>;
     return (
       <RVD
         layout={{
-          className: 'fullscreen ofy-auto',
+          className: 'fullscreen',
           column: [
-            { html: getSvg('mybrxlogo'), align: 'vh', size: 96 },
-            { html: <img src={img === 1 ? landsrc1 : landsrc2} alt='' width='100%' height='100%' className='br-12' style={{ maxWidth: 460 }} />, align: 'vh' },
-            { html: 'می ارزه; مجری جشنواره نورواره بروکس ', className: 'fs-24 bold m-h-12', style: { textAlign: 'right' } },
-            { size: 12 },
             {
-              html: `
+              flex:1,className: 'ofy-auto',
+              column: [
+                { html: getSvg('mybrxlogo'), align: 'vh', size: 96 },
+                { html: <img src={img === 1 ? landsrc1 : landsrc2} alt='' width='100%' height='100%' className='br-12' style={{ maxWidth: 460 }} />, align: 'vh' },
+                { html: 'می ارزه; مجری جشنواره نورواره بروکس ', className: 'fs-24 bold m-h-12', style: { textAlign: 'right' } },
+                { size: 12 },
+                {
+                  html: `
 یار قدیمی بروکس
 همه مون سال سخت و متفاوتی رو گذروندیم و خیلی تغییر کردیم به همین خاطر اجرای نورواره امسال رو از چند جهت متفاوت کردیم :
 
 
               `,
-              className: 'fs-16 m-h-12', style: { textAlign: 'right' }
-            },
-            {size:12},
-            {
-              className:'m-h-12',
-              column:[
+                  className: 'fs-16 m-h-12', style: { textAlign: 'right' }
+                },
+                { size: 12 },
                 {
-                  row:[
-                    {size:30,html:bullet,align:'vh'},
-                    {html:'تخفیف های باور نکردنی',className:'bold'}
+                  className: 'm-h-12',
+                  column: [
+                    {
+                      row: [
+                        { size: 30, html: bullet, align: 'vh' },
+                        { html: 'تخفیف های باور نکردنی', className: 'bold' }
+                      ]
+                    },
+                    {
+                      row: [
+                        { size: 30, html: bullet, align: 'vh' },
+                        { html: 'اعطای لامپ رایگان', className: 'bold' },
+                      ]
+                    },
+                    {
+                      row: [
+                        { size: 30, html: bullet, align: 'vh' },
+                        { html: 'حذف دریافت لامپ سوخته', className: 'bold' },
+                      ]
+                    },
+                    {
+                      html:'در نورواره امسال بر خلاف نورواره ی سال های قبل که مشتری به ازای تحویل هر لامپ سوخته امکان خرید یک لامپ نو با تخفیف را داشت ، دیگر مشتری نیازی به تحویل لامپ سوخته ندارد  ',
+                      className:'fs-14 p-r-36',
+                      style:{textAlign:'right'}
+                    
+                    },
+                    {
+                      row: [
+                        { size: 30, html: bullet, align: 'vh' },
+                        { html: 'مشتری اینترنتی علاوه بر حضوری', className: 'bold' },
+                      ]
+                    },
                   ]
                 },
+                { size: 12 },
                 {
-                  row:[
-                    {size:30,html:bullet,align:'vh'},
-                    {html:'اعطای لامپ رایگان',className:'bold'},
-                  ]
+                  html: 'مثل همیشه نیازمند همراهی گرمتون هستیم', className: 'm-h-12',style:{textAlign:'right'}
                 },
-                {
-                  row:[
-                    {size:30,html:bullet,align:'vh'},
-                    {html:'حذف دریافت لامپ سوخته',className:'bold'},    
-                  ]
-                },
-                {
-                  row:[
-                    {size:30,html:bullet,align:'vh'},
-                    {html:'مشتری اینترنتی علاوه بر حضوری',className:'bold'},
-                  ]
-                },
+
               ]
             },
-            {size:12},
-            {
-              html:'مثل همیشه نیازمند همراهی گرمتون هستیم',className:'m-h-12'
-            },
-            {size:12},
-            { flex: 1 },
-            { html: <button className='button-2 m-h-12' onClick={() => onClose()}>ورود به بازار می ارزه</button> },
-            { size: 12 }
+            { size: 6 },
+            { html: <button className='button-2 m-h-6' onClick={() => onClose()}>ورود به بازار می ارزه</button> },
+            { size: 6 }
           ]
         }}
       />

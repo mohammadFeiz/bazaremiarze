@@ -460,7 +460,8 @@ export default class Main extends Component {
     };
     if(noorvare3 && backOffice.activeManager.noorvare3){
       return (
-        <Noorvare3 
+        <Noorvare3
+          qr={userInfo.norvareh3QR}
           changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} 
           onClose={()=>this.setState({noorvare3:false})}
           onSubmit={async (value)=>{

@@ -356,8 +356,33 @@ class CartPayment extends Component {
       />
     )
   }
-  forooshe_vije_shipping_payment_layout(shippingOptions, jame_kolle_sabade_kharid, cartItems) {
-    let { address, PayDueDate, SettleType, DeliveryType, PaymentTime } = shippingOptions;
+  fix(value) {
+    try { return +value.toFixed(0) }
+    catch { return 0 }
+  }
+  getPaymentDetails1(shippingOptions,cartItems){
+    let { getFactorDetails } = this.context;
+    let { PayDueDate, SettleType, DeliveryType, PaymentTime } = shippingOptions;
+    let factorDetails = getFactorDetails(cartItems, { PayDueDate, PaymentTime, SettleType, DeliveryType })
+    let jame_kolle_takhfif = factorDetails.marketingdetails.DocumentDiscount;
+    let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent
+    let mablaghe_ghabele_pardakht = factorDetails.DocumentTotal;
+    let takhfife_pardakhte_online = (mablaghe_ghabele_pardakht * darsade_takhfife_pardakhte_online) / 100;
+    mablaghe_ghabele_pardakht = mablaghe_ghabele_pardakht - takhfife_pardakhte_online;
+    let jame_kolle_sabade_kharid = mablaghe_ghabele_pardakht + jame_kolle_takhfif + takhfife_pardakhte_online;
+    let mablaghe_pardakhte_naghdi = false;
+    let buttonText = 'ارسال برای ویزیتور';
+    return {
+      jame_kolle_sabade_kharid,
+      jame_kolle_takhfif,
+      takhfife_pardakhte_online,
+      mablaghe_ghabele_pardakht,
+      mablaghe_pardakhte_naghdi,
+      buttonText
+    }
+  }
+  getPaymentDetails2(shippingOptions,cartItems,jame_kolle_sabade_kharid){
+    let { PayDueDate, SettleType } = shippingOptions;
     let takhfife_pardakhte_online, mablaghe_ghabele_pardakht, mablaghe_pardakhte_naghdi;
     if (PayDueDate === 'ByDelivery') {
       takhfife_pardakhte_online = jame_kolle_sabade_kharid * 12 / 100;
@@ -389,130 +414,56 @@ class CartPayment extends Component {
       mablaghe_ghabele_pardakht = jame_kolle_sabade_kharid - takhfife_pardakhte_online;
       mablaghe_pardakhte_naghdi = this.fix(mablaghe_ghabele_pardakht * 50 / 100)
     }
-    let jame_kolle_takhfif = 0;
+    let jame_kolle_takhfif = false;
+    let buttonText = SettleType === 16 ? 'پرداخت' : 'ثبت';
     return {
-      className: 'p-h-12 bg-fff theme-box-shadow',
-      style: { paddingTop: 12, borderRadius: '16px 16px 0 0' },
-      column: [
-        this.details_layout([
-          [
-            'جمع کل سبد خرید',
-            functions.splitPrice(this.fix(jame_kolle_sabade_kharid)) + ' ریال',
-            { className: 'theme-medium-font-color fs-14' }
-          ],
-          [
-            'جمع کل تخفیف',
-            functions.splitPrice(jame_kolle_takhfif) + ' ریال',
-            { className: 'colorFDB913 fs-14' }
-          ],
-          [
-            'تخفیف نحوه پرداخت',
-            `${functions.splitPrice(this.fix(takhfife_pardakhte_online)) + ' ریال'} (${darsade_takhfife_pardakhte_online} %)`,
-            { className: 'color00B5A5 fs-14' }
-          ],
-          
-          [
-            'مبلغ قابل پرداخت',
-            functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال',
-            { className: 'theme-dark-font-color bold fs-16' }
-          ]
-        ]),
-        {
-          size: 28, childsProps: { align: 'v' },
-          row: [
-            { html: 'جمع کل سبد خرید :', className: 'theme-dark-font-color bold fs-14' },
-            { flex: 1 },
-            { html: functions.splitPrice(this.fix(jame_kolle_sabade_kharid)) + ' ریال', className: 'theme-dark-font-color bold fs-14' }
-          ]
-        },
-        {
-          size: 28, childsProps: { align: 'v' },
-          row: [
-            { html: 'جمع کل تخفیف :', className: 'theme-dark-font-color bold fs-14' },
-            { flex: 1 },
-            { html: functions.splitPrice(this.fix(jame_kolle_takhfif)) + ' ریال', className: 'theme-dark-font-color bold fs-14' }
-          ]
-        },
-        {
-          size: 28, childsProps: { align: 'v' },
-          row: [
-            { html: 'تخفیف نحوه پرداخت :', className: 'theme-dark-font-color bold fs-14' },
-            { flex: 1 },
-            { html: functions.splitPrice(this.fix(takhfife_pardakhte_online)) + ' ریال', className: 'theme-dark-font-color bold fs-14' }
-          ]
-        },
-        {
-          size: 28, childsProps: { align: 'v' },
-          row: [
-            { html: 'مبلغ قابل پرداخت:', className: 'theme-dark-font-color bold fs-14' },
-            { flex: 1 },
-            { html: functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال', className: 'theme-dark-font-color bold fs-14' }
-          ]
-        },
-        {
-          size: 28, childsProps: { align: 'v' },
-          row: [
-            { html: 'مبلغ نحوه پرداخت نقد :', className: 'theme-dark-font-color bold fs-14' },
-            { flex: 1 },
-            { html: functions.splitPrice(this.fix(mablaghe_pardakhte_naghdi)) + ' ریال', className: 'theme-dark-font-color bold fs-14' }
-          ]
-        },
-        { size: 6 },
-        {
-          size: 36, align: 'vh', className: 'theme-medium-font-color fs-14 bold',
-          html: (
-            <button
-              className="button-2"
-              onClick={() => {
-                this.onSubmit(shippingOptions, cartItems, mablaghe_pardakhte_naghdi)
-              }}
-            >{(SettleType === 16 ? 'پرداخت' : 'ثبت') + ' ' + functions.splitPrice(this.ghabele_pardakht) + ' ریال'}</button>
-          )
-        },
-        { size: 12 }
-      ]
+      jame_kolle_sabade_kharid,
+      jame_kolle_takhfif,
+      takhfife_pardakhte_online,
+      mablaghe_ghabele_pardakht,
+      mablaghe_pardakhte_naghdi,
+      buttonText
     }
   }
-  fix(value) {
-    try { return +value.toFixed(0) }
-    catch { return 0 }
-  }
-  kharide_addi_shipping_payment_layout(shippingOptions, cartItems) {
-    let { getFactorDetails } = this.context;
-    let { address, PayDueDate, SettleType, DeliveryType, PaymentTime } = shippingOptions;
-    let factorDetails = getFactorDetails(cartItems, { PayDueDate, PaymentTime, SettleType, DeliveryType })
-    let jame_kolle_takhfif = factorDetails.marketingdetails.DocumentDiscount;
-    let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent
-    let mablaghe_ghabele_pardakht = factorDetails.DocumentTotal;
-    let takhfife_pardakhte_online = (mablaghe_ghabele_pardakht * darsade_takhfife_pardakhte_online) / 100;
-    mablaghe_ghabele_pardakht = mablaghe_ghabele_pardakht - takhfife_pardakhte_online;
-    let jame_kolle_sabade_kharid = mablaghe_ghabele_pardakht + jame_kolle_takhfif + takhfife_pardakhte_online;
+  shipping_payment_layout(shippingOptions, cartItems,total) {
+    let {cartId} = this.props;
+    let fn;
+    if(cartId === 'خرید عادی'){fn = 'getPaymentDetails1';}
+    else{fn = 'getPaymentDetails2';}
+    let {
+      jame_kolle_sabade_kharid,
+      jame_kolle_takhfif,
+      takhfife_pardakhte_online,
+      mablaghe_ghabele_pardakht,
+      mablaghe_pardakhte_naghdi,
+      buttonText
+    } = this[fn](shippingOptions, cartItems,total)
     return {
       className: 'p-h-12 bg-fff theme-box-shadow',
       style: { paddingTop: 12, borderRadius: '16px 16px 0 0' },
       column: [
         this.details_layout([
           [
-            'جمع کل سبد خرید',
-            functions.splitPrice(this.fix(jame_kolle_sabade_kharid)) + ' ریال',
+            'جمع کل سبد خرید',jame_kolle_sabade_kharid,
             { className: 'theme-medium-font-color fs-14' }
           ],
           [
-            'جمع کل تخفیف',
-            functions.splitPrice(jame_kolle_takhfif) + ' ریال',
+            'جمع کل تخفیف',jame_kolle_takhfif,
             { className: 'colorFDB913 fs-14' }
           ],
           [
-            'تخفیف نحوه پرداخت',
-            `${functions.splitPrice(this.fix(takhfife_pardakhte_online)) + ' ریال'} (${darsade_takhfife_pardakhte_online} %)`,
+            'تخفیف نحوه پرداخت',takhfife_pardakhte_online,
             { className: 'color00B5A5 fs-14' }
           ],
           
           [
-            'مبلغ قابل پرداخت',
-            functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال',
+            'مبلغ قابل پرداخت',mablaghe_ghabele_pardakht,
             { className: 'theme-dark-font-color bold fs-16' }
-          ]
+          ],
+          [
+            'مبلغ پرداخت نقدی',mablaghe_pardakhte_naghdi,
+            { className: 'color00B5A5 fs-14' }
+          ],
         ]),
         { size: 6 },
         {
@@ -521,7 +472,7 @@ class CartPayment extends Component {
             <button
               className="button-2"
               onClick={() => this.onSubmit(shippingOptions,cartItems,mablaghe_ghabele_pardakht)}
-            >ارسال برای ویزیتور</button>
+            >{buttonText}</button>
           )
         },
         { size: 12 }

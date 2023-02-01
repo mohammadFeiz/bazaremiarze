@@ -20,6 +20,5 @@ export default {
         'قرمز':'red',
         'آبی':'blue',
         'نارنجی':'orange',
-
-    }
+    },
 }

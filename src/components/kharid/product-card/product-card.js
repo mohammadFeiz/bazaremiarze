@@ -1,6 +1,7 @@
 import React,{Component} from 'react';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import ProductCount from './../product-count/product-count';
+import CartButton from '../cart-button';
 import NoSrc from './../../../images/no-src.png';
 import appContext from './../../../app-context';
 import AIOButton from './../../../interfaces/aio-button/aio-button';
@@ -48,18 +49,6 @@ export default class ProductCard extends Component{
         let {srcs = []} = product;
         return {flex:1,align:'vh',html:<img src={srcs[0] || NoSrc} width={'100%'} alt=''/>}
     }
-    count_layout(){
-        let {count,changeCount,max} = this.props;
-        let {shipping} = this.context;
-        if(shipping){return false}
-        if(count === undefined){return false}
-        return {size:30,html:()=><ProductCount value={count} onChange={(count)=>changeCount(count)} max={max}/>}
-    }
-    title_layout(){
-        let {product} = this.props;
-        if(!product.campaign){return false}
-        return {html:product.campaign.name,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}
-    }
     name_layout(){
         let {product} = this.props;
         let {name} = product;
@@ -80,7 +69,7 @@ export default class ProductCard extends Component{
     }
     discount_layout(){
         let {product,count = 1} = this.props;
-        let {inStock,Price,B1Dscnt = 0,CmpgnDscnt = 0,PymntDscnt = 0,FinalPrice} = product;
+        let {inStock,Price,B1Dscnt = 0,CmpgnDscnt = 0,PymntDscnt = 0} = product;
         if(!Price || !inStock){return false}
         return {
             gap:4,className:'p-h-12',
@@ -99,11 +88,18 @@ export default class ProductCard extends Component{
         }
     }
     details_layout(){
-        let {details = []} = this.props;
-        if(!details.length){return false}
+        let {product,variantId} = this.props;
+        if(variantId){return false}
+        let variant = product.variants.find(({id})=>variantId === id)
+        let { optionTypes } = product;
+        let { optionValues } = variant;
         return {
-            column:details.map(([title,value])=>{
-                return {size:20,html:`${title} : ${value}`,align:'v',className:'fs-10 theme-light-font-color'}
+            column:optionTypes.map((o)=>{
+                let key = o.name;
+                let value;
+                try{value = o.items[optionValues[o.id]]} catch{value=''}
+                if(!value){return false}
+                return {size:20,html:`${key} : ${value}`,align:'v',className:'fs-10 theme-light-font-color'}
             })
         }
     }
@@ -146,7 +142,7 @@ export default class ProductCard extends Component{
         },index * 100 + 100)
     }
     horizontal_layout(){
-        let {isLast,isFirst,loading} = this.props;
+        let {variantId,product,isLast,isFirst,loading,renderIn} = this.props;
         let {mounted} = this.state;
         return (
             <RVD
@@ -165,13 +161,16 @@ export default class ProductCard extends Component{
                     row:[
                         {
                             size:96,
-                            column:[this.image_layout(),this.count_layout()]
+                            column:[
+                                this.image_layout(),
+                                {size:30,html:()=><CartButton product={product} variantId={variantId} renderIn={renderIn}/>}
+                            ]
                         },
                         {
                             flex:1,
                             column:[
                                 {flex:1},
-                                this.title_layout(),
+                                {html:product.cartId,className:'fs-10',style:{color:'rgb(253, 185, 19)'}},
                                 this.name_layout(),
                                 {flex:1},
                                 this.details_layout(),
@@ -211,7 +210,8 @@ export default class ProductCard extends Component{
         )
     }
     render(){
-        let {type} = this.props;
+        let {type,product} = this.props;
+        if(!product){console.error(`ProductCard missing product props`);}
         return this[type +'_layout']()
     }
 }

@@ -1,6 +1,5 @@
 import React,{Component} from 'react';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
-import functions from './../../../functions';
 import AIOButton from './../../../interfaces/aio-button/aio-button';
 import appContext from './../../../app-context';
 export default class Shipping extends Component{
@@ -103,7 +102,7 @@ export default class Shipping extends Component{
     async componentDidMount(){
       let {userInfo,shipping} = this.context;
       this.setState({
-        campaign:shipping.title,
+        campaign:shipping.cartId,
         //name:userInfo.cardName,
         name:`${userInfo.firstName} ${userInfo.lastName}`,
         code:userInfo.cardCode,
@@ -161,11 +160,11 @@ export default class Shipping extends Component{
     }
     products_layout(){
       let {shipping} = this.context;
-      let {cards} = shipping;
+      let {productCards} = shipping;
       return {
         column:[
           {size:36,align:'v',className:'theme-medium-font-color fs-14 bold p-h-12',html:'محصولات'},
-          {className:'of-visible',column:cards.map((card)=>{return {html:card,className:'of-visible'}})},
+          {className:'of-visible',column:cards.map((card)=>{return {html:productCards,className:'of-visible'}})},
           {size:12}
         ]
       }
@@ -174,12 +173,11 @@ export default class Shipping extends Component{
       try{return +value.toFixed(0)}
       catch{return 0}
     }
-    amount_layout(){
-      let {getFactorDetails,shipping} = this.context;
-      let {address} = this.state;
-      let {onSend} = this.props;
-      
+    payment_layout(){
+      let {shipping} = this.context;
+      let {payment_layout} = shipping;
       let {
+        address,
         PayDueDate_map,PayDueDate,
         SettleType_map,SettleType,
         DeliveryType_map,DeliveryType,
@@ -189,51 +187,7 @@ export default class Shipping extends Component{
       SettleType = SettleType_map[SettleType];
       DeliveryType = DeliveryType_map[DeliveryType];
       PaymentTime = PaymentTime_map[PaymentTime];
-      let factorDetails = getFactorDetails(shipping.items,{PayDueDate,PaymentTime,SettleType,DeliveryType})
-      let discount = factorDetails.marketingdetails.DocumentDiscount;
-      let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent
-      let mablaghe_ghabele_pardakht = factorDetails.DocumentTotal;
-      let mablaghe_takhfife_pardakhte_online = (mablaghe_ghabele_pardakht * darsade_takhfife_pardakhte_online) / 100;
-      mablaghe_ghabele_pardakht = mablaghe_ghabele_pardakht - mablaghe_takhfife_pardakhte_online;
-      return {
-        className:'p-h-12 bg-fff theme-box-shadow',
-        style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
-        column:[
-          this.details_layout([
-            [
-              'تخفیف',
-              functions.splitPrice(discount) + ' ریال',
-              {className:'colorFDB913 fs-14'}
-            ],
-            [
-              'تخفیف نحوه پرداخت',
-              `${functions.splitPrice(this.fix(mablaghe_takhfife_pardakhte_online)) + ' ریال'} (${darsade_takhfife_pardakhte_online} %)`,
-              {className:'color00B5A5 fs-14'}
-            ],
-            [
-              'قیمت کالاها',
-              functions.splitPrice(this.fix(mablaghe_ghabele_pardakht + discount + mablaghe_takhfife_pardakhte_online)) + ' ریال',
-              {className:'theme-medium-font-color fs-14'}
-            ],
-            [
-              'مبلغ قابل پرداخت',
-              functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال',
-              {className:'theme-dark-font-color bold fs-16'}
-            ]
-          ]),
-          {size:6},
-          {
-            size:36,align:'vh',className:'theme-medium-font-color fs-14 bold',
-            html:(
-              <button 
-                className="button-2" 
-                onClick={()=>onSend({address,SettleType,PaymentTime,DeliveryType,PayDueDate})}
-              >ارسال برای ویزیتور</button>
-            )
-          },
-          {size:12}
-        ]
-      }
+      return payment_layout({address,PayDueDate,SettleType,DeliveryType,PaymentTime});
     }
     render(){
       let {PaymentTime} = this.state;
@@ -265,7 +219,7 @@ export default class Shipping extends Component{
                   {size:12},
                 ],
               },
-              this.amount_layout(),
+              this.payment_layout(),
             ]
           }}
         />

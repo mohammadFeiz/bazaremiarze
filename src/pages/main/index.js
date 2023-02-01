@@ -140,30 +140,29 @@ export default class Main extends Component {
     else if(opacity === 70){opacity = 100}
     this.setState({opacity})
   }
-  changeCart(count,variantId,product){
+  changeCartCount({variantId,count,product}) {
     let {cart,kharidApis} = this.state;
-    let newCart;
-    if(typeof count === 'object'){
-      newCart = {...count}
+    let cartTab = cart[product.cartId];
+    let newCartTab = {};
+    //حذف از سبد خرید
+    if(!count){
+        for(let id in cartTab){
+            if(id !== variantId){newCartTab[id] = cartTab[id]}
+        }
     }
     else{
-      if(count === 0){
-        let res = {};
-        for(let prop in cart){
-          if(prop.toString() !== variantId.toString()){res[prop] = cart[prop]}
+        //افزودن به سبد خرید
+        if(!cartTab[variantId]){cartTab[variantId] = {variantId,count,product}}
+        //تغییر تعداد
+        else {
+          for(let id in cartTab){
+            newCartTab[id] = id === variantId?{...cartTab[id],count}:cartTab[id]
+          }
         }
-        newCart = res;
-      }
-      else{
-        newCart = {...cart}
-        if(newCart[variantId] === undefined){
-          let variant;
-          try{variant = product.variants.filter((o) => o.id === variantId)[0]}
-          catch{variant = undefined;}
-          newCart[variantId] = {count,product,variant}
-        }
-        else{newCart[variantId].count = count;}
-      }
+    }
+    let newCart = {};
+    for(let id in cart){
+        newCart[id] = id === cartId?newCartTab:cart[id];
     }
     clearTimeout(this.cartTimeout);
     this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
@@ -453,7 +452,7 @@ export default class Main extends Component {
       ...this.state,
       userInfo,
       openPopup:this.openPopup.bind(this),
-      changeCart:this.changeCart.bind(this),
+      changeCartCount:this.changeCartCount.bind(this),
       getCartCountByVariantId:this.getCartCountByVariantId.bind(this),
       logout: this.props.logout,
       baseUrl:this.props.baseUrl

@@ -625,9 +625,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         "marketdoc":{
           "CardCode":userInfo.cardCode,
           "CardGroupCode": userInfo.groupCode,
-          "MarketingLines":shipping.cartItems.map((o)=>{
-            return { ItemCode: o.variant.code, ItemQty: o.count }
-          }),
+          "MarketingLines":shipping.cartItems.map(({ItemCode,ItemQty})=>{return { ItemCode, ItemQty }}),
           "DeliverAddress":address,
           "marketingdetails":{}
         },

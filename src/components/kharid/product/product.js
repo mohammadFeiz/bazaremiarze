@@ -1,6 +1,7 @@
 import React, { Component,Fragment } from 'react';
 import AIOButton from './../../../interfaces/aio-button/aio-button';
 import ProductCount from './../product-count/product-count';
+import CartButton from '../cart-button';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import appContext from './../../../app-context';
 import Slider from './../../../npm/aio-slider/aio-slider';
@@ -276,21 +277,11 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         };
     }
     addToCart_layout() {
-        let { getCartCountByVariantId } = this.context;
+        let {product} = this.props;
         let { selectedVariant } = this.state;
-        if (!selectedVariant || !selectedVariant.inStock || selectedVariant.inStock === null) {
-            return { html: '' }
-        }
-        let count = getCartCountByVariantId(selectedVariant.id)
+        if (!selectedVariant || !selectedVariant.inStock || selectedVariant.inStock === null) {return false}
         return {
-            column:[
-                {
-                    flex:1,show:!!!count,html: (<button onClick={() => this.changeCount(1)} className={"button-2" + (!selectedVariant ? " disabled" : "")}>افزودن به سبد خرید</button>),
-                    align: "v",
-                },
-                { flex:1,align:'v',show:!!count, html: () => <ProductCount value={count} onChange={(count) => this.changeCount(count)} max={this.getInStock()} /> },
-                
-            ]
+            html:<CartButton product={product} variantId={selectedVariant.id} />
         }
     }
     price_layout() {

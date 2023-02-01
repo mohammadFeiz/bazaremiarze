@@ -304,7 +304,7 @@ class CartPayment extends Component {
     )
   }
   forooshe_vije_layout() {
-    let {cart} = this.context;
+    let {cart,openPopup} = this.context;
     let {cartId} = this.props;
     let cartTab = cart[cartId];
     let total = 0;
@@ -340,7 +340,7 @@ class CartPayment extends Component {
                       'shipping',
                       {
                         cartId,productCards,
-                        payment_layout:(shippingOptions)=>this.kharide_addi_shipping_payment_layout(shippingOptions,cartItems)
+                        payment_layout:(shippingOptions)=>this.forooshe_vije_shipping_payment_layout(shippingOptions,total)
                       }
                     )
                   }}
@@ -354,10 +354,106 @@ class CartPayment extends Component {
       />
     )
   }
-  kharide_addi_shipping_payment_layout({PayDueDate,SettleType,DeliveryType,PaymentTime},cartItems) {
-    let { getFactorDetails } = this.context;
-    let { address } = this.state;
+  forooshe_vije_shipping_payment_layout({address,PayDueDate,SettleType,DeliveryType,PaymentTime},total){
+    let {kharidApis} = this.context;
+    let discountPrice,price,ghabele_pardakht;
+    if(PayDueDate === 'ByDelivery'){
+      discountPrice = amount * 12 / 100;
+      discountPrice = this.fix(discountPrice);
+      price = amount - discountPrice;
+      ghabele_pardakht = this.fix(price * 100 / 100)
+    }
+    if(PayDueDate === 'Cash20_ThreeMonth80'){
+      discountPrice = amount * 4.8 / 100;
+      discountPrice = this.fix(discountPrice);
+      price = amount - discountPrice;
+      ghabele_pardakht = this.fix(price * 20 / 100)
+    }
+    if(PayDueDate === 'Cash30_FourMonth70'){
+      discountPrice = amount * 3.6 / 100;
+      discountPrice = this.fix(discountPrice);
+      price = amount - discountPrice;
+      ghabele_pardakht = this.fix(price * 30 / 100)
+    }
+    if(PayDueDate === 'Cash50_FiveMonth50'){
+      discountPrice = amount * 4.5 / 100;
+      discountPrice = this.fix(discountPrice);
+      price = amount - discountPrice;
+      ghabele_pardakht = this.fix(price * 50 / 100)
+    }
+    if(PayDueDate === 'Cash50_OneMonth50'){
+      discountPrice = amount * 10.5 / 100;
+      discountPrice = this.fix(discountPrice);
+      price = amount - discountPrice;
+      ghabele_pardakht = this.fix(price * 50 / 100)
+    }
 
+
+    return {discountPrice,price,ghabele_pardakht}
+    let {discountPrice,price,ghabele_pardakht} = this.getDiscount(total);
+    this.ghabele_pardakht = ghabele_pardakht
+    return {
+      className:'p-h-12 bg-fff theme-box-shadow',
+      style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
+      column:[
+        {
+          size:28,childsProps:{align:'v'},
+          row:[
+            {html:'جمع کل سبد خرید :',className:'theme-dark-font-color bold fs-14'},
+            {flex:1},
+            {html:functions.splitPrice(this.fix(total)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
+          ]
+        },
+        {
+          size:28,childsProps:{align:'v'},
+          row:[
+            {html:'تخفیف نحوه پرداخت :',className:'theme-dark-font-color bold fs-14'},
+            {flex:1},
+            {html:functions.splitPrice(this.fix(discountPrice)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
+          ]
+        },
+        {
+          size:28,childsProps:{align:'v'},
+          row:[
+            {html:'مبلغ قابل پرداخت:',className:'theme-dark-font-color bold fs-14'},
+            {flex:1},
+            {html:functions.splitPrice(this.fix(price)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
+          ]
+        },
+        {
+          size:28,childsProps:{align:'v'},
+          row:[
+            {html:'مبلغ نحوه پرداخت نقد :',className:'theme-dark-font-color bold fs-14'},
+            {flex:1},
+            {html:functions.splitPrice(this.fix(ghabele_pardakht)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
+          ]
+        },
+        {size:6},
+        {
+          size:36,align:'vh',className:'theme-medium-font-color fs-14 bold',
+          html:(
+            <button 
+              className="button-2" 
+              onClick={()=>{
+                this.onSubmit({
+                  address,
+                  //PaymentTime,
+                  SettleType,
+                  DeliveryType,
+                  PayDueDate,
+                  ghabele_pardakht:this.ghabele_pardakht
+                })
+              }}
+            >{(SettleType === 16?'پرداخت':'ثبت') + ' ' + functions.splitPrice(this.ghabele_pardakht) + ' ریال'}</button>
+          )
+        },
+        {size:12}
+      ]
+    }
+  }
+  kharide_addi_shipping_payment_layout({address,PayDueDate,SettleType,DeliveryType,PaymentTime},cartItems) {
+    let { getFactorDetails } = this.context;
+    
     let factorDetails = getFactorDetails(cartItems, { PayDueDate, PaymentTime, SettleType, DeliveryType })
     let discount = factorDetails.marketingdetails.DocumentDiscount;
     let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent

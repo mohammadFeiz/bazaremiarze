@@ -162,7 +162,7 @@ export default class Main extends Component {
     }
     let newCart = {};
     for(let id in cart){
-        newCart[id] = id === cartId?newCartTab:cart[id];
+        newCart[id] = id === product.cartId?newCartTab:cart[id];
     }
     clearTimeout(this.cartTimeout);
     this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)

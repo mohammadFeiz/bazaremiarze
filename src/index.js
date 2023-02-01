@@ -251,6 +251,22 @@ class App extends Component {
                 />
               )
             },
+            {
+              align:'vh',
+              html:(
+                <a style={{color:'#fff',height:24,margin:0}} href="tel:02175116" className='fs-14'>
+                  تماس با پشتیبانی
+                </a>
+              )
+            },
+            {
+              align:'vh',
+              html:(
+                <a style={{color:'#fff',height:30,margin:0}} href="tel:02175116">
+                  021-75116
+                </a>
+              )
+            },
             { flex: 1, style: { minHeight: 240 } }
           ]
         }}

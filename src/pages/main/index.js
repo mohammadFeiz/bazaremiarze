@@ -83,7 +83,7 @@ export default class Main extends Component {
     }
     this.dateCalculator = dateCalculator();
     this.noorvare3Storage = AIOStorage('noorvare3');
-    let noorvare3 = !!!props.userInfo.noorvareh3Agreement;
+    let noorvare3 = !!!props.userInfo.norvareh3Agreement;
     if(!this.noorvare3Storage.load('show',true)){noorvare3 = false}
     this.state = {
       backOffice,
@@ -469,8 +469,8 @@ export default class Main extends Component {
             let {kharidApis} = this.state;
             kharidApis({api:'taide_noorvare',parameter:'noorvare3'});
             let {updateUserInfo} = this.props;
-            debugger;
-            updateUserInfo({noorvareh3Agreement:true});
+
+            updateUserInfo({norvareh3Agreement:true});
           }}
         />
       )

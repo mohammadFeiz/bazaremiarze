@@ -214,7 +214,7 @@ export default class Home extends Component {
     noorvare3_layout(){
         let {backOffice,userInfo} = this.context;
         console.log(userInfo)
-        let registered = userInfo.noorvareh3Agreement;
+        let registered = userInfo.norvareh3Agreement;
         if(!backOffice.activeManager.noorvare3){
             return false
         }

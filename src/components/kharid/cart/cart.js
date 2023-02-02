@@ -360,6 +360,7 @@ class CartPayment extends Component {
     try { return +value.toFixed(0) }
     catch { return 0 }
   }
+  //خرید عادی و کمپین ها
   getPaymentDetails1(shippingOptions,cartItems){
     let { getFactorDetails } = this.context;
     let { PayDueDate, SettleType, DeliveryType, PaymentTime } = shippingOptions;
@@ -381,39 +382,17 @@ class CartPayment extends Component {
       buttonText
     }
   }
+  //بلکس و فروش ویژه
   getPaymentDetails2(shippingOptions,cartItems,jame_kolle_sabade_kharid){
     let { PayDueDate, SettleType } = shippingOptions;
-    let takhfife_pardakhte_online, mablaghe_ghabele_pardakht, mablaghe_pardakhte_naghdi;
-    if (PayDueDate === 'ByDelivery') {
-      takhfife_pardakhte_online = jame_kolle_sabade_kharid * 12 / 100;
-      takhfife_pardakhte_online = this.fix(takhfife_pardakhte_online);
-      mablaghe_ghabele_pardakht = jame_kolle_sabade_kharid - takhfife_pardakhte_online;
-      mablaghe_pardakhte_naghdi = this.fix(mablaghe_ghabele_pardakht * 100 / 100)
+    let percents = {
+      'ByDelivery':[12,100],'Cash20_ThreeMonth80':[4.8,20],'Cash30_FourMonth70':[3.6,30],
+      'Cash50_FiveMonth50':[4.5,50],'Cash50_OneMonth50':[10.5,50]
     }
-    if (PayDueDate === 'Cash20_ThreeMonth80') {
-      takhfife_pardakhte_online = jame_kolle_sabade_kharid * 4.8 / 100;
-      takhfife_pardakhte_online = this.fix(takhfife_pardakhte_online);
-      mablaghe_ghabele_pardakht = jame_kolle_sabade_kharid - takhfife_pardakhte_online;
-      mablaghe_pardakhte_naghdi = this.fix(mablaghe_ghabele_pardakht * 20 / 100)
-    }
-    if (PayDueDate === 'Cash30_FourMonth70') {
-      takhfife_pardakhte_online = jame_kolle_sabade_kharid * 3.6 / 100;
-      takhfife_pardakhte_online = this.fix(takhfife_pardakhte_online);
-      mablaghe_ghabele_pardakht = jame_kolle_sabade_kharid - takhfife_pardakhte_online;
-      mablaghe_pardakhte_naghdi = this.fix(mablaghe_ghabele_pardakht * 30 / 100)
-    }
-    if (PayDueDate === 'Cash50_FiveMonth50') {
-      takhfife_pardakhte_online = jame_kolle_sabade_kharid * 4.5 / 100;
-      takhfife_pardakhte_online = this.fix(takhfife_pardakhte_online);
-      mablaghe_ghabele_pardakht = jame_kolle_sabade_kharid - takhfife_pardakhte_online;
-      mablaghe_pardakhte_naghdi = this.fix(mablaghe_ghabele_pardakht * 50 / 100)
-    }
-    if (PayDueDate === 'Cash50_OneMonth50') {
-      takhfife_pardakhte_online = jame_kolle_sabade_kharid * 10.5 / 100;
-      takhfife_pardakhte_online = this.fix(takhfife_pardakhte_online);
-      mablaghe_ghabele_pardakht = jame_kolle_sabade_kharid - takhfife_pardakhte_online;
-      mablaghe_pardakhte_naghdi = this.fix(mablaghe_ghabele_pardakht * 50 / 100)
-    }
+    let [a,b] = percents[PayDueDate];
+    let takhfife_pardakhte_online = this.fix(jame_kolle_sabade_kharid * a / 100);
+    let mablaghe_ghabele_pardakht = jame_kolle_sabade_kharid - takhfife_pardakhte_online;
+    let mablaghe_pardakhte_naghdi = this.fix(mablaghe_ghabele_pardakht * b / 100)
     let jame_kolle_takhfif = false;
     let buttonText = SettleType === 16 ? 'پرداخت' : 'ثبت';
     return {
@@ -423,6 +402,23 @@ class CartPayment extends Component {
       mablaghe_ghabele_pardakht,
       mablaghe_pardakhte_naghdi,
       buttonText
+    }
+  }
+  details_layout(list){
+    return {
+      className:'box p-12 m-h-12',
+      column:list.map(([key,value,attrs = {}])=>{
+        if(value === false){return false}
+        let {className = 'theme-medium-font-color fs-14',style} = attrs;
+        return {
+          size:36,childsProps:{align:'v'},style,
+          row:[
+            {html:key + ':',className},
+            {flex:1},
+            {html:value,className} 
+          ]
+        }
+      })
     }
   }
   shipping_payment_layout(shippingOptions, cartItems,total) {
@@ -443,27 +439,11 @@ class CartPayment extends Component {
       style: { paddingTop: 12, borderRadius: '16px 16px 0 0' },
       column: [
         this.details_layout([
-          [
-            'جمع کل سبد خرید',jame_kolle_sabade_kharid,
-            { className: 'theme-medium-font-color fs-14' }
-          ],
-          [
-            'جمع کل تخفیف',jame_kolle_takhfif,
-            { className: 'colorFDB913 fs-14' }
-          ],
-          [
-            'تخفیف نحوه پرداخت',takhfife_pardakhte_online,
-            { className: 'color00B5A5 fs-14' }
-          ],
-          
-          [
-            'مبلغ قابل پرداخت',mablaghe_ghabele_pardakht,
-            { className: 'theme-dark-font-color bold fs-16' }
-          ],
-          [
-            'مبلغ پرداخت نقدی',mablaghe_pardakhte_naghdi,
-            { className: 'color00B5A5 fs-14' }
-          ],
+          ['جمع کل سبد خرید',jame_kolle_sabade_kharid,'theme-medium-font-color fs-14'],
+          ['جمع کل تخفیف',jame_kolle_takhfif,'colorFDB913 fs-14'],
+          ['تخفیف نحوه پرداخت',takhfife_pardakhte_online,'color00B5A5 fs-14'],
+          ['مبلغ قابل پرداخت',mablaghe_ghabele_pardakht,'theme-dark-font-color bold fs-16'],
+          ['مبلغ پرداخت نقدی',mablaghe_pardakhte_naghdi,'color00B5A5 fs-14']
         ]),
         { size: 6 },
         {

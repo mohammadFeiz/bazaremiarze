@@ -22,74 +22,14 @@ export default class Cart extends Component {
     }
     this.setState({ activeTabId })
   }
-  getDetails() {
-    let { changeCart, fixPrice, getFactorDetails } = this.context;
-    this.tabs = [];
-    for (let tabId in tabsDictionary) {
-      let tab = tabsDictionary[tabId]
-      if (tabId === 'forooshe_vije') {
-        let finalPrice = 0;
-        tab.cards = tab.cartItems.map(({ product, foroosheVije_count, variantId }) => {
-          let variant = product.variants.find(({ id }) => id === variantId);
-          finalPrice += foroosheVije_count.packQty * variant.finalPrice;
-          return <ForoosheVijeCard product={product} variantId={variantId} count={foroosheVije_count} type='cart' />
-        })
-        tab.finalPrice = finalPrice;
-      }
-      else if (tabId === 'belex') {
-        let finalPrice = 0;
-        tab.cards = tab.cartItems.map(({ product, belex_count }) => {
-          finalPrice += belex_count.packQty * product.price;
-          return <BelexCard key={product.code} product={product} count={belex_count} />
-        })
-        tab.finalPrice = finalPrice;
-      }
-      else {
-        let fixedItems = fixPrice(tab.cartItems.map(({ product, count }) => {
-          let itemCode = product.defaultVariant.code;
-          return { itemCode, itemQty: count }
-        }))
-        tab.cartItems = tab.cartItems.map((o, i) => {
-          return { ...o, product: { ...o.product, ...fixedItems[i] } }
-        })
-        let items = tab.cartItems.map((o) => {
-          return { ItemCode: o.variant.code, ItemQty: o.count }
-        })
-        tab.items = items;
-        tab.factorDetails = getFactorDetails(items);
-      }
-      tab.badge = tab.cartItems.length;
-
-      this.tabs.push(tab);
-    }
-    if (tabsDictionary[this.state.activeTabId]) {
-      this.tab = tabsDictionary[this.state.activeTabId];
-    }
-    else {
-      if (this.tabs[0]) {
-        this.state.activeTabId = this.tabs[0].id;
-        this.tab = this.tabs[0]
-      }
-      else {
-        this.tab = undefined;
-        this.state.activeTabId = undefined;
-      }
-    }
-  }
   tabs_layout() {
-    let { cart } = this.context;
-    let { activeTabId } = this.state;
+    let { cart } = this.context,{ activeTabId } = this.state;
     return {
       html: (
         <AIOButton
-          type='tabs'
-          options={Object.keys(cart)}
+          type='tabs' optionText='option' optionValue='option' style={{ marginBottom: 12 }} value={activeTabId} options={Object.keys(cart)}
           optionStyle={{ flex: this.tabs.length <= 3 ? 1 : undefined }}
-          style={{ marginBottom: 12 }}
-          value={activeTabId}
           optionAfter={(option) => <div className='tab-badge'>{Object.keys(cart[option]).length}</div>}
-          optionText='option'
-          optionValue='option'
           onChange={(activeTabId) => this.setState({ activeTabId })}
         />
       )
@@ -122,83 +62,7 @@ export default class Cart extends Component {
   payment_layout() {
     let { activeTabId } = this.state;
     if (!activeTabId) { return false }
-    if (this.tab.id === 'forooshe_vije') { return this.foroosheVije_payment_layout() }
-    if (this.tab.id === 'belex') { return this.belex_payment_layout() }
-    let total = this.tab.factorDetails.DocumentTotal;
-    return {
-      size: 72, className: "bgFFF p-h-12 theme-box-shadow",
-      row: [
-        {
-          flex: 1,
-          column: [
-            { flex: 1 },
-            { align: "v", html: "مبلغ قابل پرداخت", className: "theme-medium-font-color fs-12" },
-            { size: 3 },
-            {
-              row: [
-                { align: "v", html: functions.splitPrice(total), className: "theme-dark-font-color fs-14 bold" },
-                { size: 4 },
-                { align: "v", html: " ریال", className: "theme-dark-font-color fs-12" }
-              ]
-            },
-            { flex: 1 },
-          ],
-        },
-        { html: <button disabled={continued} onClick={() => this.continue()} className="button-2" style={{ height: 36 }}>ادامه فرایند خرید</button>, align: "v" },
-      ],
-    }
-  }
-  foroosheVije_payment_layout() {
-    let total = this.tab.finalPrice;
-    let { continued } = this.state;
-    return {
-      size: 72, className: "bgFFF p-h-12 theme-box-shadow",
-      row: [
-        {
-          flex: 1,
-          column: [
-            { flex: 1 },
-            { align: "v", html: "مبلغ قابل پرداخت", className: "theme-medium-font-color fs-12" },
-            { size: 3 },
-            {
-              row: [
-                { align: "v", html: functions.splitPrice(total), className: "theme-dark-font-color fs-14 bold" },
-                { size: 4 },
-                { align: "v", html: " ریال", className: "theme-dark-font-color fs-12" }
-              ]
-            },
-            { flex: 1 },
-          ],
-        },
-        { html: <button disabled={continued} onClick={() => this.continue()} className="button-2" style={{ height: 36 }}>ادامه فرایند خرید</button>, align: "v" },
-      ],
-    }
-  }
-  belex_payment_layout() {
-    let total = this.tab.finalPrice;
-    let { continued } = this.state;
-    return {
-      size: 72, className: "bgFFF p-h-12 theme-box-shadow",
-      row: [
-        {
-          flex: 1,
-          column: [
-            { flex: 1 },
-            { align: "v", html: "مبلغ قابل پرداخت", className: "theme-medium-font-color fs-12" },
-            { size: 3 },
-            {
-              row: [
-                { align: "v", html: functions.splitPrice(total), className: "theme-dark-font-color fs-14 bold" },
-                { size: 4 },
-                { align: "v", html: " ریال", className: "theme-dark-font-color fs-12" }
-              ]
-            },
-            { flex: 1 },
-          ],
-        },
-        { html: <button onClick={() => this.continue()} className="button-2" style={{ height: 36 }}>ادامه فرایند خرید</button>, align: "v" },
-      ],
-    }
+    return {size: 72, className: "bgFFF p-h-12 theme-box-shadow",html:<CartPayment cartId={activeTabId}/>}
   }
   continue() {
     let { openPopup } = this.context;
@@ -286,27 +150,34 @@ class CartPayment extends Component {
     return {total,cartItems,productCards,payment_layout}
   }
   //فروش ویژه و بلکس
-  getDetails2(){
+  getDetails2(cartId){
     let { cart } = this.context;
-    let { cartId } = this.props;
     let cartTab = cart[cartId];
     let total = 0;
     let productCards = [];
     let cartItems = [];
     for (let id in cartTab) {
-      let { product, foroosheVije_count, variantId } = cartTab[id];
-      let variant = product.variants.find((o) => o.id === variantId);
-      let { finalPrice } = variant;
-      let { packQty } = foroosheVije_count;
-      total += packQty * finalPrice;
+      let { product, count, variantId } = cartTab[id];
+      let { packQty } = count;
+      let CardComponent;
+      if(cartId === 'فروش ویژه'){
+        let variant = product.variants.find((o) => o.id === variantId);
+        let { finalPrice } = variant;
+        total += packQty * finalPrice;
+        CardComponent = ForoosheVijeCard
+      }
+      else if(cartId === 'بلکس'){
+        total += packQty * product.price;
+        CardComponent = BelexCard;
+      }
       cartItems.push(cartTab[id]);
       productCards.push(
-        <ForoosheVijeCard
+        <CardComponent
           type='horizontal' renderIn='shipping'
           key={variantId}
           product={product}
           variantId={variantId}
-          count={foroosheVije_count}
+          count={count}
         />
       )
     }

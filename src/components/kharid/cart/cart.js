@@ -124,7 +124,7 @@ class CartPayment extends Component {
     let payment_layout = (shippingOptions)=>{
       let { getFactorDetails } = this.context;
       let { PayDueDate, SettleType, DeliveryType, PaymentTime } = shippingOptions;
-      let factorDetails = getFactorDetails(cartItems, { PayDueDate, PaymentTime, SettleType, DeliveryType })
+      let factorDetails = getFactorDetails(cartItems, { PayDueDate, PaymentTime:PaymentTime.map, SettleType, DeliveryType })
       let jame_kolle_takhfif = factorDetails.marketingdetails.DocumentDiscount;
       let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent
       let mablaghe_ghabele_pardakht = factorDetails.DocumentTotal;
@@ -184,10 +184,10 @@ class CartPayment extends Component {
     let payment_layout = (shippingOptions)=>{
       let { PayDueDate, SettleType } = shippingOptions;
       let percents = {
-        'ByDelivery':[12,100],'Cash20_ThreeMonth80':[4.8,20],'Cash30_FourMonth70':[3.6,30],
-        'Cash50_FiveMonth50':[4.5,50],'Cash50_OneMonth50':[10.5,50]
+        '1':[12,100],'17':[4.8,20],'18':[3.6,30],
+        '19':[4.5,50],'20':[10.5,50]
       }
-      let [a,b] = percents[PayDueDate];
+      let [a,b] = percents[PayDueDate.toString()];
       let jame_kolle_sabade_kharid = total;
       let takhfife_pardakhte_online = this.fix(jame_kolle_sabade_kharid * a / 100);
       let mablaghe_ghabele_pardakht = jame_kolle_sabade_kharid - takhfife_pardakhte_online;
@@ -213,6 +213,7 @@ class CartPayment extends Component {
     return {total,cartItems,productCards,payment_layout}
   }
   render() {
+    let {openPopup} = this.context;
     let { cartId } = this.props;
     let details;
     if (cartId === 'خرید عادی') {
@@ -267,7 +268,7 @@ class ShippingPayment extends Component{
     let orderNumber = await kharidApis({
       api,
       parameter: { 
-        address, SettleType, PaymentTime, DeliveryType,PayDueDate,
+        address, SettleType, PaymentTime:PaymentTime.map, DeliveryType,PayDueDate:PayDueDate.map,
         cartItems,mablaghe_ghabele_pardakht 
       }
     })

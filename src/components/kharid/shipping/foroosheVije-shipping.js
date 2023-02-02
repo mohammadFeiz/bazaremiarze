@@ -8,29 +8,16 @@ import React,{Component} from 'react';
     constructor(props){
       super(props);
       this.state = {
-        name:'',
-        code:'',
-        campaign:'فروش ویژه 10 وات',
-        basePrice:'',
-        customerGroup:'الکتریکی',
-        address:'',
-        phone:'09123534314',
-        PayDueDate:'ByDelivery',
+        name:'',code:'',campaign:'',basePrice:'',customerGroup:'',address:'',phone:'',
+        PayDueDate:1,
         PayDueDate_options:[
-          {value:'ByDelivery',text:'نقد (12% تخفیف بیشتر)'},
-          {value:'Cash20_ThreeMonth80',text:'20% نقد و 80% چک سه ماهه (4.8% تخفیف بیشتر)'},
-          {value:'Cash30_FourMonth70',text:'30% نقد و 70% چک چهار ماهه (3.6% تخفیف بیشتر)'},
-          {value:'Cash50_FiveMonth50',text:'50% نقد و 50% چک پنج ماهه (4.5% تخفیف بیشتر)'},
-          {value:'Cash50_OneMonth50',text:'50% نقد و 50% چک یک ماهه (10.5% تخفیف بیشتر)',show:false}
+          {value:1,text:'نقد (12% تخفیف بیشتر)'},//'ByDelivery'
+          {value:17,text:'20% نقد و 80% چک سه ماهه (4.8% تخفیف بیشتر)'},//'Cash20_ThreeMonth80'
+          {value:18,text:'30% نقد و 70% چک چهار ماهه (3.6% تخفیف بیشتر)'},//'Cash30_FourMonth70'
+          {value:19,text:'50% نقد و 50% چک پنج ماهه (4.5% تخفیف بیشتر)'},//'Cash50_FiveMonth50'
+          {value:20,text:'50% نقد و 50% چک یک ماهه (10.5% تخفیف بیشتر)',show:false}//'Cash50_OneMonth50'
           
         ],
-        PayDueDate_map:{
-          ByDelivery:1,
-          Cash20_ThreeMonth80:17,
-          Cash30_FourMonth70:18,
-          Cash50_FiveMonth50:19,
-          Cash50_OneMonth50:20,
-        },
         // PaymentTime:'ByOnlineOrder',
         // PaymentTime_options:[
         //   {value:'ByOnlineOrder',text:'اینترنتی'},
@@ -110,14 +97,6 @@ import React,{Component} from 'react';
       }
       catch{
         debugger;
-        for(let i = 0; i < shipping.cartItems.length; i++){
-          let product = shipping.cartItems[i].product;
-          if(product.cableCategory){
-            hasCable = true;
-            break;
-          }
-        }
-        if(hasCable){this.state.PayDueDate_options[4].show = true}
       }
       this.setState({
         hasCable,
@@ -192,154 +171,6 @@ import React,{Component} from 'react';
     fix(value){
       try{return +value.toFixed(0)}
       catch{return 0}
-    }
-    getDiscount(amount){
-      let {PayDueDate} = this.state;
-      let discountPrice;
-      let price;
-      let ghabele_pardakht;
-      if(PayDueDate === 'ByDelivery'){
-        discountPrice = amount * 12 / 100;
-        discountPrice = this.fix(discountPrice);
-        price = amount - discountPrice;
-        ghabele_pardakht = this.fix(price * 100 / 100)
-      }
-      if(PayDueDate === 'Cash20_ThreeMonth80'){
-        discountPrice = amount * 4.8 / 100;
-        discountPrice = this.fix(discountPrice);
-        price = amount - discountPrice;
-        ghabele_pardakht = this.fix(price * 20 / 100)
-      }
-      if(PayDueDate === 'Cash30_FourMonth70'){
-        discountPrice = amount * 3.6 / 100;
-        discountPrice = this.fix(discountPrice);
-        price = amount - discountPrice;
-        ghabele_pardakht = this.fix(price * 30 / 100)
-      }
-      if(PayDueDate === 'Cash50_FiveMonth50'){
-        discountPrice = amount * 4.5 / 100;
-        discountPrice = this.fix(discountPrice);
-        price = amount - discountPrice;
-        ghabele_pardakht = this.fix(price * 50 / 100)
-      }
-      if(PayDueDate === 'Cash50_OneMonth50'){
-        discountPrice = amount * 10.5 / 100;
-        discountPrice = this.fix(discountPrice);
-        price = amount - discountPrice;
-        ghabele_pardakht = this.fix(price * 50 / 100)
-      }
-
-
-      return {discountPrice,price,ghabele_pardakht}
-    }
-    amount_layout(){
-      let {address,finalPrice} = this.state;
-      let {kharidApis} = this.context;
-      
-      let {
-        PayDueDate_map,PayDueDate,
-        SettleType_map,SettleType,
-        DeliveryType_map,DeliveryType,
-        //PaymentTime_map,PaymentTime,
-      } = this.state;
-      PayDueDate = PayDueDate_map[PayDueDate];
-      DeliveryType = DeliveryType_map[DeliveryType];
-      SettleType = SettleType_map[SettleType]
-      //PaymentTime = PaymentTime_map[PaymentTime];
-      let {discountPrice,price,ghabele_pardakht} = this.getDiscount(finalPrice);
-      this.ghabele_pardakht = ghabele_pardakht
-      return {
-        className:'p-h-12 bg-fff theme-box-shadow',
-        style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
-        column:[
-          {
-            size:28,childsProps:{align:'v'},
-            row:[
-              {html:'جمع کل سبد خرید :',className:'theme-dark-font-color bold fs-14'},
-              {flex:1},
-              {html:functions.splitPrice(this.fix(finalPrice)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
-            ]
-          },
-          {
-            size:28,childsProps:{align:'v'},
-            row:[
-              {html:'تخفیف نحوه پرداخت :',className:'theme-dark-font-color bold fs-14'},
-              {flex:1},
-              {html:functions.splitPrice(this.fix(discountPrice)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
-            ]
-          },
-          {
-            size:28,childsProps:{align:'v'},
-            row:[
-              {html:'مبلغ قابل پرداخت:',className:'theme-dark-font-color bold fs-14'},
-              {flex:1},
-              {html:functions.splitPrice(this.fix(price)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
-            ]
-          },
-          {
-            size:28,childsProps:{align:'v'},
-            row:[
-              {html:'مبلغ نحوه پرداخت نقد :',className:'theme-dark-font-color bold fs-14'},
-              {flex:1},
-              {html:functions.splitPrice(this.fix(ghabele_pardakht)) + ' ریال',className:'theme-dark-font-color bold fs-14'}
-            ]
-          },
-          {size:6},
-          {
-            size:36,align:'vh',className:'theme-medium-font-color fs-14 bold',
-            html:(
-              <button 
-                className="button-2" 
-                onClick={()=>{
-                  this.onSubmit({
-                    address,
-                    //PaymentTime,
-                    SettleType,
-                    DeliveryType,
-                    PayDueDate,
-                    ghabele_pardakht:this.ghabele_pardakht
-                  })
-                }}
-              >{(SettleType === 16?'پرداخت':'ثبت') + ' ' + functions.splitPrice(this.ghabele_pardakht) + ' ریال'}</button>
-            )
-          },
-          {size:12}
-        ]
-      }
-    }
-    async onSubmit({
-        address,
-        //PaymentTime,
-        SettleType,
-        DeliveryType,
-        PayDueDate
-      }){
-      let {shipping,kharidApis,cart,rsa_actions,changeCart,openPopup} = this.context;
-      let {cartItems} = shipping;
-      let orderNumber = await kharidApis({
-        api:SettleType === 16?"pardakhte_foroosheVije":'sabte_foroosheVije',
-        parameter:{
-          address,
-          //PaymentTime,
-          SettleType,
-          DeliveryType,
-          PayDueDate,
-          shipping,
-          ghabele_pardakht:this.ghabele_pardakht
-        }
-      })
-      if(orderNumber){
-        let variantIds = cartItems.map((o)=>o.product.code)
-        let newCart = {};
-        for(let prop in cart){
-          if(variantIds.indexOf(prop) === -1){
-            newCart[prop] = cart[prop]
-          }
-        }
-        rsa_actions.removePopup('all');
-        changeCart(newCart)
-        openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
-      }
     }
     render(){
       return (

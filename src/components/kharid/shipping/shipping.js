@@ -7,56 +7,19 @@ export default class Shipping extends Component{
     constructor(props){
       super(props);
       this.state = {
-        name:'',
-        code:'',
-        campaign:'فروش ویژه 10 وات',
-        basePrice:'',
-        customerGroup:'الکتریکی',
-        address:'',
-        phone:'09123534314',
-        PayDueDate:'ByDelivery',
+        name:'',code:'',campaign:'',basePrice:'',customerGroup:'',address:'',phone:'',
+        PayDueDate:1,
         PayDueDate_options:[
-          {value:'ByDelivery',text:'نقد'},
-          // {value:'By15Days',text:'چک 15 روزه'},
-          // {value:'ByMonth',text:'چک 30 روزه'},
-          // {value:'By45Days',text:'چک 45 روزه'},
-          // {value:'By60Days',text:'چک 60 روزه'},
-          {value:'Cash25_TowMonth75',text:'25% نقد و 75% چک دو ماهه'},
-          {value:'Cach50_ThreeMonth50',text:'50% نقد و چک سه ماهه'},
-          
+          {text:'نقد',value:1},//ByDelivery
+          {value:15,text:'25% نقد و 75% چک دو ماهه'},//'Cash25_TowMonth75'
+          {text:'50% نقد و چک سه ماهه',value:16},//'Cach50_ThreeMonth50'
         ],
-        PayDueDate_map:{
-          ByDelivery:1, // نقد --->*
-          // By15Days:2, // *
-          // ByMonth:3,// *
-          // By45Days:4, // *
-          // NotSet:5,
-          // By60Days:6,//*
-          // By75Days:7,
-          // By3Months:8,
-          // By3_5Months:9,
-          // By4Months:10,
-          // By4_5Months:11,
-          // By5Months:12,
-          // By5_5Months:13,
-          // By6Months:14,
-          Cash25_TowMonth75:15,
-          Cach50_ThreeMonth50:16
-        },
         PaymentTime:'ByOnlineOrder',
         PaymentTime_options:[
-          {value:'ByOnlineOrder',text:'اینترنتی'},
-          {value:'ByOrder',text:'واریز قبل ارسال'},
-          {value:'ByDelivery',text:'واریز پای بار'},
+          {value:'ByOnlineOrder',text:'اینترنتی',map:5},
+          {value:'ByOrder',text:'واریز قبل ارسال',map:1},
+          {value:'ByDelivery',text:'واریز پای بار',map:2},
         ],
-        PaymentTime_map:{
-            ByOrder:1,
-            ByDelivery:2,
-            ByGuarantee:3,
-            ByCredit:4,
-            ByOnlineOrder:5,
-            NotSet:6
-        },
         SettleType:'ByDelivery',
         SettleType_options:[
           {value:'ByDelivery',text:'نقد'},
@@ -139,7 +102,7 @@ export default class Shipping extends Component{
                 options={options}
                 optionClassName='"w-100 h-36"'
                 value={value}
-                onChange={(newValue)=>this.setState({[key]:newValue})}
+                onChange={(value)=>this.setState({[key]:value})}
               />
             )
           }
@@ -178,15 +141,13 @@ export default class Shipping extends Component{
       let {payment_layout} = shipping;
       let {
         address,
-        PayDueDate_map,PayDueDate,
+        PayDueDate,
         SettleType_map,SettleType,
         DeliveryType_map,DeliveryType,
-        PaymentTime_map,PaymentTime,
+        PaymentTime,
       } = this.state;
-      PayDueDate = PayDueDate_map[PayDueDate];
       SettleType = SettleType_map[SettleType];
       DeliveryType = DeliveryType_map[DeliveryType];
-      PaymentTime = PaymentTime_map[PaymentTime];
       return payment_layout({address,PayDueDate,SettleType,DeliveryType,PaymentTime});
     }
     render(){
@@ -213,7 +174,7 @@ export default class Shipping extends Component{
                   {size:12},
                   this.options_layout('PaymentTime','زمان پرداخت',),
                   {size:12},
-                  this.options_layout('PayDueDate','مهلت تسویه',PaymentTime !== 'ByOnlineOrder'),
+                  this.options_layout('PayDueDate','مهلت تسویه',PaymentTime.value !== 'ByOnlineOrder'),
                   {size:12},
                   this.products_layout(),
                   {size:12},

@@ -11,7 +11,7 @@ export default class CartButton extends Component{
         cart[product.cartId] = cart[product.cartId] || {};
         if(!variantId){return ''}
         if(!cart[product.cartId][variantId]){
-            return (<button onClick={() => this.changeCount({cartId,variantId,product,count:1})} className="button-2">افزودن به سبد خرید</button>)
+            return (<button onClick={() => this.changeCount({cartId:product.cartId,variantId,product,count:1})} className="button-2">افزودن به سبد خرید</button>)
         }
         let {count} = cart[product.cartId][variantId];
         if(renderIn === 'shipping'){

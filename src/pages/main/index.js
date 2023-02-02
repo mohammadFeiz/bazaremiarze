@@ -392,7 +392,7 @@ export default class Main extends Component {
         }
         else {
           addPopup({
-            body:()=><Shipping onSend={(o)=>this.ersal_baraye_vizitor(o)}/>,
+            body:()=><Shipping/>,
             title:'ادامه فرایند خرید'
           })
         }
@@ -415,26 +415,6 @@ export default class Main extends Component {
         ),
         header:false
       })
-    }
-  }
-  async ersal_baraye_vizitor({address,SettleType,PaymentTime,DeliveryType,PayDueDate}){
-    let {shipping,kharidApis,cart,rsa_actions} = this.state;
-    let {cartItems} = shipping;
-    let orderNumber = await kharidApis({
-      api:"sendToVisitor",
-      parameter:{address,SettleType,PaymentTime,DeliveryType,PayDueDate}
-    })
-    if(orderNumber){
-      let variantIds = cartItems.map((o)=>o.variant.id)
-      let newCart = {};
-      for(let prop in cart){
-        if(variantIds.indexOf(prop) === -1){
-          newCart[prop] = cart[prop]
-        }
-      }
-      rsa_actions.removePopup('all');
-      this.changeCart(newCart)
-      this.openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
     }
   }
   getProfileName(userInfo){

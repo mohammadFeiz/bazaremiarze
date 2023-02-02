@@ -733,7 +733,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       let {userInfo} = getState();
       let arr=[];
       for(const cart of shipping.cartItems){
-        const items=cart.belex_count.qtyInPacks;
+        const items=cart.count.qtyInPacks;
         for (const key in items) {
           arr=arr.concat(items[key])
         }
@@ -770,7 +770,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       let {userInfo} = getState();
       let arr=[];
       for(const cart of shipping.cartItems){
-        const items=cart.belex_count.qtyInPacks;
+        const items=cart.count.qtyInPacks;
         for (const key in items) {
           arr=arr.concat(items[key])
         }

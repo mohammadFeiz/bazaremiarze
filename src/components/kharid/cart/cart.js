@@ -64,11 +64,6 @@ export default class Cart extends Component {
     if (!activeTabId) { return false }
     return {size: 72, className: "bgFFF p-h-12 theme-box-shadow",html:<CartPayment cartId={activeTabId}/>}
   }
-  continue() {
-    let { openPopup } = this.context;
-    this.setState({ continued: true })
-    openPopup('shipping', { ...this.tab })
-  }
   render() {
     this.getDetails();
     return (
@@ -88,6 +83,54 @@ class CartPayment extends Component {
   fix(value) {
     try { return +value.toFixed(0) }
     catch { return 0 }
+  }
+  getShippingState(){
+    return {
+      PayDueDate:1,
+      PayDueDate_options:[
+        {value:1,text:'نقد',type:['کمپین','خرید عادی']},//ByDelivery
+        {value:15,text:'25% نقد و 75% چک دو ماهه',type:['کمپین','خرید عادی']},//'Cash25_TowMonth75'
+        {value:16,text:'50% نقد و چک سه ماهه',type:['کمپین','خرید عادی']},//'Cach50_ThreeMonth50'
+        {value:1,text:'نقد (12% تخفیف بیشتر)',type:['بلکس','فروش ویژه']},//'ByDelivery'
+        {value:17,text:'20% نقد و 80% چک سه ماهه (4.8% تخفیف بیشتر)',type:['بلکس','فروش ویژه']},//'Cash20_ThreeMonth80'
+        {value:18,text:'30% نقد و 70% چک چهار ماهه (3.6% تخفیف بیشتر)',type:['بلکس','فروش ویژه']},//'Cash30_FourMonth70'
+        {value:19,text:'50% نقد و 50% چک پنج ماهه (4.5% تخفیف بیشتر)',type:['بلکس','فروش ویژه']},//'Cash50_FiveMonth50'
+        {value:20,text:'50% نقد و 50% چک یک ماهه (10.5% تخفیف بیشتر)',type:['بلکس','فروش ویژه']}//'Cash50_OneMonth50'
+      ],
+      PaymentTime:5,
+      PaymentTime_options:[
+        {value:5,text:'اینترنتی'},//'ByOnlineOrder'
+        {value:1,text:'واریز قبل ارسال'},//'ByOrder'
+        {value:2,text:'واریز پای بار'},//'ByDelivery'
+      ],
+      SettleType:'ByDelivery',
+      SettleType_options:[
+        {value:1,text:'نقد'},//'ByDelivery'
+        {value:2,text:'چک'}//'Cheque'
+      ],
+      DeliveryType:11,
+      DeliveryType_options:[
+        {value:11,text:'ماشین توزیع بروکس'},//'BRXDistribution'
+        {value:12,text:'ماشین اجاره ای'},//'RentalCar'
+        {value:13,text:'باربری'},//'Cargo'
+        {value:15,text:'ارسال توسط ویزیتور'}//'BySalesMan'
+      ]
+    }
+  }
+  openPopup({cartId,payment_layout,productCards}) {
+    let { rsa_actions } = this.context;
+    this.setState({ continued: true })
+    rsa_actions.addPopup({
+      body:()=>(
+        <Shipping
+          cartId={cartId}
+          productCards={productCards}
+          payment_layout={payment_layout}
+          shippingState={this.getShippingState()}
+        />
+      ),
+      title:'ادامه فرایند خرید'
+    })
   }
   //خرید عادی و کمپین ها
   getDetails1(cartId){
@@ -245,12 +288,7 @@ class CartPayment extends Component {
               ],
             },
             {
-              html: (
-                <button
-                  onClick={()=>openPopup('shipping',details)}
-                  className="button-2" style={{ height: 36 }}
-                >ادامه فرایند خرید</button>
-              ),
+              html: (<button onClick={()=>this.openPopup(details)} className="button-2" style={{ height: 36 }}>ادامه فرایند خرید</button>),
               align: "v"
             }
           ]
@@ -319,3 +357,145 @@ class ShippingPayment extends Component{
     )
   }
 }
+
+
+class Shipping extends Component{
+  static contextType = appContext;
+  constructor(props){
+    super(props);
+    this.state = {
+      ...props.shippingState
+    }
+  }
+  details_layout(list){
+    return {
+      className:'box p-12 m-h-12',
+      column:list.map(([key,value,attrs = {}])=>{
+        let {className = 'theme-medium-font-color fs-14',style} = attrs;
+        return {
+          size:36,childsProps:{align:'v'},style,
+          row:[
+            {html:key + ':',className},
+            {flex:1},
+            {html:value,className} 
+          ]
+        }
+      })
+    }
+  }
+  address_layout(address){
+    return {
+      className:'box p-12 m-h-12',
+      column:[
+        {size:36,align:'v',className:'theme-medium-font-color fs-12 bold',html:'آدرس تحویل'},          {
+          className:'fs-14 theme-medium-font-color bgF1F1F1 p-12 br-4',html:address,size:72
+        }
+      ]
+    }
+  }
+  options_layout(cartId){
+    let {PaymentTime} = this.state;
+    let options = [
+      {key:'DeliveryType',text:'نحوه ارسال',show:true},
+      {key:'PayDueDate',text:'نحوه پرداخت',show:(cartId === 'خرید عادی' || cartId === 'کمپین') && PaymentTime !== 5},
+      {key:'PayDueDate',text:'نحوه پرداخت',show:cartId === 'بلکس' || cartId === 'فروش ویژه'},
+      {key:'PaymentTime',text:'زمان پرداخت',show:cartId === 'خرید عادی' || cartId === 'کمپین'},
+      {key:'SettleType',text:'نحوه پرداخت نقد',show:cartId === 'بلکس' || cartId === 'فروش ویژه'}
+    ]
+    return {
+      column:options.filter(({show})=>show).map((o)=>{
+        return {html:this.option_layout(o)}
+      })
+    }
+  }
+  option_layout({key,text}){
+    let options = this.state[key + '_options']
+    let value = this.state[key];
+    return {
+      className:'box p-12 m-h-12',
+      column:[
+        {size:36,align:'v',className:'theme-medium-font-color fs-12 bold',html:text},
+        {
+          html:(
+            <AIOButton
+              type='radio'
+              options={options}
+              optionClassName='"w-100 h-36"'
+              value={value}
+              onChange={(value)=>this.setState({[key]:value})}
+            />
+          )
+        }
+      ]
+    }
+  }
+  phone_layout(phone){
+    return {
+      className:'box p-12 m-h-12',
+      column:[
+        {size:36,align:'v',className:'theme-medium-font-color fs-12 bold',html:'شماره تلفن'},
+        {
+          className:'fs-14 theme-medium-font-color bgF1F1F1 p-12 br-4',html:phone,style:{minHeight:36}
+        }
+      ]
+    }
+  }
+  products_layout(productCards){
+    return {
+      column:[
+        {size:36,align:'v',className:'theme-medium-font-color fs-14 bold p-h-12',html:'محصولات'},
+        {className:'of-visible',column:productCards.map((card)=>{return {html:card,className:'of-visible'}})},
+        {size:12}
+      ]
+    }
+  }
+  fix(value){
+    try{return +value.toFixed(0)}
+    catch{return 0}
+  }
+  payment_layout(payment_layout,address){
+    let {PayDueDate,SettleType,DeliveryType,PaymentTime} = this.state;
+    return payment_layout({address,PayDueDate,SettleType,DeliveryType,PaymentTime});
+  }
+  render(){
+    let {userInfo} = this.context;
+    let {cartId,productCards,payment_layout} = this.props;
+    return (
+      <>
+        <RVD
+        layout={{
+          className:'theme-popup-bg',
+          flex:1,
+          column:[
+            {
+              flex:1,className:'ofy-auto',
+              column:[
+                {size:12},
+                this.details_layout([
+                  ['نام مشتری',`${userInfo.firstName} ${userInfo.lastName}`],
+                  ['نام کمپین',cartId],
+                  ['کد مشتری',userInfo.cardCode],
+                  ['گروه مشتری',userInfo.groupName]
+                ]),
+                {size:12},
+                this.address_layout(userInfo.address),
+                {size:12},
+                this.phone_layout(userInfo.phone1),
+                {size:12},
+                this.options_layout(cartId),
+                {size:12},
+                this.products_layout(productCards),
+                {size:12},
+              ],
+            },
+            this.payment_layout(payment_layout,userInfo.address),
+          ]
+        }}
+      />
+      </>
+    )
+  }
+}
+
+
+

@@ -11,9 +11,6 @@ import Noorvare3 from './../../pages/noorvare3/noorvare3';
 //popups/////////////////////////////////////
 import OrdersHistory from "./../../components/kharid/orders-history/orders-history";
 import SabteGarantiJadid from "../../components/garanti/sabte-garanti-jadid/sabte-garanti-jadid";
-import Shipping from './../../components/kharid/shipping/shipping';
-import BelexShipping from './../../components/kharid/shipping/belex-shipping';
-import ForoosheVijeShipping from './../../components/kharid/shipping/foroosheVije-shipping';
 import Wallet from "../../popups/wallet/wallet";
 import TanzimateKifePool from "../../components/kife-pool/tanzimate-kife-pool/tanzimate-kife-pool";
 import Cart from "./../../components/kharid/cart/cart";
@@ -375,28 +372,6 @@ export default class Main extends Component {
     }
     else if(type === 'cart'){
       addPopup({body:()=><Cart/>,title:'سبد خرید',id:'cart'})
-    }
-    else if(type === 'shipping'){
-      this.setState({shipping:parameter},()=>{
-        if(parameter.id === 'belex'){
-          addPopup({
-            body:()=><BelexShipping/>,
-            title:'ادامه فرایند خرید'
-          })
-        }
-        else if(parameter.id === 'forooshe_vije'){
-          addPopup({
-            body:()=><ForoosheVijeShipping/>,
-            title:'ادامه فرایند خرید'
-          })
-        }
-        else {
-          addPopup({
-            body:()=><Shipping/>,
-            title:'ادامه فرایند خرید'
-          })
-        }
-      })
     }
     else if(type === 'sefareshe-ersal-shode-baraye-vizitor'){
       addPopup({

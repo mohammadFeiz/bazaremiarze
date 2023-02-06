@@ -23,19 +23,24 @@ export default class Billboard extends Component{
     }
     billboard_layout(){
         let {campaigns,openPopup,backOffice,forooshe_vije,belex,userInfo} = this.context,{renderIn} = this.props;
-        let items = campaigns.map((o)=><img src={o.src} width='100%' alt='' onClick={async ()=>this.onClick(o)}/>)
+        let items = []
+        if(renderIn === 'buy'){
+            items = items.concat(campaigns.map((o)=><img src={o.src} width='100%' alt='' onClick={async ()=>this.onClick(o)}/>))
+            
+        }
         if(renderIn === 'home' && !!backOffice.activeManager.garanti && userInfo.slpcode){
             // items.push(<img src={HomeSlide2} alt="" width='100%'/>)
             items.push(<img src={Sookhte} alt="" width='100%' className='sookhte' onClick={()=>{
                 openPopup('sabte-garanti-jadid')
             }}/>)
         }
-        if(forooshe_vije){
+        
+        if(forooshe_vije && renderIn === 'buy'){
             items.push(<img src={forooshe_vije.src} alt="" width='100%' className='forooshe-vije-billboard' onClick={()=>{
                 openPopup('category',{category:forooshe_vije})
             }}/>)
         }
-        if(belex){
+        if(belex && renderIn === 'buy'){
             items.push(<img src={belex.src} alt="" width='100%' onClick={()=>{
                 openPopup('category',{category:belex})
             }}/>)

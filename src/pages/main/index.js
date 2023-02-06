@@ -458,12 +458,14 @@ export default class Main extends Component {
       logout: this.props.logout,
       baseUrl:this.props.baseUrl
     };
-    if(true){
+    if(backOffice.activeManager.noorvare3 && noorvare3){
       return (
         <Noorvare3
           qr={userInfo.norvareh3QR}
           changeDontShow={(value)=>this.noorvare3Storage.save(!value,'show')} 
-          onClose={()=>this.setState({noorvare3:false})}
+          onClose={()=>{
+            this.setState({noorvare3:false})
+          }}
           onSubmit={async (value)=>{
             this.noorvare3Storage.save(false,'show')
             this.setState({noorvare3:false});

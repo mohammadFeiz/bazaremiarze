@@ -458,7 +458,7 @@ export default class Main extends Component {
       logout: this.props.logout,
       baseUrl:this.props.baseUrl
     };
-    if(noorvare3 && backOffice.activeManager.noorvare3){
+    if(true){
       return (
         <Noorvare3
           qr={userInfo.norvareh3QR}

@@ -7,7 +7,7 @@ import RVD from './interfaces/react-virtual-dom/react-virtual-dom';
 import Loading from './components/loading/index';
 import getSvg from './utils/getSvg';
 import { Icon } from '@mdi/react';
-import { mdiAlert } from '@mdi/js';
+import { mdiAlert,mdiHelpCircleOutline,mdiHelpCircle } from '@mdi/js';
 import landsrc1 from './images/land1.png';
 import landsrc2 from './images/land2.png';
 import logo from './images/logo5.png';
@@ -278,13 +278,13 @@ class App extends Component {
 class Landing extends Component {
   constructor(props) {
     super(props);
-    this.state = { img: 1 }
+    this.state = { img: 1,hint:false }
     setInterval(() => {
       this.setState({ img: this.state.img * -1 })
     }, 1000)
   }
   render() {
-    let { img } = this.state;
+    let { img,hint } = this.state;
     let { onClose } = this.props;
     let bullet = <div style={{ width: 6, height: 6, background: '#333', borderRadius: '100%' }}></div>;
     return (
@@ -327,12 +327,20 @@ class Landing extends Component {
                     {
                       row: [
                         { size: 30, html: bullet, align: 'vh' },
-                        { html: 'حذف دریافت لامپ سوخته', className: 'bold' },
+                        {
+                          onClick:()=>this.setState({hint:!hint}),
+                          row:[
+                            { html: 'حذف دریافت لامپ سوخته', className: 'bold' },
+                            {size:6},
+                            {html:<Icon path={hint?mdiHelpCircle:mdiHelpCircleOutline} size={1}/>,className:'color3B55A5'}
+                          ]
+                        }
                       ]
                     },
                     {
+                      show:!!hint,
                       html:'در نورواره امسال بر خلاف نورواره ی سال های قبل که مشتری به ازای تحویل هر لامپ سوخته امکان خرید یک لامپ نو با تخفیف را داشت ، دیگر مشتری نیازی به تحویل لامپ سوخته ندارد  ',
-                      className:'fs-14 p-r-36',
+                      className:'fs-14 p-r-36 m-v-12',
                       style:{textAlign:'right'}
                     
                     },

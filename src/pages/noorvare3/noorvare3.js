@@ -73,13 +73,6 @@ export default class Noorvare3 extends Component{
             step:0
         }
     }
-    
-
-
-
-
-
-
     onClose(){
         let {onClose} = this.props;
         onClose()

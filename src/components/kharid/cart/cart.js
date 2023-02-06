@@ -24,11 +24,12 @@ export default class Cart extends Component {
   }
   tabs_layout() {
     let { cart } = this.context,{ activeTabId } = this.state;
+    let tabs = Object.keys(cart);;
     return {
       html: (
         <AIOButton
-          type='tabs' optionText='option' optionValue='option' style={{ marginBottom: 12 }} value={activeTabId} options={Object.keys(cart)}
-          optionStyle={{ flex: this.tabs.length <= 3 ? 1 : undefined }}
+          type='tabs' optionText='option' optionValue='option' style={{ marginBottom: 12 }} value={activeTabId} options={tabs}
+          optionStyle={{ flex: tabs.length <= 3 ? 1 : undefined }}
           optionAfter={(option) => <div className='tab-badge'>{Object.keys(cart[option]).length}</div>}
           onChange={(activeTabId) => this.setState({ activeTabId })}
         />
@@ -65,7 +66,6 @@ export default class Cart extends Component {
     return {size: 72, className: "bgFFF p-h-12 theme-box-shadow",html:<CartPayment cartId={activeTabId}/>}
   }
   render() {
-    this.getDetails();
     return (
       <RVD
         layout={{
@@ -157,7 +157,8 @@ class CartPayment extends Component {
         />
       )
     }
-    let fixedItems = fixPrice(cartItems)
+    debugger;
+    let fixedItems = fixPrice([...cartItems])
     cartItems = cartItems.map(({ variantId }, i) => {
       let cartItem = cartTab[variantId];
       let updatedProduct = { ...cartItem.product, ...fixedItems[i] }

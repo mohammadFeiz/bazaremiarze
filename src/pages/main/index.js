@@ -149,7 +149,10 @@ export default class Main extends Component {
     }
     else{
         //افزودن به سبد خرید
-        if(!cartTab[variantId]){cartTab[variantId] = {variantId,count,product}}
+        if(!cartTab[variantId]){
+          cartTab[variantId] = {variantId,count,product}
+          newCartTab = cartTab
+        }
         //تغییر تعداد
         else {
           for(let id in cartTab){
@@ -161,8 +164,8 @@ export default class Main extends Component {
     for(let id in cart){
         newCart[id] = id === product.cartId?newCartTab:cart[id];
     }
-    clearTimeout(this.cartTimeout);
-    this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
+    // clearTimeout(this.cartTimeout);
+    // this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
     this.setState({cart:newCart});
   }
   getCartCountByVariantId(variantId) {

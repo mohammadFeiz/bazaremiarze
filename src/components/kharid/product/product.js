@@ -274,7 +274,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         let { selectedVariant } = this.state;
         if (!selectedVariant || !selectedVariant.inStock || selectedVariant.inStock === null) {return false}
         return {
-            html:<CartButton product={product} variantId={selectedVariant.id} />
+            html:<CartButton product={product} variantId={selectedVariant.id} />,align:'v'
         }
     }
     price_layout() {

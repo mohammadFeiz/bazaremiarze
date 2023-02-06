@@ -164,7 +164,10 @@ class CartPayment extends Component {
       return { ...cartItem, product: updatedProduct }
     })
     debugger;
-    
+    let items = tab.cartItems.map((o)=>{
+      return { ItemCode: o.variant.code, ItemQty: o.count }
+    })
+    tab.items = items;
     let { DocumentTotal:total } = getFactorDetails(cartItems);
     let payment_layout = (shippingOptions)=>{
       let { getFactorDetails } = this.context;

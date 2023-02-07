@@ -157,18 +157,15 @@ class CartPayment extends Component {
         />
       )
     }
+    debugger;
     let fixedItems = fixPrice([...cartItems])
+    let factorDetails = getFactorDetails(cartItems);
+    let total = factorDetails.DocumentTotal;
     cartItems = cartItems.map(({ variantId }, i) => {
       let cartItem = cartTab[variantId];
       let updatedProduct = { ...cartItem.product, ...fixedItems[i] }
       return { ...cartItem, product: updatedProduct }
     })
-    debugger;
-    let items = tab.cartItems.map((o)=>{
-      return { ItemCode: o.variant.code, ItemQty: o.count }
-    })
-    tab.items = items;
-    let { DocumentTotal:total } = getFactorDetails(cartItems);
     let payment_layout = (shippingOptions)=>{
       let { getFactorDetails } = this.context;
       let { PayDueDate, SettleType, DeliveryType, PaymentTime } = shippingOptions;

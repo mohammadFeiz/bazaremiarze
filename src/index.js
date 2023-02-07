@@ -167,6 +167,11 @@ class App extends Component {
       html: <img src={logo} width={160} height={160} alt='' />, align: 'vh'
     }
   }
+  getNumberFromURL(){
+    let str = window.location.href;
+    var url = new URL(str);
+    return url.searchParams.get("pn");
+  }
   render() {
     if (!this.mounted) { return <Loading /> }
     let { isAutenticated, userInfo, token, registered, pageError } = this.state;
@@ -231,8 +236,6 @@ class App extends Component {
     if (landing) {
       return <Landing onClose={() => this.setState({ landing: false })} />
     }
-    
-
     return (
       <RVD
         layout={{
@@ -245,7 +248,8 @@ class App extends Component {
               html: (
                 <OTPLogin
                   time={30}
-                  header={<img src={logo} width={160} height={160} />}
+                  number={this.getNumberFromURL()}
+                  header={<img src={logo} alt='' width={160} height={160} />}
                   onInterNumber={(number) => this.onInterNumber(number)}
                   onInterCode={(code) => this.onInterCode(code)}
                   onInterPassword={(number, password) => this.onInterPassword(number, password)}

@@ -8,9 +8,15 @@ export class OTPLogin extends Component{
     constructor(props){
       super(props);
       this.storage = AIOStorage('otp-login');
+      let {number} = props;
       this.state = {
-        mode:'inter-phone',error:'',number:''
+        mode:'inter-phone',error:'',number,exactNumber:number
       }
+    }
+    changeNumber(number){
+      let {exactNumber} = this.state;
+      if(exactNumber){number = exactNumber}
+      this.setState({number})
     }
     getDelta(){
       let {time} = this.props; 
@@ -26,12 +32,14 @@ export class OTPLogin extends Component{
         this.storage.save(new Date().getTime(),'lastTime');
         if(typeof res === 'string'){
           this.storage.save(new Date().getTime() - (time * 1000),'lastTime');
-          this.setState({mode:'error',error:res,number:''})
+          this.setState({mode:'error',error:res})
+          this.changeNumber('')
           return
         }
         else if(res !== true){return}
       }
-      this.setState({ mode: 'inter-code',number})
+      this.setState({ mode: 'inter-code'})
+      this.changeNumber(number)
     }
     async onInterCode(code) {
       let {onInterCode} = this.props;
@@ -48,7 +56,7 @@ export class OTPLogin extends Component{
       }
     }
     render(){
-      let {mode,number,error} = this.state;
+      let {mode,number,error,exactNumber} = this.state;
       let {time} = this.props;
       return (
         <RVD
@@ -60,6 +68,7 @@ export class OTPLogin extends Component{
                 html:()=>(
                   <NumberForm
                     time={time}
+                    exactNumber={exactNumber}
                     onSubmit={(number)=>this.onInterPhone(number)}
                     onInterPassword={(number,password)=>this.onInterPassword(number,password)}
                     getDelta={this.getDelta.bind(this)}
@@ -91,7 +100,12 @@ export class OTPLogin extends Component{
   class NumberForm extends Component{
     constructor(props){
       super(props);
-      this.state = {number:'',password:'',error:'شماره همراه خود را وارد کنید',remainingTime:props.time,mode:'otp'}
+      this.state = {number:props.exactNumber || '',password:'',error:!props.exactNumber?'شماره همراه خود را وارد کنید':'',remainingTime:props.time,mode:'otp'}
+    }
+    changeNumber(number){
+      let {exactNumber} = this.props;
+      if(exactNumber){number = exactNumber}
+      this.setState({number})
     }
     componentDidMount(){
       this.update()
@@ -115,7 +129,8 @@ export class OTPLogin extends Component{
     onChangeNumber(e){
       let value = e.target.value;
       if (value.length > 11) { return }
-      this.setState({number:value,error:this.getError(value)})
+      this.setState({error:this.getError(value)})
+      this.changeNumber(value)
     }
     async onSubmit(){
       let {error,number,password,mode} = this.state;
@@ -131,7 +146,6 @@ export class OTPLogin extends Component{
     }
     getInput(type){
       let {number,mode,password} = this.state;
-      let {onInterPassword} = this.props;
       if(type === 'number'){
         return (
           <div className='otp-login-input'>
@@ -230,7 +244,10 @@ export class OTPLogin extends Component{
             html:(
               <button 
                 className='otp-login-change-mode' 
-                onClick={()=>this.setState({mode:mode === 'otp'?'password':'otp',number:'',password:''})}
+                onClick={()=>{
+                  this.setState({mode:mode === 'otp'?'password':'otp',password:''})
+                  this.changeNumber('')
+                }}
               >{mode === 'otp'?'ورود با رمز عبور':'ورود با کد یکبار مصرف'}</button>
             ),
             className:'p-h-12 of-visible'

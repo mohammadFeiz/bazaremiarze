@@ -103,7 +103,7 @@ class CartPayment extends Component {
         {value:1,text:'واریز قبل ارسال'},//'ByOrder'
         {value:2,text:'واریز پای بار'},//'ByDelivery'
       ],
-      SettleType:'ByDelivery',
+      SettleType:1,
       SettleType_options:[
         {value:1,text:'نقد'},//'ByDelivery'
         {value:2,text:'چک'}//'Cheque'
@@ -157,9 +157,12 @@ class CartPayment extends Component {
         />
       )
     }
-    debugger;
+    debugger
     let fixedItems = fixPrice(cartItems.map(({itemCode,itemQty})=>{return {itemCode,itemQty}}))
-    let { DocumentTotal:total } = getFactorDetails(cartItems.map(({ItemCode,ItemQty})=>{return {ItemCode,ItemQty}}));
+    let { DocumentTotal:total } = getFactorDetails(
+      cartItems.map(({ItemCode,ItemQty})=>{return {ItemCode,ItemQty}}),
+      { PayDueDate:1, PaymentTime:5, SettleType:1, DeliveryType:11 }
+    );
     cartItems = cartItems.map(({ variantId }, i) => {
       let cartItem = cartTab[variantId];
       let updatedProduct = { ...cartItem.product, ...fixedItems[i] }
@@ -168,7 +171,7 @@ class CartPayment extends Component {
     let payment_layout = (shippingOptions)=>{
       let { getFactorDetails } = this.context;
       let { PayDueDate, SettleType, DeliveryType, PaymentTime } = shippingOptions;
-      let factorDetails = getFactorDetails(cartItems, { PayDueDate, PaymentTime:PaymentTime.map, SettleType, DeliveryType })
+      let factorDetails = getFactorDetails(cartItems, { PayDueDate, PaymentTime, SettleType, DeliveryType })
       let jame_kolle_takhfif = factorDetails.marketingdetails.DocumentDiscount;
       let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent
       let mablaghe_ghabele_pardakht = factorDetails.DocumentTotal;
@@ -257,7 +260,6 @@ class CartPayment extends Component {
     return {total,cartItems,productCards,payment_layout}
   }
   render() {
-    let {openPopup} = this.context;
     let { cartId } = this.props;
     let details;
     if (cartId === 'خرید عادی') {

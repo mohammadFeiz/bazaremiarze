@@ -143,7 +143,7 @@ class CartPayment extends Component {
       cartItems.push({
         itemCode: product.defaultVariant.code,//use in fixPrice()
         itemQty: count,//use in fixPrice()
-        ItemCode: variantId,//use in getFactorDetails()
+        ItemCode: product.defaultVariant.code,//use in getFactorDetails()
         ItemQty: count,//use in getFactorDetails()
         variantId//use for update cartItem
       });
@@ -158,9 +158,8 @@ class CartPayment extends Component {
       )
     }
     debugger;
-    let fixedItems = fixPrice([...cartItems])
-    let factorDetails = getFactorDetails(cartItems);
-    let total = factorDetails.DocumentTotal;
+    let fixedItems = fixPrice(cartItems.map(({itemCode,itemQty})=>{return {itemCode,itemQty}}))
+    let { DocumentTotal:total } = getFactorDetails(cartItems.map(({ItemCode,ItemQty})=>{return {ItemCode,ItemQty}}));
     cartItems = cartItems.map(({ variantId }, i) => {
       let cartItem = cartTab[variantId];
       let updatedProduct = { ...cartItem.product, ...fixedItems[i] }

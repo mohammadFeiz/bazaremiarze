@@ -84,7 +84,7 @@ class CartPayment extends Component {
     try { return +value.toFixed(0) }
     catch { return 0 }
   }
-  getShippingState(){
+  getShippingState(cartId){
     return {
       PayDueDate:1,
       PayDueDate_options:[
@@ -96,7 +96,9 @@ class CartPayment extends Component {
         {value:18,text:'30% نقد و 70% چک چهار ماهه (3.6% تخفیف بیشتر)',type:['بلکس','فروش ویژه']},//'Cash30_FourMonth70'
         {value:19,text:'50% نقد و 50% چک پنج ماهه (4.5% تخفیف بیشتر)',type:['بلکس','فروش ویژه']},//'Cash50_FiveMonth50'
         {value:20,text:'50% نقد و 50% چک یک ماهه (10.5% تخفیف بیشتر)',type:['بلکس','فروش ویژه']}//'Cash50_OneMonth50'
-      ],
+      ].filter(({type})=>{
+        return type.indexOf(cartId) !== -1
+      }),
       PaymentTime:5,
       PaymentTime_options:[
         {value:5,text:'اینترنتی'},//'ByOnlineOrder'
@@ -117,16 +119,26 @@ class CartPayment extends Component {
       ]
     }
   }
+  getOptions(cartId){
+    return [
+      {key:'DeliveryType',text:'نحوه ارسال',show:()=>true},
+      {key:'PaymentTime',text:'زمان پرداخت',show:()=>cartId === 'خرید عادی' || cartId === 'کمپین'},
+      {key:'PayDueDate',text:'نحوه پرداخت',show:(shippingState)=>(cartId === 'خرید عادی' || cartId === 'کمپین') && shippingState.PaymentTime !== 5},
+      {key:'PayDueDate',text:'نحوه پرداخت',show:()=>cartId === 'بلکس' || cartId === 'فروش ویژه'},
+      {key:'SettleType',text:'نحوه پرداخت نقد',show:()=>cartId === 'بلکس' || cartId === 'فروش ویژه'}
+    ]
+  }
   openPopup({cartId,payment_layout,productCards}) {
     let { rsa_actions } = this.context;
     this.setState({ continued: true })
     rsa_actions.addPopup({
       body:()=>(
         <Shipping
+          options={this.getOptions(cartId)}
           cartId={cartId}
           productCards={productCards}
           payment_layout={payment_layout}
-          shippingState={this.getShippingState()}
+          shippingState={this.getShippingState(cartId)}
         />
       ),
       title:'ادامه فرایند خرید'
@@ -157,7 +169,6 @@ class CartPayment extends Component {
         />
       )
     }
-    debugger
     let fixedItems = fixPrice(cartItems.map(({itemCode,itemQty})=>{return {itemCode,itemQty}}))
     let { DocumentTotal:total } = getFactorDetails(
       cartItems.map(({ItemCode,ItemQty})=>{return {ItemCode,ItemQty}}),
@@ -194,7 +205,7 @@ class CartPayment extends Component {
         />
       )
     }
-    return {total,cartItems,productCards,payment_layout}
+    return {total,cartItems,productCards,payment_layout,cartId}
   }
   //فروش ویژه و بلکس
   getDetails2(cartId){
@@ -257,7 +268,7 @@ class CartPayment extends Component {
         />
       )
     }
-    return {total,cartItems,productCards,payment_layout}
+    return {total,cartItems,productCards,payment_layout,cartId}
   }
   render() {
     let { cartId } = this.props;
@@ -324,11 +335,10 @@ class ShippingPayment extends Component{
     let {amounts} = this.props;
     return {className:'box p-12 m-h-12',column:amounts.map((o)=>this.amount_layout(o))}
   }
-  amount_layout([key,value,attrs = {}]){
-    if(!value){return false}
-    let {className = 'theme-medium-font-color fs-14',style} = attrs;
+  amount_layout([key,value,className = 'theme-medium-font-color fs-14']){
+    if(value === false){return false}
     return {
-      size:36,childsProps:{align:'v'},style,
+      size:36,childsProps:{align:'v'},
       row:[{html:key + ':',className},{flex:1},{html:value,className}]
     }
   }
@@ -396,19 +406,10 @@ class Shipping extends Component{
       ]
     }
   }
-  options_layout(cartId){
-    let {PaymentTime} = this.state;
-    let options = [
-      {key:'DeliveryType',text:'نحوه ارسال',show:true},
-      {key:'PayDueDate',text:'نحوه پرداخت',show:(cartId === 'خرید عادی' || cartId === 'کمپین') && PaymentTime !== 5},
-      {key:'PayDueDate',text:'نحوه پرداخت',show:cartId === 'بلکس' || cartId === 'فروش ویژه'},
-      {key:'PaymentTime',text:'زمان پرداخت',show:cartId === 'خرید عادی' || cartId === 'کمپین'},
-      {key:'SettleType',text:'نحوه پرداخت نقد',show:cartId === 'بلکس' || cartId === 'فروش ویژه'}
-    ]
+  options_layout(){
+    let {options} = this.props;
     return {
-      column:options.filter(({show})=>show).map((o)=>{
-        return {html:this.option_layout(o)}
-      })
+      column:options.filter(({show})=>show(this.state)).map((o)=>this.option_layout(o))
     }
   }
   option_layout({key,text}){
@@ -458,7 +459,8 @@ class Shipping extends Component{
   }
   payment_layout(payment_layout,address){
     let {PayDueDate,SettleType,DeliveryType,PaymentTime} = this.state;
-    return payment_layout({address,PayDueDate,SettleType,DeliveryType,PaymentTime});
+    let html = payment_layout({address,PayDueDate,SettleType,DeliveryType,PaymentTime});
+    return {html}
   }
   render(){
     let {userInfo} = this.context;

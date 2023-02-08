@@ -13,6 +13,142 @@ export default class Cart extends Component {
     super(props);
     this.state = { activeTabId: false, continued: false }
   }
+  updateState(cartId){
+    this.setState({ 
+      activeTabId:cartId,
+      ProductCardComponent:{
+        'خرید عادی':ProductCard,
+        'کمپین':ProductCard,
+        'بلکس':BelexCard,
+        'فروش ویژه':ForoosheVijeCard
+      }[cartId],
+    })
+  }
+  getTotal(shippingOptions){
+    let {activeTabId} = this.state;
+    if(activeTabId === 'خرید عادی'){return this.getTotal_kharide_addi(shippingOptions)}  
+    if(activeTabId === 'کمپین'){return this.getTotal_kharide_addi(shippingOptions)}  
+    if(activeTabId === 'فروش ویژه'){return this.getTotal_forooshe_vije()}
+    if(activeTabId === 'بلکس'){return this.getTotal_belex()}   
+  }
+  getTotal_kharide_addi(shippingOptions){
+    let { cart, getFactorDetails } = this.context;
+    let {activeTabId} = this.state;
+    let cartTab = cart[activeTabId];
+    let cartItems = [];
+    for(let id in cartTab){
+      let { product, count,variantId } = cartTab[id];
+      cartItems.push({
+        ItemCode: product.defaultVariant.code,//use in getFactorDetails()
+        ItemQty: count,//use in getFactorDetails()
+      });
+    }
+    return getFactorDetails(cartItems,shippingOptions).DocumentTotal;
+  }
+  getTotal_forooshe_vije(){
+    let { cart } = this.context;
+    let {activeTabId} = this.state;
+    let cartTab = cart[activeTabId];
+    let total = 0;
+    for (let id in cartTab) {
+      let { product, count, variantId } = cartTab[id];
+      let { packQty } = count;
+      let variant = product.variants.find((o) => o.id === id);
+      let { finalPrice } = variant;
+      total += packQty * finalPrice;
+    }
+    return total;
+  }
+  getTotal_belex(){
+    let { cart } = this.context;
+    let {activeTabId} = this.state;
+    let cartTab = cart[activeTabId];
+    let total = 0;
+    for (let id in cartTab) {
+      let { product, count, variantId } = cartTab[id];
+      let { packQty } = count;
+      total += packQty * product.price;
+    }
+    return total;
+  }
+  getAmounts(shippingOptions){
+    let {activeTabId} = this.state;
+    if(activeTabId === 'خرید عادی'){return this.getAmounts_kharide_addi(shippingOptions)}  
+    if(activeTabId === 'کمپین'){return this.getAmounts_kharide_addi(shippingOptions)}  
+    if(activeTabId === 'فروش ویژه'){return this.getAmounts_forooshe_vije(shippingOptions)}
+    if(activeTabId === 'بلکس'){return this.getAmounts_forooshe_vije(shippingOptions)}  
+  }
+  getAmounts_kharide_addi(shippingOptions){
+    let { getFactorDetails,cart } = this.context;
+    let { PayDueDate, SettleType, DeliveryType, PaymentTime } = shippingOptions;
+    let {activeTabId} = this.state;
+    let cartTab = cart[activeTabId];
+    let cartItems = [];
+    for(let id in cartTab){
+      let { product, count,variantId } = cartTab[id];
+      cartItems.push({
+        ItemCode: product.defaultVariant.code,//use in getFactorDetails()
+        ItemQty: count,//use in getFactorDetails()
+      });
+    }
+    let factorDetails = getFactorDetails(cartItems, { PayDueDate, PaymentTime, SettleType, DeliveryType })
+    let jame_kolle_takhfif = factorDetails.marketingdetails.DocumentDiscount;
+    let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent
+    let mablaghe_ghabele_pardakht = factorDetails.DocumentTotal;
+    let takhfife_pardakhte_online = (mablaghe_ghabele_pardakht * darsade_takhfife_pardakhte_online) / 100;
+    mablaghe_ghabele_pardakht = mablaghe_ghabele_pardakht - takhfife_pardakhte_online;
+    let jame_kolle_sabade_kharid = mablaghe_ghabele_pardakht + jame_kolle_takhfif + takhfife_pardakhte_online;
+    return [
+      ['جمع کل سبد خرید',jame_kolle_sabade_kharid,'theme-medium-font-color fs-14'],
+      ['جمع کل تخفیف',jame_kolle_takhfif,'colorFDB913 fs-14'],
+      ['تخفیف نحوه پرداخت',takhfife_pardakhte_online,'color00B5A5 fs-14'],
+      ['مبلغ قابل پرداخت',mablaghe_ghabele_pardakht,'theme-dark-font-color bold fs-16'],
+    ]
+  }
+  getAmounts_forooshe_vije(shippingOptions){
+    let { PayDueDate } = shippingOptions;
+      let percents = {
+        '1':[12,100],'17':[4.8,20],'18':[3.6,30],
+        '19':[4.5,50],'20':[10.5,50]
+      }
+      let [a,b] = percents[PayDueDate.toString()];
+      let jame_kolle_sabade_kharid = this.getTotal(shippingOptions);
+      let takhfife_pardakhte_online = this.fix(jame_kolle_sabade_kharid * a / 100);
+      let mablaghe_ghabele_pardakht = jame_kolle_sabade_kharid - takhfife_pardakhte_online;
+      mablaghe_ghabele_pardakht = this.fix(mablaghe_ghabele_pardakht * b / 100)
+      return [
+        ['جمع کل سبد خرید',jame_kolle_sabade_kharid,'theme-medium-font-color fs-14'],
+        ['تخفیف نحوه پرداخت',takhfife_pardakhte_online,'color00B5A5 fs-14'],
+        ['مبلغ قابل پرداخت',mablaghe_ghabele_pardakht,'theme-dark-font-color bold fs-16'],
+      ]
+  }
+  getCartItems(){
+    debugger;
+    let { cart,fixPrice } = this.context;
+    let {activeTabId} = this.state;
+    let cartTab = cart[activeTabId];
+    let cartItems = [];
+    if(activeTabId === 'خرید عادی' || activeTabId === 'کمپین'){
+      for(let id in cartTab){
+        let { product, count,variantId } = cartTab[id];
+        cartItems.push({
+          itemCode: product.defaultVariant.code,//use in fixPrice()
+          itemQty: count,//use in fixPrice()
+          variantId
+        });
+      }
+      let fixedItems = fixPrice(cartItems.map(({itemCode,itemQty})=>{return {itemCode,itemQty}}))
+      cartItems = cartItems.map(({ variantId }, i) => {
+        let cartItem = cartTab[variantId];
+        let updatedProduct = { ...cartItem.product, ...fixedItems[i] }
+        return { ...cartItem, product: updatedProduct }
+      })
+    }
+    if(activeTabId === 'فروش ویژه' || activeTabId === 'بلکس'){
+      for(let id in cartTab){cartItems.push(cartTab[id]);}
+    }
+    return cartItems
+  }
   componentDidMount() {
     let { cart } = this.context;
     let { activeTabId = this.state.activeTabId } = this.props;
@@ -20,7 +156,14 @@ export default class Cart extends Component {
       let tabIds = Object.keys(cart);
       if (tabIds.length) { activeTabId = tabIds[0]; }
     }
-    this.setState({ activeTabId })
+    if(activeTabId){this.updateState(activeTabId)}
+    
+  }
+  getProductCards(renderIn){
+    let {ProductCardComponent} = this.state;
+    return this.getCartItems().map(({product,variantId,count})=>{
+      return <ProductCardComponent type='horizontal' renderIn={renderIn} key={variantId} product={product} variantId={variantId} count={count}/>
+    });
   }
   tabs_layout() {
     let { cart } = this.context,{ activeTabId } = this.state;
@@ -31,24 +174,15 @@ export default class Cart extends Component {
           type='tabs' optionText='option' optionValue='option' style={{ marginBottom: 12 }} value={activeTabId} options={tabs}
           optionStyle={{ flex: tabs.length <= 3 ? 1 : undefined }}
           optionAfter={(option) => <div className='tab-badge'>{Object.keys(cart[option]).length}</div>}
-          onChange={(activeTabId) => this.setState({ activeTabId })}
+          onChange={(activeTabId) => this.updateState( activeTabId )}
         />
       )
     }
   }
   products_layout() {
-    let { cart } = this.context;
     let { activeTabId } = this.state;
     if (activeTabId) {
-      let tab = cart[activeTabId];
-      let items = Object.keys(tab);
-      let cards = items.map((variantId) => {
-        let { product, count } = tab[variantId];
-        return (
-          <ProductCard key={variantId} product={product} variantId={variantId} count={count} type='horizontal' />
-        )
-      });
-      return { flex: 1, className: 'ofy-auto', gap: 12, column: cards.map((card) => { return { html: card } }) }
+      return { flex: 1, className: 'ofy-auto', gap: 12, column: this.getProductCards('cart').map((card) => { return { html: card } }) }
     }
     return {
       style: { background: '#eee', opacity: 0.5 },
@@ -60,31 +194,50 @@ export default class Cart extends Component {
       ]
     }
   }
-  payment_layout() {
-    let { activeTabId } = this.state;
-    if (!activeTabId) { return false }
-    return {size: 72, className: "bgFFF p-h-12 theme-box-shadow",html:<CartPayment cartId={activeTabId}/>}
+  openPopup() {
+    let { rsa_actions } = this.context;
+    let {activeTabId} = this.state;
+    rsa_actions.addPopup({
+      body:()=>(
+        <Shipping
+          getTotal={this.getTotal.bind(this)}
+          getAmounts={this.getAmounts.bind(this)}
+          options={this.getOptions()}
+          cartId={activeTabId}
+          productCards={this.getProductCards('shipping')}
+          shippingState={this.getShippingState()}
+        />
+      ),
+      title:'ادامه فرایند خرید'
+    })
   }
-  render() {
-    return (
-      <RVD
-        layout={{
-          flex: 1, className: 'theme-popup-bg',
-          column: [this.tabs_layout(), this.products_layout(), this.payment_layout()]
-        }}
-      />
-    )
-  }
-}
-
-
-class CartPayment extends Component {
-  static contextType = appContext;
   fix(value) {
     try { return +value.toFixed(0) }
     catch { return 0 }
   }
-  getShippingState(cartId){
+  payment_layout() {
+    let { activeTabId } = this.state;
+    if (!activeTabId) { return false }
+    return {
+      className: "bgFFF p-h-12 theme-box-shadow",
+      row: [
+        {
+          flex: 1,className:'p-h-12',
+          column: [
+            { size: 24, align: "v", html: "مبلغ قابل پرداخت", className: "theme-medium-font-color fs-12" },
+            { size: 3 },
+            {size: 24,align: "v", html: `${functions.splitPrice(this.getTotal())} ریال`, className: "theme-dark-font-color fs-14 bold" }
+          ]
+        },
+        {
+          html: (<button onClick={()=>this.openPopup()} className="button-2" style={{ height: 36 }}>ادامه فرایند خرید</button>),
+          align: "v"
+        }
+      ]
+    }
+  }
+  getShippingState(){
+    let {activeTabId} = this.state;
     return {
       PayDueDate:1,
       PayDueDate_options:[
@@ -97,7 +250,7 @@ class CartPayment extends Component {
         {value:19,text:'50% نقد و 50% چک پنج ماهه (4.5% تخفیف بیشتر)',type:['بلکس','فروش ویژه']},//'Cash50_FiveMonth50'
         {value:20,text:'50% نقد و 50% چک یک ماهه (10.5% تخفیف بیشتر)',type:['بلکس','فروش ویژه']}//'Cash50_OneMonth50'
       ].filter(({type})=>{
-        return type.indexOf(cartId) !== -1
+        return type.indexOf(activeTabId) !== -1
       }),
       PaymentTime:5,
       PaymentTime_options:[
@@ -119,257 +272,30 @@ class CartPayment extends Component {
       ]
     }
   }
-  getOptions(cartId){
+  getOptions(){
+    let {activeTabId} = this.state;
     return [
       {key:'DeliveryType',text:'نحوه ارسال',show:()=>true},
-      {key:'PaymentTime',text:'زمان پرداخت',show:()=>cartId === 'خرید عادی' || cartId === 'کمپین'},
-      {key:'PayDueDate',text:'نحوه پرداخت',show:(shippingState)=>(cartId === 'خرید عادی' || cartId === 'کمپین') && shippingState.PaymentTime !== 5},
-      {key:'PayDueDate',text:'نحوه پرداخت',show:()=>cartId === 'بلکس' || cartId === 'فروش ویژه'},
-      {key:'SettleType',text:'نحوه پرداخت نقد',show:()=>cartId === 'بلکس' || cartId === 'فروش ویژه'}
+      {key:'PaymentTime',text:'زمان پرداخت',show:()=>activeTabId === 'خرید عادی' || activeTabId === 'کمپین'},
+      {key:'PayDueDate',text:'نحوه پرداخت',show:(shippingState)=>(activeTabId === 'خرید عادی' || activeTabId === 'کمپین') && shippingState.PaymentTime !== 5},
+      {key:'PayDueDate',text:'نحوه پرداخت',show:()=>activeTabId === 'بلکس' || activeTabId === 'فروش ویژه'},
+      {key:'SettleType',text:'نحوه پرداخت نقد',show:()=>activeTabId === 'بلکس' || activeTabId === 'فروش ویژه'}
     ]
   }
-  openPopup({cartId,payment_layout,productCards}) {
-    let { rsa_actions } = this.context;
-    this.setState({ continued: true })
-    rsa_actions.addPopup({
-      body:()=>(
-        <Shipping
-          options={this.getOptions(cartId)}
-          cartId={cartId}
-          productCards={productCards}
-          payment_layout={payment_layout}
-          shippingState={this.getShippingState(cartId)}
-        />
-      ),
-      title:'ادامه فرایند خرید'
-    })
-  }
-  //خرید عادی و کمپین ها
-  getDetails1(cartId){
-    let { cart, fixPrice, getFactorDetails } = this.context;
-    let cartTab = cart[cartId];
-    let productCards = [];
-    let cartItems = [];
-    for(let id in cartTab){
-      let { product, count,variantId } = cartTab[id];
-      cartItems.push({
-        itemCode: product.defaultVariant.code,//use in fixPrice()
-        itemQty: count,//use in fixPrice()
-        ItemCode: product.defaultVariant.code,//use in getFactorDetails()
-        ItemQty: count,//use in getFactorDetails()
-        variantId//use for update cartItem
-      });
-      productCards.push(
-        <ProductCard
-          type='horizontal' renderIn='shipping'
-          key={variantId}
-          product={product}
-          variantId={id}
-          count={count}
-        />
-      )
-    }
-    let fixedItems = fixPrice(cartItems.map(({itemCode,itemQty})=>{return {itemCode,itemQty}}))
-    let { DocumentTotal:total } = getFactorDetails(
-      cartItems.map(({ItemCode,ItemQty})=>{return {ItemCode,ItemQty}}),
-      { PayDueDate:1, PaymentTime:5, SettleType:1, DeliveryType:11 }
-    );
-    cartItems = cartItems.map(({ variantId }, i) => {
-      let cartItem = cartTab[variantId];
-      let updatedProduct = { ...cartItem.product, ...fixedItems[i] }
-      return { ...cartItem, product: updatedProduct }
-    })
-    let payment_layout = (shippingOptions)=>{
-      let { getFactorDetails } = this.context;
-      let { PayDueDate, SettleType, DeliveryType, PaymentTime } = shippingOptions;
-      let factorDetails = getFactorDetails(cartItems, { PayDueDate, PaymentTime, SettleType, DeliveryType })
-      let jame_kolle_takhfif = factorDetails.marketingdetails.DocumentDiscount;
-      let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent
-      let mablaghe_ghabele_pardakht = factorDetails.DocumentTotal;
-      let takhfife_pardakhte_online = (mablaghe_ghabele_pardakht * darsade_takhfife_pardakhte_online) / 100;
-      mablaghe_ghabele_pardakht = mablaghe_ghabele_pardakht - takhfife_pardakhte_online;
-      let jame_kolle_sabade_kharid = mablaghe_ghabele_pardakht + jame_kolle_takhfif + takhfife_pardakhte_online;
-      return (
-        <ShippingPayment
-          api={'sentToVisitor'}
-          shippingOptions={shippingOptions}
-          cartItems={cartItems}
-          buttonText={'ارسال برای ویزیتور'}
-          mablaghe_ghabele_pardakht={mablaghe_ghabele_pardakht}
-          amounts={[
-            ['جمع کل سبد خرید',jame_kolle_sabade_kharid,'theme-medium-font-color fs-14'],
-            ['جمع کل تخفیف',jame_kolle_takhfif,'colorFDB913 fs-14'],
-            ['تخفیف نحوه پرداخت',takhfife_pardakhte_online,'color00B5A5 fs-14'],
-            ['مبلغ قابل پرداخت',mablaghe_ghabele_pardakht,'theme-dark-font-color bold fs-16'],
-          ]}
-        />
-      )
-    }
-    return {total,cartItems,productCards,payment_layout,cartId}
-  }
-  //فروش ویژه و بلکس
-  getDetails2(cartId){
-    let { cart } = this.context;
-    let cartTab = cart[cartId];
-    let total = 0;
-    let productCards = [];
-    let cartItems = [];
-    for (let id in cartTab) {
-      let { product, count, variantId } = cartTab[id];
-      let { packQty } = count;
-      let CardComponent;
-      if(cartId === 'فروش ویژه'){
-        let variant = product.variants.find((o) => o.id === variantId);
-        let { finalPrice } = variant;
-        total += packQty * finalPrice;
-        CardComponent = ForoosheVijeCard
-      }
-      else if(cartId === 'بلکس'){
-        total += packQty * product.price;
-        CardComponent = BelexCard;
-      }
-      cartItems.push(cartTab[id]);
-      productCards.push(
-        <CardComponent
-          type='horizontal' renderIn='shipping'
-          key={variantId}
-          product={product}
-          variantId={variantId}
-          count={count}
-        />
-      )
-    }
-    let payment_layout = (shippingOptions)=>{
-      let { PayDueDate, SettleType } = shippingOptions;
-      let percents = {
-        '1':[12,100],'17':[4.8,20],'18':[3.6,30],
-        '19':[4.5,50],'20':[10.5,50]
-      }
-      let [a,b] = percents[PayDueDate.toString()];
-      let jame_kolle_sabade_kharid = total;
-      let takhfife_pardakhte_online = this.fix(jame_kolle_sabade_kharid * a / 100);
-      let mablaghe_ghabele_pardakht = jame_kolle_sabade_kharid - takhfife_pardakhte_online;
-      mablaghe_ghabele_pardakht = this.fix(mablaghe_ghabele_pardakht * b / 100)
-      let api = '';
-      api += SettleType === 16?'pardakhte_':'sabte_' 
-      api += cartId === 'فروش ویژه'?'foroosheVije':'belex'
-      return (
-        <ShippingPayment
-          api={api}
-          shippingOptions={shippingOptions}
-          cartItems={cartItems}
-          buttonText={SettleType === 16 ? 'پرداخت' : 'ثبت'}
-          mablaghe_ghabele_pardakht={mablaghe_ghabele_pardakht}
-          amounts={[
-            ['جمع کل سبد خرید',jame_kolle_sabade_kharid,'theme-medium-font-color fs-14'],
-            ['تخفیف نحوه پرداخت',takhfife_pardakhte_online,'color00B5A5 fs-14'],
-            ['مبلغ قابل پرداخت',mablaghe_ghabele_pardakht,'theme-dark-font-color bold fs-16'],
-          ]}
-        />
-      )
-    }
-    return {total,cartItems,productCards,payment_layout,cartId}
-  }
   render() {
-    let { cartId } = this.props;
-    let details;
-    if (cartId === 'خرید عادی') {
-      details = this.getDetails1(cartId)
-    }
-    else if(cartId === 'فروش ویژه' || cartId === 'بلکس'){
-      details = this.getDetails2(cartId);
-    }
     return (
       <RVD
         layout={{
-          className: "bgFFF p-h-12 theme-box-shadow",
-          row: [
-            {
-              flex: 1,
-              column: [
-                { size: 12 },
-                { size: 24, align: "v", html: "مبلغ قابل پرداخت", className: "theme-medium-font-color fs-12" },
-                { size: 3 },
-                {
-                  size: 24,
-                  row: [
-                    { align: "v", html: functions.splitPrice(details.total), className: "theme-dark-font-color fs-14 bold" },
-                    { size: 4 },
-                    { align: "v", html: " ریال", className: "theme-dark-font-color fs-12" }
-                  ]
-                },
-                { size: 12 },
-              ],
-            },
-            {
-              html: (<button onClick={()=>this.openPopup(details)} className="button-2" style={{ height: 36 }}>ادامه فرایند خرید</button>),
-              align: "v"
-            }
-          ]
+          flex: 1, className: 'theme-popup-bg',
+          column: [this.tabs_layout(), this.products_layout(), this.payment_layout()]
         }}
       />
     )
   }
 }
 
-class ShippingPayment extends Component{
-  async onSubmit(){
-    let { kharidApis,cart,SetState,rsa_actions,openPopup} = this.context;
-    let {shippingOptions,cartItems,mablaghe_ghabele_pardakht,cartId,api} = this.props;
-    let { address, SettleType, PaymentTime, DeliveryType, PayDueDate } = shippingOptions;
-    let orderNumber = await kharidApis({
-      api,
-      parameter: { 
-        address, SettleType, PaymentTime:PaymentTime.map, DeliveryType,PayDueDate:PayDueDate.map,
-        cartItems,mablaghe_ghabele_pardakht 
-      }
-    })
-    if(!orderNumber){return}
-    let newCart = {};
-    for (let id in cart) { if (id !== cartId) { newCart[id] = cart[id] } }
-    SetState({ cart: newCart })
-    rsa_actions.removePopup('all');
-    openPopup('sefareshe-ersal-shode-baraye-vizitor', orderNumber)
-  }
-  amounts_layout(){
-    let {amounts} = this.props;
-    return {className:'box p-12 m-h-12',column:amounts.map((o)=>this.amount_layout(o))}
-  }
-  amount_layout([key,value,className = 'theme-medium-font-color fs-14']){
-    if(value === false){return false}
-    return {
-      size:36,childsProps:{align:'v'},
-      row:[{html:key + ':',className},{flex:1},{html:value,className}]
-    }
-  }
-  button_layout(){
-    let {buttonText} = this.props;
-    return {
-      size: 36, align: 'vh', className: 'theme-medium-font-color fs-14 bold',
-      html: (
-        <button 
-          className="button-2" 
-          onClick={() => this.onSubmit()}
-        >{buttonText}</button>)
-    }
-  }
-  render(){
-    return (
-      <RVD
-        layout={{
-          className: 'p-h-12 bg-fff theme-box-shadow',
-          style: { paddingTop: 12, borderRadius: '16px 16px 0 0' },
-          column: [
-            this.amounts_layout(),
-            { size: 6 },
-            this.button_layout(),
-            { size: 12 }
-          ]
-        }}
-      />
-    )
-  }
-}
+
+
 
 
 class Shipping extends Component{
@@ -377,7 +303,7 @@ class Shipping extends Component{
   constructor(props){
     super(props);
     this.state = {
-      ...props.shippingState
+      shippingOptions:props.shippingState
     }
   }
   details_layout(list){
@@ -408,13 +334,15 @@ class Shipping extends Component{
   }
   options_layout(){
     let {options} = this.props;
+    let {shippingOptions} = this.state
     return {
-      column:options.filter(({show})=>show(this.state)).map((o)=>this.option_layout(o))
+      gap:12,
+      column:options.filter(({show})=>show(shippingOptions)).map((o)=>this.option_layout(o))
     }
   }
   option_layout({key,text}){
-    let options = this.state[key + '_options']
-    let value = this.state[key];
+    let options = this.state.shippingOptions[key + '_options']
+    let value = this.state.shippingOptions[key];
     return {
       className:'box p-12 m-h-12',
       column:[
@@ -457,14 +385,49 @@ class Shipping extends Component{
     try{return +value.toFixed(0)}
     catch{return 0}
   }
-  payment_layout(payment_layout,address){
-    let {PayDueDate,SettleType,DeliveryType,PaymentTime} = this.state;
-    let html = payment_layout({address,PayDueDate,SettleType,DeliveryType,PaymentTime});
-    return {html}
+  amounts_layout(){
+    let {getAmounts} = this.props;
+    let {shippingOptions} = this.state;
+    let amounts = getAmounts(shippingOptions)
+    return {
+      className:'box p-12 m-h-12',
+      column:amounts.map(([key,value,className = 'theme-medium-font-color fs-14'])=>{
+        if(value === false){return false}
+        return {
+          size:36,childsProps:{align:'v'},
+          row:[{html:key + ':',className},{flex:1},{html:value,className}]
+        }
+      })
+    }
+  }
+  button_layout(){
+    let {buttonText} = this.props;
+    return {
+      size: 36, align: 'vh', className: 'theme-medium-font-color fs-14 bold',
+      html: (
+        <button 
+          className="button-2" 
+          onClick={() => this.onSubmit()}
+        >{buttonText}</button>)
+    }
+  }
+  async onSubmit(){
+    let { kharidApis,cart,SetState,rsa_actions,openPopup} = this.context;
+    let {shippingOptions} = this.state;
+    let {total,cartId} = this.props;
+    let orderNumber = await kharidApis({
+      api:'shipping',parameter: {cartId,shippingOptions,total}
+    })
+    if(!orderNumber){return}
+    let newCart = {};
+    for (let id in cart) { if (id !== cartId) { newCart[id] = cart[id] } }
+    SetState({ cart: newCart })
+    rsa_actions.removePopup('all');
+    openPopup('sefareshe-ersal-shode-baraye-vizitor', orderNumber)
   }
   render(){
     let {userInfo} = this.context;
-    let {cartId,productCards,payment_layout} = this.props;
+    let {cartId,productCards} = this.props;
     return (
       <>
         <RVD
@@ -493,7 +456,16 @@ class Shipping extends Component{
                 {size:12},
               ],
             },
-            this.payment_layout(payment_layout,userInfo.address),
+            {
+              className: 'p-h-12 bg-fff theme-box-shadow',
+              style: { paddingTop: 12, borderRadius: '16px 16px 0 0' },
+              column: [
+                this.amounts_layout(),
+                { size: 6 },
+                this.button_layout(),
+                { size: 12 }
+              ]
+            }
           ]
         }}
       />

@@ -622,22 +622,7 @@ export default function kharidApis({ getState, token, getDateAndTime, showAlert,
             }
             return finalResult;
         },
-        async sendToVisitor({ address, SettleType, PaymentTime, DeliveryType, PayDueDate }) {
-            let { userInfo, shipping } = getState();
-            let body = {
-                "marketdoc": {
-                    "CardCode": userInfo.cardCode,
-                    "CardGroupCode": userInfo.groupCode,
-                    "MarketingLines": shipping.cartItems.map(({ ItemCode, ItemQty }) => { return { ItemCode, ItemQty } }),
-                    "DeliverAddress": address,
-                    "marketingdetails": {}
-                },
-                SettleType, PaymentTime, DeliveryType, PayDueDate
-            }
-            let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
-            try { return res.data.data[0].docNum }
-            catch { return false }
-        },
+        
         async getProductFullDetail({ id, code, product }) {
             //پروداکت رو همینجوری برای اینکه یک چیزی ریترن بشه فرستادم تو از کد و آی دی آبجکت کامل پروداکت رو بساز و ریترن کن
             let res = await Axios.post(`${baseUrl}/Spree/Products`,
@@ -726,16 +711,56 @@ export default function kharidApis({ getState, token, getDateAndTime, showAlert,
 
             return product;
         },
-        async pardakhte_foroosheVije() {
+        async shipping({cartId,shippingOptions,total}){
+            if(cartId === 'خرید عادی' || cartId === 'کمپین'){
+                return await this.sendToVisitor(shippingOptions,cartId);
+            }
+            if(cartId === 'بلکس'){
+                return await this[shippingOptions.SettleType === 16?'pardakhte_belex':'sabte_belex'](shippingOptions,total);
+            }
+            if(cartId === 'فروش ویژه'){
+                return await this[shippingOptions.SettleType === 16?'pardakhte_foroosheVije':'sabte_foroosheVije'](shippingOptions,total);
+            }
+        },
+        //call in this.shipping
+        async sendToVisitor({ address, SettleType, PaymentTime, DeliveryType, PayDueDate },cartId) {
+            let { userInfo, cart } = getState();
+            let cartItems = cart[cartId].map(({product,count})=>{
+                return {
+                    ItemCode:product.defaultVariant.code,
+                    ItemQty:count
+                }
+            });
+
+            let body = {
+                "marketdoc": {
+                    "CardCode": userInfo.cardCode,
+                    "CardGroupCode": userInfo.groupCode,
+                    "MarketingLines": cartItems,
+                    "DeliverAddress": address,
+                    "marketingdetails": {}
+                },
+                SettleType, PaymentTime, DeliveryType, PayDueDate
+            }
+            let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
+            try { return res.data.data[0].docNum }
+            catch { return false }
+        },
+        //call in this.shipping
+        async pardakhte_foroosheVije(shippingOptions, total) {
 
         },
-        async sabte_foroosheVije() {
+        //call in this.shipping
+        async sabte_foroosheVije(shippingOptions, total) {
 
         },
-        async pardakhte_belex({ address, SettleType, PaymentTime, DeliveryType, PayDueDate, shipping, ghabele_pardakht }) {
-            let { userInfo } = getState();
+        //call in this.shipping
+        async pardakhte_belex(shippingOptions, total ) {
+            let { userInfo,cart } = getState();
+            let { address, SettleType, PaymentTime, DeliveryType, PayDueDate} = shippingOptions;
+            let cartItems = cart['بلکس'];
             let arr = [];
-            for (const cart of shipping.cartItems) {
+            for (const cart of cartItems) {
                 const items = cart.count.qtyInPacks;
                 for (const key in items) {
                     arr = arr.concat(items[key])
@@ -762,7 +787,7 @@ export default function kharidApis({ getState, token, getDateAndTime, showAlert,
 
             let resss = await this.pardakhte_kharid({
                 order: {
-                    total: ghabele_pardakht,
+                    total,
                     mainDocisDraft: registredOrder.isDraft,
                     mainDocNum: registredOrder.docNum,
                     code: registredOrder.docEntry
@@ -771,10 +796,13 @@ export default function kharidApis({ getState, token, getDateAndTime, showAlert,
             return resss
 
         },
-        async sabte_belex({ address, SettleType, PaymentTime, DeliveryType, PayDueDate, shipping }) {
-            let { userInfo } = getState();
+        //call in this.shipping
+        async sabte_belex(shippingOptions,total) {
+            let {address, SettleType, PaymentTime, DeliveryType, PayDueDate} = shippingOptions;
+            let { userInfo,cart } = getState();
+            let cartItems = cart['بلکس'];
             let arr = [];
-            for (const cart of shipping.cartItems) {
+            for (const cart of cartItems) {
                 const items = cart.count.qtyInPacks;
                 for (const key in items) {
                     arr = arr.concat(items[key])

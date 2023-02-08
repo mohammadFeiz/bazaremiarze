@@ -43,7 +43,8 @@ export default class Cart extends Component {
         ItemQty: count,//use in getFactorDetails()
       });
     }
-    return getFactorDetails(cartItems,shippingOptions).DocumentTotal;
+    let res = getFactorDetails(cartItems,shippingOptions);
+    return res.DocumentTotal
   }
   getTotal_forooshe_vije(){
     let { cart } = this.context;
@@ -123,7 +124,6 @@ export default class Cart extends Component {
       ]
   }
   getCartItems(){
-    debugger;
     let { cart,fixPrice } = this.context;
     let {activeTabId} = this.state;
     let cartTab = cart[activeTabId];
@@ -226,7 +226,7 @@ export default class Cart extends Component {
           column: [
             { size: 24, align: "v", html: "مبلغ قابل پرداخت", className: "theme-medium-font-color fs-12" },
             { size: 3 },
-            {size: 24,align: "v", html: `${functions.splitPrice(this.getTotal())} ریال`, className: "theme-dark-font-color fs-14 bold" }
+            {size: 24,align: "v", html: `${functions.splitPrice(this.getTotal({PayDueDate:1,PaymentTime:5,SettleType:1,DeliveryType:11}))} ریال`, className: "theme-dark-font-color fs-14 bold" }
           ]
         },
         {
@@ -340,6 +340,11 @@ class Shipping extends Component{
       column:options.filter(({show})=>show(shippingOptions)).map((o)=>this.option_layout(o))
     }
   }
+  changeOption(key,value){
+    let {shippingOptions} = this.state;
+    shippingOptions[key] = value;
+    this.setState({shippingOptions})
+  }
   option_layout({key,text}){
     let options = this.state.shippingOptions[key + '_options']
     let value = this.state.shippingOptions[key];
@@ -354,7 +359,7 @@ class Shipping extends Component{
               options={options}
               optionClassName='"w-100 h-36"'
               value={value}
-              onChange={(value)=>this.setState({[key]:value})}
+              onChange={(value)=>this.changeOption(key,value)}
             />
           )
         }
@@ -414,7 +419,8 @@ class Shipping extends Component{
   async onSubmit(){
     let { kharidApis,cart,SetState,rsa_actions,openPopup} = this.context;
     let {shippingOptions} = this.state;
-    let {total,cartId} = this.props;
+    let {getTotal,cartId} = this.props;
+    let total = getTotal(shippingOptions)
     let orderNumber = await kharidApis({
       api:'shipping',parameter: {cartId,shippingOptions,total}
     })
@@ -448,7 +454,7 @@ class Shipping extends Component{
                 {size:12},
                 this.address_layout(userInfo.address),
                 {size:12},
-                this.phone_layout(userInfo.phone1),
+                this.phone_layout(userInfo.phoneNumber),
                 {size:12},
                 this.options_layout(cartId),
                 {size:12},

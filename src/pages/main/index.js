@@ -139,6 +139,7 @@ export default class Main extends Component {
   }
   changeCartCount({variantId,count,product}) {
     let {cart,kharidApis} = this.state;
+    cart[product.cartId] = cart[product.cartId] || {};
     let cartTab = cart[product.cartId];
     let newCartTab = {};
     //حذف از سبد خرید
@@ -272,7 +273,6 @@ export default class Main extends Component {
           DeliveryType
         }
       }
-      debugger
       let res = pricing.autoCalcDoc(config)
       return res
     }

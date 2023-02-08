@@ -22,10 +22,10 @@ export default class CategoryView extends Component {
     product_layout(product,index){
         let {searchValue} = this.state;
         if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
-        if(product.type === 'forooshe_vije'){
+        if(product.cartId === 'فروش ویژه'){
             return {html:<ForoosheVijeCard index={index} product={product}/>,className:'of-visible'}    
         }
-        if(product.type === 'belex'){
+        if(product.cartId === 'بلکس'){
             return {html:<BelexCard index={index} product={product}/>,className:'of-visible'}    
         }
         return {html:<ProductCard index={index} product={product} isFirst={true} isLast={true} type='horizontal' />,className:'of-visible'}

@@ -153,7 +153,7 @@ export default class ReactVirtualDom extends Component {
     clearTimeout(this.timeOut);
     this.timeOut = setTimeout(()=>{
         this.eggCounter = 0;
-    },300)
+    },500)
 
   }
   longTouchMouseUp(){

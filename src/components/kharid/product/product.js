@@ -13,8 +13,8 @@ import cartonSrc from './../../../images/belex-box.jpg';
 export default class Product extends Component{
     render(){
         let { product } = this.props;
-        if(product.type === 'فروش ویژه'){return <ForoosheVije {...this.props}/>}
-        if(product.type === 'بلکس'){return <Belex {...this.props}/>}
+        if(product.cartId === 'فروش ویژه'){return <ForoosheVije {...this.props}/>}
+        if(product.cartId === 'بلکس'){return <Belex {...this.props}/>}
         return <ProductReqular {...this.props}/>
     }
 }
@@ -352,7 +352,7 @@ class ForoosheVije extends Component {
         let {cart} = this.context;
         let { variantId } = this.props;
         let count = false;
-        if(variantId){count = cart[variantId].count}
+        if(variantId){count = cart['فروش ویژه'][variantId].count}
         this.setState({variantId,count})
     }
     changeVariant(variantId){
@@ -376,9 +376,6 @@ class ForoosheVije extends Component {
         let {product} = this.props;
         let {variants} = product;
         return variants.find(({id})=>variantId === id);
-    }
-    changeCount(count) {
-        this.setState({count})
     }
     image_layout(name, code, src) {
         let { product } = this.props, { srcIndex } = this.state;
@@ -471,7 +468,7 @@ class ForoosheVije extends Component {
         packQty += v;
         if(packQty < 0){packQty = 0}
         count.packQty = packQty;
-        this.changeCount(count)
+        this.setState({count})
     }
     getSelectedCount(){
         let {count} = this.state;
@@ -526,7 +523,7 @@ class ForoosheVije extends Component {
                                     key={variantId} {...o} totalQty={totalQty} max={o.count + remaining} 
                                     onChange={(value)=>{
                                         o.count = value;
-                                        this.changeCount(count)
+                                        this.setState({count})
                                     }}
                                 />
                             )
@@ -608,27 +605,13 @@ class ForoosheVije extends Component {
         let {packQty} = count;
         let {product} = this.props;
         let {variantId} = this.state;
-        let {cart,kharidApis,SetState} = this.context;
-        let newCart;
+        let {changeCartCount} = this.context;
         if(packQty === 0){
-            let res = {};
-            for(let prop in cart){
-                if(prop.toString() !== variantId.toString()){res[prop] = cart[prop]}
-            }
-            newCart = res;
+            changeCartCount({product,variantId,count:0})
         }
         else{
-            newCart = {...cart}
-            if(newCart[variantId] === undefined){
-                let variant = this.getVariant();
-                newCart[variantId] = {count,product,variantId:variant.id}
-            }
-            else{newCart[variantId].count = count;}
+            changeCartCount({product,variantId,count})
         }
-        
-        await kharidApis({api:'setCart',parameter:newCart,loading:false})
-        SetState({cart:newCart});
-        
     }
     cart_layout() {
         let {variantId} = this.state;

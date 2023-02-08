@@ -6615,7 +6615,7 @@ export default function kharidApis({ getState, token, getDateAndTime, showAlert,
                         // };
 
                         products.push({
-                            type: 'belex',
+                            cartId: 'بلکس',
                             name: subItem.itemname,
                             code: subItem.itemcode,
                             price: subItem.price,
@@ -6639,7 +6639,7 @@ export default function kharidApis({ getState, token, getDateAndTime, showAlert,
                     for (const subItem of item) {
 
                         products.push({
-                            type: 'belex',
+                            cartId: 'بلکس',
                             name: subItem.itemname,
                             code: subItem.itemcode,
                             price: subItem.price,
@@ -6749,7 +6749,8 @@ export default function kharidApis({ getState, token, getDateAndTime, showAlert,
 
 
                             products.push({
-                                type: 'forooshe_vije',
+                                cartId: 'فروش ویژه',
+                                inStock:Infinity,
                                 name: t3.taxonname,
                                 code: t3.taxonid,
                                 details: [['توان', '144'], ['وزن', '3 کیلوگرم']],

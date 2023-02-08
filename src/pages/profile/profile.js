@@ -74,6 +74,7 @@ export default class Profile extends Component{
                     egg:{
                         count:6,
                         callback:()=>{
+                            debugger
                             kharidApis({api:'setCart',parameter:{},loading:false});
                             SetState({cart:{}})
                         }

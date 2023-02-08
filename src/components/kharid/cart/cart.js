@@ -15,21 +15,41 @@ export default class Cart extends Component {
   }
   updateState(cartId){
     this.setState({ 
-      activeTabId:cartId,
-      ProductCardComponent:{
-        'خرید عادی':ProductCard,
-        'کمپین':ProductCard,
-        'بلکس':BelexCard,
-        'فروش ویژه':ForoosheVijeCard
-      }[cartId],
+      activeTabId:cartId
     })
   }
-  getTotal(shippingOptions){
+  getDynamics(key,shippingOptions){
     let {activeTabId} = this.state;
-    if(activeTabId === 'خرید عادی'){return this.getTotal_kharide_addi(shippingOptions)}  
-    if(activeTabId === 'کمپین'){return this.getTotal_kharide_addi(shippingOptions)}  
-    if(activeTabId === 'فروش ویژه'){return this.getTotal_forooshe_vije()}
-    if(activeTabId === 'بلکس'){return this.getTotal_belex()}   
+    let obj;
+    if(activeTabId === 'خرید عادی'){
+      obj = {
+        total:()=>this.getTotal_kharide_addi(shippingOptions),
+        amounts:()=>this.getAmounts_kharide_addi(shippingOptions),
+        productCardComponent:()=>ProductCard
+      }
+    }
+    if(activeTabId === 'کمپین'){
+      obj = {
+        total:()=>this.getTotal_kharide_addi(shippingOptions),
+        amounts:()=>this.getAmounts_kharide_addi(shippingOptions),
+        productCardComponent:()=>ProductCard
+      }
+    }  
+    if(activeTabId === 'فروش ویژه'){
+      obj = {
+        total:()=>this.getTotal_forooshe_vije(shippingOptions),
+        amounts:()=>this.getAmounts_forooshe_vije(shippingOptions),
+        productCardComponent:()=>ForoosheVijeCard
+      }
+    }
+    if(activeTabId === 'بلکس'){
+      obj = {
+        total:()=>this.getTotal_belex(shippingOptions),
+        amounts:()=>this.getAmounts_forooshe_vije(shippingOptions),
+        productCardComponent:()=>BelexCard
+      }
+    }  
+    return obj[key]() 
   }
   getTotal_kharide_addi(shippingOptions){
     let { cart, getFactorDetails } = this.context;
@@ -54,7 +74,7 @@ export default class Cart extends Component {
     for (let id in cartTab) {
       let { product, count, variantId } = cartTab[id];
       let { packQty } = count;
-      let variant = product.variants.find((o) => o.id === id);
+      let variant = product.variants.find((o) => o.id.toString() === id.toString());
       let { finalPrice } = variant;
       total += packQty * finalPrice;
     }
@@ -72,13 +92,6 @@ export default class Cart extends Component {
     }
     return total;
   }
-  getAmounts(shippingOptions){
-    let {activeTabId} = this.state;
-    if(activeTabId === 'خرید عادی'){return this.getAmounts_kharide_addi(shippingOptions)}  
-    if(activeTabId === 'کمپین'){return this.getAmounts_kharide_addi(shippingOptions)}  
-    if(activeTabId === 'فروش ویژه'){return this.getAmounts_forooshe_vije(shippingOptions)}
-    if(activeTabId === 'بلکس'){return this.getAmounts_forooshe_vije(shippingOptions)}  
-  }
   getAmounts_kharide_addi(shippingOptions){
     let { getFactorDetails,cart } = this.context;
     let { PayDueDate, SettleType, DeliveryType, PaymentTime } = shippingOptions;
@@ -93,6 +106,7 @@ export default class Cart extends Component {
       });
     }
     let factorDetails = getFactorDetails(cartItems, { PayDueDate, PaymentTime, SettleType, DeliveryType })
+    console.log(factorDetails)
     let jame_kolle_takhfif = factorDetails.marketingdetails.DocumentDiscount;
     let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent
     let mablaghe_ghabele_pardakht = factorDetails.DocumentTotal;
@@ -100,10 +114,10 @@ export default class Cart extends Component {
     mablaghe_ghabele_pardakht = mablaghe_ghabele_pardakht - takhfife_pardakhte_online;
     let jame_kolle_sabade_kharid = mablaghe_ghabele_pardakht + jame_kolle_takhfif + takhfife_pardakhte_online;
     return [
-      ['جمع کل سبد خرید',jame_kolle_sabade_kharid,'theme-medium-font-color fs-14'],
-      ['جمع کل تخفیف',jame_kolle_takhfif,'colorFDB913 fs-14'],
-      ['تخفیف نحوه پرداخت',takhfife_pardakhte_online,'color00B5A5 fs-14'],
-      ['مبلغ قابل پرداخت',mablaghe_ghabele_pardakht,'theme-dark-font-color bold fs-16'],
+      ['جمع کل سبد خرید',jame_kolle_sabade_kharid,'theme-medium-font-color fs-12'],
+      ['جمع کل تخفیف',jame_kolle_takhfif,'colorFDB913 fs-12'],
+      ['تخفیف نحوه پرداخت',takhfife_pardakhte_online,'color00B5A5 fs-12'],
+      ['مبلغ قابل پرداخت',mablaghe_ghabele_pardakht,'theme-dark-font-color fs-12 bold'],
     ]
   }
   getAmounts_forooshe_vije(shippingOptions){
@@ -113,7 +127,7 @@ export default class Cart extends Component {
         '19':[4.5,50],'20':[10.5,50]
       }
       let [a,b] = percents[PayDueDate.toString()];
-      let jame_kolle_sabade_kharid = this.getTotal(shippingOptions);
+      let jame_kolle_sabade_kharid = this.getDynamics('total',shippingOptions);
       let takhfife_pardakhte_online = this.fix(jame_kolle_sabade_kharid * a / 100);
       let mablaghe_ghabele_pardakht = jame_kolle_sabade_kharid - takhfife_pardakhte_online;
       mablaghe_ghabele_pardakht = this.fix(mablaghe_ghabele_pardakht * b / 100)
@@ -160,7 +174,7 @@ export default class Cart extends Component {
     
   }
   getProductCards(renderIn){
-    let {ProductCardComponent} = this.state;
+    let ProductCardComponent = this.getDynamics('productCardComponent');
     return this.getCartItems().map(({product,variantId,count})=>{
       return <ProductCardComponent type='horizontal' renderIn={renderIn} key={variantId} product={product} variantId={variantId} count={count}/>
     });
@@ -200,8 +214,7 @@ export default class Cart extends Component {
     rsa_actions.addPopup({
       body:()=>(
         <Shipping
-          getTotal={this.getTotal.bind(this)}
-          getAmounts={this.getAmounts.bind(this)}
+          getDynamics={this.getDynamics.bind(this)}
           options={this.getOptions()}
           cartId={activeTabId}
           productCards={this.getProductCards('shipping')}
@@ -219,14 +232,16 @@ export default class Cart extends Component {
     let { activeTabId } = this.state;
     if (!activeTabId) { return false }
     return {
+      size:60,
       className: "bgFFF p-h-12 theme-box-shadow",
       row: [
         {
           flex: 1,className:'p-h-12',
           column: [
-            { size: 24, align: "v", html: "مبلغ قابل پرداخت", className: "theme-medium-font-color fs-12" },
-            { size: 3 },
-            {size: 24,align: "v", html: `${functions.splitPrice(this.getTotal({PayDueDate:1,PaymentTime:5,SettleType:1,DeliveryType:11}))} ریال`, className: "theme-dark-font-color fs-14 bold" }
+            {flex:1},
+            { align: "v", html: "مبلغ قابل پرداخت", className: "theme-medium-font-color fs-12" },
+            {align: "v", html: `${functions.splitPrice(this.getDynamics('total',{PayDueDate:1,PaymentTime:5,SettleType:1,DeliveryType:11}))} ریال`, className: "theme-dark-font-color fs-14 bold" },
+            {flex:1}
           ]
         },
         {
@@ -391,16 +406,15 @@ class Shipping extends Component{
     catch{return 0}
   }
   amounts_layout(){
-    let {getAmounts} = this.props;
+    let {getDynamics} = this.props;
     let {shippingOptions} = this.state;
-    let amounts = getAmounts(shippingOptions)
+    let amounts = getDynamics('amounts',shippingOptions)
     return {
-      className:'box p-12 m-h-12',
       column:amounts.map(([key,value,className = 'theme-medium-font-color fs-14'])=>{
         if(value === false){return false}
         return {
-          size:36,childsProps:{align:'v'},
-          row:[{html:key + ':',className},{flex:1},{html:value,className}]
+          childsProps:{align:'v'},
+          row:[{html:key + ':',className},{flex:1},{html:`${functions.splitPrice(value)} ریال`,className}]
         }
       })
     }
@@ -419,8 +433,8 @@ class Shipping extends Component{
   async onSubmit(){
     let { kharidApis,cart,SetState,rsa_actions,openPopup} = this.context;
     let {shippingOptions} = this.state;
-    let {getTotal,cartId} = this.props;
-    let total = getTotal(shippingOptions)
+    let {getDynamics,cartId} = this.props;
+    let total = getDynamics('total',shippingOptions)
     let orderNumber = await kharidApis({
       api:'shipping',parameter: {cartId,shippingOptions,total}
     })

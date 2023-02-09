@@ -568,14 +568,7 @@ export default class Pricing {
             MD.marketingdetails.PaymentTime = 1;
         }
         MD.marketingdetails.DocumentDiscountPercent = 0;
-        if (MD.marketingdetails.PaymentTime == 5
-            && MD.marketingdetails.SettleType == 1) {
-            MD.marketingdetails.DocumentDiscountPercent = 12;
-        }
-        else if (MD.marketingdetails.SettleType == 1) {
-            MD.marketingdetails.DocumentDiscountPercent = 12;
-        }
-        else if (MD.marketingdetails.SettleType == 2) {
+
             if (MD.marketingdetails.PayDueDate == null) {
                 MD.marketingdetails.PayDueDate = 1;
             }
@@ -628,10 +621,7 @@ export default class Pricing {
                     MD.marketingdetails.DocumentDiscountPercent = 0;
                     break;
             }
-        }
-        else {
-            MD.marketingdetails.DocumentDiscountPercent = 0;
-        }
+
         return MD;
     }
 

@@ -273,6 +273,7 @@ export default class Main extends Component {
           DeliveryType
         }
       }
+      debugger;
       let res = pricing.autoCalcDoc(config)
       return res
     }

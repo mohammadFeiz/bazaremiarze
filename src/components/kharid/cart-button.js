@@ -5,7 +5,7 @@ export default class CartButton extends Component{
     static contextType = appContext;
     render(){
         let {cart,changeCartCount} = this.context;
-        let {variantId,product,renderIn} = this.props;
+        let {variantId,product,renderIn,onChange = ()=>{}} = this.props;
         if(!product){console.error(`CartButton missing product props`)}
         if(!product.cartId){console.error(`CartButton missing cartId in product props`)}
         cart[product.cartId] = cart[product.cartId] || {};
@@ -13,7 +13,11 @@ export default class CartButton extends Component{
         if(!cart[product.cartId][variantId]){
             return (
                 <button 
-                    onClick={() => changeCartCount({variantId,product,count:1})} className="button-2"
+                    onClick={() => {
+                        changeCartCount({variantId,product,count:1})
+                        onChange(1)
+                    }} 
+                    className="button-2"
                     style={{fontSize:12,height:36,padding:'0 12px'}}
                 >افزودن به سبد خرید</button>
                 
@@ -24,7 +28,12 @@ export default class CartButton extends Component{
             return count;
         }
         return (
-            <ProductCount value={count} onChange={(count) => changeCartCount({product,variantId,count})} />
+            <ProductCount 
+                value={count} 
+                onChange={(count) => {
+                    changeCartCount({product,variantId,count})
+                    onChange(count)
+                }} />
         )
     }
 }

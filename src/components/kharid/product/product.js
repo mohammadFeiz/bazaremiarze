@@ -340,45 +340,25 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         );
     }
 }
-
-
-
-
 class ForoosheVije extends Component {
     static contextType = appContext;
-    state = {}
+    state = {product:this.props.product}
     componentDidMount(){
         this.mounted = true;
-        let {cart} = this.context;
         let { variantId } = this.props;
-        let count = false;
-        if(variantId){count = cart['فروش ویژه'][variantId].count}
-        this.setState({variantId,count})
+        this.setState({variantId})
     }
     changeVariant(variantId){
-        let {cart} = this.context;
-        let count;
-        if(cart[variantId]){count = cart[variantId].count}
-        else{
-            let {product} = this.props;
-            let {optionValues} = product;
-            let variant = this.getVariant(variantId);
-            let {totalQty} = variant;
-            let qtyInPack = optionValues.map(({name,id,step},i)=>{
-                return {optionValueId:id,optionValueName:name,count:i === 0?totalQty:0,step}
-            })
-            count = {packQty:0,qtyInPack}
-        }
-        this.setState({count,variantId})
+        this.setState({variantId})
     }
     getVariant(variantId = this.state.variantId){
         if(!variantId){return false}
-        let {product} = this.props;
+        let {product} = this.state;
         let {variants} = product;
         return variants.find(({id})=>variantId === id);
     }
     image_layout(name, code, src) {
-        let { product } = this.props, { srcIndex } = this.state;
+        let { product,srcIndex } = this.state;
         return {
             size: 346, className: "theme-box-shadow theme-card-bg theme-border-radius m-h-12",
             column: [
@@ -399,9 +379,8 @@ class ForoosheVije extends Component {
         };
     }
     packs_layout(){
-        let {product} = this.props;
+        let {product,variantId} = this.state;
         let {variants} = product;
-        let {variantId} = this.state;
         let variant;
         if(variantId){
             variant = this.getVariant()
@@ -429,122 +408,8 @@ class ForoosheVije extends Component {
             ]
         }
     }
-    packQty_layout(){
-        let {variantId,count} = this.state;
-        if(!variantId || !count){return false}
-        let {packQty} = count;
-        
-        return {
-            align:'v',
-            style:{borderRadius:6,background:'#DCE1FF',padding:'0 12px'},
-            column:[
-                {size:12},
-                {align:'v',html:`تعداد بسته را مشخص کنید :`,align:'v',className:'theme-dark-font-color fs-14 bold'},
-                {size:12},
-                {
-                    row:[
-                        {
-                            size:40,html:<Icon path={mdiPlus} size={1}/>,align:'vh',onClick:()=>this.changePackQty(1),
-                            style:{background:'#3B55A5',height:40,color:'#fff',borderRadius:6}
-                        },
-                        {size:6},
-                        {
-                            size:48,html:packQty,align:'vh'  
-                        },
-                        {size:6},
-                        {
-                            align:'v',size:40,html:<Icon path={mdiMinus} size={1}/>,align:'vh',onClick:()=>this.changePackQty(-1),
-                            style:{background:'#3B55A5',height:40,color:'#fff',borderRadius:6}
-                        }
-                    ]
-                },
-                {size:12}
-            ]
-        }
-    }
-    changePackQty(v){
-        let {count} = this.state;
-        let {packQty} = count;
-        packQty += v;
-        if(packQty < 0){packQty = 0}
-        count.packQty = packQty;
-        this.setState({count})
-    }
-    getSelectedCount(){
-        let {count} = this.state;
-        let {qtyInPack} = count;
-        let selectedCount = 0;
-        for(let i = 0; i < qtyInPack.length; i++){
-            selectedCount += qtyInPack[i].count || 0;
-        }
-        return selectedCount;
-    }
-    isFull(){
-        let v = this.getVariant();
-        if(!v){return false}
-        let {count} = this.state;
-        if(!count){return false}
-        let {packQty} = count;
-        let {totalQty} = v;
-        totalQty *= packQty;
-        let selectedCount = this.getSelectedCount();
-        return selectedCount === totalQty;
-        
-    }
-    qtyInPacks_layout(){
-        let {variantId,count} = this.state;
-        if(!variantId || !count){return false}
-        let {qtyInPack,packQty} = count;
-        if(!packQty){return false}
-        let {product} = this.props;
-        let v = this.getVariant();
-        let {totalQty} = v;
-        totalQty *= packQty;
-        let selectedCount = this.getSelectedCount();
-        let isFull = this.isFull();
-        return {
-            column:[
-                {
-                    html:`3: رنگ کالاها در ${packQty + ' ' + v.name} را انتخاب کنید`,
-                    align:'v',className:'theme-dark-font-color fs-14 bold',
-                },
-                {size:12},
-                {
-                    gap:6,column:qtyInPack.map((o,i)=>{
-                        let used = 0;
-                        for(let j = 0; j < qtyInPack.length; j++){
-                            used += qtyInPack[j].count;
-                        }
-                        let remaining = totalQty - used;
-                        return {
-                            size:72,
-                            html:(
-                                <ForoosheVijeSlider 
-                                    key={variantId} {...o} totalQty={totalQty} max={o.count + remaining} 
-                                    onChange={(value)=>{
-                                        o.count = value;
-                                        this.setState({count})
-                                    }}
-                                />
-                            )
-                        }
-                    })
-                },
-                {size:12}, 
-                {
-                    style:{color:isFull?'#107C10':'#d0000a'},
-                    row:[
-                        {html:<Icon path={isFull?mdiCheckCircle:mdiAlertCircle} size={0.7}/>},
-                        {size:6},
-                        {html:`${selectedCount + ' عدد'} از ${totalQty + ' عدد'} کالا تعیین رنگ شده`,align:'v',className:'fs-14 bold'}
-                    ]
-                },
-            ]
-        }
-    }
     pack_layout({id,name,finalPrice},i){
-        let {variantId} = this.state;
-        let {product} = this.props;
+        let {product,variantId} = this.state;
         let {variants} = product;
         let active = id === variantId;
         let br = {borderTopLeftRadius:0,borderTopRightRadius:0,borderBottomLeftRadius:0,borderBottomRightRadius:0};
@@ -559,6 +424,49 @@ class ForoosheVije extends Component {
                     row:[
                         {html:`${functions.splitPrice(finalPrice)} ریال`,className:'theme-dark-font-color fs-12 bold',align:'v'}
                     ]
+                }
+            ]
+        }
+    }
+    qtyInPacks_layout(){
+        let {cart} = this.context;
+        let {product,variantId} = this.state;
+        let cartTab = cart['فروش ویژه'];
+        if(!cartTab){return false}
+        let cartItem = cartTab[variantId]
+        if(!cartItem){return false}
+        let {count} = cartItem;
+        let variant = this.getVariant();
+        let {totalQty,qtyInPack} = variant;
+        totalQty *= count;
+        let sum = 0;
+        let points = qtyInPack.slice(0,qtyInPack.length - 1).map(({count})=>{
+            sum += count;
+            return sum;
+        })
+        return {
+            column:[
+                {
+                    html:`3: رنگ کالاها در ${count + ' ' + variant.name} را انتخاب کنید`,
+                    align:'v',className:'theme-dark-font-color fs-14 bold',
+                },
+                {size:12},
+                {
+                    size:72,
+                    html:(
+                        <NewSlider 
+                            key={variantId} points={points} totalQty={totalQty} 
+                            onChange={(points)=>{
+                                variant.qtyInPack = variant.qtyInPack.map((o,i)=>{
+                                    let p1 = i === 0?0:points[i - 1];
+                                    let p2 = i === points.length?totalQty:points[i];
+                                    return {...o,count:p2 - p1}
+                                })
+                                variant.qtyInPack = qtyInPack;
+                                this.setState({product})
+                            }}
+                        />
+                    )
                 }
             ]
         }
@@ -600,42 +508,27 @@ class ForoosheVije extends Component {
             ],
         };
     }
-    async updateCart(){
-        let {count} = this.state;
-        let {packQty} = count;
-        let {product} = this.props;
-        let {variantId} = this.state;
-        let {changeCartCount} = this.context;
-        if(packQty === 0){
-            changeCartCount({product,variantId,count:0})
-        }
-        else{
-            changeCartCount({product,variantId,count})
-        }
-    }
     cart_layout() {
-        let {variantId} = this.state;
-        if(!variantId){return false}
-        let {cart} = this.context;
-        let isFull = this.isFull()
+        let {product,variantId} = this.state;
         return {
-            column:[
-                {
-                    flex:1,show:!cart[variantId],html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>افزودن به سبد خرید</button>),
-                    align: "v",
-                },
-                {
-                    flex:1,show:!!cart[variantId],html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>ویرایش سبد خرید</button>),
-                    align: "v",
-                },
-                
-                
-            ]
+            html:(
+                <CartButton 
+                    product={product} 
+                    variantId={variantId}
+                    onChange={(count)=>{
+                        let variant = this.getVariant();
+                        let {totalQty} = variant;
+                        variant.qtyInPack = product.optionValues.map(({name,id,step},i)=>{
+                            return {optionValueId:id,optionValueName:name,count:i === 0?totalQty * count:0,step}
+                        })
+                    }}
+                />
+            )
         }
     }
     render() {
         if(!this.mounted){return null}
-        let { product } = this.props;
+        let { product } = this.state;
         let { name, src,code } = product;
         return (
             <RVD
@@ -651,8 +544,6 @@ class ForoosheVije extends Component {
                                     className: 'theme-card-bg theme-box-shadow theme-border-radius m-h-12 p-12',
                                     column:[
                                         this.packs_layout(),
-                                        {size:36,align:'v',html:<div style={{width:'100%',height:1,background:'#ddd'}}></div>},
-                                        this.packQty_layout(),
                                         {size:36,align:'v',html:<div style={{width:'100%',height:1,background:'#ddd'}}></div>},
                                         this.qtyInPacks_layout()
                                     ]
@@ -675,7 +566,51 @@ class ForoosheVije extends Component {
         );
     }
 }
-
+class NewSlider extends Component{
+    state = {count:this.props.count,prevCount:this.props.count.toString()}
+    
+    render(){
+        let {count,prevCount} = this.state;
+        if(this.props.count.toString() !== prevCount){
+            setTimeout(()=>{
+                this.setState({
+                    count:this.props.count,
+                    prevCount:this.props.count.toString()
+                })
+            },0)
+        }
+        let sum = 0;
+        
+        let {totalQty,onChange} = this.props;
+        return (
+            <Slider
+                attrs={{style:{padding:'0 30px'}}}
+                scaleStep={totalQty}
+                scaleStyle={()=>{return {background:'#2BBA8F'}}}
+                labelStep={totalQty}
+                labelStyle={()=>{return {color:'#2BBA8F',fontSize:12,top:43}}}
+                start={0} direction='left'
+                end={totalQty}
+                step={1}
+                points={count}
+                lineStyle={{height:4}}
+                showValue={true}
+                fillStyle={(index)=>{
+                    if(index === 0){return {height:4,background:'#2BBA8F'}}
+                }}
+                valueStyle={{
+                    background:'#2BBA8F',height:14,top:-24,
+                    display:'flex',alignItems:'center',fontSize:12
+                }}
+                pointStyle={{background:'#2BBA8F',width:16,height:16,zIndex:1000}}
+                onChange={(points,drag)=>{
+                    this.setState({count:points});
+                    if(!drag){onChange(points)}
+                }}
+            />
+        )
+    }
+}
 
 class Belex extends Component {
     static contextType = appContext;

@@ -42,7 +42,7 @@ export default class NV3Report extends Component{
                     step={0.5}
                     points={[amount]}
                     lineStyle={{background:'#D4F1E8',height:6,borderRadius:4}}
-                    pointStyle={{background:'#2BBA8F'}}
+                    pointStyle={{display:'none'}}
                     fillStyle={(index)=>{
                         return {
                             height:6,borderRadius:4,

@@ -17,7 +17,7 @@ export default class Billboard extends Component{
             openPopup('category',{category:{products:campaign.products,name:campaign.name,src:campaign.src},name:campaign.name})
         }
         else if(campaign.type === 'nv3'){
-            openPopup('category',{category:{products:campaign.products,name:campaign.name,src:campaign.src,description:campaign.description},name:campaign.name})
+            openPopup('category',{category:{products:campaign.products,name:campaign.name,src:campaign.src,description:campaign.description,type:'nv3'},name:campaign.name})
         }
         else{
             let products = await kharidApis({api:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.id});
@@ -50,7 +50,7 @@ export default class Billboard extends Component{
         }
         if(nv3 && renderIn === 'buy'){
             items.push(<img src={nv3.src} alt="" width='100%' onClick={()=>{
-                openPopup('category',{category:nv3})
+                openPopup('category',{category:{...nv3,type:'nv3'}})
             }}/>)
         }
         return {html:<ACS items={items}/>}

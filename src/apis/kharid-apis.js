@@ -366,13 +366,14 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       });
     },
     async nv3(){
-        let res = await this.newOrders()
+        const taxonProductsList=await this.getProductsByTaxonId({Taxons:'10932'});
+        let products = getState().updateProductPrice(taxonProductsList);
         return {
             type:'nv3',
             name:'نورواره 3',
             src:nv3billboard,
             icon:nv3Icon,
-            products:res,
+            products,
             description:`
             لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
             `
@@ -878,7 +879,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       });
       return this.getMappedAllProducts({ spreeResult: spreeData, b1Result: b1Data, loadType });
     },
-    async getProductsByTaxonId({ Taxons }) {
+    async getProductsByTaxonId({ Taxons,type }) {
       let { userInfo } = getState();
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
         {
@@ -916,9 +917,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         };
       });
 
-      return this.getModifiedProducts({ spreeResult: spreeData, b1Result: b1Data });
+      return this.getModifiedProducts({ spreeResult: spreeData, b1Result: b1Data,type });
     },
-    getModifiedProducts({spreeResult , b1Result}){
+    getModifiedProducts({spreeResult , b1Result,type}){
 
       let allProducts=[];
       for (const product of spreeResult.data) {

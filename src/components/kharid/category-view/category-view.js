@@ -4,6 +4,7 @@ import ProductCard from './../product-card/product-card';
 import SearchBox from './../../../components/search-box/index';
 import ForoosheVijeCard from '../forooshe-vije-card/forooshe-vije-card';
 import BelexCard from '../belex-card/belex-card';
+import NV3Card from '../nv3-card/nv3-card';
 import NV3Report from '../nv3-report';
 export default class CategoryView extends Component {
     constructor(props) {
@@ -28,7 +29,11 @@ export default class CategoryView extends Component {
     }
     product_layout(product,index){
         let {searchValue} = this.state;
+        let {category} = this.props;
         if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
+        if(category.type === 'nv3'){
+            return {html:<NV3Card index={index} product={product}/>,className:'of-visible'}    
+        }
         if(product.type === 'forooshe_vije'){
             return {html:<ForoosheVijeCard index={index} product={product}/>,className:'of-visible'}    
         }

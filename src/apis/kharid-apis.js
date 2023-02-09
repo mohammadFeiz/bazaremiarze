@@ -5,6 +5,8 @@ import foroosheVijeSrc from './../images/forooshe-vije.png';
 import foroosheVijeIcon from './../images/forooshe-vije-icon.png';
 import belexbillboard from './../images/belex-billboard.png';
 import belexIcon from './../images/belex-icon.png';
+import nv3billboard from './../images/nv3-billboard.png';
+import nv3Icon from './../images/land1.png';
 export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOServiceShowAlert,baseUrl}) {
   return {
     async taide_noorvare(name){
@@ -362,6 +364,19 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         let res = { ...o, campaign }
         return this.updateCampaignPrice(id,res)
       });
+    },
+    async nv3(){
+        let res = await this.newOrders()
+        return {
+            type:'nv3',
+            name:'نورواره 3',
+            src:nv3billboard,
+            icon:nv3Icon,
+            products:res,
+            description:`
+            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+            `
+        }
     },
     async newOrders() {
       const taxonProductsList=await this.getProductsByTaxonId({Taxons:'10932'});

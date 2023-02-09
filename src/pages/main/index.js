@@ -219,6 +219,11 @@ export default class Main extends Component {
     let forooshe_vije = await kharidApis({api:"forooshe_vije",loading:false});
     this.setState({ forooshe_vije});
   }
+  async get_nv3() {
+    let {kharidApis} = this.state;
+    let nv3 = await kharidApis({api:"nv3",loading:false});
+    this.setState({ nv3});
+  }
   async get_belex() {
     let {kharidApis} = this.state;
     let belex = await kharidApis({api:"belex",loading:false});
@@ -253,6 +258,7 @@ export default class Main extends Component {
     if(backOffice.activeManager.forooshe_vije){this.get_forooshe_vije();}
     if(backOffice.activeManager.belex){this.get_belex();}
     if(backOffice.activeManager.bazargah){this.getBazargahOrders();}
+    if(backOffice.activeManager.noorvare3){this.get_nv3();}
     //let testedChance = await gardooneApis({type:"get_tested_chance"});
     let pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode,12 * 60 * 60 * 1000)
     pricing.startservice().then((value) => { return value; });

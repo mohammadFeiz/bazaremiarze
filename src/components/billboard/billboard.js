@@ -16,13 +16,16 @@ export default class Billboard extends Component{
         else if(campaign.type === 'belex'){
             openPopup('category',{category:{products:campaign.products,name:campaign.name,src:campaign.src},name:campaign.name})
         }
+        else if(campaign.type === 'nv3'){
+            openPopup('category',{category:{products:campaign.products,name:campaign.name,src:campaign.src,description:campaign.description},name:campaign.name})
+        }
         else{
             let products = await kharidApis({api:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.id});
             openPopup('category',{category:{products,name:campaign.name,src:campaign.src},name:campaign.name})
         }
     }
     billboard_layout(){
-        let {campaigns,openPopup,backOffice,forooshe_vije,belex,userInfo} = this.context,{renderIn} = this.props;
+        let {campaigns,openPopup,backOffice,forooshe_vije,belex,userInfo,nv3} = this.context,{renderIn} = this.props;
         let items = []
         if(renderIn === 'buy'){
             items = items.concat(campaigns.map((o)=><img src={o.src} width='100%' alt='' onClick={async ()=>this.onClick(o)}/>))
@@ -45,10 +48,15 @@ export default class Billboard extends Component{
                 openPopup('category',{category:belex})
             }}/>)
         }
+        if(nv3 && renderIn === 'buy'){
+            items.push(<img src={nv3.src} alt="" width='100%' onClick={()=>{
+                openPopup('category',{category:nv3})
+            }}/>)
+        }
         return {html:<ACS items={items}/>}
     }
     campaigns_layout(){
-        let {campaigns,forooshe_vije,belex} = this.context,{renderIn} = this.props;
+        let {campaigns,forooshe_vije,belex,nv3} = this.context,{renderIn} = this.props;
         if(renderIn !== 'buy'){return false}
         let list = [...campaigns];
         if(forooshe_vije){
@@ -56,6 +64,9 @@ export default class Billboard extends Component{
         }
         if(belex){
             list.push(belex)
+        }
+        if(nv3){
+            list.push(nv3)
         }
         return {
             column:[

@@ -11,7 +11,7 @@ export default class Pricing {
     db = {};
 
     constructor(fetchURL, applicator, interval = 10 * 60 * 1000) {
-        
+
         this.fetchUrl = fetchURL;
 
         this.updateInterval = interval;
@@ -317,8 +317,8 @@ export default class Pricing {
         return this.pricingData.ItemPrices;
     }
 
-    
-    
+
+
 
     startservice() {
         let self = this;
@@ -362,7 +362,7 @@ export default class Pricing {
     }
 
     isListNumExist(ListNums, ListNumtoCheck) {
-        if ((this.GetPriceFromListNum(ListNums, ListNumtoCheck)) > 0)
+        if ((this.GetPriceFromListNum(ListNums, ListNumtoCheck)) >= 0)
             return true;
         return false;
     }
@@ -370,7 +370,7 @@ export default class Pricing {
     GetPriceFromListNum(listnums, listnumtocheck) {
         let index = -1;
         let price = -1;
-        if ((index = listnums.indexOf(":" + listnumtocheck + ":")) > 0) {
+        if ((index = listnums.indexOf(":" + listnumtocheck + ":")) >= 0) {
             let secondindex = listnums.indexOf('{', index + 4);
             if (secondindex < 0) return null;
             let thirdindex = listnums.indexOf('}', secondindex + 1);
@@ -388,11 +388,14 @@ export default class Pricing {
         , RowDis, FixAmnt, MaxDis) {
         let res = 0;
         switch (expression) {
-            case "min(MaxDis,FixDis+QtyDis+VolDis+RowDis)":
+            case 17: //"min(MaxDis,FixDis+QtyDis+VolDis+RowDis)":
                 res = Math.min(MaxDis, FixDis + QtyDis + VolDis + RowDis);
                 break;
-            case "(BasePrice)*((100-BaseDis)*(100-RowDis)/10000)":
+            case 20: //"(BasePrice)*((100-BaseDis)*(100-RowDis)/10000)":
                 res = (BasePrice) * ((100 - BaseDis) * (100 - RowDis) / 10000);
+                break;
+            case 16: //"(BasePrice-FixAmnt)*(1-(BaseDis+min(MaxDis,FixDis+QtyDis+VolDis+RowDis ))/100)":
+                res = (BasePrice - FixAmnt) * (1 - (Math.min(MaxDis, BaseDis + FixDis + QtyDis + VolDis + RowDis)) / 100);
                 break;
             default:
                 break;
@@ -463,7 +466,7 @@ export default class Pricing {
         line.PriceAfterDiscount = line.Gross = line.PriceAfterVat = 0;
         line.DiscountSrc = 78;
         line.PriceSrc = 78;
-        return line
+        return line;
     }
 
     CalculateCommission(qty, commission, docdate, paydate, settleType
@@ -567,31 +570,59 @@ export default class Pricing {
         MD.marketingdetails.DocumentDiscountPercent = 0;
         if (MD.marketingdetails.PaymentTime == 5
             && MD.marketingdetails.SettleType == 1) {
-            MD.marketingdetails.DocumentDiscountPercent = 5;
+            MD.marketingdetails.DocumentDiscountPercent = 12;
         }
         else if (MD.marketingdetails.SettleType == 1) {
-            MD.marketingdetails.DocumentDiscountPercent = 4;
+            MD.marketingdetails.DocumentDiscountPercent = 12;
         }
         else if (MD.marketingdetails.SettleType == 2) {
             if (MD.marketingdetails.PayDueDate == null) {
-                MD.marketingdetails.PayDueDate = 5;
+                MD.marketingdetails.PayDueDate = 1;
             }
-            switch (MD.marketingdetails.PayDueDate) {
+            switch (parseInt(MD.marketingdetails.PayDueDate)) {
                 case 1:
-                    MD.marketingdetails.DocumentDiscountPercent = 4;
+                    MD.marketingdetails.DocumentDiscountPercent = 12;
                     break;
                 case 2:
-                    MD.marketingdetails.DocumentDiscountPercent = 3;
+                    MD.marketingdetails.DocumentDiscountPercent = 10.5;
                     break;
                 case 3:
-                    MD.marketingdetails.DocumentDiscountPercent = 2;
+                    MD.marketingdetails.DocumentDiscountPercent = 9;
                     break;
                 case 4:
-                    MD.marketingdetails.DocumentDiscountPercent = 1;
+                    MD.marketingdetails.DocumentDiscountPercent = 7.5;
                     break;
                 case 6:
+                    MD.marketingdetails.DocumentDiscountPercent = 6;
+                    break;
+                case 7:
+                    MD.marketingdetails.DocumentDiscountPercent = 4.5;
+                    break;
+                case 8:
+                    MD.marketingdetails.DocumentDiscountPercent = 3;
+                    break;
+                case 9:
+                    MD.marketingdetails.DocumentDiscountPercent = 1.5;
+                    break;
+                case 10:
                     MD.marketingdetails.DocumentDiscountPercent = 0;
                     break;
+                case 11:
+                    MD.marketingdetails.DocumentDiscountPercent = 0;
+                    break;
+                case 12:
+                    MD.marketingdetails.DocumentDiscountPercent = 0;
+                    break;
+                case 13:
+                    MD.marketingdetails.DocumentDiscountPercent = 0;
+                    break;
+                case 15:
+                    MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                    break;
+                case 16:
+                    MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                    break;
+                case 14:
                 case 5:
                 default:
                     MD.marketingdetails.DocumentDiscountPercent = 0;
@@ -647,6 +678,7 @@ export default class Pricing {
         //shortrules = DisRules.filter((x) => (x.cardcode == cardcode || x.cardGroupCode == cardgroupcode || x.priceList == listnum)
         //    && (shortitem.indexOf((y) => y.itemCode == x.itemCode || y.groupCode == x.itemGroupCode) > -1)
         //    && (!x.validFrom || docdate >= x.validFrom) && (!x.validTo || docdate <= x.validTo));
+
         for (let item of lines) {
             res = null;
             res = item;
@@ -907,7 +939,7 @@ export default class Pricing {
             if (!item || !item.ItemCode || !item.ItemQty || !item.Gross) {
                 continue;
             }
-            sum += item.Gross ?? 0;
+            sum += item.LineTotal ?? 0;
             if (item.LineCommission) {
                 for (let x of item.LineCommission) {
                     if (x.Value) {
@@ -937,9 +969,38 @@ export default class Pricing {
     }
 
     CalculateDocumentByAll(MD, Items, DisRules, campaignRules, SlpCodes = null) {
-        let DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes);
-        let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, false);
-        return DocAfterCa;
+        let DocAfterB1 = MD;
+        let camrule = null;
+
+        if (typeof MD.marketingdetails.Campaign == 'object' && (MD.marketingdetails?.Campaign ?? null) != null) {
+            for (let item of campaignRules) {
+                if (item.campaignId == MD.marketingdetails.Campaign) {
+                    camrule = item;
+                    break;
+                }
+            }
+            if (camrule) {
+                if (camrule?.camCanHaveB1Dis ?? false) {
+                    if (camrule.priceList) {
+                        if (!DocAfterB1.marketingdetails) {
+                            DocAfterB1.marketingdetails = {};
+                        }
+                        DocAfterB1.marketingdetails.PriceList = camrule.priceList;
+                    }
+                    DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
+                }
+                let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, false);
+                return DocAfterCa;
+            }
+        }
+            else {
+                DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
+                return DocAfterB1;
+            }
+        
+        //    let DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes);
+        //    let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, false);
+        //    return DocAfterCa;
     }
 
     CalculatePriceDiscountByCampaign(MD, campaignRules, KeepOthers = false) {
@@ -964,8 +1025,8 @@ export default class Pricing {
 
         // ساخت لیست قواعد مربوط به مشتری یا گروه مشتری
         for (let itemrules of campaignRules) {
-            if ((itemrules.campaignId == (MD.marketingdetails.Campaign))
-                && (itemrules.camType == "B")
+            if ((itemrules.campaignId === (MD.marketingdetails.Campaign))
+                && (itemrules.camType === "B")
                 && (!itemrules.camCardCode || (itemrules.camCardCode.indexOf("," + MD.CardCode + ",")) > -1)
                 && (!itemrules.camCardGroupCode || (itemrules.camCardGroupCode.indexOf("," + MD.CardGroupCode + ",")) > -1)
                 && (!itemrules.camValidFrom || MD.DocTime >= itemrules.camValidFrom)
@@ -1057,14 +1118,14 @@ export default class Pricing {
                 }
 
                 // قاعده حداقل تعداد
-                if (item.lineMinReqQty && item.lineMinReqQty != 0)
+                if (item.lineMinReqQty && item.lineMinReqQty != 0) {
                     if (br.qty < item.lineMinReqQty) {
                         for (let itemb1 of br.lines) {
                             if (!results.MarketingLines[itemb1].CampaignDetails) {
                                 results.MarketingLines[itemb1].CampaignDetails = {};
                             }
                             results.MarketingLines[itemb1].CampaignDetails.Status = 0;
-                            results.MarketingLines[itemb1].CampaignDetails.Information += "مقدار تقاضا شده این خط کمتر از مقدار مجاز (" + item.lineMinReqQty??0 + ") است. این خط حذف می شود.";
+                            results.MarketingLines[itemb1].CampaignDetails.Information += "مقدار تقاضا شده این خط کمتر از مقدار مجاز (" + item.lineMinReqQty ?? 0 + ") است. این خط حذف می شود.";
                             results.MarketingLines[itemb1].CampaignDetails.RequestedQty = results.MarketingLines[itemb1].ItemQty;
                             results.MarketingLines[itemb1].ItemQty = 0;
                             if (!KeepOthers ?? false) this.ZerolineMarketing(results.MarketingLines[itemb1]);
@@ -1072,7 +1133,15 @@ export default class Pricing {
                         br.disQty = 0;
                         br.isExist = false;
                     }
-
+                }
+                else {
+                    for (let itemb1 of br.lines) {
+                        if (!results.MarketingLines[itemb1].CampaignDetails) {
+                            results.MarketingLines[itemb1].CampaignDetails = {};
+                        }
+                        results.MarketingLines[itemb1].CampaignDetails.Status = 1;
+                    }
+                }
                 // قاعده حداقل مبلغ
                 // محاسبه تخفیف تعدادی
                 if (item.lineDisPerQtyStp && item.lineDisPerQtyStp != 0) {
@@ -1100,8 +1169,8 @@ export default class Pricing {
                                 continue;
                             }
                             // اصلاح شود
-                            let newPrice = this.CalcColumns(item.lineDisRelationFormula, lineMD.Price, item.camCanHaveB1Dis ? lineMD.DiscountPercent : 0
-                                , item.lineBaseDis??0, br.disQty, br.disVol??0, 0, item.lineFixedValue??0, 0);
+                            let newPrice = this.CalcColumns(item.lineDisRelationId, lineMD.Price, item.camCanHaveB1Dis ? lineMD.DiscountPercent : 0
+                                , item.lineBaseDis ?? 0, br.disQty, br.disVol ?? 0, 0, item.lineFixedValue ?? 0, 0);
                             lineMD.DiscountPercent = Math.round(Math.max(0.0, 100.0 - newPrice / lineMD.Price * 100), 2);
                             if (item.lineFixedValue != null) lineMD.CampaignDetails.Information += "مبلغ " + item.lineFixedValue + " ریال از مبلغ قلم کالا کسر شد.";
                             results.MarketingLines[linenum] = this.FilllineMarketing(lineMD);
@@ -1157,7 +1226,7 @@ export default class Pricing {
             }
             let RowDis = rownum * shortrules[0].camRowDisPrcnt;
             if (shortrules[0].camMaxRowDisPrcnt) {
-                RowDis = Math.min(shortrules[0].camMaxRowDisPrcnt??0, rownum * (shortrules[0].camRowDisPrcnt??0));
+                RowDis = Math.min(shortrules[0].camMaxRowDisPrcnt ?? 0, rownum * (shortrules[0].camRowDisPrcnt ?? 0));
             }
 
             // قاعده مبلغ فاکتور
@@ -1165,7 +1234,7 @@ export default class Pricing {
 
             // محاسبه تخفیف اقلام
             // تخفیفات برای همه اقلام براساس یک فرمول محاسبه می گردد.
-            let Rule = shortrules[0].camDisRelationFormula;
+            let Rule = shortrules[0].camDisRelationId;
             let Fixdis = shortrules[0].camBaseDiscount ? shortrules[0].camBaseDiscount : 0;
             let MaxDis = shortrules[0].camMaxDisPrcnt ? shortrules[0].camMaxDisPrcnt : 100;
             let DocDis = this.CalcColumns(Rule, 0, 0, Fixdis, 0, VolDis, RowDis, 0, MaxDis);
@@ -1229,15 +1298,15 @@ export default class Pricing {
             results.DocumentTotal = sum - results.marketingdetails.DocumentDiscount;
             return results;
         }
-        for (let line of results.MarketingLines) {
-            if (!line) {
-                continue;
-            }
-            line.CmpaignDetails = {
-                Status: -2,
-                Information: "مشمول کمپین نمی شود."
-            };
-        };
+        //for (let line of results.MarketingLines) {
+        //    if (!line) {
+        //        continue;
+        //    }
+        //    line.CmpaignDetails = {
+        //        Status: -2,
+        //        Information: "مشمول کمپین نمی شود."
+        //    };
+        //};
         return results;
     }
 
@@ -1317,11 +1386,12 @@ export default class Pricing {
         // محاسبه قیمت و تخفیف در بی وان
         if (isneedb1) {
             DocAfterB1 = this.CalculateDocumentByB1(doctocalc, Items, DisRules, SlpCodes);
-            
+
             if (DocAfterB1 == null || DocAfterB1.MarketingLines == null) {
                 error += "خطا در محاسبه تخفیفات در بی وان";
                 return null;
             }
+
             let lp = {};
             for (let item of DocAfterB1.MarketingLines) {
                 lp = {};

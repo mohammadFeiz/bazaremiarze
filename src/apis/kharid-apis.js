@@ -366,7 +366,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       });
     },
     async nv3(){
-        const taxonProductsList=await this.getProductsByTaxonId({Taxons:'10932'});
+        const taxonProductsList=await this.getProductsByTaxonId({Taxons:'10932',type:'nv3'});
         let products = getState().updateProductPrice(taxonProductsList);
         return {
             type:'nv3',
@@ -956,12 +956,14 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
               "discountPercent": 0,
               "isDefault": true
             };
+            let aaa = {
+                inStock:itemFromB1.onHand.qty, details:[], optionTypes:[], variants:[defVariantFinalResult], srcs,
+                name: product.attributes.name, defaultVariant:defVariantFinalResult,
+                price:0, discountPrice:0, discountPercent:0, id: product.id
+            }
+            if(type){aaa.type = type}
             allProducts.push(
-              {
-                  inStock:itemFromB1.onHand.qty, details:[], optionTypes:[], variants:[defVariantFinalResult], srcs,
-                  name: product.attributes.name, defaultVariant:defVariantFinalResult,
-                  price:0, discountPrice:0, discountPercent:0, id: product.id
-                }
+              aaa
             );
           }
         }

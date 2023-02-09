@@ -184,32 +184,7 @@ export default class NV3Card extends Component{
             />
         )
     }
-    vertical_layout(){
-        let {style,product,loading} = this.props;
-        let {srcs = [],name} = product;
-        return (
-            <RVD
-                loading={loading}
-                layout={{
-                    style:{...style},className:'theme-card-bg theme-box-shadow theme-border-radius of-visible w-168 h-288 fs-14 br-12',
-                    attrs:{onClick:()=>this.onClick()},
-                    column:[
-                        {size:140,align:'vh',html:<img src={srcs[0] || NoSrc} width={'100%'} style={{width:'calc(100% - 24px)',height:'100%',borderRadius:8}} alt=''/>,style:{padding:6,paddingBottom:0}},
-                        {html:name,className:'fs-12 p-v-6 p-h-12 theme-medium-font-color bold',style:{whiteSpace:'normal'}},
-                        //this.name_layout(),
-                        {flex:1},
-                        this.isInCart_layout(),
-                        this.discount_layout(),
-                        this.price_layout(),
-                        this.notExist_layout(),
-                        {size:12}
-                    ]
-                }}
-            />
-        )
-    }
     render(){
-        let {type = 'horizontal'} = this.props;
-        return this[type +'_layout']()
+        return this.horizontal_layout()
     }
 }

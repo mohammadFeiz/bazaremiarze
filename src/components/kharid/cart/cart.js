@@ -229,6 +229,7 @@ export default class Cart extends Component{
       }
     }
     nv3Report_layout(){
+      if(!this.tab){return false}
       if(this.tab.id !== 'نورواره 3'){return false}
       return {
           html:<NV3Report amount={this.tab.factorDetails.DocumentTotal/10000000}/>

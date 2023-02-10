@@ -2,7 +2,7 @@ export default {
     activeManager:{
         garanti:false,
         belex:false,
-        forooshe_vije:true,
+        forooshe_vije:false,
         campaigns:true,
         bazargah:true,
         wallet:false,

@@ -140,7 +140,7 @@ export default class Main extends Component {
     else if(opacity === 70){opacity = 100}
     this.setState({opacity})
   }
-  changeCart(count,variantId,product){
+  changeCart(count,variant,product){
     let {cart,kharidApis} = this.state;
     let newCart;
     if(typeof count === 'object'){

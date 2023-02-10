@@ -415,15 +415,15 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     },
     async newOrders() {
       let products=await this.getProductsByTaxonId({Taxons:'10932'});
-      return this.updateProductPrice({products});
+      return this.updateProductPrice({products,cartId:'خرید عادی'});
     },
     async recommendeds() {
       let products = await this.getProductsByTaxonId({Taxons:'10550'});
-      return this.updateProductPrice({products});
+      return this.updateProductPrice({products,cartId:'خرید عادی'});
     },
     async bestSellings(){
       let products = await this.getProductsByTaxonId({Taxons:'10820'});
-      return this.updateProductPrice({products});
+      return this.updateProductPrice({products,cartId:'خرید عادی'});
     },
     async preOrders() {
       let {userInfo} = getState();
@@ -477,7 +477,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     },
     async getCategoryItems(category) {
       let products = await this.getProductsByTaxonId({ Taxons: category.id.toString() });
-      return this.updateProductPrice({products})
+      return this.updateProductPrice({products,cartId:'خرید عادی'})
     },
     async families() {
       return [

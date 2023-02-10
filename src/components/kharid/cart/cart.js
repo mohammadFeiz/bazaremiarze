@@ -29,77 +29,67 @@ export default class Cart extends Component{
     getDetails(){
       let { cart,changeCart,fixPrice,getFactorDetails } = this.context,tabsDictionary = {};
       let variantIds = Object.keys(cart);
-      for(let i = 0; i < variantIds.length; i++){
-        let variantId = variantIds[i];
-        let { product } = cart[variantId];
-        let { campaign } = product;
-        let tabId,tabTitle;
-        if(product.type === 'forooshe_vije'){tabId = 'forooshe_vije'; tabTitle = 'فروش ویژه'}
-        else if(product.type === 'belex'){tabId = 'belex'; tabTitle = 'بلکس 23 شیراز'}
-        else if(product.cartId === 'نورواره 3'){tabId = 'نورواره 3'; tabTitle = 'نورواره 3'}
-        else if(campaign){tabId = campaign.id; tabTitle = campaign.name}
-        else{tabId = 'regular'; tabTitle = 'خرید عادی'}
-        tabsDictionary[tabId] = tabsDictionary[tabId] || {id:tabId,title:tabTitle,cards:[],total:0,cartItems:[],totalDiscount:0,flex:1};
-        tabsDictionary[tabId].cartItems.push(cart[variantId])
-        tabsDictionary[tabId].badge++;
-        tabsDictionary[tabId].id = tabId;
-      }
-      this.tabs = [];
-      for(let tabId in tabsDictionary){
-        let tab = tabsDictionary[tabId]
-        if(tabId === 'forooshe_vije'){
-          let finalPrice = 0;
-          tab.cards = tab.cartItems.map(({product,foroosheVije_count,variantId})=>{
-            let variant = product.variants.find(({id})=>id === variantId);
-            finalPrice += foroosheVije_count.packQty * variant.finalPrice;
-            return <ForoosheVijeCard product={product} variantId={variantId} count={foroosheVije_count} type='cart'/>
+      this.tabs = []
+      for(let cartId in cart){
+        let cartItems = Object.keys(cart[cartId]).map((o)=>cart[cartId][o]);
+        let total = 0,totalDiscount = 0,cards = [],details = []; 
+        if(cartId === 'فروش ویژه'){
+          cards = cartItems.map(({product,foroosheVije_count,variant})=>{
+            total += foroosheVije_count.packQty * variant.finalPrice;
+            return <ForoosheVijeCard key={variant.id} product={product} variant={variant} count={foroosheVije_count} type='cart'/>
           })
-          tab.finalPrice = finalPrice;
         }
-        else if(tabId === 'belex'){
-          let finalPrice = 0;
-          tab.cards = tab.cartItems.map(({product,belex_count})=>{
-            finalPrice += belex_count.packQty * product.price;
+        else if(cartId === 'belex'){
+          cards = cartItems.map(({product,belex_count})=>{
+            total += belex_count.packQty * product.price;
             return <BelexCard key={product.code} product={product} count={belex_count}/>
           })
-          tab.finalPrice = finalPrice;
         }
         else{
-          let fixedItems = fixPrice(tab.cartItems.map(({product,count})=>{
+          let fixPriceItems = [],factorDetailsItems = [];
+          for(let i = 0; i < cartItems.length; i++){
+            let {product,variant,count} = cartItems[i];
+            fixPriceItems.push({itemCode:product.defaultVariant.code,itemQty:count})
+            factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
+          }
+          cartItems.map(({product,count})=>{
             let itemCode = product.defaultVariant.code;
             return {itemCode,itemQty:count} 
-          }))
-          tab.cartItems = tab.cartItems.map((o,i)=>{
+          })
+          let fixedItems = fixPrice(fixPriceItems)
+          cartItems = cartItems.map((o,i)=>{
             return {...o,product:{...o.product,...fixedItems[i]}}
           })
-          tab.cards = tab.cartItems.map(({product,count,variant},i)=>{
-            let { optionTypes,campaign } = product;
+          cards = cartItems.map(({product,count,variantId},i)=>{
+            let { optionTypes } = product;
             let { optionValues } = variant;
-            tab.total += count * product.FinalPrice;
-            tab.totalDiscount += count * (product.Price - product.FinalPrice)
-            let details = [];
+            total += count * product.FinalPrice;
+            totalDiscount += count * (product.Price - product.FinalPrice)
             for (let j = 0; j < optionTypes.length; j++) {
               let optionType = optionTypes[j];
               details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
             }
             let props = {
               product,details,count,type:'horizontal',
-              title:campaign?campaign.name:undefined,//2
               isFirst:i === 0,isLast: i === tabsDictionary[tabId].cartItems.length - 1,
               changeCount:(count) => changeCart(count,variant.id,product)
             }
-            return <ProductCard {...props} index={i} showIsInCart={false}/>
+            return <ProductCard key={variantId} {...props} index={i} showIsInCart={false}/>
           })
-          let items = tab.cartItems.map((o)=>{
-            return { ItemCode: o.variant.code, ItemQty: o.count }
-          })
-          tab.items = items;
-          tab.factorDetails =  getFactorDetails(items);
+          let factorDetails = getFactorDetails(factorDetailsItems);
+          total = factorDetails.DocumentTotal;
         }
-        tab.badge = tab.cartItems.length;
-        
-        this.tabs.push(tab);
+
       }
+      for(let i = 0; i < variantIds.length; i++){
+        let variantId = variantIds[i];
+        let { product } = cart[variantId];
+        tabsDictionary[tabId] = tabsDictionary[tabId] || {cards:[],total:0,cartItems:[],totalDiscount:0,flex:1};
+        tabsDictionary[tabId].cartItems.push(cart[variantId])
+        tabsDictionary[tabId].badge++;
+        tabsDictionary[tabId].id = tabId;
+      }
+      
       if(tabsDictionary[this.state.activeTabId]){
         this.tab = tabsDictionary[this.state.activeTabId];
       }
@@ -125,7 +115,7 @@ export default class Cart extends Component{
             style={{marginBottom:12}}
             value={this.state.activeTabId} 
             optionAfter={(option)=><div className='tab-badge'>{option.badge}</div>}
-            optionText='option.title'
+            optionText='option.id'
             optionValue='option.id'
             onChange={(activeTabId)=>this.setState({activeTabId})}
           />

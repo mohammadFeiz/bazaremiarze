@@ -31,7 +31,7 @@ export default class CategoryView extends Component {
         let {searchValue} = this.state;
         let {category} = this.props;
         if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
-        if(category.type === 'nv3'){
+        if(category.id === 'nv3'){
             return {html:<NV3Card index={index} product={product}/>,className:'of-visible'}    
         }
         if(product.type === 'forooshe_vije'){

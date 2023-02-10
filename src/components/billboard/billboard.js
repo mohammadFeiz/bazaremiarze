@@ -10,8 +10,8 @@ export default class Billboard extends Component{
         if(campaign.type === 'forooshe_vije' || campaign.type === 'belex'){
             openPopup('category',{category:campaign,name:campaign.name})
         }
-        else if(campaign.type === 'nv3'){
-            openPopup('category',{category:{...campaign,type:'nv3'}})
+        else if(campaign.id === 'nv3'){
+            openPopup('category',{category:{...campaign}})
         }
         else{
             let products = await kharidApis({api:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.id});
@@ -44,7 +44,7 @@ export default class Billboard extends Component{
         }
         if(nv3 && renderIn === 'buy'){
             items.push(<img src={nv3.src} alt="" width='100%' onClick={()=>{
-                openPopup('category',{category:{...nv3,type:'nv3'}})
+                openPopup('category',{category:{...nv3}})
             }}/>)
         }
         return {html:<ACS items={items}/>}

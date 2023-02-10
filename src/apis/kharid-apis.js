@@ -371,10 +371,10 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       });
     },
     async nv3(){
-        const taxonProductsList=await this.getProductsByTaxonId({Taxons:'10932',type:'nv3'});
+        const taxonProductsList=await this.getProductsByTaxonId({Taxons:'10932'});
         let products = getState().updateProductPrice(taxonProductsList);
         return {
-            type:'nv3',
+            id:'nv3',
             name:'نورواره 3',
             src:nv3billboard,
             icon:nv3Icon,
@@ -884,7 +884,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       });
       return this.getMappedAllProducts({ spreeResult: spreeData, b1Result: b1Data, loadType });
     },
-    async getProductsByTaxonId({ Taxons,type }) {
+    async getProductsByTaxonId({ Taxons }) {
       let { userInfo } = getState();
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
         {
@@ -922,9 +922,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         };
       });
 
-      return this.getModifiedProducts({ spreeResult: spreeData, b1Result: b1Data,type });
+      return this.getModifiedProducts({ spreeResult: spreeData, b1Result: b1Data });
     },
-    getModifiedProducts({spreeResult , b1Result,type}){
+    getModifiedProducts({spreeResult , b1Result}){
 
       let allProducts=[];
       for (const product of spreeResult.data) {
@@ -966,7 +966,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
                 name: product.attributes.name, defaultVariant:defVariantFinalResult,
                 price:0, discountPrice:0, discountPercent:0, id: product.id
             }
-            if(type){aaa.type = type}
             allProducts.push(
               aaa
             );

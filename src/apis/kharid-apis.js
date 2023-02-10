@@ -11,6 +11,34 @@ import yaldaye_batri from './../images/yaldaye-batri.png';
 import nv3Icon from './../images/land1.png';
 export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOServiceShowAlert,baseUrl}) {
   return {
+    updateProductPrice({products,campaignId,cartId}){
+        if(products === false){return false}
+        let {fixPrice} = getState();
+        return products.map((o)=>{
+          if(!o.defaultVariant){
+            console.error(`updateProductPrice error`);
+            console.error('object is',o);
+          }
+          let a = o.variants.map((res)=>{
+            return {
+              itemCode:res.code,itemQty:1
+            }
+          })
+          let array = fixPrice(a,campaignId);
+          let result;
+          for(let i = 0; i < array.length; i++){
+            let obj = array[i];
+            if(!result){result = obj}
+            else{
+              if(obj.FinalPrice && obj.FinalPrice < result.FinalPrice ){
+                result = obj;
+              }
+            }
+          }
+          let newObj = {...o,...result,cartId};
+          return newObj
+      })
+    },
     async taide_noorvare(name){
       await Axios.get(`${baseUrl}/Users/Norvareh3Agreement`);
     },
@@ -361,18 +389,17 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       return obj
     },
     async getCampaignProducts(campaign) {
-      let { id,campaignId } = campaign;
-      let res = await this.getProductsByTaxonId({ Taxons: id});
-      const finalRes=getState().updateProductPrice(res,campaignId);
-      console.log(finalRes);
+      let { id,campaignId,name } = campaign;
+      let products = await this.getProductsByTaxonId({ Taxons: id});
+      const finalRes=this.updateProductPrice({products,campaignId,cartId:name});
       return finalRes.map((o) => {
         let res = { ...o, campaign }
         return this.updateCampaignPrice(id,res)
       });
     },
     async nv3(){
-        const taxonProductsList=await this.getProductsByTaxonId({Taxons:'10932'});
-        let products = getState().updateProductPrice(taxonProductsList);
+        let products=await this.getProductsByTaxonId({Taxons:'10932'});
+        products = this.updateProductPrice({products,cartId:'نورواره 3'});
         return {
             id:'nv3',
             name:'نورواره 3',
@@ -387,16 +414,16 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         }
     },
     async newOrders() {
-      const taxonProductsList=await this.getProductsByTaxonId({Taxons:'10932'});
-      return getState().updateProductPrice(taxonProductsList);
+      let products=await this.getProductsByTaxonId({Taxons:'10932'});
+      return this.updateProductPrice({products});
     },
     async recommendeds() {
-      let res = await this.getProductsByTaxonId({Taxons:'10550'});
-      return getState().updateProductPrice(res);
+      let products = await this.getProductsByTaxonId({Taxons:'10550'});
+      return this.updateProductPrice({products});
     },
     async bestSellings(){
-      let res = await this.getProductsByTaxonId({Taxons:'10820'});
-      return getState().updateProductPrice(res,);
+      let products = await this.getProductsByTaxonId({Taxons:'10820'});
+      return this.updateProductPrice({products});
     },
     async preOrders() {
       let {userInfo} = getState();
@@ -449,11 +476,8 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       return categories;
     },
     async getCategoryItems(category) {
-      // let items = await this.getTaxonProducts({ Taxons: category.id.toString() });
-      // return getState().updateProductPrice(items,'kharidApis => getCategoryItems')
-
-      let items = await this.getProductsByTaxonId({ Taxons: category.id.toString() });
-      return getState().updateProductPrice(items,'kharidApis => getCategoryItems')
+      let products = await this.getProductsByTaxonId({ Taxons: category.id.toString() });
+      return this.updateProductPrice({products})
     },
     async families() {
       return [

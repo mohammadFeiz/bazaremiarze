@@ -297,40 +297,13 @@ export default class Main extends Component {
         list = pricing.autoPriceList(list, data, null, null, null, null, null, "01");
         return list
     }
-    let updateProductPrice = (list,campaignId)=>{
-        if(list === false){return false}
-      return list.map((o)=>{
-        
-          if(!o.defaultVariant){
-            console.error(`updateProductPrice error`);
-            console.error('object is',o);
-          }
-          let a = o.variants.map((res)=>{
-            return {
-              itemCode:res.code,itemQty:1
-            }
-          })
-          let array = fixPrice(a,campaignId);
-          let result;
-          for(let i = 0; i < array.length; i++){
-            let obj = array[i];
-            if(!result){result = obj}
-            else{
-              if(obj.FinalPrice && obj.FinalPrice < result.FinalPrice ){
-                result = obj;
-              }
-            }
-          }
-          let newObj = {...o,...result};
-          return newObj
-      })
-    }
+    
     let cart = await kharidApis({api:'getCart',loading:false});
     this.setState({
       cart,
       fixPrice,
       pricing,
-      updateProductPrice,getFactorDetails
+      getFactorDetails
     });
   }
   openPopup(type,parameter){

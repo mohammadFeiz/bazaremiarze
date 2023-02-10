@@ -180,7 +180,7 @@ export default class Shipping extends Component{
     }
     nv3Report_layout(){
       let {shipping} = this.context;
-      if(shipping.id !== 'nv3'){return false}
+      if(shipping.id !== 'نورواره 3'){return false}
       let amount = shipping.factorDetails.DocumentTotal;
       amount = amount / 10000000
       return {

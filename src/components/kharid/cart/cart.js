@@ -36,7 +36,7 @@ export default class Cart extends Component{
         let tabId,tabTitle;
         if(product.type === 'forooshe_vije'){tabId = 'forooshe_vije'; tabTitle = 'فروش ویژه'}
         else if(product.type === 'belex'){tabId = 'belex'; tabTitle = 'بلکس 23 شیراز'}
-        else if(product.type === 'nv3'){tabId = 'nv3'; tabTitle = 'نورواره 3'}
+        else if(product.cartId === 'نورواره 3'){tabId = 'نورواره 3'; tabTitle = 'نورواره 3'}
         else if(campaign){tabId = campaign.id; tabTitle = campaign.name}
         else{tabId = 'regular'; tabTitle = 'خرید عادی'}
         tabsDictionary[tabId] = tabsDictionary[tabId] || {id:tabId,title:tabTitle,cards:[],total:0,cartItems:[],totalDiscount:0,flex:1};
@@ -229,7 +229,7 @@ export default class Cart extends Component{
       }
     }
     nv3Report_layout(){
-      if(this.tab.id !== 'nv3'){return false}
+      if(this.tab.id !== 'نورواره 3'){return false}
       return {
           html:<NV3Report amount={this.tab.factorDetails.DocumentTotal/10000000}/>
       }

@@ -57,6 +57,9 @@ export default class ProductCard extends Component{
     }
     title_layout(){
         let {product} = this.props;
+        if(product.cartId){
+            return {html:product.cartId,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}    
+        }
         if(!product.campaign){return false}
         return {html:product.campaign.name,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}
     }

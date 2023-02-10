@@ -4,7 +4,7 @@ import appContext from "../../app-context";
 export default class CartButton extends Component{
     static contextType = appContext;
     render(){
-        let {cart,changeCartCount} = this.context;
+        let {cart,changeCart} = this.context;
         let {variantId,product,renderIn,onChange = ()=>{}} = this.props;
         if(!product){console.error(`CartButton missing product props`)}
         if(!product.cartId){console.error(`CartButton missing cartId in product props`)}
@@ -14,7 +14,7 @@ export default class CartButton extends Component{
             return (
                 <button 
                     onClick={() => {
-                        changeCartCount({variantId,product,count:1})
+                        changeCart({variantId,product,count:1})
                         onChange(1)
                     }} 
                     className="button-2"
@@ -31,7 +31,7 @@ export default class CartButton extends Component{
             <ProductCount 
                 value={count} 
                 onChange={(count) => {
-                    changeCartCount({product,variantId,count})
+                    changeCart({product,variantId,count})
                     onChange(count)
                 }} />
         )

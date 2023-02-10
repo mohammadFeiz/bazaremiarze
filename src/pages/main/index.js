@@ -373,7 +373,7 @@ export default class Main extends Component {
       })
     }
     else if (type === 'category'){
-      addPopup({body:()=><CategoryView category={parameter.category}/>,title:parameter.name})
+      addPopup({body:()=><CategoryView category={parameter.category}/>,title:parameter.category.name})
     }
     else if(type === 'wallet'){
       addPopup({header:false,body:()=><Wallet onClose={()=>removePopup()}/>})

@@ -6,6 +6,8 @@ import foroosheVijeIcon from './../images/forooshe-vije-icon.png';
 import belexbillboard from './../images/belex-billboard.png';
 import belexIcon from './../images/belex-icon.png';
 import nv3billboard from './../images/nv3-billboard.png';
+import yaldaye_roshanayi from './../images/yaldaye-roshanayi.png';
+import yaldaye_batri from './../images/yaldaye-batri.png';
 import nv3Icon from './../images/land1.png';
 export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOServiceShowAlert,baseUrl}) {
   return {
@@ -291,6 +293,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             src = "https://shopback.miarze.com" + taxonImage.attributes.original_url;
           }
         }
+        let icon;
+        if(o.id === '10947'){icon = yaldaye_batri}
+        else if(o.id === '10945'){icon = yaldaye_roshanayi}
         let campaignId;
         try{
           campaignId = JSON.parse(o.attributes.meta_description)
@@ -298,7 +303,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         catch{
           campaignId = undefined;
         }
-        return { name: o.attributes.name, id: o.id, src: src,campaignId};
+        return { name: o.attributes.name, id: o.id, src: src,campaignId,icon};
       });
 
       return campaigns;

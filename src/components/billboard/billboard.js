@@ -2,26 +2,20 @@ import React ,{Component} from 'react';
 import ACS from './../../npm/aio-content-slider/aio-content-slider';
 import Sookhte from './../../images/banner1111.png';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
-import yaldaye_roshanayi from './../../images/yaldaye-roshanayi.png';
-import yaldaye_batri from './../../images/yaldaye-batri.png';
 import appContext from '../../app-context';
 export default class Billboard extends Component{
     static contextType = appContext;
-    svgs = [<img src={yaldaye_batri} width={54} height={54} alt=''/>,<img src={yaldaye_roshanayi} width={54} height={54} alt=''/>]
     async onClick(campaign){
         let {kharidApis,openPopup} = this.context;
-        if(campaign.type === 'forooshe_vije'){
-            openPopup('category',{category:{products:campaign.products,name:campaign.name,src:campaign.src},name:campaign.name})
-        }
-        else if(campaign.type === 'belex'){
-            openPopup('category',{category:{products:campaign.products,name:campaign.name,src:campaign.src},name:campaign.name})
+        if(campaign.type === 'forooshe_vije' || campaign.type === 'belex'){
+            openPopup('category',{category:campaign,name:campaign.name})
         }
         else if(campaign.type === 'nv3'){
-            openPopup('category',{category:{products:campaign.products,name:campaign.name,src:campaign.src,description:campaign.description,type:'nv3'},name:campaign.name})
+            openPopup('category',{category:{...campaign,type:'nv3'}})
         }
         else{
             let products = await kharidApis({api:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.id});
-            openPopup('category',{category:{products,name:campaign.name,src:campaign.src},name:campaign.name})
+            openPopup('category',{category:{...campaign,products}})
         }
     }
     billboard_layout(){
@@ -71,17 +65,17 @@ export default class Billboard extends Component{
         return {
             column:[
                 {html:'جشنواره ها',className:'fs-14 bold theme-dark-font-color p-h-24',size:36,align:'v'},
-                {row:list.map((campaign,i)=>this.campaign_layout(campaign,i))},
+                {row:list.map((campaign)=>this.campaign_layout(campaign))},
                 {size:12}
             ]
         }
     }
-    campaign_layout(campaign,index){
+    campaign_layout(campaign){
         return {
             flex:1,align:'h',
             attrs:{onClick:async ()=>this.onClick(campaign)},
             column:[
-                {html:campaign.icon?<img src={campaign.icon} width={54} height={54} alt=''/>:this.svgs[index]},
+                {html:<img src={campaign.icon} width={54} height={54} alt=''/>},
                 {size:3},
                 {html:campaign.name,className:'fs-12 bold theme-dark-font-color'}
             ]

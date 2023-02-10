@@ -51,7 +51,7 @@ export default class ProductCard extends Component{
     count_layout(){
         let {count,changeCount,max} = this.props;
         let {shipping} = this.context;
-        if(shipping){return false}
+        if(shipping && count){return {html:count + ' عدد',align:'vh'}}
         if(count === undefined){return false}
         return {size:30,html:()=><ProductCount value={count} onChange={(count)=>changeCount(count)} max={max}/>}
     }

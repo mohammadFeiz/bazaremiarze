@@ -1,13 +1,14 @@
-import { mdiLamp, mdiLightbulbOutline } from "@mdi/js";
+import { mdiCash, mdiLamp, mdiLightbulbOutline } from "@mdi/js";
 import Icon from "@mdi/react";
 import React,{Component} from "react";
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import Slider from './../../npm/aio-slider/aio-slider';
 export default class NV3Report extends Component{
     slider_layout(){
-        let {amount = 12} = this.props;
+        let {amount = 12,renderIn} = this.props;
         return {
-            size:136,
+            show:renderIn !== 'shipping',
+            size:124,
             html:(
                 <Slider
                     direction='left'
@@ -55,44 +56,84 @@ export default class NV3Report extends Component{
         }
     }
     text_layout(){
-        let {amount = 12} = this.props;
+        let {amount = 12,renderIn} = this.props;
         let text = '';
-        let remaining,target;
+        let remaining,target,catched;
         if(amount < 10.5){
             remaining = 10.5 - amount;
             target = 50;
+            catched = 0;
         }
         else if(amount < 20.5){
             remaining = 20.5 - amount;
             target = 100;
+            catched = 50;
         }
         else if(amount < 40.5){
             remaining = 40.5 - amount;
             target = 200;
+            catched = 100;
+        }
+        else{
+            remaining = 0;
+
         }
         return {
             style:{background:'#DCE1FF'},
             className:'m-h-12 p-6',
-            row:[
-                {size:36,html:<Icon path={mdiLightbulbOutline} size={0.9} style={{color:'orange'}}/>,align:'vh'},
+            column:[
                 {
-                    gap:3,
+                    show:renderIn !== 'shipping',
                     row:[
-                        {html:remaining,className:'bold color3B55A5 fs-16'},
-                        {html:'میلیون تومان تا',className:'color3B55A5 fs-14'},
-                        {html:target,className:'bold color3B55A5 fs-16'},
-                        {html:'عدد لامپ رایگان',className:'color3B55A5 fs-14'}
+                        {size:36,html:<Icon path={mdiCash} size={0.9} style={{color:'orange'}}/>,align:'vh'},
+                        {
+                            gap:3,
+                            row:[
+                                {html:'جمع سبد خرید نورواره شما تا کنون : ',className:'color3B55A5 fs-12'},
+                                {html:amount.toFixed(1),className:'bold color3B55A5 fs-14'},
+                                {html:'میلیون تومان',className:'color3B55A5 fs-12'}
+                            ]
+                        }
+                    ]
+                },
+                {
+                    row:[
+                        {size:36,html:<Icon path={mdiLightbulbOutline} size={0.9} style={{color:'orange'}}/>,align:'vh'},
+                        {
+                            gap:3,
+                            row:[
+                                {html:'تعداد لامپ رایگان سبد خرید نورواره شما : ',className:'color3B55A5 fs-14'},
+                                {html:catched,className:'bold color3B55A5 fs-14'},
+                                {html:'عدد',className:'color3B55A5 fs-12'}
+                            ]
+                        }
+                    ]
+                },
+                {
+                    show:renderIn !== 'shipping' && !!remaining,
+                    row:[
+                        {size:36,html:<Icon path={mdiLightbulbOutline} size={0.9} style={{color:'orange'}}/>,align:'vh'},
+                        {
+                            gap:3,
+                            row:[
+                                {html:remaining.toFixed(1),className:'bold color3B55A5 fs-14'},
+                                {html:'میلیون تومان تا',className:'color3B55A5 fs-12'},
+                                {html:target,className:'bold color3B55A5 fs-14'},
+                                {html:'عدد لامپ رایگان',className:'color3B55A5 fs-12'}
+                            ]
+                        }
                     ]
                 }
             ]
         }
     }
     render(){
+        let {renderIn} = this.props;
         return (
             <RVD
                 layout={{
                     column:[
-                        {html:'از نورواره خرید کنید لامپ رایگان هدیه بگیرید',className:'bold color3B55A5 size14 m-h-12'},
+                        {show:renderIn !== 'shipping',html:'از نورواره خرید کنید لامپ رایگان هدیه بگیرید',className:'bold color3B55A5 size14 m-h-12'},
                         this.slider_layout(),
                         this.text_layout()
                     ]

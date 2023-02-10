@@ -3,6 +3,10 @@ import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import functions from './../../../functions';
 import AIOButton from './../../../interfaces/aio-button/aio-button';
 import appContext from './../../../app-context';
+import { mdiCash, mdiLamp, mdiLightbulbOutline } from "@mdi/js";
+import Icon from "@mdi/react";
+import NV3Report from '../nv3-report';
+
 export default class Shipping extends Component{
     static contextType = appContext;
     constructor(props){
@@ -174,6 +178,15 @@ export default class Shipping extends Component{
       try{return +value.toFixed(0)}
       catch{return 0}
     }
+    nv3Report_layout(){
+      let {shipping} = this.context;
+      if(shipping.id !== 'nv3'){return false}
+      let amount = shipping.factorDetails.DocumentTotal;
+      amount = amount / 10000000
+      return {
+        html:<NV3Report amount={amount} renderIn='shipping'/>
+      }
+    }
     amount_layout(){
       let {getFactorDetails,shipping} = this.context;
       let {address} = this.state;
@@ -263,6 +276,7 @@ export default class Shipping extends Component{
                   {size:12},
                   this.products_layout(),
                   {size:12},
+                  this.nv3Report_layout()
                 ],
               },
               this.amount_layout(),

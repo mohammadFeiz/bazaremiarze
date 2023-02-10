@@ -365,6 +365,7 @@ export default class Main extends Component {
       })
     }
     else if(type === 'product'){
+      debugger;
       addPopup({
         body:()=><Product product={parameter.product} variantId={parameter.variantId}/>,
         title:parameter.name,id:'product',

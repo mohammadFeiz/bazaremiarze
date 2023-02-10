@@ -5,6 +5,7 @@ import ProductCard from './../product-card/product-card';
 import AIOButton from '../../../interfaces/aio-button/aio-button';
 import noItemSrc from './../../../images/not-found.png';
 import functions from '../../../functions';
+import NV3Report from '../nv3-report';
 import ForoosheVijeCard from '../forooshe-vije-card/forooshe-vije-card';
 import BelexCard from '../belex-card/belex-card';
 export default class Cart extends Component{
@@ -227,6 +228,12 @@ export default class Cart extends Component{
         ],
       }
     }
+    nv3Report_layout(){
+      if(this.tab.id !== 'nv3'){return false}
+      return {
+          html:<NV3Report amount={this.tab.factorDetails.DocumentTotal/10000000}/>
+      }
+    }
     continue(){
       let {openPopup} = this.context;
       this.setState({continued:true})
@@ -238,7 +245,7 @@ export default class Cart extends Component{
             <RVD 
               layout={{
                 flex: 1,className:'theme-popup-bg',
-                column: [this.tabs_layout(),this.products_layout(),this.payment_layout()]
+                column: [this.tabs_layout(),this.products_layout(),this.nv3Report_layout(),this.payment_layout()]
               }}
             />
         )

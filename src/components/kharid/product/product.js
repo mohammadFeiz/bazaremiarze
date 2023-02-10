@@ -279,10 +279,10 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         return {
             column:[
                 {
-                    flex:1,show:!!!count,html: (<button onClick={() => changeCart({product,variantId:selectedVariant.id,count:1})} className={"button-2" + (!selectedVariant ? " disabled" : "")}>افزودن به سبد خرید</button>),
+                    flex:1,show:!!!count,html: (<button onClick={() => changeCart(1,selectedVariant.id,product)} className={"button-2" + (!selectedVariant ? " disabled" : "")}>افزودن به سبد خرید</button>),
                     align: "v",
                 },
-                { flex:1,align:'v',show:!!count, html: () => <ProductCount value={count} onChange={(count) => changeCart({product,variantId:selectedVariant.id,count})} max={this.getInStock()} /> },
+                { flex:1,align:'v',show:!!count, html: () => <ProductCount value={count} onChange={(count) => changeCart(count,selectedVariant.id,product)} max={this.getInStock()} /> },
                 
             ]
         }

@@ -12,13 +12,11 @@ import Popup from '../../components/popup/popup';
 import Register from '../../components/register/register';
 import Card from '../../components/card/card';
 import Wallet from '../../popups/wallet/wallet';
-import eleph from './../../images/eleph.ogg';
 import './profile.css';
 export default class Profile extends Component{
     static contextType = appContext;
     constructor(props){
         super(props);
-        this.eggCounter = 0;
         this.state = {
             showProfile:false,
             showWallet:false,
@@ -153,7 +151,7 @@ export default class Profile extends Component{
                 },
                 {size:16},
                 this.parts_layout(),
-                {size:120,html:footerSvg(),align:'vh',egg:{callback:()=>alert(),count:3}},
+                {size:120,html:footerSvg(),align:'vh'},
                 {html:(
                     <AIOButton position='bottom' className='theme-medium-font-color fs-14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
                         return (

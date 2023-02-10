@@ -427,7 +427,22 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         else{
             freeLamps = 200
         }
-        debugger;
+        let {userInfo,shipping} = getState();
+        let body = {
+            "marketdoc":{
+            "CardCode":userInfo.cardCode,
+            "CardGroupCode": userInfo.groupCode,
+            "MarketingLines":shipping.cartItems.map((o)=>{
+                return { ItemCode: o.variant.code, ItemQty: o.count }
+            }),
+            "DeliverAddress":address,
+            "marketingdetails":{}
+            },
+            SettleType,PaymentTime,DeliveryType,PayDueDate
+        }
+        let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
+        try { return res.data.data[0].docNum }
+        catch { return false }
     },
     async newOrders() {
       let products=await this.getProductsByTaxonId({Taxons:'10932'});

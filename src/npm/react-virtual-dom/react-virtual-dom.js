@@ -108,6 +108,11 @@ export default class ReactVirtualDom extends Component {
       }
     } 
     attrs = {onClick,...attrs,style:{flex,...style},className,'data-id':dataId};
+    if(props.egg){
+      attrs.onClick = ()=>{
+        this.egg(props.egg)
+      }
+    }
     if(longTouch){
       attrs['ontouchstart' in document.documentElement?'onTouchStart':'onMouseDown'] = (e)=>{
         this.lt = dataId;
@@ -139,6 +144,17 @@ export default class ReactVirtualDom extends Component {
         {parent && parent.gap !== undefined && <div {...gapAttrs}></div>}
       </Fragment>
     ) 
+  }
+  egg({callback = ()=>{},count = 10}){
+    this.eggCounter++;
+    if(this.eggCounter >= count){
+        callback()
+    }
+    clearTimeout(this.timeOut);
+    this.timeOut = setTimeout(()=>{
+        this.eggCounter = 0;
+    },500)
+
   }
   longTouchMouseUp(){
     this.eventHandler('mouseup',this.longTouchMouseUp,'unbind');

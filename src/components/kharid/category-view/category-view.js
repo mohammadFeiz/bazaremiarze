@@ -5,7 +5,9 @@ import SearchBox from './../../../components/search-box/index';
 import ForoosheVijeCard from '../forooshe-vije-card/forooshe-vije-card';
 import BelexCard from '../belex-card/belex-card';
 import NV3Report from '../nv3-report';
+import appContext from '../../../app-context';
 export default class CategoryView extends Component {
+    static contextType = appContext
     constructor(props) {
         super(props);
         this.state = { searchValue: '' }
@@ -40,8 +42,21 @@ export default class CategoryView extends Component {
     nv3Report_layout(){
         let {category} = this.props;
         if(category.name !== 'نورواره 3'){return false}
+        let {cart,getFactorDetails} = this.context;
+        let variantIds = Object.keys(cart);
+        let cartItems = []
+        for(let i = 0; i < variantIds.length; i++){
+            let variantId = variantIds[i];
+            let { product } = cart[variantId];
+            if(product.cartId !== 'نورواره 3'){continue}
+            cartItems.push(cart[variantId])
+        }
+        let items = cartItems.map((o)=>{
+            return { ItemCode: o.variant.code, ItemQty: o.count }
+        })
+        let factorDetails =  getFactorDetails(items);
         return {
-            html:<NV3Report/>
+            html:<NV3Report amount={factorDetails.DocumentTotal/10000000}/>
         }
     }
     render() {

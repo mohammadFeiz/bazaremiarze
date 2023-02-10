@@ -240,7 +240,7 @@ export default class Shipping extends Component{
             html:(
               <button 
                 className="button-2" 
-                onClick={()=>onSend({address,SettleType,PaymentTime,DeliveryType,PayDueDate})}
+                onClick={()=>onSend({address,SettleType,PaymentTime,DeliveryType,PayDueDate},shipping.id,factorDetails)}
               >ارسال برای ویزیتور</button>
             )
           },

@@ -372,7 +372,7 @@ export default class Main extends Component {
         }
         else {
           addPopup({
-            body:()=><Shipping onSend={(o)=>this.ersal_baraye_vizitor(o)}/>,
+            body:()=><Shipping onSend={(o,id,factorDetails)=>this.ersal_baraye_vizitor(o,id,factorDetails)}/>,
             title:'ادامه فرایند خرید'
           })
         }
@@ -397,13 +397,23 @@ export default class Main extends Component {
       })
     }
   }
-  async ersal_baraye_vizitor({address,SettleType,PaymentTime,DeliveryType,PayDueDate}){
+  async ersal_baraye_vizitor({address,SettleType,PaymentTime,DeliveryType,PayDueDate},id,factorDetails){
     let {shipping,kharidApis,cart,rsa_actions} = this.state;
     let {cartItems} = shipping;
-    let orderNumber = await kharidApis({
-      api:"sendToVisitor",
-      parameter:{address,SettleType,PaymentTime,DeliveryType,PayDueDate}
-    })
+    let orderNumber;
+    if(id === 'نورواره 3'){
+      orderNumber = await kharidApis({
+        api:"nv3_pardakht",
+        parameter:{address,SettleType,PaymentTime,DeliveryType,PayDueDate,total:factorDetails.DocumentTotal}
+      })
+    }
+    else{
+      orderNumber = await kharidApis({
+        api:"sendToVisitor",
+        parameter:{address,SettleType,PaymentTime,DeliveryType,PayDueDate}
+      })
+    }
+    
     if(orderNumber){
       let variantIds = cartItems.map((o)=>o.variant.id)
       let newCart = {};

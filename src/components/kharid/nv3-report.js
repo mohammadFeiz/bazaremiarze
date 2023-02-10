@@ -57,7 +57,6 @@ export default class NV3Report extends Component{
     }
     text_layout(){
         let {amount = 12,renderIn} = this.props;
-        let text = '';
         let remaining,target,catched;
         if(amount < 10.5){
             remaining = 10.5 - amount;
@@ -76,6 +75,7 @@ export default class NV3Report extends Component{
         }
         else{
             remaining = 0;
+            catched = 200;
 
         }
         return {

@@ -398,7 +398,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       });
     },
     async nv3(){
-        let products=await this.getProductsByTaxonId({Taxons:'10932'});
+        let products=await this.getProductsByTaxonId({Taxons:'10954'});
         products = this.updateProductPrice({products,cartId:'نورواره 3'});
         return {
             id:'nv3',
@@ -412,6 +412,22 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
             `
         }
+    },
+    async nv3_pardakht({address,SettleType,PaymentTime,DeliveryType,PayDueDate,total}){
+        let freeLamps;
+        if(total < 105000000){
+            freeLamps = 0;
+        }
+        else if(total < 205000000){
+            freeLamps = 50;
+        }
+        else if(total < 405000000){
+            freeLamps = 100;
+        }
+        else{
+            freeLamps = 200
+        }
+        debugger;
     },
     async newOrders() {
       let products=await this.getProductsByTaxonId({Taxons:'10932'});

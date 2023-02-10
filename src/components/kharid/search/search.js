@@ -48,7 +48,7 @@ export default class Search extends Component {
       return {
         flex: 1,className:'ofy-auto',
         column: result.map((o, i) => {
-          return {html:<ProductCard index={i} isFirst={i === 0} isLast={i === result.length - 1} product={o} type='horizontal'/>}
+          return {html:<ProductCard index={i} isFirst={i === 0} isLast={i === result.length - 1} cartId={'خرید عادی'} product={o} type='horizontal' renderIn='search'/>}
         }),
       }
     }

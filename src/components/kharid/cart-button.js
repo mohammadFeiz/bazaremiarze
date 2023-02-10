@@ -8,9 +8,9 @@ export default class CartButton extends Component{
         let {variantId,product,renderIn,onChange = ()=>{}} = this.props;
         if(!product){console.error(`CartButton missing product props`)}
         if(!product.cartId){console.error(`CartButton missing cartId in product props`)}
-        cart[product.cartId] = cart[product.cartId] || {};
         if(!variantId){return ''}
-        if(!cart[product.cartId][variantId]){
+        let cartTab = cart[product.cartId];
+        if(!cartTab || !cartTab[variantId]){
             return (
                 <button 
                     onClick={() => {
@@ -23,7 +23,7 @@ export default class CartButton extends Component{
                 
                 )
         }
-        let {count} = cart[product.cartId][variantId];
+        let {count} = cartTab.items[variantId];
         if(renderIn === 'shipping'){
             return count;
         }

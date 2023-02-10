@@ -5,7 +5,9 @@ import SearchBox from './../../../components/search-box/index';
 import ForoosheVijeCard from '../forooshe-vije-card/forooshe-vije-card';
 import BelexCard from '../belex-card/belex-card';
 import NV3Report from '../nv3-report';
+import appContext from '../../../app-context';
 export default class CategoryView extends Component {
+    static contextType = appContext;
     constructor(props) {
         super(props);
         this.state = { searchValue: '' }
@@ -29,19 +31,26 @@ export default class CategoryView extends Component {
     product_layout(product,index){
         let {searchValue} = this.state;
         if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
-        if(product.type === 'forooshe_vije'){
-            return {html:<ForoosheVijeCard index={index} product={product}/>,className:'of-visible'}    
+        if(product.cartId === 'فروش ویژه'){
+            return {html:<ForoosheVijeCard index={index} product={product} renderIn='category'/>,className:'of-visible'}    
         }
-        if(product.type === 'belex'){
-            return {html:<BelexCard index={index} product={product}/>,className:'of-visible'}    
+        if(product.cartId === 'بلکس'){
+            return {html:<BelexCard index={index} product={product} renderIn='category'/>,className:'of-visible'}    
         }
-        return {html:<ProductCard index={index} product={product} isFirst={true} isLast={true} type='horizontal' />,className:'of-visible'}
+        return {html:<ProductCard index={index} product={product} renderIn='category' cartId={product.cartId} isFirst={true} isLast={true} type='horizontal' />,className:'of-visible'}
     }
     nv3Report_layout(){
+        let {cart} = this.context;
         let {category} = this.props;
         if(category.name !== 'نورواره 3'){return false}
+        let cartTab = cart['نورواره 3']
+        let total = 0;
+        if(cartTab){
+            let {getAmounts} = cartTab;
+            total = getAmounts().total
+        }
         return {
-            html:<NV3Report/>
+            html:<NV3Report amount={total}/>
         }
     }
     render() {

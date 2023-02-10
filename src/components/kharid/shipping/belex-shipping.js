@@ -96,39 +96,18 @@ import React,{Component} from 'react';
       }
     }
     async componentDidMount(){
-      let {userInfo,shipping} = this.context;
-      let hasCable = false;
-      try{
-        for(let i = 0; i < shipping.cartItems.length; i++){
-          let product = shipping.cartItems[i].product;
-          if(product.cableCategory){
-            hasCable = true;
-            break;
-          }
-        }
-        if(hasCable){this.state.PayDueDate_options[4].show = true}
-      }
-      catch{
-        debugger;
-        for(let i = 0; i < shipping.cartItems.length; i++){
-          let product = shipping.cartItems[i].product;
-          if(product.cableCategory){
-            hasCable = true;
-            break;
-          }
-        }
-        if(hasCable){this.state.PayDueDate_options[4].show = true}
-      }
+      let {userInfo,cart} = this.context;
+      let {cartId} = this.props;
+      let total = cart[cartId].getAmounts().total;
       this.setState({
-        hasCable,
-        campaign:shipping.title,
+        campaign:cartId,
         //name:userInfo.cardName,
         name:`${userInfo.firstName} ${userInfo.lastName}`,
         code:userInfo.cardCode,
         address:userInfo.address,
         phone:userInfo.phone1,
         customerGroup:userInfo.groupName,
-        finalPrice:shipping.finalPrice
+        finalPrice:total
       })
     }
     address_layout(){
@@ -179,8 +158,9 @@ import React,{Component} from 'react';
       }
     }
     products_layout(){
-      let {shipping} = this.context;
-      let {cards} = shipping;
+      let {cart} = this.context;
+      let {cartId} = this.props;
+      let cards = cart[cartId].getProductCards('shipping');
       return {
         column:[
           {size:36,align:'v',className:'theme-medium-font-color fs-14 bold p-h-12',html:'محصولات'},
@@ -314,8 +294,8 @@ import React,{Component} from 'react';
         DeliveryType,
         PayDueDate
       }){
-      let {shipping,kharidApis,cart,rsa_actions,changeCart,openPopup} = this.context;
-      let {cartItems} = shipping;
+      let {kharidApis,rsa_actions,removeCart,openPopup} = this.context;
+      let {cartId} = this.props;
       let orderNumber = await kharidApis({
         api:SettleType === 16?"pardakhte_belex":'sabte_belex',
         parameter:{
@@ -324,20 +304,13 @@ import React,{Component} from 'react';
           SettleType,
           DeliveryType,
           PayDueDate,
-          shipping,
+          cartId,
           ghabele_pardakht:this.ghabele_pardakht
         }
       })
       if(orderNumber){
-        let variantIds = cartItems.map((o)=>o.product.code)
-        let newCart = {};
-        for(let prop in cart){
-          if(variantIds.indexOf(prop) === -1){
-            newCart[prop] = cart[prop]
-          }
-        }
+        removeCart(cartId);
         rsa_actions.removePopup('all');
-        changeCart(newCart)
         openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
       }
     }

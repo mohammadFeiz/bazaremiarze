@@ -11,8 +11,8 @@ export default class ForoosheVijeCard extends Component{
     state = {mounted:false,removeMode:false}
     onClick(){
         let {openPopup} = this.context;
-        let {product,variantId} = this.props;
-        openPopup('product',{product,variantId})
+        let {product,variantId,cartId} = this.props;
+        openPopup('product',{product,variantId,cartId})
     }
     label_layout(){
         return {
@@ -108,7 +108,7 @@ export default class ForoosheVijeCard extends Component{
         let {changeCart} = this.context;
         return {align:'vh',html:'حذف',onClick:(e)=>{
             e.stopPropagation();
-            changeCart(0,variantId,product)
+            changeCart({count:0,variantId,product})
         }}
     }
     componentDidMount(){
@@ -138,7 +138,7 @@ export default class ForoosheVijeCard extends Component{
                                     {flex:1,onClick:()=>this.cancelRemoveMode()},
                                     {
                                         html:<Icon path={mdiDelete} size={1} style={{padding:16,background:'#A4262C',color:'#fff',borderRadius:'100%'}}/>,align:'vh',
-                                        onClick:()=>changeCart(0,variantId,product)
+                                        onClick:()=>changeCart({count:0,variantId,product})
                                     },
                                     {flex:1,onClick:()=>this.cancelRemoveMode()}
                                 ]

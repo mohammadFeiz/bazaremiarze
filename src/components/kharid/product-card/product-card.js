@@ -17,11 +17,11 @@ export default class ProductCard extends Component{
     debuggerMode = false;
     state = {mounted:false}
     isInCart(){
-        let {cart} = this.context;
+        let {getCartItem} = this.context;
         let {product} = this.props;
         try{
             for(let i = 0; i < product.variants.length; i++){
-                if(cart[product.variants[i].id]){return true}
+                if(getCartItem(product.cartId,product.variants[i].id)){return true}
             }
             return false
         }
@@ -49,19 +49,14 @@ export default class ProductCard extends Component{
         return {flex:1,align:'vh',html:<img src={srcs[0] || NoSrc} width={'100%'} alt=''/>}
     }
     count_layout(){
-        let {count,changeCount,max} = this.props;
-        let {shipping} = this.context;
-        if(shipping && count){return {html:count + ' عدد',align:'vh'}}
+        let {count,changeCount,max,renderIn} = this.props;
+        if(renderIn === 'shipping'){return {html:count + ' عدد',align:'vh'}}
         if(count === undefined){return false}
         return {size:30,html:()=><ProductCount value={count} onChange={(count)=>changeCount(count)} max={max}/>}
     }
     title_layout(){
         let {product} = this.props;
-        if(product.cartId){
-            return {html:product.cartId,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}    
-        }
-        if(!product.campaign){return false}
-        return {html:product.campaign.name,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}
+        return {html:product.cartId,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}    
     }
     name_layout(){
         let {product} = this.props;
@@ -117,8 +112,8 @@ export default class ProductCard extends Component{
         return {row:[{flex:1},{html:'نا موجود',className:'colorD83B01 bold fs-12'},{size:12}]}
     }
     isInCart_layout(){
-        let {showIsInCart = true} = this.props;
-        if(!this.isInCart() || !showIsInCart){return {flex:1}}
+        let {renderIn} = this.props;
+        if(!this.isInCart() || renderIn === 'cart'){return {flex:1}}
         return {flex:1,align:'v',html:'موجود در سبد خرید شما',className:'colorD83B01 bold fs-10 p-h-12'}
     }
     price_layout(){
@@ -135,12 +130,12 @@ export default class ProductCard extends Component{
     async onClick(){
         if(this.debuggerMode){return }
         let {kharidApis,openPopup} = this.context;
-        let {product} = this.props;
+        let {product,cartId} = this.props;
         if(!product.hasFullDetail){
             product = await kharidApis({api:'getProductFullDetail',parameter:{id:product.id,code:product.defaultVariant.code,product}})
             product.hasFullDetail = true;
         }
-        openPopup('product',{product})
+        openPopup('product',{product,cartId})
     }
     componentDidMount(){
         let {index = 0} = this.props;

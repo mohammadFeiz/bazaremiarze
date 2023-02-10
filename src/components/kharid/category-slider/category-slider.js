@@ -18,7 +18,7 @@ export default class CategorySlider extends Component{
               className:'of-visible',
               html:(
                 <ProductCard 
-                    type='vertical' product={product} loading={loading}
+                    type='vertical' product={product} loading={loading} cartId='خرید عادی' renderIn='category slider'
                     isFirst={i === 0} isLast={i === products.length - 1} 
                 />
               )

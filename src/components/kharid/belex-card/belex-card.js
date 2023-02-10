@@ -11,8 +11,8 @@ export default class BelexCard extends Component{
     state = {mounted:false,removeMode:false}
     onClick(){
         let {openPopup} = this.context;
-        let {product,variantId} = this.props;
-        openPopup('product',{product,variantId})
+        let {product,variantId,cartId} = this.props;
+        openPopup('product',{product,variantId,cartId})
     }
     label_layout(){
         return {
@@ -84,7 +84,7 @@ export default class BelexCard extends Component{
         if(!variantId){variantId = product.variants[0].id}
         if(!count){return false}
         let {changeCart} = this.context;
-        changeCart(0,product.code,product)
+        changeCart({count:0,variantId:product.code,product})
         
     }
     componentDidMount(){
@@ -125,7 +125,7 @@ export default class BelexCard extends Component{
                                         html:<Icon path={mdiDelete} size={1} style={{padding:16,background:'#A4262C',color:'#fff',borderRadius:'100%'}}/>,align:'vh',
                                         onClick:()=>{
                                             let {product} = this.props;
-                                            changeCart(0,product.code,product)
+                                            changeCart({count:0,variantId:product.code,product})
                                         }
                                     },
                                     {flex:1,onClick:()=>this.cancelRemoveMode()}

@@ -12,8 +12,8 @@ import cartonSrc from './../../../images/belex-box.jpg';
 export default class Product extends Component{
     render(){
         let { product } = this.props;
-        if(product.type === 'forooshe_vije'){return <ForoosheVije {...this.props}/>}
-        if(product.type === 'belex'){return <Belex {...this.props}/>}
+        if(product.cartId === 'فروش ویژه'){return <ForoosheVije {...this.props}/>}
+        if(product.cartId === 'بلکس'){return <Belex {...this.props}/>}
         return <ProductReqular {...this.props}/>
     }
 }
@@ -245,8 +245,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         };
     }
     showCart_layout(){
-        let { cart,openPopup } = this.context;
-        if(!Object.keys(cart).length){return false}
+        let { openPopup } = this.context;
         return {
             className:'p-h-12 bgFFF',size:36,align:'v',
             row:[
@@ -269,20 +268,20 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         };
     }
     addToCart_layout() {
-        let { getCartCountByVariantId,changeCart } = this.context;
+        let { changeCart,getCartItem } = this.context;
         let {product} = this.props;
         let { selectedVariant } = this.state;
         if (!selectedVariant || !selectedVariant.inStock || selectedVariant.inStock === null) {
             return { html: '' }
         }
-        let count = getCartCountByVariantId(selectedVariant.id)
+        let {count} = getCartItem(product.cartId,selectedVariant.id) || {count:0}
         return {
             column:[
                 {
-                    flex:1,show:!!!count,html: (<button onClick={() => changeCart(1,selectedVariant.id,product)} className={"button-2" + (!selectedVariant ? " disabled" : "")}>افزودن به سبد خرید</button>),
+                    flex:1,show:!!!count,html: (<button onClick={() => changeCart({count:1,variantId:selectedVariant.id,product})} className={"button-2" + (!selectedVariant ? " disabled" : "")}>افزودن به سبد خرید</button>),
                     align: "v",
                 },
-                { flex:1,align:'v',show:!!count, html: () => <ProductCount value={count} onChange={(count) => changeCart(count,selectedVariant.id,product)} max={this.getInStock()} /> },
+                { flex:1,align:'v',show:!!count, html: () => <ProductCount value={count} onChange={(count) => changeCart({count,variantId:selectedVariant.id,product})} max={this.getInStock()} /> },
                 
             ]
         }
@@ -292,9 +291,10 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         if (!selectedVariant || !selectedVariant.inStock || selectedVariant.inStock === null) {
             return { column: [{ flex: 1 }, { html: "ناموجود", className: "colorD83B01 bold fs-14" }, { flex: 1 }] };
         }
-        let { getCartCountByVariantId } = this.context;
+        let {product} = this.props;
+        let { getCartItem } = this.context;
         //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده
-        let count = getCartCountByVariantId(selectedVariant.id) || 1;
+        let {count} = getCartItem(product.cartId,selectedVariant.id) || {count:1}
         let {B1Dscnt,CmpgnDscnt,PymntDscnt} = selectedVariant;
         return {
             column: [
@@ -359,16 +359,20 @@ class ForoosheVije extends Component {
     state = {}
     componentDidMount(){
         this.mounted = true;
-        let {cart} = this.context;
-        let { variantId } = this.props;
-        let foroosheVije_count = false;
-        if(variantId){foroosheVije_count = cart[variantId].foroosheVije_count}
-        this.setState({variantId,foroosheVije_count})
+        let {getCartItem} = this.context;
+        let { variantId,product } = this.props;
+        let count = false;
+        if(variantId){
+            count = getCartItem(product.cartId,variantId) || {}
+        }
+        this.setState({variantId,count})
     }
     changeVariant(variantId){
-        let {cart} = this.context;
-        let foroosheVije_count;
-        if(cart[variantId]){foroosheVije_count = cart[variantId].foroosheVije_count}
+        let {getCartItem} = this.context;
+        let {product} = this.props;
+        let cartItem = getCartItem(product.cardId,variantId)
+        let count;
+        if( cartItem !== false){count = cartItem.count}
         else{
             let {product} = this.props;
             let {optionValues} = product;
@@ -377,9 +381,9 @@ class ForoosheVije extends Component {
             let qtyInPack = optionValues.map(({name,id,step},i)=>{
                 return {optionValueId:id,optionValueName:name,count:i === 0?totalQty:0,step}
             })
-            foroosheVije_count = {packQty:0,qtyInPack}
+            count = {packQty:0,qtyInPack}
         }
-        this.setState({foroosheVije_count,variantId})
+        this.setState({count,variantId})
     }
     getVariant(variantId = this.state.variantId){
         if(!variantId){return false}
@@ -387,8 +391,8 @@ class ForoosheVije extends Component {
         let {variants} = product;
         return variants.find(({id})=>variantId === id);
     }
-    changeCount(foroosheVije_count) {
-        this.setState({foroosheVije_count})
+    changeCount(count) {
+        this.setState({count})
     }
     image_layout(name, code, src) {
         let { product } = this.props, { srcIndex } = this.state;
@@ -443,9 +447,9 @@ class ForoosheVije extends Component {
         }
     }
     packQty_layout(){
-        let {variantId,foroosheVije_count} = this.state;
-        if(!variantId || !foroosheVije_count){return false}
-        let {packQty} = foroosheVije_count;
+        let {variantId,count} = this.state;
+        if(!variantId || !count){return false}
+        let {packQty} = count;
         
         return {
             align:'v',
@@ -476,28 +480,28 @@ class ForoosheVije extends Component {
         }
     }
     changePackQty(v){
-        let {foroosheVije_count} = this.state;
-        let {packQty} = foroosheVije_count;
+        let {count} = this.state;
+        let {packQty} = count;
         packQty += v;
         if(packQty < 0){packQty = 0}
-        foroosheVije_count.packQty = packQty;
-        this.changeCount(foroosheVije_count)
+        count.packQty = packQty;
+        this.changeCount(count)
     }
     getSelectedCount(){
-        let {foroosheVije_count} = this.state;
-        let {qtyInPack} = foroosheVije_count;
-        let count = 0;
+        let {count} = this.state;
+        let {qtyInPack} = count;
+        let selectedCount = 0;
         for(let i = 0; i < qtyInPack.length; i++){
-            count += qtyInPack[i].count || 0;
+            selectedCount += qtyInPack[i].count || 0;
         }
-        return count;
+        return selectedCount;
     }
     isFull(){
         let v = this.getVariant();
         if(!v){return false}
-        let {foroosheVije_count} = this.state;
-        if(!foroosheVije_count){return false}
-        let {packQty} = foroosheVije_count;
+        let {count} = this.state;
+        if(!count){return false}
+        let {packQty} = count;
         let {totalQty} = v;
         totalQty *= packQty;
         let selectedCount = this.getSelectedCount();
@@ -505,9 +509,9 @@ class ForoosheVije extends Component {
         
     }
     qtyInPacks_layout(){
-        let {variantId,foroosheVije_count} = this.state;
-        if(!variantId || !foroosheVije_count){return false}
-        let {qtyInPack,packQty} = foroosheVije_count;
+        let {variantId,count} = this.state;
+        if(!variantId || !count){return false}
+        let {qtyInPack,packQty} = count;
         if(!packQty){return false}
         let {product} = this.props;
         let v = this.getVariant();
@@ -536,7 +540,7 @@ class ForoosheVije extends Component {
                                     key={variantId} {...o} totalQty={totalQty} max={o.count + remaining} 
                                     onChange={(value)=>{
                                         o.count = value;
-                                        this.changeCount(foroosheVije_count)
+                                        this.changeCount(count)
                                     }}
                                 />
                             )
@@ -577,8 +581,7 @@ class ForoosheVije extends Component {
         }
     }
     showCart_layout(){
-        let { cart,openPopup } = this.context;
-        if(!Object.keys(cart).length){return false}
+        let { openPopup } = this.context;
         return {
             className:'p-h-12 bgFFF',size:36,align:'v',
             row:[
@@ -591,11 +594,11 @@ class ForoosheVije extends Component {
         }
     }
     price_layout() {
-        let { variantId,foroosheVije_count } = this.state;
-        if(!variantId || !foroosheVije_count){return false}
+        let { variantId,count } = this.state;
+        if(!variantId || !count){return false}
         let variant = this.getVariant(variantId);
         //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده
-        let {packQty} = foroosheVije_count;
+        let {packQty} = count;
         packQty = packQty || 1; 
         let {finalPrice} = variant;
         return {
@@ -614,45 +617,28 @@ class ForoosheVije extends Component {
         };
     }
     async updateCart(){
-        let {foroosheVije_count} = this.state;
-        let {packQty} = foroosheVije_count;
+        let {count} = this.state;
+        let {packQty} = count;
         let {product} = this.props;
         let {variantId} = this.state;
-        let {cart,kharidApis,SetState} = this.context;
-        let newCart;
-        if(packQty === 0){
-            let res = {};
-            for(let prop in cart){
-                if(prop.toString() !== variantId.toString()){res[prop] = cart[prop]}
-            }
-            newCart = res;
-        }
-        else{
-            newCart = {...cart}
-            if(newCart[variantId] === undefined){
-                let variant = this.getVariant();
-                newCart[variantId] = {foroosheVije_count,product,variantId:variant.id}
-            }
-            else{newCart[variantId].foroosheVije_count = foroosheVije_count;}
-        }
-        
-        await kharidApis({api:'setCart',parameter:newCart,loading:false})
-        SetState({cart:newCart});
-        
+        let {changeCart} = this.context;
+        changeCart({product,variantId,count:!packQty?0:count})
     }
     cart_layout() {
         let {variantId} = this.state;
         if(!variantId){return false}
-        let {cart} = this.context;
+        let {getCartItem} = this.context;
+        let {product} = this.props;
+        let cartItem = getCartItem(product.cartId,variantId)
         let isFull = this.isFull()
         return {
             column:[
                 {
-                    flex:1,show:!cart[variantId],html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>افزودن به سبد خرید</button>),
+                    flex:1,show:cartItem === false,html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>افزودن به سبد خرید</button>),
                     align: "v",
                 },
                 {
-                    flex:1,show:!!cart[variantId],html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>ویرایش سبد خرید</button>),
+                    flex:1,show:cartItem !== false,html: (<button disabled={!isFull} onClick={() => this.updateCart()} className={"button-2"}>ویرایش سبد خرید</button>),
                     align: "v",
                 },
                 
@@ -709,12 +695,16 @@ class Belex extends Component {
     state = {}
     componentDidMount(){
         this.mounted = true;
-        let {cart} = this.context;
+        let count = false;
+        let cartItem = this.getCartItem()
+        if(cartItem){count = cartItem.count}
+        else {count = this.getQtyInPacks()}
+        this.setState({count})
+    }
+    getCartItem(){
         let { product } = this.props;
-        let belex_count;
-        if(cart[product.code]){belex_count = cart[product.code].belex_count}
-        else {belex_count = this.getQtyInPacks()}
-        this.setState({belex_count})
+        let {getCartItem} = this.context;
+        return getCartItem(product.cartId,product.code)
     }
     getQtyInPacks(){
         let {product} = this.props;
@@ -729,8 +719,8 @@ class Belex extends Component {
         }
         return {packQty,qtyInPacks};
     }
-    changeCount(belex_count) {
-        this.setState({belex_count});
+    changeCount(count) {
+        this.setState({count});
         clearTimeout(this.cartTimeout);
         this.cartTimeout = setTimeout(()=>{
             this.updateCart()
@@ -758,14 +748,14 @@ class Belex extends Component {
         };
     }
     changePackQty(v){
-        let {belex_count} = this.state;
-        let {packQty,qtyInPacks} = belex_count;
+        let {count} = this.state;
+        let {packQty,qtyInPacks} = count;
         let {product} = this.props;
         packQty = packQty || 0;
         packQty += v;
         if(packQty < 0){packQty = 0}
         if(packQty > 40){packQty = 40}
-        belex_count.packQty = packQty;
+        count.packQty = packQty;
         for(let i = 0; i < product.variants.length; i++){
             let variant = product.variants[i];
             let qtyInPack = qtyInPacks[variant.id];
@@ -773,17 +763,17 @@ class Belex extends Component {
             for(let j = 0; j < qtyInPack.length; j++){
                 used += qtyInPack[j].count;
             }
-            let remaining = (variant.qty * (belex_count.packQty || 0)) - used;
+            let remaining = (variant.qty * (count.packQty || 0)) - used;
             if(remaining){
                 qtyInPack[0].count += remaining; 
             } 
         }
-        this.changeCount(belex_count)
+        this.changeCount(count)
     }
     packQty_layout(){
-        let {belex_count} = this.state;
-        if(!belex_count){return false}
-        let {packQty,qtyInPacks} = belex_count;
+        let {count} = this.state;
+        if(!count){return false}
+        let {packQty,qtyInPacks} = count;
         return {
             align:'v',
             style:{borderRadius:6,background:'#DCE1FF',padding:'0 12px'},
@@ -836,26 +826,26 @@ class Belex extends Component {
         }
     }
     getSelectedCount(id){
-        let {belex_count} = this.state;
-        let {qtyInPacks} = belex_count;
+        let {count} = this.state;
+        let {qtyInPacks} = count;
         let qtyInPack = qtyInPacks[id];
-        let count = 0;
+        let selectedCount = 0;
         for(let i = 0; i < qtyInPack.length; i++){
-            count += qtyInPack[i].count || 0;
+            selectedCount += qtyInPack[i].count || 0;
         }
-        return count;
+        return selectedCount;
     }
     isFull(id,qty){
-        let {belex_count} = this.state;
-        if(!belex_count){return false}
+        let {count} = this.state;
+        if(!count){return false}
         let selectedCount = this.getSelectedCount(id);
         return selectedCount === qty;
         
     }
     qtyInPacks_layout(){
-        let {belex_count} = this.state;
-        if(!belex_count){return false}
-        let {qtyInPacks,packQty} = belex_count;
+        let {count} = this.state;
+        if(!count){return false}
+        let {qtyInPacks,packQty} = count;
         if(!packQty){return false}
         let {product} = this.props;
         return {
@@ -887,7 +877,7 @@ class Belex extends Component {
                                             key={product.code} {...o} totalQty={qty} max={o.count + remaining} 
                                             onChange={(value)=>{
                                                 o.count = value;
-                                                this.changeCount(belex_count)
+                                                this.changeCount(count)
                                             }}
                                         />
                                     )
@@ -912,8 +902,7 @@ class Belex extends Component {
         }
     }
     showCart_layout(){
-        let { cart,openPopup } = this.context;
-        if(!Object.keys(cart).length){return false}
+        let { openPopup } = this.context;
         return {
             className:'p-h-12 bgFFF',size:36,align:'v',
             row:[
@@ -926,10 +915,10 @@ class Belex extends Component {
         }
     }
     price_layout() {
-        let { belex_count } = this.state;
-        if(!belex_count){return false}
+        let { count } = this.state;
+        if(!count){return false}
         //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده
-        let {packQty} = belex_count;
+        let {packQty} = count;
         packQty = packQty || 1; 
         let {product} = this.props;
         return {
@@ -948,39 +937,21 @@ class Belex extends Component {
         };
     }
     async updateCart(remove){
-        let {belex_count} = this.state;
-        let {packQty} = belex_count;
+        let {count} = this.state;
+        let {packQty} = count;
         let {product} = this.props;
-        let {cart,kharidApis,SetState} = this.context;
-        let newCart;
-        if(packQty === 0 || remove){
-            let res = {};
-            for(let prop in cart){
-                if(prop.toString() !== product.code.toString()){res[prop] = cart[prop]}
-            }
-            newCart = res;
-        }
-        else{
-            newCart = {...cart}
-            if(newCart[product.code] === undefined){
-                newCart[product.code] = {belex_count,product}
-            }
-            else{newCart[product.code].belex_count = belex_count;}
-        }
-        
-        await kharidApis({api:'setCart',parameter:newCart,loading:false})
-        SetState({cart:newCart});
-        
+        let {changeCart} = this.context;
+        changeCart({product,variantId:product.code,count:packQty === 0 || remove?0:count})
     }
     cart_layout() {
-        let {cart} = this.context;
         let {product} = this.props;
-        let {belex_count} = this.state;
-        if(!belex_count){return false}
+        let {count} = this.state;
+        if(!count){return false}
+        let cartItem = this.getCartItem();
         let isFull = true;
         for(let i = 0; i < product.variants.length; i++){
             let variant = product.variants[i];
-            if(!this.isFull(variant.id,variant.qty * belex_count.packQty)){
+            if(!this.isFull(variant.id,variant.qty * count.packQty)){
                 isFull = false;
                 break;
             }
@@ -988,7 +959,7 @@ class Belex extends Component {
         return {
             column:[
                 {
-                    flex:1,show:!!cart[product.code],html: (
+                    flex:1,show:!!cartItem,html: (
                         <button 
                             className={"button-2"}
                             style={{color:'#d0000a',background:'none',fontWeight:'bold',padding:0}}

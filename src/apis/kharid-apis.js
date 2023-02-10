@@ -331,7 +331,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         catch{
           campaignId = undefined;
         }
-        return { name: o.attributes.name, id: o.id, src: src,campaignId,icon};
+        return { cartId: o.attributes.name,name: o.attributes.name, id: o.id, src: src,campaignId,icon};
       });
 
       return campaigns;
@@ -401,7 +401,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         let products=await this.getProductsByTaxonId({Taxons:'10932'});
         products = this.updateProductPrice({products,cartId:'نورواره 3'});
         return {
-            id:'nv3',
+            cartId:'نورواره 3',
             name:'نورواره 3',
             src:nv3billboard,
             icon:nv3Icon,
@@ -468,7 +468,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           }
         }
 
-        return { name: o.attributes.name, id: o.id, src: src };
+        return { name: o.attributes.name,cartId: o.attributes.name, id: o.id, src: src };
       });
       for (let i = 0; i < categories.length; i++) {
         categories[i].products = await this.getCategoryItems(categories[i]);
@@ -666,14 +666,16 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       }
       return finalResult;
     },
-    async sendToVisitor({address,SettleType,PaymentTime,DeliveryType,PayDueDate}) {
-      let {userInfo,shipping} = getState();
+    async sendToVisitor({address,SettleType,PaymentTime,DeliveryType,PayDueDate,cartId}) {
+      let {userInfo,cart} = getState();
+      let cartItems = cart[cartId].getCartItems();
       let body = {
         "marketdoc":{
           "CardCode":userInfo.cardCode,
           "CardGroupCode": userInfo.groupCode,
-          "MarketingLines":shipping.cartItems.map((o)=>{
-            return { ItemCode: o.variant.code, ItemQty: o.count }
+          "MarketingLines":cartItems.map(({product,variantId,count})=>{
+            let variant = product.varinats.find((v)=>v.id === variantId)
+            return { ItemCode: variant.code, ItemQty: count }
           }),
           "DeliverAddress":address,
           "marketingdetails":{}
@@ -778,11 +780,12 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     async sabte_foroosheVije(){
 
     },
-    async pardakhte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate,shipping,ghabele_pardakht}){
-      let {userInfo} = getState();
+    async pardakhte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate,ghabele_pardakht}){
+      let {userInfo,cart} = getState();
+      let cartItems = cart['بلکس'].getCartItems()
       let arr=[];
-      for(const cart of shipping.cartItems){
-        const items=cart.belex_count.qtyInPacks;
+      for(const cart of cartItems){
+        const items=cart.count.qtyInPacks;
         for (const key in items) {
           arr=arr.concat(items[key])
         }
@@ -815,11 +818,12 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       return resss
 
     },
-    async sabte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate,shipping}){
-      let {userInfo} = getState();
-      let arr=[];
-      for(const cart of shipping.cartItems){
-        const items=cart.belex_count.qtyInPacks;
+    async sabte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate}){
+        let {userInfo,cart} = getState();
+        let cartItems = cart['بلکس'].getCartItems()
+        let arr=[];
+      for(const cart of cartItems){
+        const items=cart.count.qtyInPacks;
         for (const key in items) {
           arr=arr.concat(items[key])
         }
@@ -6631,7 +6635,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             // };
 
             products.push({
-              type:'belex',
+              cartId:'بلکس',
               name:subItem.itemname,
               code:subItem.itemcode,
               price:subItem.price,
@@ -6655,7 +6659,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           for (const subItem of item) {
 
             products.push({
-              type:'belex',
+              cartId:'بلکس',
               name:subItem.itemname,
               code:subItem.itemcode,
               price:subItem.price,
@@ -6720,8 +6724,8 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       // }
       console.log(products)
       return {
-        type:'belex',
-        name:'بلکس 23 شیراز',
+        cartId:'بلکس',
+        name:'بلکس',
         src:belexbillboard,
         icon:belexIcon,
         products
@@ -6765,7 +6769,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
 
               products.push({
-                type:'forooshe_vije',
+                cartId:'فروش ویژه',
                 name:t3.taxonname,
                 code:t3.taxonid,
                 details:[['توان','144'],['وزن','3 کیلوگرم']],
@@ -6780,7 +6784,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         }
       }
       return {
-        type:'forooshe_vije',
+        cartId:'فروش ویژه',
         name:'فروش ویژه',
         src:foroosheVijeSrc,
         icon:foroosheVijeIcon,

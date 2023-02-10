@@ -33,6 +33,9 @@ import AIOStorage from './../../npm/aio-storage/aio-storage';
 
 
 import getSvg from "../../utils/getSvg";
+import ProductCard from "../../components/kharid/product-card/product-card";
+import BelexCard from "../../components/kharid/belex-card/belex-card";
+import ForoosheVijeCard from "../../components/kharid/forooshe-vije-card/forooshe-vije-card";
 import Logo1 from './../../images/logo1.png';
 import Pricing from "./../../pricing";
 import appContext from "../../app-context";
@@ -107,7 +110,6 @@ export default class Main extends Component {
       getUserInfo:props.getUserInfo,
       updatePassword:props.updatePassword,
       allProducts:[],
-      shipping:false,//{cards:[<ProductCard/>,...],cartItems:[{count,variant,product}],total:number}
       cart: {},//{variantId:{count,product,variant}}
       product:false,
       category:false,
@@ -140,41 +142,135 @@ export default class Main extends Component {
     else if(opacity === 70){opacity = 100}
     this.setState({opacity})
   }
-  changeCart(count,variant,product){
-    let {cart,kharidApis} = this.state;
-    let newCart;
-    if(typeof count === 'object'){
-      newCart = {...count}
+  getCartItem(cartId,variantId){
+    if(!variantId){return false}
+    let {cart} = this.state;
+    let cartTab = cart[cartId];
+    if (!cartTab){return false}
+    return cartTab.items[variantId] || false
+  }
+  getCartLength(){
+    let {cart} = this.state;
+    let cartLength = 0;
+    let cartTabs = Object.keys(cart);
+    for(let i = 0; i < cartTabs.length; i++){
+        let cartTab = cart[cartTabs[i]];
+        cartLength += Object.keys(cartTab.items).length;
     }
-    else{
-      if(count === 0){
-        let res = {};
-        for(let prop in cart){
-          if(prop.toString() !== variantId.toString()){res[prop] = cart[prop]}
+    return cartLength
+  }
+  removeCart(cartId){
+    let {cart} = this.state;
+    let newCart = {}
+    for(let prop in cart){
+      if(prop !== cartId){newCart[prop] = cart[prop]}
+    }
+    this.setState({cart:newCart})
+  }
+  getCartTab(cartId){
+    let {cart} = this.state;
+    let cartTab = {items:{},getCartItems:()=>Object.keys(cart[cartId]).map((o)=>cart[cartId][o])};
+      if(cartId === 'فروش ویژه'){
+        cartTab.getAmounts = ()=>{
+          let cartItems = cart[cartId].getCartItems();
+          let total = 0;
+          for(let i = 0; i < cartItems.length; i++){
+            let {count,variant} = cartItems[i];
+            total += count.packQty * variant.finalPrice;
+          }
+          return {total};
         }
-        newCart = res;
+        cartTab.getProductCards = (renderIn)=>{
+          let cartItems = cart[cartId].getCartItems();
+          return cartItems.map(({variant,product,count})=>{
+            return <ForoosheVijeCard key={variant.id} product={product} variant={variant} count={count} renderIn={renderIn}/>
+          })
+        }
+      }
+      else if(cartId === 'بلکس'){
+        cartTab.getAmounts = ()=>{
+          let cartItems = cart[cartId].getCartItems();
+          let total = 0;
+          for(let i = 0; i < cartItems.length; i++){
+            let {count,product} = cartItems[i];
+            total += count.packQty * product.price;
+          }
+          return {total};
+        }
+        cartTab.getProductCards = (renderIn)=>{
+          let cartItems = cart[cartId].getCartItems();
+          return cartItems.map(({product,count})=>{
+            return <BelexCard key={product.code} product={product} count={count} renderIn={renderIn}/>
+          })
+        }
       }
       else{
-        newCart = {...cart}
-        if(newCart[variantId] === undefined){
-          let variant;
-          try{variant = product.variants.filter((o) => o.id === variantId)[0]}
-          catch{variant = undefined;}
-          newCart[variantId] = {count,product,variant}
+        cartTab.getAmounts = (shippingOptions)=>{
+          let cartItems = cart[cartId].getCartItems();
+          let {getFactorDetails} = this.context;
+          let factorDetailsItems = [];
+          for(let i = 0; i < cartItems.length; i++){
+            let {variantId,count,product} = cartItems[i];
+            let variant = product.variants.find((o)=>o.id === variantId)
+            factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
+          }
+          let factorDetails = getFactorDetails(factorDetailsItems,shippingOptions);
+          let total = factorDetails.DocumentTotal;
+          let discount = factorDetails.marketingdetails.DocumentDiscount;
+          let paymentMethodDiscountPercent = factorDetails.marketingdetails.DocumentDiscountPercent
+          let paymentMethodDiscount = (total * paymentMethodDiscountPercent) / 100;
+          let paymentAmount = total - paymentMethodDiscount;
+          return {
+            total,discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount
+          }
         }
-        else{newCart[variantId].count = count;}
+        cartTab.getProductCards = (renderIn)=>{
+          let cartItems = cart[cartId].getCartItems();
+          return cartItems.map(({product,count,variantId},i)=>{
+            let variant = product.variants.find((o)=>o.id === variantId);
+            let { optionTypes } = product;
+            let { optionValues } = variant;
+            let details = [];
+            for (let j = 0; j < optionTypes.length; j++) {
+              let optionType = optionTypes[j];
+              details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
+            }
+            let props = {
+              product,details,count,type:'horizontal',renderIn,cartId,
+              isFirst:i === 0,isLast: i === cartItems.length - 1,
+            }
+            return <ProductCard key={variant.id} {...props} index={i}/>
+          })
+        }
       }
-    }
-    clearTimeout(this.cartTimeout);
-    this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
-    this.setState({cart:newCart});
   }
-  getCartCountByVariantId(variantId) {
-    if(!variantId){return 0}
-    let { cart } = this.state;
-    let cartItem = cart[variantId];
-    if(!cartItem){return 0}
-    return cartItem.count || 0;
+  changeCart({count,variantId,product}){
+    let {cart,kharidApis} = this.state;
+    let newCartTabItems = {};
+    let {cartId} = product;
+    let cartTab = cart[cartId];
+    //مقدار اولیه سبد خرید
+    if(!cartTab){cartTab = this.getCartTab(cartId)}
+    //حذف از سبد خرید
+    if(count === 0){
+      let res = {};
+      for(let prop in cartTab.items){ 
+        if(prop.toString() !== variantId.toString()){res[prop] = cartTab.items[prop]}
+      }
+      newCartTabItems = res;
+    }
+    else{
+      newCartTabItems = {...cartTab.items}
+      //افزودن به سبد خرید
+      if(newCartTabItems[variantId] === undefined){
+        newCartTabItems[variantId] = {count,product,variantId}
+      }
+      //ویرایش سبد خرید
+      else{newCartTabItems[variantId].count = count;}
+    }
+    //clearTimeout(this.cartTimeout);
+    //this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
+    this.setState({cart:{...cart,cartId:{...cartTab,items:newCartTabItems}}});
   }
   async getGuaranteeImages(items){
     if(!items.length){return}
@@ -340,7 +436,7 @@ export default class Main extends Component {
     else if(type === 'product'){
       addPopup({
         body:()=><Product product={parameter.product} variantId={parameter.variantId}/>,
-        title:parameter.name,id:'product',
+        title:parameter.cartId,id:'product',
         header:()=><Header type='popup' popupId='product'/>
       })
     }
@@ -357,26 +453,25 @@ export default class Main extends Component {
       addPopup({body:()=><Cart/>,title:'سبد خرید',id:'cart'})
     }
     else if(type === 'shipping'){
-      this.setState({shipping:parameter},()=>{
-        if(parameter.id === 'belex'){
-          addPopup({
-            body:()=><BelexShipping/>,
-            title:'ادامه فرایند خرید'
-          })
-        }
-        else if(parameter.id === 'forooshe_vije'){
-          addPopup({
-            body:()=><ForoosheVijeShipping/>,
-            title:'ادامه فرایند خرید'
-          })
-        }
-        else {
-          addPopup({
-            body:()=><Shipping onSend={(o)=>this.ersal_baraye_vizitor(o)}/>,
-            title:'ادامه فرایند خرید'
-          })
-        }
-      })
+      if(parameter === 'بلکس'){
+        addPopup({
+          body:()=><BelexShipping cartId={parameter}/>,
+          title:'ادامه فرایند خرید'
+        })
+      }
+      else if(parameter === 'فروش ویژه'){
+        addPopup({
+          body:()=><ForoosheVijeShipping cartId={parameter}/>,
+          title:'ادامه فرایند خرید'
+        })
+      }
+      else {
+        addPopup({
+          body:()=><Shipping cartId={parameter}/>,
+          title:'ادامه فرایند خرید'
+        })
+      }
+      
     }
     else if(type === 'sefareshe-ersal-shode-baraye-vizitor'){
       addPopup({
@@ -397,26 +492,6 @@ export default class Main extends Component {
       })
     }
   }
-  async ersal_baraye_vizitor({address,SettleType,PaymentTime,DeliveryType,PayDueDate}){
-    let {shipping,kharidApis,cart,rsa_actions} = this.state;
-    let {cartItems} = shipping;
-    let orderNumber = await kharidApis({
-      api:"sendToVisitor",
-      parameter:{address,SettleType,PaymentTime,DeliveryType,PayDueDate}
-    })
-    if(orderNumber){
-      let variantIds = cartItems.map((o)=>o.variant.id)
-      let newCart = {};
-      for(let prop in cart){
-        if(variantIds.indexOf(prop) === -1){
-          newCart[prop] = cart[prop]
-        }
-      }
-      rsa_actions.removePopup('all');
-      this.changeCart(newCart)
-      this.openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
-    }
-  }
   getProfileName(userInfo){
     //let str = userInfo.cardName;
     let str = `${userInfo.firstName} ${userInfo.lastName}`;
@@ -433,7 +508,9 @@ export default class Main extends Component {
       userInfo,
       openPopup:this.openPopup.bind(this),
       changeCart:this.changeCart.bind(this),
-      getCartCountByVariantId:this.getCartCountByVariantId.bind(this),
+      removeCart:this.removeCart.bind(this),
+      getCartItem:this.getCartItem.bind(this),
+      getCartLength:this.getCartLength.bind(this),
       logout: this.props.logout,
       baseUrl:this.props.baseUrl
     };
@@ -548,8 +625,8 @@ class Header extends Component{
     if(type === 'popup'){
       if(['product','search'].indexOf(popupId) === -1){return false}
     }
-    let {cart} = this.context; 
-    let length = Object.keys(cart).length;
+    let {getCartLength} = this.context; 
+    let length = getCartLength();
     return {
       html:(
         <AIOButton

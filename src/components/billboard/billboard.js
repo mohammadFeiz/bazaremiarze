@@ -7,14 +7,14 @@ export default class Billboard extends Component{
     static contextType = appContext;
     async onClick(campaign){
         let {kharidApis,openPopup} = this.context;
-        if(campaign.type === 'forooshe_vije' || campaign.type === 'belex'){
-            openPopup('category',{category:campaign,name:campaign.name})
+        if(campaign.cartId === 'forooshe_vije' || campaign.cartId === 'belex'){
+            openPopup('category',{category:campaign})
         }
-        else if(campaign.id === 'nv3'){
+        else if(campaign.cartId === 'نورواره 3'){
             openPopup('category',{category:{...campaign}})
         }
         else{
-            let products = await kharidApis({api:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.id});
+            let products = await kharidApis({api:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.cartId});
             openPopup('category',{category:{...campaign,products}})
         }
     }
@@ -75,7 +75,7 @@ export default class Billboard extends Component{
             flex:1,align:'h',
             attrs:{onClick:async ()=>this.onClick(campaign)},
             column:[
-                {html:<img src={campaign.icon} width={54} height={54} alt=''/>},
+                {html:<img src={campaign.icon} width={54} height={54} alt='' style={{borderRadius:16}}/>},
                 {size:3},
                 {html:campaign.name,className:'fs-12 bold theme-dark-font-color'}
             ]

@@ -105,9 +105,10 @@ export default class Shipping extends Component{
       }
     }
     async componentDidMount(){
-      let {userInfo,shipping} = this.context;
+      let {userInfo} = this.context;
+      let {cartId} = this.props;
       this.setState({
-        campaign:shipping.title,
+        campaign:cartId,
         //name:userInfo.cardName,
         name:`${userInfo.firstName} ${userInfo.lastName}`,
         code:userInfo.cardCode,
@@ -164,8 +165,9 @@ export default class Shipping extends Component{
       }
     }
     products_layout(){
-      let {shipping} = this.context;
-      let {cards} = shipping;
+      let {cart} = this.context;
+      let {cartId} = this.props;
+      let cards = cart[cartId].getProductCards('shipping');
       return {
         column:[
           {size:36,align:'v',className:'theme-medium-font-color fs-14 bold p-h-12',html:'محصولات'},
@@ -179,19 +181,19 @@ export default class Shipping extends Component{
       catch{return 0}
     }
     nv3Report_layout(){
-      let {shipping} = this.context;
-      if(shipping.id !== 'نورواره 3'){return false}
-      let amount = shipping.factorDetails.DocumentTotal;
+      let {cart} = this.context;
+      let {cartId} = this.props;
+      if(cartId !== 'نورواره 3'){return false}
+      let amount = cart[cartId].getAmounts().total;
       amount = amount / 10000000
       return {
         html:<NV3Report amount={amount} renderIn='shipping'/>
       }
     }
     amount_layout(){
-      let {getFactorDetails,shipping} = this.context;
+      let {cart} = this.context;
       let {address} = this.state;
-      let {onSend} = this.props;
-      
+      let {onSend,cartId} = this.props;
       let {
         PayDueDate_map,PayDueDate,
         SettleType_map,SettleType,
@@ -202,12 +204,7 @@ export default class Shipping extends Component{
       SettleType = SettleType_map[SettleType];
       DeliveryType = DeliveryType_map[DeliveryType];
       PaymentTime = PaymentTime_map[PaymentTime];
-      let factorDetails = getFactorDetails(shipping.items,{PayDueDate,PaymentTime,SettleType,DeliveryType})
-      let discount = factorDetails.marketingdetails.DocumentDiscount;
-      let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent
-      let mablaghe_ghabele_pardakht = factorDetails.DocumentTotal;
-      let mablaghe_takhfife_pardakhte_online = (mablaghe_ghabele_pardakht * darsade_takhfife_pardakhte_online) / 100;
-      mablaghe_ghabele_pardakht = mablaghe_ghabele_pardakht - mablaghe_takhfife_pardakhte_online;
+      let {discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount} = cart[cartId].getAmounts({PayDueDate,SettleType,DeliveryType,PaymentTime,address})
       return {
         className:'p-h-12 bg-fff theme-box-shadow',
         style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
@@ -220,17 +217,17 @@ export default class Shipping extends Component{
             ],
             [
               'تخفیف نحوه پرداخت',
-              `${functions.splitPrice(this.fix(mablaghe_takhfife_pardakhte_online)) + ' ریال'} (${darsade_takhfife_pardakhte_online} %)`,
+              `${functions.splitPrice(this.fix(paymentMethodDiscount)) + ' ریال'} (${paymentMethodDiscountPercent} %)`,
               {className:'color00B5A5 fs-14'}
             ],
             [
               'قیمت کالاها',
-              functions.splitPrice(this.fix(mablaghe_ghabele_pardakht + discount + mablaghe_takhfife_pardakhte_online)) + ' ریال',
+              functions.splitPrice(this.fix(paymentAmount + discount + paymentMethodDiscount)) + ' ریال',
               {className:'theme-medium-font-color fs-14'}
             ],
             [
               'مبلغ قابل پرداخت',
-              functions.splitPrice(this.fix(mablaghe_ghabele_pardakht)) + ' ریال',
+              functions.splitPrice(this.fix(paymentAmount)) + ' ریال',
               {className:'theme-dark-font-color bold fs-16'}
             ]
           ]),
@@ -240,7 +237,19 @@ export default class Shipping extends Component{
             html:(
               <button 
                 className="button-2" 
-                onClick={()=>onSend({address,SettleType,PaymentTime,DeliveryType,PayDueDate})}
+                onClick={async ()=>{
+                  let {kharidApis,rsa_actions} = this.context;
+                  let {cartId} = this.props;
+                  let orderNumber = await kharidApis({
+                    api:"sendToVisitor",
+                    parameter:{address,SettleType,PaymentTime,DeliveryType,PayDueDate,cartId}
+                  })
+                  if(orderNumber){
+                    rsa_actions.removePopup('all');
+                    this.removeCart(cartId)
+                    this.openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
+                  }
+                }}
               >ارسال برای ویزیتور</button>
             )
           },

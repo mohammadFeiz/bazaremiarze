@@ -61,7 +61,8 @@ export default class Home extends Component {
         return { html: <Billboard renderIn='home'/>,align:'h' }
     }
     cartAndWallet_layout(){
-        let {userInfo,cart,openPopup,backOffice} = this.context;
+        let {userInfo,getCartLength,openPopup,backOffice} = this.context;
+        let cartLength = getCartLength()
         return {
             className:'of-visible theme-gap-h',
             row: [
@@ -80,7 +81,7 @@ export default class Home extends Component {
                     className:'of-visible',flex:1,
                     html:(
                         <Card
-                            type='card1' title='سبد خرید' value={Object.keys(cart).length} unit='کالا'
+                            type='card1' title='سبد خرید' value={cartLength} unit='کالا'
                             icon={getSvg(28,{width:30,height:30})} onClick={()=>openPopup('cart')}
                         />
                     )

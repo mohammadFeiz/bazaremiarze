@@ -168,81 +168,107 @@ export default class Main extends Component {
     this.setState({cart:newCart})
   }
   getCartTab(cartId){
-    let {cart} = this.state;
-    let cartTab = {items:{},getCartItems:()=>Object.keys(cart[cartId]).map((o)=>cart[cartId][o])};
-      if(cartId === 'فروش ویژه'){
-        cartTab.getAmounts = ()=>{
-          let cartItems = cart[cartId].getCartItems();
-          let total = 0;
-          for(let i = 0; i < cartItems.length; i++){
-            let {count,variant} = cartItems[i];
-            total += count.packQty * variant.finalPrice;
-          }
-          return {total};
+    let cartTab = {
+      items:{},
+      getCartItems:()=>{
+        let {cart} = this.state;
+        let cartTab = cart[cartId];
+        if(!cartTab){return []}
+        let {items = {}} = cartTab;
+        return Object.keys(items).map((o)=>cart[cartId].items[o])
+      }};
+    if(cartId === 'فروش ویژه'){
+      cartTab.getAmounts = ()=>{
+        let {cart} = this.state;
+        let cartTab = cart[cartId];
+        if(!cartTab){return {}}
+        let cartItems = cartTab.getCartItems();
+        let total = 0;
+        for(let i = 0; i < cartItems.length; i++){
+          let {count,variant} = cartItems[i];
+          total += count.packQty * variant.finalPrice;
         }
-        cartTab.getProductCards = (renderIn)=>{
-          let cartItems = cart[cartId].getCartItems();
-          return cartItems.map(({variant,product,count})=>{
-            return <ForoosheVijeCard key={variant.id} product={product} variant={variant} count={count} renderIn={renderIn}/>
-          })
+        return {total};
+      }
+      cartTab.getProductCards = (renderIn)=>{
+        let {cart} = this.state;
+        let cartTab = cart[cartId];
+        if(!cartTab){return []}
+        let cartItems = cartTab.getCartItems();
+        return cartItems.map(({variant,product,count})=>{
+          return <ForoosheVijeCard key={variant.id} product={product} variant={variant} count={count} renderIn={renderIn}/>
+        })
+      }
+    }
+    else if(cartId === 'بلکس'){
+      cartTab.getAmounts = ()=>{
+        let {cart} = this.state;
+        let cartTab = cart[cartId];
+        if(!cartTab){return {}}
+        let cartItems = cartTab.getCartItems();
+        let total = 0;
+        for(let i = 0; i < cartItems.length; i++){
+          let {count,product} = cartItems[i];
+          total += count.packQty * product.price;
+        }
+        return {total};
+      }
+      cartTab.getProductCards = (renderIn)=>{
+        let {cart} = this.state;
+        let cartTab = cart[cartId];
+        if(!cartTab){return []}
+        let cartItems = cartTab.getCartItems();
+        return cartItems.map(({product,count,variantId})=>{
+          return <BelexCard key={variantId} variantId={variantId} product={product} count={count} renderIn={renderIn}/>
+        })
+      }
+    }
+    else{
+      cartTab.getAmounts = (shippingOptions)=>{
+        let {cart} = this.state;
+        let cartTab = cart[cartId];
+        if(!cartTab){return {}}
+        let cartItems = cartTab.getCartItems();
+        let {getFactorDetails} = this.state;
+        let factorDetailsItems = [];
+        for(let i = 0; i < cartItems.length; i++){
+          let {variantId,count,product} = cartItems[i];
+          let variant = product.variants.find((o)=>o.id === variantId)
+          factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
+        }
+        let factorDetails = getFactorDetails(factorDetailsItems,shippingOptions);
+        let total = factorDetails.DocumentTotal;
+        let discount = factorDetails.marketingdetails.DocumentDiscount;
+        let paymentMethodDiscountPercent = factorDetails.marketingdetails.DocumentDiscountPercent
+        let paymentMethodDiscount = (total * paymentMethodDiscountPercent) / 100;
+        let paymentAmount = total - paymentMethodDiscount;
+        return {
+          total,discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount
         }
       }
-      else if(cartId === 'بلکس'){
-        cartTab.getAmounts = ()=>{
-          let cartItems = cart[cartId].getCartItems();
-          let total = 0;
-          for(let i = 0; i < cartItems.length; i++){
-            let {count,product} = cartItems[i];
-            total += count.packQty * product.price;
+      cartTab.getProductCards = (renderIn)=>{
+        let {cart} = this.state;
+        let cartTab = cart[cartId];
+        if(!cartTab){return []}
+        let cartItems = cartTab.getCartItems();
+        return cartItems.map(({product,count,variantId},i)=>{
+          let variant = product.variants.find((o)=>o.id === variantId);
+          let { optionTypes } = product;
+          let { optionValues } = variant;
+          let details = [];
+          for (let j = 0; j < optionTypes.length; j++) {
+            let optionType = optionTypes[j];
+            details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
           }
-          return {total};
-        }
-        cartTab.getProductCards = (renderIn)=>{
-          let cartItems = cart[cartId].getCartItems();
-          return cartItems.map(({product,count})=>{
-            return <BelexCard key={product.code} product={product} count={count} renderIn={renderIn}/>
-          })
-        }
+          let props = {
+            product,details,count,type:'horizontal',renderIn,cartId,
+            isFirst:i === 0,isLast: i === cartItems.length - 1,
+          }
+          return <ProductCard key={variantId} variantId={variantId} {...props} index={i}/>
+        })
       }
-      else{
-        cartTab.getAmounts = (shippingOptions)=>{
-          let cartItems = cart[cartId].getCartItems();
-          let {getFactorDetails} = this.context;
-          let factorDetailsItems = [];
-          for(let i = 0; i < cartItems.length; i++){
-            let {variantId,count,product} = cartItems[i];
-            let variant = product.variants.find((o)=>o.id === variantId)
-            factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
-          }
-          let factorDetails = getFactorDetails(factorDetailsItems,shippingOptions);
-          let total = factorDetails.DocumentTotal;
-          let discount = factorDetails.marketingdetails.DocumentDiscount;
-          let paymentMethodDiscountPercent = factorDetails.marketingdetails.DocumentDiscountPercent
-          let paymentMethodDiscount = (total * paymentMethodDiscountPercent) / 100;
-          let paymentAmount = total - paymentMethodDiscount;
-          return {
-            total,discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount
-          }
-        }
-        cartTab.getProductCards = (renderIn)=>{
-          let cartItems = cart[cartId].getCartItems();
-          return cartItems.map(({product,count,variantId},i)=>{
-            let variant = product.variants.find((o)=>o.id === variantId);
-            let { optionTypes } = product;
-            let { optionValues } = variant;
-            let details = [];
-            for (let j = 0; j < optionTypes.length; j++) {
-              let optionType = optionTypes[j];
-              details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
-            }
-            let props = {
-              product,details,count,type:'horizontal',renderIn,cartId,
-              isFirst:i === 0,isLast: i === cartItems.length - 1,
-            }
-            return <ProductCard key={variant.id} {...props} index={i}/>
-          })
-        }
-      }
+    }
+    return cartTab
   }
   changeCart({count,variantId,product}){
     let {cart,kharidApis} = this.state;
@@ -270,7 +296,7 @@ export default class Main extends Component {
     }
     //clearTimeout(this.cartTimeout);
     //this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
-    this.setState({cart:{...cart,cartId:{...cartTab,items:newCartTabItems}}});
+    this.setState({cart:{...cart,[cartId]:{...cartTab,items:newCartTabItems}}});
   }
   async getGuaranteeImages(items){
     if(!items.length){return}
@@ -336,9 +362,7 @@ export default class Main extends Component {
     //this.setState({message:this.state.messages.concat(message)});
   }
   async getGarantProducts(){
-    let {guarantiApis} = this.state;
-    let {guaranteeItems} = this.context;
-    let {garanti_products_dic} = this.state;
+    let {guaranteeItems,guarantiApis,garanti_products_dic} = this.state;
     for(let i = 0; i < guaranteeItems.length; i++){
         let {org_object,id} = guaranteeItems[i];
         let mahsoolat = await guarantiApis({api:'mahsoolate_garanti',parameter:org_object,loading:false});

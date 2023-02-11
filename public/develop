@@ -2,3 +2,8 @@ use CartButton component
 productCard not receive changeCount props
 dar kharide addi check kon id ye variant chie aya hamon codesh hast?
 tarkibe shiping ha
+
+
+mahsool dar gategory va search =>mojood dar sabade kharid ke ba click rooye oon sabade kharid baz beshe 
+mahsool dar sabade kharid => taghire tedad
+mahsool dar shipping => faghat addade mojoood dar sabade kharid 

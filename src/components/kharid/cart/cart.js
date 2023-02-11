@@ -10,6 +10,13 @@ export default class Cart extends Component{
       super(props);
       this.state = {activeTabId:false,continued:false}
     }
+    componentDidMount(){
+      let {cart} = this.context;
+      let {cartId} = this.props;
+      let tabs = Object.keys(cart);
+      let activeTabId = cartId || tabs[0] || false;
+      this.setState({activeTabId})
+    }
     splitPrice(price){
       if(!price){return price}
       let str = price.toString(),dotIndex = str.indexOf('.');
@@ -34,7 +41,7 @@ export default class Cart extends Component{
             optionStyle={{flex:options.length <= 3?1:undefined}}
             style={{marginBottom:12}}
             value={activeTabId} 
-            optionAfter={(option)=><div className='tab-badge'>{Object.keys(cart[option].items)}</div>}
+            optionAfter={(option)=><div className='tab-badge'>{Object.keys(cart[option].items).length}</div>}
             optionText='option'
             optionValue='option'
             onChange={(activeTabId)=>this.setState({activeTabId})}
@@ -42,25 +49,26 @@ export default class Cart extends Component{
         )
       }
     }
+    empty_layout(){
+      return {
+        style:{background:'#eee',opacity:0.5},
+        flex:1,align:'vh',
+        column:[
+            {html:<img src={noItemSrc} alt='' width='128' height='128'/>},
+            {html:'سبد خرید شما خالی است',style:{color:'#858a95'}},
+            {size:60}
+        ]
+      }
+    }
     products_layout(){
       let {activeTabId} = this.state;
-      if(!activeTabId){
-        return {
-          style:{background:'#eee',opacity:0.5},
-          flex:1,align:'vh',
-          column:[
-              {html:<img src={noItemSrc} alt='' width='128' height='128'/>},
-              {html:'سبد خرید شما خالی است',style:{color:'#858a95'}},
-              {size:60}
-          ]
-        }
-      }
+      if(!activeTabId){return this.empty_layout()}
       let {cart} = this.context;
       let tab = cart[activeTabId];
       let {getProductCards} = tab;
+      let productCards = getProductCards('cart');
+      if(!productCards.length){return this.empty_layout()}
       return {flex: 1,className:'ofy-auto',gap:12,column:getProductCards('cart').map((card) => {return {html:card}})}
-      
-      
     }
     payment_layout(){
       let {cart} = this.context;

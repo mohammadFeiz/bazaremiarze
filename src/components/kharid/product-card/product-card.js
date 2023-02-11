@@ -48,11 +48,17 @@ export default class ProductCard extends Component{
         let {srcs = []} = product;
         return {flex:1,align:'vh',html:<img src={srcs[0] || NoSrc} width={'100%'} alt=''/>}
     }
+    changeCount(count){
+        let {changeCart} = this.context;
+        let {variantId,product} = this.props;
+        changeCart({variantId,product,count})
+    }
     count_layout(){
-        let {count,changeCount,max,renderIn} = this.props;
-        if(renderIn === 'shipping'){return {html:count + ' عدد',align:'vh'}}
+        let {count,max,renderIn} = this.props;
+        if(!count){return false}
+        if(renderIn !== 'cart'){return {html:count + ' عدد',align:'vh'}}
         if(count === undefined){return false}
-        return {size:30,html:()=><ProductCount value={count} onChange={(count)=>changeCount(count)} max={max}/>}
+        return {size:30,html:()=><ProductCount value={count} onChange={(count)=>this.changeCount(count)} max={max}/>}
     }
     title_layout(){
         let {product} = this.props;

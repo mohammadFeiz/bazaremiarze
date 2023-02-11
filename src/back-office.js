@@ -20,6 +20,44 @@ export default {
         'قرمز':'red',
         'آبی':'blue',
         'نارنجی':'orange',
-
-    }
+    },
+    PayDueDate_options:[
+        {value:1,text:'نقد',after:'12% تخفیف'},//ByDelivery
+        {value:2,text:'چک 15 روزه'},//By15Days
+        {value:3,text:'چک 30 روزه'},//ByMonth
+        {value:4,text:'چک 45 روزه'},//By45Days
+        {value:6,text:'چک 60 روزه'},//By60Days
+        {value:7,text:'چک 70 روزه'},//By75Days
+        {value:8,text:'چک 3 ماهه'},//By3Months
+        {value:9,text:'چک 3 و نیم ماهه'},//By3_5Months
+        {value:10,text:'چک 4 ماهه'},//By4Months
+        {value:11,text:'چک 4 و نیم ماهه'},//By4_5Months
+        {value:12,text:'چک 5 ماهه'},//By5Months
+        {value:13,text:'چک 5 و نیم ماهه'},//By5_5Months
+        {value:14,text:'چک 6 ماهه'},//By6Months 
+        {value:15,text:'25% نقد و 75% چک دو ماهه',after:'4/5% تخفیف'},//Cash25_TowMonth75
+        {value:16,text:'50% نقد و 50% چک سه ماهه',after:'4/5% تخفیف'},//Cach50_ThreeMonth50
+        {value:17,text:'20% نقد و 80% چک سه ماهه',after:'4/8% تخفیف'},//Cash20_ThreeMonth80
+        {value:18,text:'30% نقد و 70% چک چهار ماهه',after:'3/6% تخفیف'},//Cash30_FourMonth70
+        {value:19,text:'50% نقد و 50% چک پنج ماهه',after:'4/5% تخفیف'},//Cash50_FiveMonth50
+        {value:20,text:'50% نقد و 50% چک یک ماهه',after:'10.5% تخفیف'}//Cash50_OneMonth50
+    ],
+    PaymentTime_options:[
+        {value:5,text:'اینترنتی'},//ByOnlineOrder
+        {value:1,text:'واریز قبل ارسال'},//ByOrder
+        {value:2,text:'واریز پای بار'},//ByDelivery
+    ],
+    SettleType_options:[
+        {value:1,text:'نقد'},//ByDelivery
+        {value:2,text:'چک'},//Cheque
+        {value:8,text:'دستگاه پوز'},//Pos
+        {value:16,text:'آنلاین'},//Online
+    ],
+    DeliveryType_options:[
+        {value:11,text:'ماشین توزیع بروکس'},//BRXDistribution
+        {value:12,text:'ماشین اجاره ای'},//RentalCar
+        {value:13,text:'باربری'},//Cargo
+        {value:14,text:'پخش گرم'},//HotDelivery
+        {value:15,text:'ارسال توسط ویزیتور'}//BySalesMan
+    ]
 }

@@ -110,7 +110,6 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       // ] 
     },
     async get_ecoDeliverer(res){
-      console.log('get_ecoDeliverer')
       if(!res){
         return false
       }

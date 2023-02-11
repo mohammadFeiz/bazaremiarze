@@ -8,54 +8,9 @@ export default class Shipping extends Component{
     static contextType = appContext;
     constructor(props){
       super(props);
-      this.state = {
-        name:'',
-        code:'',
-        campaign:'فروش ویژه 10 وات',
-        basePrice:'',
-        customerGroup:'الکتریکی',
-        address:'',
-        phone:'09123534314',
-        PayDueDate:1,
-        PayDueDate_options:[
-          {value:1,text:'نقد'},//ByDelivery
-          // {value:2,text:'چک 15 روزه'},//By15Days
-          // {value:3,text:'چک 30 روزه'},//ByMonth
-          // {value:4,text:'چک 45 روزه'},//By45Days
-          // {value:6,text:'چک 60 روزه'},//By60Days
-          // {value:7,text:'چک 70 روزه'},//By75Days
-          // {value:8,text:'چک 3 ماهه'},//By3Months
-          // {value:9,text:'چک 3 و نیم ماهه'},//By3_5Months
-          // {value:10,text:'چک 4 ماهه'},//By4Months
-          // {value:11,text:'چک 4 و نیم ماهه'},//By4_5Months
-          // {value:12,text:'چک 5 ماهه'},//By5Months
-          // {value:13,text:'چک 5 و نیم ماهه'},//By5_5Months
-          // {value:14,text:'چک 6 ماهه'},//By6Months 
-          {value:15,text:'25% نقد و 75% چک دو ماهه'},//Cash25_TowMonth75
-          {value:16,text:'50% نقد و چک سه ماهه'},//Cach50_ThreeMonth50
-          
-        ],
-        PaymentTime:5,
-        PaymentTime_options:[
-          {value:5,text:'اینترنتی'},//ByOnlineOrder
-          {value:1,text:'واریز قبل ارسال'},//ByOrder
-          {value:2,text:'واریز پای بار'},//ByDelivery
-        ],
-        SettleType:1,
-        SettleType_options:[
-          {value:1,text:'نقد'},//ByDelivery
-          {value:2,text:'چک'}//Cheque
-        ],
-        DeliveryType:11,
-        DeliveryType_options:[
-          {value:11,text:'ماشین توزیع بروکس'},//BRXDistribution
-          {value:12,text:'ماشین اجاره ای'},//RentalCar
-          {value:13,text:'باربری'},//Cargo
-          //{value:14,text:'پخش گرم'},//HotDelivery
-          {value:15,text:'ارسال توسط ویزیتور'}//BySalesMan
-        ]
-      }
+      this.state = {}
     }
+    
     details_layout(list){
       return {
         className:'box p-12 m-h-12',
@@ -72,11 +27,21 @@ export default class Shipping extends Component{
       }
     }
     async componentDidMount(){
-      let {userInfo} = this.context;
+      let {userInfo,cart,backOffice} = this.context;
       let {cartId} = this.props;
+      let {defaultShipping} = cart[cartId];
+      let {PayDueDate,PaymentTime,DeliveryType,SettleType,
+        PayDueDateOptions = [],PaymentTimeOptions = [],SettleTypeOptions = [],DeliveryTypeOptions = []
+      } = defaultShipping;
+      let PayDueDate_options = backOffice.PayDueDate_options.filter(({value})=>PayDueDateOptions.indexOf(value) !== -1);
+      let PaymentTime_options = backOffice.PaymentTime_options.filter(({value})=>PaymentTimeOptions.indexOf(value) !== -1);
+      let SettleType_options = backOffice.SettleType_options.filter(({value})=>SettleTypeOptions.indexOf(value) !== -1);
+      let DeliveryType_options = backOffice.DeliveryType_options.filter(({value})=>DeliveryTypeOptions.indexOf(value) !== -1)
+      this.mounted = true;
       this.setState({
+        PayDueDate,PaymentTime,DeliveryType,SettleType,
+        PayDueDate_options,PaymentTime_options,SettleType_options,DeliveryType_options,
         campaign:cartId,
-        //name:userInfo.cardName,
         name:`${userInfo.firstName} ${userInfo.lastName}`,
         code:userInfo.cardCode,
         address:userInfo.address,
@@ -100,7 +65,7 @@ export default class Shipping extends Component{
     options_layout(key,title,cond = true){
       let options = this.state[key + '_options']
       let value = this.state[key];
-      if(!cond){return false}
+      if(!cond || value === undefined){return false}
       return {
         className:'box p-12 m-h-12',
         column:[
@@ -108,6 +73,7 @@ export default class Shipping extends Component{
           {
             html:(
               <AIOButton
+                className='shipping-options'
                 type='radio'
                 options={options}
                 optionClassName='"w-100 h-36"'
@@ -163,7 +129,7 @@ export default class Shipping extends Component{
       let {cartId} = this.props;
       let {PayDueDate,SettleType,DeliveryType,PaymentTime} = this.state;
       let cartTab = cart[cartId]
-      let {getFactorItems} = cartTab;
+      let {getFactorItems,paymentButtonText} = cartTab;
       let factorItems = getFactorItems({PayDueDate,SettleType,DeliveryType,PaymentTime,address})
       return {
         className:'p-h-12 bg-fff theme-box-shadow',
@@ -177,11 +143,22 @@ export default class Shipping extends Component{
               <button 
                 className="button-2" 
                 onClick={async ()=>{
-                  let {kharidApis,rsa_actions} = this.context;
+                  let {kharidApis,rsa_actions,cart} = this.context;
+                  let {PayDueDate,SettleType,DeliveryType,PaymentTime,address} = this.state;
                   let {cartId} = this.props;
+                  let cartTab = cart[cartId];
+                  let {getAmounts} = cartTab;
                   let orderNumber = await kharidApis({
-                    api:"sendToVisitor",
-                    parameter:{address,SettleType,PaymentTime,DeliveryType,PayDueDate,cartId}
+                    api:"shippingPayment",
+                    parameter:{
+                      address,
+                      SettleType,
+                      PaymentTime,
+                      DeliveryType,
+                      PayDueDate,
+                      cartId,
+                      amounts:getAmounts()
+                    }
                   })
                   if(orderNumber){
                     rsa_actions.removePopup('all');
@@ -189,7 +166,7 @@ export default class Shipping extends Component{
                     this.openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
                   }
                 }}
-              >ارسال برای ویزیتور</button>
+              >{paymentButtonText({PayDueDate,SettleType,DeliveryType,PaymentTime,address})}</button>
             )
           },
           {size:12}
@@ -197,6 +174,7 @@ export default class Shipping extends Component{
       }
     }
     render(){
+      if(!this.mounted){return null}
       let {PaymentTime} = this.state;
       let {name,code,campaign,customerGroup} = this.state;
       return (
@@ -222,6 +200,8 @@ export default class Shipping extends Component{
                   {size:12},
                   this.options_layout('PayDueDate','مهلت تسویه',PaymentTime !== 5),
                   {size:12},
+                  this.options_layout('SettleType','نحوه پرداخت نقد'),
+                  {size:12},
                   this.products_layout(),
                   {size:12},
                   this.nv3Report_layout()
@@ -234,8 +214,4 @@ export default class Shipping extends Component{
         </>
       )
     }
-  }
-
-
-
-  
+  }  

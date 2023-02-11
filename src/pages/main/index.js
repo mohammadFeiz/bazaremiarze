@@ -13,8 +13,6 @@ import Noorvare3 from './../../pages/noorvare3/noorvare3';
 import OrdersHistory from "./../../components/kharid/orders-history/orders-history";
 import SabteGarantiJadid from "../../components/garanti/sabte-garanti-jadid/sabte-garanti-jadid";
 import Shipping from './../../components/kharid/shipping/shipping';
-import BelexShipping from './../../components/kharid/shipping/belex-shipping';
-import ForoosheVijeShipping from './../../components/kharid/shipping/foroosheVije-shipping';
 import Wallet from "../../popups/wallet/wallet";
 import TanzimateKifePool from "../../components/kife-pool/tanzimate-kife-pool/tanzimate-kife-pool";
 import Cart from "./../../components/kharid/cart/cart";
@@ -193,7 +191,7 @@ export default class Main extends Component {
         return Object.keys(items).map((o)=>cart[cartId].items[o])
       }};
     if(cartId === 'فروش ویژه'){
-      cartTab.getAmounts = ()=>{
+      cartTab.getAmounts = (shippingOptions)=>{
         let {cart} = this.state;
         let cartTab = cart[cartId];
         if(!cartTab){return {}}
@@ -203,7 +201,17 @@ export default class Main extends Component {
           let {count,variant} = cartItems[i];
           total += count.packQty * variant.finalPrice;
         }
-        return {total};
+        let {PayDueDate = 1} = shippingOptions;
+        let paymentMethodDiscountPercent = {
+          '1':12,'17':4.8,'18':3.6,'19':4.5,'20':10.5
+        }[(PayDueDate).toString()]
+        let paymentMethodDiscount = total * paymentMethodDiscountPercent / 100;
+        let paymentAmount = total - paymentMethodDiscount;
+        let peymentPercent = {
+          '1':12,'17':4.8,'18':3.6,'19':4.5,'20':10.5
+        }[(PayDueDate).toString()]
+        paymentAmount = paymentAmount * peymentPercent / 100
+        return {total,paymentMethodDiscountPercent,paymentMethodDiscount,paymentAmount};
       }
       cartTab.getProductCards = (renderIn)=>{
         let {cart} = this.state;
@@ -214,9 +222,45 @@ export default class Main extends Component {
           return <ForoosheVijeCard key={variant.id} product={product} variant={variant} count={count} renderIn={renderIn}/>
         })
       }
+      cartTab.defaultShipping = {
+        PayDueDate:1,SettleType:16,DeliveryType:11,
+        PayDueDateOptions:[1,17,18,19,20],
+        SettleTypeOptions:[8,16],
+        DeliveryTypeOptions:[11,12,13,15]
+      }
+      cartTab.getFactorItems = (shippingOptions)=>{
+        let {cart} = this.state;
+        let cartTab = cart[cartId];
+        let {getAmounts} = cartTab;
+        let {total,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount} = getAmounts(shippingOptions);
+        return [
+          {
+            key:'جمع کل سبد خرید',
+            value:`${functions.splitPrice(this.fix(total)) + ' ریال'}`,
+            className:'color00B5A5 fs-14'
+          },
+          {
+            key:'تخفیف نحوه پرداخت',
+            value:`${functions.splitPrice(this.fix(paymentMethodDiscount)) + ' ریال'} (${paymentMethodDiscountPercent} %)`,
+            className:'color00B5A5 fs-14'
+          },
+          {
+            key:'مبلغ چک',
+            value:functions.splitPrice(this.fix(total - paymentMethodDiscount - paymentAmount)) + ' ریال',
+            className:'theme-medium-font-color fs-14'
+          },
+          {
+            key:'مبلغ قابل پرداخت',
+            value:functions.splitPrice(this.fix(paymentAmount)) + ' ریال',
+            className:'theme-dark-font-color bold fs-16'
+          }
+        ]
+      }
+      cartTab.paymentButtonText = (shippingOptions)=>shippingOptions.SettleType === 16?'پرداخت':'ثبت'
     }
     else if(cartId === 'بلکس'){
-      cartTab.getAmounts = ()=>{
+      cartTab.getAmounts = (shippingOptions)=>{
+
         let {cart} = this.state;
         let cartTab = cart[cartId];
         if(!cartTab){return {}}
@@ -226,7 +270,17 @@ export default class Main extends Component {
           let {count,product} = cartItems[i];
           total += count.packQty * product.price;
         }
-        return {total};
+        let {PayDueDate = 1} = shippingOptions;
+        let paymentMethodDiscountPercent = {
+          '1':12,'17':4.8,'18':3.6,'19':4.5,'20':10.5
+        }[(PayDueDate).toString()]
+        let paymentMethodDiscount = total * paymentMethodDiscountPercent / 100;
+        let paymentAmount = total - paymentMethodDiscount;
+        let peymentPercent = {
+          '1':12,'17':4.8,'18':3.6,'19':4.5,'20':10.5
+        }[(PayDueDate).toString()]
+        paymentAmount = paymentAmount * peymentPercent / 100
+        return {total,paymentMethodDiscountPercent,paymentMethodDiscount,paymentAmount};
       }
       cartTab.getProductCards = (renderIn)=>{
         let {cart} = this.state;
@@ -237,6 +291,41 @@ export default class Main extends Component {
           return <BelexCard key={variantId} variantId={variantId} product={product} count={count} renderIn={renderIn}/>
         })
       }
+      cartTab.defaultShipping = {
+        PayDueDate:1,SettleType:16,DeliveryType:11,
+        PayDueDateOptions:[1,17,18,19,20],
+        SettleTypeOptions:[8,16],
+        DeliveryTypeOptions:[11,12,13,15]
+      }
+      cartTab.getFactorItems = (shippingOptions)=>{
+        let {cart} = this.state;
+        let cartTab = cart[cartId];
+        let {getAmounts} = cartTab;
+        let {total,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount} = getAmounts(shippingOptions);
+        return [
+          {
+            key:'جمع کل سبد خرید',
+            value:`${functions.splitPrice(this.fix(total)) + ' ریال'}`,
+            className:'color00B5A5 fs-14'
+          },
+          {
+            key:'تخفیف نحوه پرداخت',
+            value:`${functions.splitPrice(this.fix(paymentMethodDiscount)) + ' ریال'} (${paymentMethodDiscountPercent} %)`,
+            className:'color00B5A5 fs-14'
+          },
+          {
+            key:'مبلغ چک',
+            value:functions.splitPrice(this.fix(total - paymentMethodDiscount - paymentAmount)) + ' ریال',
+            className:'theme-medium-font-color fs-14'
+          },
+          {
+            key:'مبلغ قابل پرداخت',
+            value:functions.splitPrice(this.fix(paymentAmount)) + ' ریال',
+            className:'theme-dark-font-color bold fs-16'
+          }
+        ]
+      }
+      cartTab.paymentButtonText = (shippingOptions)=>shippingOptions.SettleType === 16?'پرداخت':'ثبت'
     }
     else{
       cartTab.getAmounts = (shippingOptions)=>{
@@ -310,6 +399,13 @@ export default class Main extends Component {
           }
         ]
       }
+      cartTab.defaultShipping = {
+        PayDueDate:1,PaymentTime:5,DeliveryType:11,
+        PayDueDateOptions:[1,15,16],
+        PaymentTimeOptions:[5,1,2],
+        DeliveryTypeOptions:[11,12,13,15]
+      }
+      cartTab.paymentButtonText = (shippingOptions)=>'ارسال برای ویزیتور'
     }
     return cartTab
   }
@@ -520,25 +616,10 @@ export default class Main extends Component {
       addPopup({body:()=><Cart cartId={parameter}/>,title:'سبد خرید',id:'cart'})
     }
     else if(type === 'shipping'){
-      if(parameter === 'بلکس'){
-        addPopup({
-          body:()=><BelexShipping cartId={parameter}/>,
-          title:'ادامه فرایند خرید'
-        })
-      }
-      else if(parameter === 'فروش ویژه'){
-        addPopup({
-          body:()=><ForoosheVijeShipping cartId={parameter}/>,
-          title:'ادامه فرایند خرید'
-        })
-      }
-      else {
-        addPopup({
-          body:()=><Shipping cartId={parameter}/>,
-          title:'ادامه فرایند خرید'
-        })
-      }
-      
+      addPopup({
+        body:()=><Shipping cartId={parameter}/>,
+        title:'ادامه فرایند خرید'
+      })
     }
     else if(type === 'sefareshe-ersal-shode-baraye-vizitor'){
       addPopup({
@@ -569,7 +650,6 @@ export default class Main extends Component {
   render() {
     let {userInfo,logout} = this.props;
     let {opacity,theme,noorvare3,backOffice} = this.state;
-    console.log('opacity',opacity);
     let context = {
       ...this.state,
       userInfo,

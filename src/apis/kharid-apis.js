@@ -666,6 +666,18 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       }
       return finalResult;
     },
+    async shippingPayment(obj){
+        let {cartId,PayDueDate} = obj;
+        if(cartId === 'بلکس'){
+            if(PayDueDate === 16){return await this.pardakhte_belex(obj)}
+            else{return await this.sabte_belex(obj)}
+        }
+        if(cartId === 'فروش ویژه'){
+            if(PayDueDate === 16){return await this.pardakhte_foroosheVije(obj)}
+            else{return await this.sabte_foroosheVije(obj)}
+        }
+        return await this.sendToVisitor(obj)
+    },
     async sendToVisitor({address,SettleType,PaymentTime,DeliveryType,PayDueDate,cartId}) {
       let {userInfo,cart} = getState();
       let cartItems = cart[cartId].getCartItems();
@@ -780,8 +792,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     async sabte_foroosheVije(){
 
     },
-    async pardakhte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate,ghabele_pardakht}){
-      let {userInfo,cart} = getState();
+    async pardakhte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate,amounts}){
+      let {paymentAmount} = amounts;
+        let {userInfo,cart} = getState();
       let cartItems = cart['بلکس'].getCartItems()
       let arr=[];
       for(const cart of cartItems){
@@ -810,7 +823,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       catch { return false }
 
       let resss = await this.pardakhte_kharid({order:{
-        total:ghabele_pardakht,
+        total:paymentAmount,
         mainDocisDraft:registredOrder.isDraft,
         mainDocNum:registredOrder.docNum,
         code:registredOrder.docEntry
@@ -818,7 +831,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       return resss
 
     },
-    async sabte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate}){
+    async sabte_belex({address,SettleType,PaymentTime,DeliveryType,PayDueDate,amounts}){
         let {userInfo,cart} = getState();
         let cartItems = cart['بلکس'].getCartItems()
         let arr=[];
@@ -6722,7 +6735,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
       //   products.push(t);
       // }
-      console.log(products)
       return {
         cartId:'بلکس',
         name:'بلکس',

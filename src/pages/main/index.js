@@ -53,7 +53,6 @@ import PayameSabteGaranti from "../../components/garanti/payame-sabte-garanti/pa
 import SignalR from '../../singalR/signalR';
 import Splash from "../../components/spalsh/splash";
 import "./index.css";
-import axios from "axios";
 export default class Main extends Component {
   constructor(props) {
     super(props);
@@ -148,6 +147,16 @@ export default class Main extends Component {
     let cartTab = cart[cartId];
     if (!cartTab){return false}
     return cartTab.items[variantId] || false
+  }
+  getCartItemsByProduct(product){
+    let {cartId} = product;
+    let res = [];
+    for(let i = 0; i < product.variants.length; i++){
+      let variant = product.variants[i];
+      let cartItem = this.getCartItem(cartId,variant.id);
+      if(cartItem !== false){res.push(cartItem)}
+    }
+    return res
   }
   getCartLength(){
     let {cart} = this.state;
@@ -261,7 +270,7 @@ export default class Main extends Component {
             details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
           }
           let props = {
-            product,details,count,type:'horizontal',renderIn,cartId,
+            product,details,type:'horizontal',renderIn,cartId,
             isFirst:i === 0,isLast: i === cartItems.length - 1,
           }
           return <ProductCard key={variantId} variantId={variantId} {...props} index={i}/>
@@ -474,7 +483,7 @@ export default class Main extends Component {
       addPopup({body:()=><TanzimateKifePool cards={parameter.cards} onChange={parameter.onChange}/>,title:'تنظیمات کیف پول'})
     }
     else if(type === 'cart'){
-      addPopup({body:()=><Cart/>,title:'سبد خرید',id:'cart'})
+      addPopup({body:()=><Cart cartId={parameter}/>,title:'سبد خرید',id:'cart'})
     }
     else if(type === 'shipping'){
       if(parameter === 'بلکس'){
@@ -534,6 +543,7 @@ export default class Main extends Component {
       changeCart:this.changeCart.bind(this),
       removeCart:this.removeCart.bind(this),
       getCartItem:this.getCartItem.bind(this),
+      getCartItemsByProduct:this.getCartItemsByProduct.bind(this),
       getCartLength:this.getCartLength.bind(this),
       logout: this.props.logout,
       baseUrl:this.props.baseUrl

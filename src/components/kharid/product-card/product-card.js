@@ -3,6 +3,7 @@ import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import ProductCount from './../product-count/product-count';
 import NoSrc from './../../../images/no-src.png';
 import appContext from './../../../app-context';
+import CartButton from '../cart-button';
 import AIOButton from './../../../interfaces/aio-button/aio-button';
 //props
 //1 - product {name = '',variants = [{id}],price = 0,discountPrice = 0,discountPercent = 0,inStock = false,srcs = ['...']}
@@ -16,21 +17,6 @@ export default class ProductCard extends Component{
     static contextType = appContext;
     debuggerMode = false;
     state = {mounted:false}
-    isInCart(){
-        let {getCartItem} = this.context;
-        let {product} = this.props;
-        try{
-            for(let i = 0; i < product.variants.length; i++){
-                if(getCartItem(product.cartId,product.variants[i].id)){return true}
-            }
-            return false
-        }
-        catch{
-            return false
-        }
-    
-        
-    }
     splitPrice(price){
         if(!price){return price}
         let str = price.toString(),dotIndex = str.indexOf('.');
@@ -54,11 +40,8 @@ export default class ProductCard extends Component{
         changeCart({variantId,product,count})
     }
     count_layout(){
-        let {count,max,renderIn} = this.props;
-        if(!count){return false}
-        if(renderIn !== 'cart'){return {html:count + ' عدد',align:'vh'}}
-        if(count === undefined){return false}
-        return {size:30,html:()=><ProductCount value={count} onChange={(count)=>this.changeCount(count)} max={max}/>}
+        let {product,renderIn,variantId} = this.props;
+        return {size:30,html:()=><CartButton renderIn={renderIn} product={product} variantId={variantId}/>}
     }
     title_layout(){
         let {product} = this.props;
@@ -117,11 +100,6 @@ export default class ProductCard extends Component{
         if(inStock){return false}
         return {row:[{flex:1},{html:'نا موجود',className:'colorD83B01 bold fs-12'},{size:12}]}
     }
-    isInCart_layout(){
-        let {renderIn} = this.props;
-        if(!this.isInCart() || renderIn === 'cart'){return {flex:1}}
-        return {flex:1,align:'v',html:'موجود در سبد خرید شما',className:'colorD83B01 bold fs-10 p-h-12'}
-    }
     price_layout(){
         let {product} = this.props;
         let {FinalPrice,inStock} = product;
@@ -169,7 +147,10 @@ export default class ProductCard extends Component{
                     row:[
                         {
                             size:96,
-                            column:[this.image_layout(),this.count_layout()]
+                            column:[
+                                this.image_layout(),
+                                this.count_layout()
+                            ]
                         },
                         {
                             flex:1,
@@ -181,7 +162,7 @@ export default class ProductCard extends Component{
                                 this.details_layout(),
                                 this.discount_layout(),
                                 this.notExist_layout(),
-                                {row:[this.isInCart_layout(),this.price_layout()]},
+                                {row:[{flex:1},this.price_layout()]},
                                 {flex:1}
                             ]
                         }
@@ -204,7 +185,6 @@ export default class ProductCard extends Component{
                         {html:name,className:'fs-12 p-v-6 p-h-12 theme-medium-font-color bold',style:{whiteSpace:'normal'}},
                         //this.name_layout(),
                         {flex:1},
-                        this.isInCart_layout(),
                         this.discount_layout(),
                         this.price_layout(),
                         this.notExist_layout(),

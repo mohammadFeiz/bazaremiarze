@@ -1,8 +1,8 @@
 use CartButton component
-productCard not receive changeCount props
 dar kharide addi check kon id ye variant chie aya hamon codesh hast?
 tarkibe shiping ha
-
+egg rooye productCard 
+belex cart item will set variantId
 
 mahsool dar gategory va search =>mojood dar sabade kharid ke ba click rooye oon sabade kharid baz beshe 
 mahsool dar sabade kharid => taghire tedad

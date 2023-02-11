@@ -51,7 +51,7 @@ export default class Shipping extends Component{
           {value:11,text:'ماشین توزیع بروکس'},//BRXDistribution
           {value:12,text:'ماشین اجاره ای'},//RentalCar
           {value:13,text:'باربری'},//Cargo
-          {value:14,text:'پخش گرم'},//HotDelivery
+          //{value:14,text:'پخش گرم'},//HotDelivery
           {value:15,text:'ارسال توسط ویزیتور'}//BySalesMan
         ]
       }
@@ -210,7 +210,7 @@ export default class Shipping extends Component{
                 flex:1,className:'ofy-auto',
                 column:[
                   {size:12},
-                  this.details_layout([['نام مشتری',name],['نام کمپین',campaign],['کد مشتری',code],['گروه مشتری',customerGroup]]),
+                  this.details_layout([{key:'نام مشتری',value:name},{key:'نام کمپین',value:campaign},{key:'کد مشتری',value:code},{key:'گروه مشتری',value:customerGroup}]),
                   {size:12},
                   this.address_layout(),
                   {size:12},

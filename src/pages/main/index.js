@@ -177,6 +177,11 @@ export default class Main extends Component {
     }
     this.setState({cart:newCart})
   }
+  fix(value){
+    try{return +value.toFixed(0)}
+    catch{return 0}
+  }
+  
   getCartTab(cartId){
     let cartTab = {
       items:{},

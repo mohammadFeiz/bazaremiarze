@@ -1,10 +1,7 @@
 import React,{Component} from 'react';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
-import functions from './../../../functions';
 import AIOButton from './../../../interfaces/aio-button/aio-button';
 import appContext from './../../../app-context';
-import { mdiCash, mdiLamp, mdiLightbulbOutline } from "@mdi/js";
-import Icon from "@mdi/react";
 import NV3Report from '../nv3-report';
 
 export default class Shipping extends Component{
@@ -19,82 +16,52 @@ export default class Shipping extends Component{
         customerGroup:'الکتریکی',
         address:'',
         phone:'09123534314',
-        PayDueDate:'ByDelivery',
+        PayDueDate:1,
         PayDueDate_options:[
-          {value:'ByDelivery',text:'نقد'},
-          // {value:'By15Days',text:'چک 15 روزه'},
-          // {value:'ByMonth',text:'چک 30 روزه'},
-          // {value:'By45Days',text:'چک 45 روزه'},
-          // {value:'By60Days',text:'چک 60 روزه'},
-          {value:'Cash25_TowMonth75',text:'25% نقد و 75% چک دو ماهه'},
-          {value:'Cach50_ThreeMonth50',text:'50% نقد و چک سه ماهه'},
+          {value:1,text:'نقد'},//ByDelivery
+          // {value:2,text:'چک 15 روزه'},//By15Days
+          // {value:3,text:'چک 30 روزه'},//ByMonth
+          // {value:4,text:'چک 45 روزه'},//By45Days
+          // {value:6,text:'چک 60 روزه'},//By60Days
+          // {value:7,text:'چک 70 روزه'},//By75Days
+          // {value:8,text:'چک 3 ماهه'},//By3Months
+          // {value:9,text:'چک 3 و نیم ماهه'},//By3_5Months
+          // {value:10,text:'چک 4 ماهه'},//By4Months
+          // {value:11,text:'چک 4 و نیم ماهه'},//By4_5Months
+          // {value:12,text:'چک 5 ماهه'},//By5Months
+          // {value:13,text:'چک 5 و نیم ماهه'},//By5_5Months
+          // {value:14,text:'چک 6 ماهه'},//By6Months 
+          {value:15,text:'25% نقد و 75% چک دو ماهه'},//Cash25_TowMonth75
+          {value:16,text:'50% نقد و چک سه ماهه'},//Cach50_ThreeMonth50
           
         ],
-        PayDueDate_map:{
-          ByDelivery:1, // نقد --->*
-          // By15Days:2, // *
-          // ByMonth:3,// *
-          // By45Days:4, // *
-          // NotSet:5,
-          // By60Days:6,//*
-          // By75Days:7,
-          // By3Months:8,
-          // By3_5Months:9,
-          // By4Months:10,
-          // By4_5Months:11,
-          // By5Months:12,
-          // By5_5Months:13,
-          // By6Months:14,
-          Cash25_TowMonth75:15,
-          Cach50_ThreeMonth50:16
-        },
-        PaymentTime:'ByOnlineOrder',
+        PaymentTime:5,
         PaymentTime_options:[
-          {value:'ByOnlineOrder',text:'اینترنتی'},
-          {value:'ByOrder',text:'واریز قبل ارسال'},
-          {value:'ByDelivery',text:'واریز پای بار'},
+          {value:5,text:'اینترنتی'},//ByOnlineOrder
+          {value:1,text:'واریز قبل ارسال'},//ByOrder
+          {value:2,text:'واریز پای بار'},//ByDelivery
         ],
-        PaymentTime_map:{
-            ByOrder:1,
-            ByDelivery:2,
-            ByGuarantee:3,
-            ByCredit:4,
-            ByOnlineOrder:5,
-            NotSet:6
-        },
-        SettleType:'ByDelivery',
+        SettleType:1,
         SettleType_options:[
-          {value:'ByDelivery',text:'نقد'},
-          {value:'Cheque',text:'چک'}
+          {value:1,text:'نقد'},//ByDelivery
+          {value:2,text:'چک'}//Cheque
         ],
-        SettleType_map:{
-          ByDelivery:1,
-          Cheque:2,
-        },
-        DeliveryType:'BRXDistribution',
+        DeliveryType:11,
         DeliveryType_options:[
-          {value:'BRXDistribution',text:'ماشین توزیع بروکس'},
-          {value:'RentalCar',text:'ماشین اجاره ای'},
-          {value:'Cargo',text:'باربری'},
-          {value:'BySalesMan',text:'ارسال توسط ویزیتور'}
-        ],
-        DeliveryType_map: {
-          BRXDistribution:11,//پخش بروکس--->*
-          RentalCar:12,//ماشین اجازه‌ای
-          Cargo:13,//باربری --->*
-          HotDelivery:14,//پخش گرم
-          BySalesMan:15,//پخش توسط ویزیتور
-          NotSet:16,
-        }
+          {value:11,text:'ماشین توزیع بروکس'},//BRXDistribution
+          {value:12,text:'ماشین اجاره ای'},//RentalCar
+          {value:13,text:'باربری'},//Cargo
+          {value:14,text:'پخش گرم'},//HotDelivery
+          {value:15,text:'ارسال توسط ویزیتور'}//BySalesMan
+        ]
       }
     }
     details_layout(list){
       return {
         className:'box p-12 m-h-12',
-        column:list.map(([key,value,attrs = {}])=>{
-          let {className = 'theme-medium-font-color fs-14',style} = attrs;
+        column:list.map(({key,value,className = 'theme-medium-font-color fs-14'})=>{
           return {
-            size:36,childsProps:{align:'v'},style,
+            size:36,childsProps:{align:'v'},
             row:[
               {html:key + ':',className},
               {flex:1},
@@ -193,44 +160,16 @@ export default class Shipping extends Component{
     amount_layout(){
       let {cart} = this.context;
       let {address} = this.state;
-      let {onSend,cartId} = this.props;
-      let {
-        PayDueDate_map,PayDueDate,
-        SettleType_map,SettleType,
-        DeliveryType_map,DeliveryType,
-        PaymentTime_map,PaymentTime,
-      } = this.state;
-      PayDueDate = PayDueDate_map[PayDueDate];
-      SettleType = SettleType_map[SettleType];
-      DeliveryType = DeliveryType_map[DeliveryType];
-      PaymentTime = PaymentTime_map[PaymentTime];
-      let {discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount} = cart[cartId].getAmounts({PayDueDate,SettleType,DeliveryType,PaymentTime,address})
+      let {cartId} = this.props;
+      let {PayDueDate,SettleType,DeliveryType,PaymentTime} = this.state;
+      let cartTab = cart[cartId]
+      let {getFactorItems} = cartTab;
+      let factorItems = getFactorItems({PayDueDate,SettleType,DeliveryType,PaymentTime,address})
       return {
         className:'p-h-12 bg-fff theme-box-shadow',
         style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
         column:[
-          this.details_layout([
-            [
-              'تخفیف',
-              functions.splitPrice(discount) + ' ریال',
-              {className:'colorFDB913 fs-14'}
-            ],
-            [
-              'تخفیف نحوه پرداخت',
-              `${functions.splitPrice(this.fix(paymentMethodDiscount)) + ' ریال'} (${paymentMethodDiscountPercent} %)`,
-              {className:'color00B5A5 fs-14'}
-            ],
-            [
-              'قیمت کالاها',
-              functions.splitPrice(this.fix(paymentAmount + discount + paymentMethodDiscount)) + ' ریال',
-              {className:'theme-medium-font-color fs-14'}
-            ],
-            [
-              'مبلغ قابل پرداخت',
-              functions.splitPrice(this.fix(paymentAmount)) + ' ریال',
-              {className:'theme-dark-font-color bold fs-16'}
-            ]
-          ]),
+          this.details_layout(factorItems),
           {size:6},
           {
             size:36,align:'vh',className:'theme-medium-font-color fs-14 bold',
@@ -281,7 +220,7 @@ export default class Shipping extends Component{
                   {size:12},
                   this.options_layout('PaymentTime','زمان پرداخت',),
                   {size:12},
-                  this.options_layout('PayDueDate','مهلت تسویه',PaymentTime !== 'ByOnlineOrder'),
+                  this.options_layout('PayDueDate','مهلت تسویه',PaymentTime !== 5),
                   {size:12},
                   this.products_layout(),
                   {size:12},

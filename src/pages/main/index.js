@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 
 import backOffice from './../../back-office';
+import functions from "../../functions";
 //pages//////////////////////////////////
 import Home from "./../home/index";
 import Buy from "./../buy/index";
@@ -275,6 +276,34 @@ export default class Main extends Component {
           }
           return <ProductCard key={variantId} variantId={variantId} {...props} index={i}/>
         })
+      }
+      cartTab.getFactorItems = (shippingOptions)=>{
+        let {cart} = this.state;
+        let cartTab = cart[cartId];
+        let {getAmounts} = cartTab;
+        let {discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount} = getAmounts(shippingOptions);
+        return [
+          {
+            key:'تخفیف',
+            value:functions.splitPrice(discount) + ' ریال',
+            className:'colorFDB913 fs-14'
+          },
+          {
+            key:'تخفیف نحوه پرداخت',
+            value:`${functions.splitPrice(this.fix(paymentMethodDiscount)) + ' ریال'} (${paymentMethodDiscountPercent} %)`,
+            className:'color00B5A5 fs-14'
+          },
+          {
+            key:'قیمت کالاها',
+            value:functions.splitPrice(this.fix(paymentAmount + discount + paymentMethodDiscount)) + ' ریال',
+            className:'theme-medium-font-color fs-14'
+          },
+          {
+            key:'مبلغ قابل پرداخت',
+            value:functions.splitPrice(this.fix(paymentAmount)) + ' ریال',
+            className:'theme-dark-font-color bold fs-16'
+          }
+        ]
       }
     }
     return cartTab

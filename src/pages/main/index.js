@@ -382,7 +382,8 @@ export default class Main extends Component {
       addPopup({
         body:()=>(
           <Sefareshe_Ersal_Shode_Baraye_Vizitor
-            orderNumber={parameter}
+            orderNumber={parameter.orderNumber}
+            qr={parameter.qr}
             onShowInHistory={()=>{
               removePopup('all');
               this.openPopup('peygiriye-sefareshe-kharid','در حال بررسی');
@@ -400,6 +401,7 @@ export default class Main extends Component {
   async ersal_baraye_vizitor({address,SettleType,PaymentTime,DeliveryType,PayDueDate},id,factorDetails){
     let {shipping,kharidApis,cart,rsa_actions} = this.state;
     let {cartItems} = shipping;
+    let {userInfo} = this.props;
     let orderNumber;
     if(id === 'نورواره 3'){
       orderNumber = await kharidApis({
@@ -424,7 +426,7 @@ export default class Main extends Component {
       }
       rsa_actions.removePopup('all');
       this.changeCart(newCart)
-      this.openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
+      this.openPopup('sefareshe-ersal-shode-baraye-vizitor',{orderNumber,qr:userInfo.norvareh3QR})
     }
   }
   getProfileName(userInfo){

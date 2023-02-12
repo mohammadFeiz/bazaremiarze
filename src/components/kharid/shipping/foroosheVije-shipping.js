@@ -338,7 +338,7 @@ import React,{Component} from 'react';
         }
         rsa_actions.removePopup('all');
         changeCart(newCart)
-        openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
+        openPopup('sefareshe-ersal-shode-baraye-vizitor',{orderNumber})
       }
     }
     render(){

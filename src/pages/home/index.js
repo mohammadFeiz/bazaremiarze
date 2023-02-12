@@ -196,7 +196,7 @@ export default class Home extends Component {
                 {
                     flex: 1,
                     column: [
-                        {size:12},
+                        {className:'theme-vertical-gap'},
                         { align:'v',row: [{ html: '5',className: 'color3B55A5 fs-28 bold', align: 'v' }, { size: 6 }, { html: 'الماس', align: 'v',className: 'theme-dark-font-color fs-18 bold'}]},
                         { html: 'به ازای اخذ هر سفارش از بازارگاه',className: 'theme-medium-font-color bold fs-14',align:'v' },
                         {size:12},
@@ -231,6 +231,34 @@ export default class Home extends Component {
             }
         }
     }
+    noorvare3Qr_layout(){
+        let {userInfo} = this.context;
+        let qr = userInfo.norvareh3QR
+        if(!qr){return false}
+        try{
+            qr= JSON.parse(qr).imageUrl
+        }
+        catch{
+            qr = '';
+        }
+        return {
+            className:'theme-gap-h',
+            column:[
+                {className:'theme-vertical-gap'},
+                {
+                    className:'theme-card-bg theme-border-radius theme-box-shadow',
+                    column:[
+                        {html:'بارکد نورواره شما',className:'fs-14 theme-dark-font-color bold p-h-24',align:'v',size:36},
+                        {
+                            html:<img src={qr} alt='' width='180'/>,align:'vh'
+                        }
+                    ]
+                },
+                {className:'theme-vertical-gap'},
+                
+            ]
+        }
+    }
     getContent() {
         let {testedChance} = this.state;
         return {
@@ -242,6 +270,7 @@ export default class Home extends Component {
                     column: [
                         this.billboard_layout(),
                         this.noorvare3_layout(),
+                        this.noorvare3Qr_layout(),
                         { className: 'theme-vertical-gap'},
                         this.cartAndWallet_layout(),
                         { className: 'theme-vertical-gap'},

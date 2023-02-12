@@ -127,7 +127,7 @@ export default class Shipping extends Component{
       }
     }
     amount_layout(){
-      let {cart,userInfo} = this.context;
+      let {cart,userInfo,openPopup,removeCart} = this.context;
       let {address} = this.state;
       let {cartId} = this.props;
       let {PayDueDate,SettleType,DeliveryType,PaymentTime} = this.state;
@@ -166,8 +166,8 @@ export default class Shipping extends Component{
                   })
                   if(orderNumber){
                     rsa_actions.removePopup('all');
-                    this.removeCart(cartId)
-                    this.openPopup('sefareshe-ersal-shode-baraye-vizitor',{orderNumber,qr})
+                    removeCart(cartId)
+                    openPopup('sefareshe-ersal-shode-baraye-vizitor',{orderNumber,qr})
                   }
                 }}
               >{paymentButtonText({PayDueDate,SettleType,DeliveryType,PaymentTime,address})}</button>

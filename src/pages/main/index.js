@@ -439,7 +439,6 @@ export default class Main extends Component {
   render() {
     let {userInfo,logout} = this.props;
     let {opacity,theme,noorvare3,backOffice} = this.state;
-    console.log('opacity',opacity);
     let context = {
       ...this.state,
       userInfo,

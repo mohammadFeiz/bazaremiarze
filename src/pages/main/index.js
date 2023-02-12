@@ -625,7 +625,8 @@ export default class Main extends Component {
       addPopup({
         body:()=>(
           <Sefareshe_Ersal_Shode_Baraye_Vizitor
-            orderNumber={parameter}
+            orderNumber={parameter.orderNumber}
+            qr={parameter.qr}
             onShowInHistory={()=>{
               removePopup('all');
               this.openPopup('peygiriye-sefareshe-kharid','در حال بررسی');

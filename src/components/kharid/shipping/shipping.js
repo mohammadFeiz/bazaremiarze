@@ -124,13 +124,14 @@ export default class Shipping extends Component{
       }
     }
     amount_layout(){
-      let {cart} = this.context;
+      let {cart,userInfo} = this.context;
       let {address} = this.state;
       let {cartId} = this.props;
       let {PayDueDate,SettleType,DeliveryType,PaymentTime} = this.state;
       let cartTab = cart[cartId]
       let {getFactorItems,paymentButtonText} = cartTab;
       let factorItems = getFactorItems({PayDueDate,SettleType,DeliveryType,PaymentTime,address})
+      let qr = cartId === 'نورواره 3'?userInfo.norvareh3QR:undefined
       return {
         className:'p-h-12 bg-fff theme-box-shadow',
         style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
@@ -163,7 +164,7 @@ export default class Shipping extends Component{
                   if(orderNumber){
                     rsa_actions.removePopup('all');
                     this.removeCart(cartId)
-                    this.openPopup('sefareshe-ersal-shode-baraye-vizitor',orderNumber)
+                    this.openPopup('sefareshe-ersal-shode-baraye-vizitor',{orderNumber,qr})
                   }
                 }}
               >{paymentButtonText({PayDueDate,SettleType,DeliveryType,PaymentTime,address})}</button>

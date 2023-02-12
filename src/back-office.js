@@ -36,7 +36,7 @@ export default {
         {value:13,text:'چک 5 و نیم ماهه'},//By5_5Months
         {value:14,text:'چک 6 ماهه'},//By6Months 
         {value:15,text:'25% نقد و 75% چک دو ماهه',after:'4/5% تخفیف'},//Cash25_TowMonth75
-        {value:16,text:'50% نقد و 50% چک سه ماهه',after:'4/5% تخفیف'},//Cach50_ThreeMonth50
+        {value:16,text:'50% نقد و 50% چک سه ماهه',after:'7/5% تخفیف'},//Cach50_ThreeMonth50
         {value:17,text:'20% نقد و 80% چک سه ماهه',after:'4/8% تخفیف'},//Cash20_ThreeMonth80
         {value:18,text:'30% نقد و 70% چک چهار ماهه',after:'3/6% تخفیف'},//Cash30_FourMonth70
         {value:19,text:'50% نقد و 50% چک پنج ماهه',after:'4/5% تخفیف'},//Cash50_FiveMonth50

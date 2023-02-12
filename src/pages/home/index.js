@@ -24,6 +24,7 @@ export default class Home extends Component {
         this.state = {
             gems: 500,
             showAwards:false,
+            showQr:false,
             testedChance:false,
             searchValue: '',
             showCallPopup:false,
@@ -233,6 +234,7 @@ export default class Home extends Component {
     }
     noorvare3Qr_layout(){
         let {userInfo} = this.context;
+        let {showQr} = this.state;
         let qr = userInfo.norvareh3QR
         if(!qr){return false}
         try{
@@ -248,9 +250,15 @@ export default class Home extends Component {
                 {
                     className:'theme-card-bg theme-border-radius theme-box-shadow',
                     column:[
-                        {html:'بارکد نورواره شما',className:'fs-14 theme-dark-font-color bold p-h-24',align:'v',size:36},
                         {
-                            html:<img src={qr} alt='' width='180'/>,align:'vh'
+                            html:showQr?'بارکد نورواره شما':'نمایش بارکد نورواره',
+                            className:'fs-14 theme-dark-font-color bold p-h-24',align:'v',size:36,
+                            onClick:()=>{
+                                this.setState({showQr:!showQr})
+                            }
+                        },
+                        {
+                            show:!!showQr,html:<img src={qr} alt='' width='180'/>,align:'vh'
                         }
                     ]
                 },

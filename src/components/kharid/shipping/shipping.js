@@ -21,18 +21,18 @@ export default class Shipping extends Component{
         phone:'09123534314',
         PayDueDate:1,
         PayDueDate_options:[
-          {value:1,text:'نقد'},//ByDelivery
+          {value:1,text:'نقد',after:'12% تخفیف'},//ByDelivery
           {value:15,text:'25% نقد و 75% چک دو ماهه',after:'4/5% تخفیف'},//Cash25_TowMonth75
-          {value:16,text:'50% نقد و 50% چک سه ماهه',after:'4/5% تخفیف'},//Cach50_ThreeMonth50
+          {value:16,text:'50% نقد و 50% چک سه ماهه',after:'7/5% تخفیف'},//Cach50_ThreeMonth50
           {value:17,text:'20% نقد و 80% چک سه ماهه',after:'4/8% تخفیف'},//Cash20_ThreeMonth80
           {value:18,text:'30% نقد و 70% چک چهار ماهه',after:'3/6% تخفیف'},//Cash30_FourMonth70
           {value:19,text:'50% نقد و 50% چک پنج ماهه',after:'4/5% تخفیف'},//Cash50_FiveMonth50
         
           
         ],
-        PaymentTime:5,
+        PaymentTime:1,
         PaymentTime_options:[
-          {value:5,text:'اینترنتی'},//ByOnlineOrder
+          //{value:5,text:'اینترنتی'},//ByOnlineOrder
           {value:1,text:'واریز قبل ارسال'},//ByOrder
           {value:2,text:'واریز پای بار'},//ByDelivery
         ],

@@ -19,73 +19,35 @@ export default class Shipping extends Component{
         customerGroup:'الکتریکی',
         address:'',
         phone:'09123534314',
-        PayDueDate:'ByDelivery',
+        PayDueDate:1,
         PayDueDate_options:[
-          {value:'ByDelivery',text:'نقد'},
-          // {value:'By15Days',text:'چک 15 روزه'},
-          // {value:'ByMonth',text:'چک 30 روزه'},
-          // {value:'By45Days',text:'چک 45 روزه'},
-          // {value:'By60Days',text:'چک 60 روزه'},
-          {value:'Cash25_TowMonth75',text:'25% نقد و 75% چک دو ماهه'},
-          {value:'Cach50_ThreeMonth50',text:'50% نقد و چک سه ماهه'},
+          {value:1,text:'نقد'},//ByDelivery
+          {value:15,text:'25% نقد و 75% چک دو ماهه',after:'4/5% تخفیف'},//Cash25_TowMonth75
+          {value:16,text:'50% نقد و 50% چک سه ماهه',after:'4/5% تخفیف'},//Cach50_ThreeMonth50
+          {value:17,text:'20% نقد و 80% چک سه ماهه',after:'4/8% تخفیف'},//Cash20_ThreeMonth80
+          {value:18,text:'30% نقد و 70% چک چهار ماهه',after:'3/6% تخفیف'},//Cash30_FourMonth70
+          {value:19,text:'50% نقد و 50% چک پنج ماهه',after:'4/5% تخفیف'},//Cash50_FiveMonth50
+        
           
         ],
-        PayDueDate_map:{
-          ByDelivery:1, // نقد --->*
-          // By15Days:2, // *
-          // ByMonth:3,// *
-          // By45Days:4, // *
-          // NotSet:5,
-          // By60Days:6,//*
-          // By75Days:7,
-          // By3Months:8,
-          // By3_5Months:9,
-          // By4Months:10,
-          // By4_5Months:11,
-          // By5Months:12,
-          // By5_5Months:13,
-          // By6Months:14,
-          Cash25_TowMonth75:15,
-          Cach50_ThreeMonth50:16
-        },
-        PaymentTime:'ByOnlineOrder',
+        PaymentTime:5,
         PaymentTime_options:[
-          {value:'ByOnlineOrder',text:'اینترنتی'},
-          {value:'ByOrder',text:'واریز قبل ارسال'},
-          {value:'ByDelivery',text:'واریز پای بار'},
+          {value:5,text:'اینترنتی'},//ByOnlineOrder
+          {value:1,text:'واریز قبل ارسال'},//ByOrder
+          {value:2,text:'واریز پای بار'},//ByDelivery
         ],
-        PaymentTime_map:{
-            ByOrder:1,
-            ByDelivery:2,
-            ByGuarantee:3,
-            ByCredit:4,
-            ByOnlineOrder:5,
-            NotSet:6
-        },
         SettleType:'ByDelivery',
         SettleType_options:[
-          {value:'ByDelivery',text:'نقد'},
-          {value:'Cheque',text:'چک'}
+          {value:1,text:'نقد'},//ByDelivery
+          {value:2,text:'چک'}//Cheque
         ],
-        SettleType_map:{
-          ByDelivery:1,
-          Cheque:2,
-        },
-        DeliveryType:'BRXDistribution',
+        DeliveryType:11,
         DeliveryType_options:[
-          {value:'BRXDistribution',text:'ماشین توزیع بروکس'},
-          {value:'RentalCar',text:'ماشین اجاره ای'},
-          {value:'Cargo',text:'باربری'},
-          {value:'BySalesMan',text:'ارسال توسط ویزیتور'}
-        ],
-        DeliveryType_map: {
-          BRXDistribution:11,//پخش بروکس--->*
-          RentalCar:12,//ماشین اجازه‌ای
-          Cargo:13,//باربری --->*
-          HotDelivery:14,//پخش گرم
-          BySalesMan:15,//پخش توسط ویزیتور
-          NotSet:16,
-        }
+          {value:11,text:'ماشین توزیع بروکس'},//BRXDistribution
+          {value:12,text:'ماشین اجاره ای'},//RentalCar
+          {value:13,text:'باربری'},//Cargo
+          {value:15,text:'ارسال توسط ویزیتور'}//BySalesMan
+        ]
       }
     }
     details_layout(list){
@@ -193,15 +155,11 @@ export default class Shipping extends Component{
       let {onSend} = this.props;
       
       let {
-        PayDueDate_map,PayDueDate,
-        SettleType_map,SettleType,
-        DeliveryType_map,DeliveryType,
-        PaymentTime_map,PaymentTime,
+        PayDueDate,
+        SettleType,
+        DeliveryType,
+        PaymentTime,
       } = this.state;
-      PayDueDate = PayDueDate_map[PayDueDate];
-      SettleType = SettleType_map[SettleType];
-      DeliveryType = DeliveryType_map[DeliveryType];
-      PaymentTime = PaymentTime_map[PaymentTime];
       let factorDetails = getFactorDetails(shipping.items,{PayDueDate,PaymentTime,SettleType,DeliveryType})
       let discount = factorDetails.marketingdetails.DocumentDiscount;
       let darsade_takhfife_pardakhte_online = factorDetails.marketingdetails.DocumentDiscountPercent
@@ -272,7 +230,7 @@ export default class Shipping extends Component{
                   {size:12},
                   this.options_layout('PaymentTime','زمان پرداخت',),
                   {size:12},
-                  this.options_layout('PayDueDate','مهلت تسویه',PaymentTime !== 'ByOnlineOrder'),
+                  this.options_layout('PayDueDate','مهلت تسویه',PaymentTime !== 5),
                   {size:12},
                   this.products_layout(),
                   {size:12},

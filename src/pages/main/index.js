@@ -222,12 +222,6 @@ export default class Main extends Component {
           return <ForoosheVijeCard key={variant.id} product={product} variant={variant} count={count} renderIn={renderIn}/>
         })
       }
-      cartTab.defaultShipping = {
-        PayDueDate:1,SettleType:16,DeliveryType:11,
-        PayDueDateOptions:[1,17,18,19,20],
-        SettleTypeOptions:[8,16],
-        DeliveryTypeOptions:[11,12,13,15]
-      }
       cartTab.getFactorItems = (shippingOptions)=>{
         let {cart} = this.state;
         let cartTab = cart[cartId];
@@ -290,12 +284,6 @@ export default class Main extends Component {
         return cartItems.map(({product,count,variantId})=>{
           return <BelexCard key={variantId} variantId={variantId} product={product} count={count} renderIn={renderIn}/>
         })
-      }
-      cartTab.defaultShipping = {
-        PayDueDate:1,SettleType:16,DeliveryType:11,
-        PayDueDateOptions:[1,17,18,19,20],
-        SettleTypeOptions:[8,16],
-        DeliveryTypeOptions:[11,12,13,15]
       }
       cartTab.getFactorItems = (shippingOptions)=>{
         let {cart} = this.state;
@@ -398,12 +386,6 @@ export default class Main extends Component {
             className:'theme-dark-font-color bold fs-16'
           }
         ]
-      }
-      cartTab.defaultShipping = {
-        PayDueDate:1,PaymentTime:5,DeliveryType:11,
-        PayDueDateOptions:[1,15,16],
-        PaymentTimeOptions:[5,1,2],
-        DeliveryTypeOptions:[11,12,13,15]
       }
       cartTab.paymentButtonText = (shippingOptions)=>'ارسال برای ویزیتور'
     }
@@ -604,7 +586,11 @@ export default class Main extends Component {
       })
     }
     else if (type === 'category'){
-      addPopup({body:()=><CategoryView category={parameter.category}/>,title:parameter.category.name})
+      addPopup({
+        body:()=><CategoryView category={parameter.category}/>,
+        title:parameter.category.name,
+        header:()=><Header type='popup' popupId='category-view'/>
+      })
     }
     else if(type === 'wallet'){
       addPopup({header:false,body:()=><Wallet onClose={()=>removePopup()}/>})
@@ -772,7 +758,7 @@ class Header extends Component{
       if(['kharid'].indexOf(navId) === -1){return false}
     }
     if(type === 'popup'){
-      if(['product','search'].indexOf(popupId) === -1){return false}
+      if(['product','search','category-view'].indexOf(popupId) === -1){return false}
     }
     let {getCartLength} = this.context; 
     let length = getCartLength();
@@ -792,8 +778,7 @@ class Header extends Component{
   }
   notif_layout(){
     let {navId,type} = this.props;
-    if(type === 'popup'){return false}
-    if(type === 'page' && navId !== 'khane'){return false}
+    if(type === 'popup' || navId !== 'khane'){return false}
     let length = 12;
     return {
       html:(

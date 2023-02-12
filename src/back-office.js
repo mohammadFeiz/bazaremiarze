@@ -3,7 +3,7 @@ export default {
         garanti:false,
         belex:false,
         forooshe_vije:false,
-        campaigns:true,
+        campaigns:false,
         bazargah:true,
         wallet:false,
         noorvare3:true,
@@ -22,7 +22,7 @@ export default {
         'نارنجی':'orange',
     },
     PayDueDate_options:[
-        {value:1,text:'نقد',after:'12% تخفیف'},//ByDelivery
+        {value:1,text:'نقد',percent:12},//ByDelivery
         {value:2,text:'چک 15 روزه'},//By15Days
         {value:3,text:'چک 30 روزه'},//ByMonth
         {value:4,text:'چک 45 روزه'},//By45Days
@@ -35,12 +35,12 @@ export default {
         {value:12,text:'چک 5 ماهه'},//By5Months
         {value:13,text:'چک 5 و نیم ماهه'},//By5_5Months
         {value:14,text:'چک 6 ماهه'},//By6Months 
-        {value:15,text:'25% نقد و 75% چک دو ماهه',after:'4/5% تخفیف'},//Cash25_TowMonth75
-        {value:16,text:'50% نقد و 50% چک سه ماهه',after:'7/5% تخفیف'},//Cach50_ThreeMonth50
-        {value:17,text:'20% نقد و 80% چک سه ماهه',after:'4/8% تخفیف'},//Cash20_ThreeMonth80
-        {value:18,text:'30% نقد و 70% چک چهار ماهه',after:'3/6% تخفیف'},//Cash30_FourMonth70
-        {value:19,text:'50% نقد و 50% چک پنج ماهه',after:'4/5% تخفیف'},//Cash50_FiveMonth50
-        {value:20,text:'50% نقد و 50% چک یک ماهه',after:'10.5% تخفیف'}//Cash50_OneMonth50
+        {value:15,text:'25% نقد و 75% چک دو ماهه',percent:4.5},//Cash25_TowMonth75
+        {value:16,text:'50% نقد و 50% چک سه ماهه',percent:7.5},//Cach50_ThreeMonth50
+        {value:17,text:'20% نقد و 80% چک سه ماهه',percent:4.8},//Cash20_ThreeMonth80
+        {value:18,text:'30% نقد و 70% چک چهار ماهه',percent:3.6},//Cash30_FourMonth70
+        {value:19,text:'50% نقد و 50% چک پنج ماهه',percent:4.5},//Cash50_FiveMonth50
+        {value:20,text:'50% نقد و 50% چک یک ماهه',percent:10.5}//Cash50_OneMonth50
     ],
     PaymentTime_options:[
         {value:5,text:'اینترنتی'},//ByOnlineOrder
@@ -59,5 +59,65 @@ export default {
         {value:13,text:'باربری'},//Cargo
         {value:14,text:'پخش گرم'},//HotDelivery
         {value:15,text:'ارسال توسط ویزیتور'}//BySalesMan
-    ]
+    ],
+    'فروش ویژه':{
+        defaultShipping:{
+            PayDueDate:1,
+            SettleType:16,
+            DeliveryType:11,
+            PayDueDateOptions:[1,17,18,19,20],
+            SettleTypeOptions:[8,16],
+            DeliveryTypeOptions:[11,12,13,15]
+        }
+    },
+    'بلکس':{
+        defaultShipping:{
+            PayDueDate:1,
+            SettleType:16,
+            DeliveryType:11,
+            PayDueDateOptions:[1,17,18,19,20],
+            SettleTypeOptions:[8,16],
+            DeliveryTypeOptions:[11,12,13,15]
+        }
+    },
+    'خرید عادی':{
+        defaultShipping:{
+            PayDueDate:1,
+            PaymentTime:1,
+            DeliveryType:11,
+            PayDueDateOptions:[1,15,16],
+            PaymentTimeOptions:[1,2],
+            DeliveryTypeOptions:[11,12,13,15]
+        }
+    },
+    'نورواره 3':{
+        defaultShipping:{
+            PayDueDate:1,
+            PaymentTime:1,
+            DeliveryType:11,
+            PayDueDateOptions:[1,15,16],
+            PaymentTimeOptions:[1,2],
+            DeliveryTypeOptions:[11,12,13,15]
+        }
+    },
+    'طرح شب یلدای روشنایی':{
+        defaultShipping:{
+            PayDueDate:1,
+            PaymentTime:1,
+            DeliveryType:11,
+            PayDueDateOptions:[1,15,16],
+            PaymentTimeOptions:[1,2],
+            DeliveryTypeOptions:[11,12,13,15]
+        }
+    },
+    'طرح شب یلدای باطری':{
+        defaultShipping:{
+            PayDueDate:1,
+            PaymentTime:1,
+            DeliveryType:11,
+            PayDueDateOptions:[1,15,16],
+            PaymentTimeOptions:[1,2],
+            DeliveryTypeOptions:[11,12,13,15]
+        }
+    }
 }

@@ -27,9 +27,9 @@ export default class Shipping extends Component{
       }
     }
     async componentDidMount(){
-      let {userInfo,cart,backOffice} = this.context;
+      let {userInfo,backOffice} = this.context;
       let {cartId} = this.props;
-      let {defaultShipping} = cart[cartId];
+      let {defaultShipping} = backOffice[cartId];
       let {PayDueDate,PaymentTime,DeliveryType,SettleType,
         PayDueDateOptions = [],PaymentTimeOptions = [],SettleTypeOptions = [],DeliveryTypeOptions = []
       } = defaultShipping;
@@ -75,6 +75,9 @@ export default class Shipping extends Component{
               <AIOButton
                 className='shipping-options'
                 type='radio'
+                optionAfter={(option)=>{
+                  if(option.percent){return `${option.percent}% تخفیف`}
+                }}
                 options={options}
                 optionClassName='"w-100 h-36"'
                 value={value}

@@ -413,7 +413,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             `
         }
     },
-    async nv3_pardakht({address,SettleType,PaymentTime,DeliveryType,PayDueDate,total}){
+    async pardakhte_noorvare3({address,SettleType,PaymentTime,DeliveryType,PayDueDate,total}){
         let freeLamps;
         if(total < 105000000){
             freeLamps = 0;
@@ -713,6 +713,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         if(cartId === 'فروش ویژه'){
             if(PayDueDate === 16){return await this.pardakhte_foroosheVije(obj)}
             else{return await this.sabte_foroosheVije(obj)}
+        }
+        if(cartId === 'نورواره 3'){
+            return await this.pardakhte_noorvare3(obj)
         }
         return await this.sendToVisitor(obj)
     },

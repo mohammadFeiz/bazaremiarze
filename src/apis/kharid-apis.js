@@ -398,7 +398,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       });
     },
     async nv3(){
-        let products=await this.getProductsByTaxonId({Taxons:'10932'});
+        let products=await this.getProductsByTaxonId({Taxons:'10954'});
         products = this.updateProductPrice({products,cartId:'نورواره 3'});
         return {
             cartId:'نورواره 3',
@@ -412,6 +412,44 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
             `
         }
+    },
+    async nv3_pardakht({address,SettleType,PaymentTime,DeliveryType,PayDueDate,total}){
+        let freeLamps;
+        if(total < 105000000){
+            freeLamps = 0;
+        }
+        else if(total < 205000000){
+            freeLamps = 50;
+        }
+        else if(total < 405000000){
+            freeLamps = 100;
+        }
+        else{
+            freeLamps = 200
+        }
+        let {userInfo,shipping} = getState();
+        
+        let marketingLines = shipping.cartItems.map((o) => {
+            return { ItemCode: o.variant.code, ItemQty: o.count };
+        });
+
+        marketingLines.push({ ItemCode: "2372F", ItemQty: freeLamps });
+
+        let body = {
+            "marketdoc":{
+            "CardCode":userInfo.cardCode,
+            "CardGroupCode": userInfo.groupCode,
+            "MarketingLines":marketingLines,
+            "DeliverAddress":address,
+            "marketingdetails":{
+                "Campaign":20 // Noorvareh3 value
+            }
+            },
+            SettleType,PaymentTime,DeliveryType,PayDueDate
+        }
+        let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
+        try { return res.data.data[0].docNum }
+        catch { return false }
     },
     async newOrders() {
       let products=await this.getProductsByTaxonId({Taxons:'10932'});

@@ -24,6 +24,7 @@ export default class Home extends Component {
         this.state = {
             gems: 500,
             showAwards:false,
+            showQr:false,
             testedChance:false,
             searchValue: '',
             showCallPopup:false,
@@ -231,6 +232,41 @@ export default class Home extends Component {
             }
         }
     }
+    noorvare3Qr_layout(){
+        let {userInfo} = this.context;
+        let {showQr} = this.state;
+        let qr = userInfo.norvareh3QR
+        if(!qr){return false}
+        try{
+            qr= JSON.parse(qr).imageUrl
+        }
+        catch{
+            qr = '';
+        }
+        return {
+            className:'theme-gap-h',
+            column:[
+                {className:'theme-vertical-gap'},
+                {
+                    className:'theme-card-bg theme-border-radius theme-box-shadow',
+                    column:[
+                        {
+                            html:showQr?'بارکد نورواره شما':'نمایش بارکد نورواره',
+                            className:'fs-14 theme-dark-font-color bold p-h-24',align:'v',size:36,
+                            onClick:()=>{
+                                this.setState({showQr:!showQr})
+                            }
+                        },
+                        {
+                            show:!!showQr,html:<img src={qr} alt='' width='180'/>,align:'vh'
+                        }
+                    ]
+                },
+                {className:'theme-vertical-gap'},
+                
+            ]
+        }
+    }
     getContent() {
         let {testedChance} = this.state;
         return {
@@ -242,6 +278,7 @@ export default class Home extends Component {
                     column: [
                         this.billboard_layout(),
                         this.noorvare3_layout(),
+                        this.noorvare3Qr_layout(),
                         { className: 'theme-vertical-gap'},
                         this.cartAndWallet_layout(),
                         { className: 'theme-vertical-gap'},

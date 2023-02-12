@@ -12,7 +12,7 @@ export default class Cart extends Component{
     static contextType = appContext;
     constructor(props){
       super(props);
-      this.state = {activeTabId:'regular',continued:false}
+      this.state = {activeTabId:'regular'}
     }
     splitPrice(price){
       if(!price){return price}
@@ -152,7 +152,6 @@ export default class Cart extends Component{
       if(this.tab.id === 'forooshe_vije'){return this.foroosheVije_payment_layout()}
       if(this.tab.id === 'belex'){return this.belex_payment_layout()}
       let total = this.tab.factorDetails.DocumentTotal;
-      let {continued} = this.state;
       return {
         size: 72,className: "bgFFF p-h-12 theme-box-shadow",
         row: [
@@ -172,13 +171,12 @@ export default class Cart extends Component{
               { flex: 1 },
             ],
           },
-          {html: <button disabled={continued} onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
+          {html: <button onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
         ],
       }
     }
     foroosheVije_payment_layout(){
       let total = this.tab.finalPrice;
-      let {continued} = this.state;
       return {
         size: 72,className: "bgFFF p-h-12 theme-box-shadow",
         row: [
@@ -198,13 +196,12 @@ export default class Cart extends Component{
               { flex: 1 },
             ],
           },
-          {html: <button disabled={continued} onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
+          {html: <button onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
         ],
       }
     }
     belex_payment_layout(){
       let total = this.tab.finalPrice;
-      let {continued} = this.state;
       return {
         size: 72,className: "bgFFF p-h-12 theme-box-shadow",
         row: [
@@ -237,7 +234,6 @@ export default class Cart extends Component{
     }
     continue(){
       let {openPopup} = this.context;
-      this.setState({continued:true})
       openPopup('shipping',{...this.tab})
     }
     render(){

@@ -102,7 +102,7 @@ export default class NV3Report extends Component{
                         {
                             gap:3,
                             row:[
-                                {html:'تعداد لامپ رایگان سبد خرید نورواره شما : ',className:'color3B55A5 fs-14'},
+                                {html:'لامپ حبابی 7 وات رایگان سبد خرید شما : ',className:'color3B55A5 fs-14'},
                                 {html:catched,className:'bold color3B55A5 fs-14'},
                                 {html:'عدد',className:'color3B55A5 fs-12'}
                             ]

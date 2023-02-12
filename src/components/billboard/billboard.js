@@ -75,7 +75,7 @@ export default class Billboard extends Component{
             flex:1,align:'h',
             attrs:{onClick:async ()=>this.onClick(campaign)},
             column:[
-                {html:<img src={campaign.icon} width={54} height={54} alt=''/>},
+                {html:<img src={campaign.icon} width={54} height={54} alt='' className='br-16'/>},
                 {size:3},
                 {html:campaign.name,className:'fs-12 bold theme-dark-font-color'}
             ]

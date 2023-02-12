@@ -252,7 +252,7 @@ export default class Home extends Component {
                     column:[
                         {
                             html:showQr?'بارکد نورواره شما':'نمایش بارکد نورواره',
-                            className:'fs-14 theme-dark-font-color bold p-h-24',align:'v',size:36,
+                            className:'fs-14 bold p-h-24 color3B55A5',align:'v',size:36,
                             onClick:()=>{
                                 this.setState({showQr:!showQr})
                             }

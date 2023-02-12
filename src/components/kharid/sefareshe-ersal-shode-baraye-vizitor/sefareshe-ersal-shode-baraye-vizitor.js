@@ -34,6 +34,19 @@ export default class Sefareshe_Ersal_Shode_Baraye_Vizitor extends Component{
         ]
       }
     }
+    qr_layout(){
+      let {qr} = this.props;
+      if(!qr){return false}
+      try{
+        qr= JSON.parse(qr).imageUrl
+      }
+      catch{
+          qr = '';
+      }
+      return {
+        html:<img src={qr} alt='' width='180'/>,align:'vh'
+      }
+    }
     render(){
         let {onClose} = this.props;
         return (
@@ -48,6 +61,8 @@ export default class Sefareshe_Ersal_Shode_Baraye_Vizitor extends Component{
                     {size:16},
                     this.subtext_layout('بزودی ویزیتور کالاهای شما را فاکتور میکند'),
                     this.subtext_layout('ویزیتور در تمامی مسیر با شما در ارتباط خواهد بود'),
+                    {size:12},
+                    this.qr_layout(),
                     {flex:1},
                     this.footer_layout(),
                     {html:<button className='button-2' onClick={()=>onClose()}>بازگشت به خانه</button>,className:'p-12'}

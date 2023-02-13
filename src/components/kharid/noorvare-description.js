@@ -23,7 +23,7 @@ export default class NoorvareDescription extends Component{
                         },
                         {size:12},
                         {
-                            show:!!more,
+                            show:!!more,gap:12,
                             column:[
                                 {
                                     row:[

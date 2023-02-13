@@ -391,7 +391,7 @@ export default class Main extends Component {
     }
     return cartTab
   }
-  changeCart({count,variantId,product}){
+  async changeCart({count,variantId,product}){
     let {cart,kharidApis} = this.state;
     let newCartTabItems = {};
     let {cartId} = product;
@@ -415,9 +415,10 @@ export default class Main extends Component {
       //ویرایش سبد خرید
       else{newCartTabItems[variantId].count = count;}
     }
-    //clearTimeout(this.cartTimeout);
-    //this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
-    this.setState({cart:{...cart,[cartId]:{...cartTab,items:newCartTabItems}}});
+    clearTimeout(this.cartTimeout);
+    let newCart = {...cart,[cartId]:{...cartTab,items:newCartTabItems}};
+    this.cartTimeout = setTimeout(async ()=>await kharidApis({api:'setCart',parameter:newCart,loading:false}),2000)
+    this.setState({cart:newCart});
   }
   async getGuaranteeImages(items){
     if(!items.length){return}

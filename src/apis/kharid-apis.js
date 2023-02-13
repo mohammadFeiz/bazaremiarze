@@ -1095,7 +1095,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       let cart = JSON.parse(result)
       let keys = Object.keys(cart)
       for(let i = 0; i < keys.length; i++){
-        if(!cart[keys[i]].variantId){
+        if(!cart[keys[i]].items){
             return {};
         }
       }

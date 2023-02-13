@@ -76,6 +76,7 @@ export default class NV3Report extends Component{
         }
         else{
             remaining = 0;
+            catched = 200
 
         }
         return {
@@ -92,19 +93,6 @@ export default class NV3Report extends Component{
                                 {html:'جمع سبد خرید نورواره شما تا کنون : ',className:'color3B55A5 fs-12'},
                                 {html:amount.toFixed(1),className:'bold color3B55A5 fs-14'},
                                 {html:'میلیون تومان',className:'color3B55A5 fs-12'}
-                            ]
-                        }
-                    ]
-                },
-                {
-                    row:[
-                        {size:36,html:<Icon path={mdiLightbulbOutline} size={0.9} style={{color:'orange'}}/>,align:'vh'},
-                        {
-                            gap:3,
-                            row:[
-                                {html:'لامپ 7 وات حبابی رایگان سبد خرید شما : ',className:'color3B55A5 fs-14'},
-                                {html:catched,className:'bold color3B55A5 fs-14'},
-                                {html:'عدد',className:'color3B55A5 fs-12'}
                             ]
                         }
                     ]
@@ -127,13 +115,30 @@ export default class NV3Report extends Component{
             ]
         }
     }
+    header_layout(){
+        let {renderIn,amount} = this.props;
+        let text = '';
+        if(!amount){text = 'از نورواره خرید کنید لامپ رایگان هدیه بگیرید'}
+        else if(amount < 10.5){
+            text = `لامپ رایگان حبابی 7 وات سبد خرید نورواره شما تا کنون : 0 عدد `
+        }
+        else if(amount < 20.5){
+            text = `لامپ رایگان حبابی 7 وات سبد خرید نورواره شما تا کنون : 50 عدد `
+        }
+        else if(amount < 40.5){
+            text = `لامپ رایگان حبابی 7 وات سبد خرید نورواره شما تا کنون : 100 عدد `
+        }
+        else{
+            text = `لامپ رایگان حبابی 7 وات سبد خرید نورواره شما تا کنون : 200 عدد `
+        }
+        return {show:renderIn !== 'shipping',html:text,className:'bold color3B55A5 size14 m-h-12',style:{textAlign:'right'}}
+    }
     render(){
-        let {renderIn} = this.props;
         return (
             <RVD
                 layout={{
                     column:[
-                        {show:renderIn !== 'shipping',html:'از نورواره خرید کنید لامپ رایگان هدیه بگیرید',className:'bold color3B55A5 size14 m-h-12'},
+                        this.header_layout(),
                         this.slider_layout(),
                         this.text_layout()
                     ]

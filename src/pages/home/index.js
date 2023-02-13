@@ -214,7 +214,7 @@ export default class Home extends Component {
         return {className:'of-visible theme-gap-h',html:<Bazargah renderInHome={true}/>}
     }
     noorvare3_layout(){
-        let {backOffice,userInfo} = this.context;
+        let {backOffice,userInfo,openPopup,nv3} = this.context;
         let registered = userInfo.norvareh3Agreement;
         if(!backOffice.activeManager.noorvare3){
             return false
@@ -225,6 +225,7 @@ export default class Home extends Component {
             style:{boxShadow:'0px 2px 8px 0px rgb(153 153 153 / 21%)'},
             onClick:()=>{
                 if(registered){
+                    openPopup('category',{category:{...nv3}})
                     return false
                 }
                 let {SetState} = this.context;

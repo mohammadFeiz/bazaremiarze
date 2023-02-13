@@ -35,7 +35,7 @@ export default {
         {value:12,text:'چک 5 ماهه'},//By5Months
         {value:13,text:'چک 5 و نیم ماهه'},//By5_5Months
         {value:14,text:'چک 6 ماهه'},//By6Months 
-        {value:15,text:'25% نقد و 75% چک دو ماهه',percent:4.5},//Cash25_TowMonth75
+        {value:15,text:'25% نقد و 75% چک دو ماهه',percent:7.5},//Cash25_TowMonth75
         {value:16,text:'50% نقد و 50% چک سه ماهه',percent:7.5},//Cach50_ThreeMonth50
         {value:17,text:'20% نقد و 80% چک سه ماهه',percent:4.8},//Cash20_ThreeMonth80
         {value:18,text:'30% نقد و 70% چک چهار ماهه',percent:3.6},//Cash30_FourMonth70
@@ -95,7 +95,7 @@ export default {
             PayDueDate:1,
             PaymentTime:1,
             DeliveryType:11,
-            PayDueDateOptions:[1,15,16],
+            PayDueDateOptions:[1,15,16,17,18,19],
             PaymentTimeOptions:[1,2],
             DeliveryTypeOptions:[11,12,13,15]
         }

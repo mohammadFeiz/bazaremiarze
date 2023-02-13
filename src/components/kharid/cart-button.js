@@ -25,7 +25,7 @@ export default class CartButton extends Component{
             }
         }
         else {
-            if(['product','cart'].indexOf(renderIn) === -1){
+            if(['product','cart','category'].indexOf(renderIn) === -1){
                 console.error('missing varinatId in ProductCard Component due render in cart page or product page')
             }
             cartItems = getCartItemsByProduct(product);
@@ -36,7 +36,7 @@ export default class CartButton extends Component{
                     column:[
                         {
                             show:['product','cart'].indexOf(renderIn) === -1 && !!count,align:'h',
-                            className:'fs-12 colorA4262C',
+                            className:'fs-12 color3B55A5',
                             onClick:(e)=>this.openCart(e),
                             row:[
                                 {html:<Icon path={mdiCart} size={0.7}/>,align:'vh'},
@@ -46,7 +46,7 @@ export default class CartButton extends Component{
                         },
                         {
                             show:!!cartItems.length,align:'h',
-                            className:'fs-12 colorA4262C',
+                            className:'fs-12 color3B55A5',
                             onClick:(e)=>this.openCart(e),
                             row:[
                                 {html:<Icon path={mdiCart} size={0.7}/>,align:'vh'},
@@ -77,7 +77,7 @@ export default class CartButton extends Component{
                         },
                         {
                             show:renderIn === 'product' && !!count,
-                            html:'تعداد در سبد خرید',className:'fs-12 colorA4262C'
+                            html:'تعداد در سبد خرید',className:'fs-12 color3B55A5'
                         },
                         {
                             show:(renderIn === 'product' || renderIn === 'cart') && !!count,

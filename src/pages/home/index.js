@@ -15,7 +15,7 @@ import Bazargah from '../bazargah/bazargah';
 import afterSrc from './../../images/after.png';
 import './index.css';
 import Icon from '@mdi/react';
-import { mdiPlusBox } from '@mdi/js';
+import { mdiLoading, mdiPlusBox } from '@mdi/js';
 
 export default class Home extends Component {
     static contextType = appContext;
@@ -258,7 +258,10 @@ export default class Home extends Component {
                             }
                         },
                         {
-                            show:!!showQr,html:<img src={qr} alt='' width='180'/>,align:'vh'
+                            show:!!showQr && !!qr,html:<img src={qr} alt='در حال بارگذاری' width='180'/>,align:'vh'
+                        },
+                        {
+                            size:60,show:!!showQr && !!!qr,html:<Icon path={mdiLoading} size={1.5} spin={0.4}/>,align:'vh'
                         }
                     ]
                 },

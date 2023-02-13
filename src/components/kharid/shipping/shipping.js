@@ -45,7 +45,7 @@ export default class Shipping extends Component{
         name:`${userInfo.firstName} ${userInfo.lastName}`,
         code:userInfo.cardCode,
         address:userInfo.address,
-        phone:userInfo.phone1,
+        phone:userInfo.phoneNumber,
         customerGroup:userInfo.groupName
       })
     }
@@ -164,6 +164,7 @@ export default class Shipping extends Component{
                       amounts:getAmounts()
                     }
                   })
+                  console.log('orderNumber',orderNumber)
                   if(orderNumber){
                     rsa_actions.removePopup('all');
                     removeCart(cartId)

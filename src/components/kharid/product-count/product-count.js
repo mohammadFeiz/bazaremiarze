@@ -10,7 +10,7 @@ export default class ProductCount extends Component{
     constructor(props){
         super(props);
         let {value} = this.props;
-        this.state = {value,prevValue:value}
+        this.state = {value,prevValue:value,popup:false}
     }
     change(value,min = this.props.min || 0){
         value = +value;
@@ -49,12 +49,13 @@ export default class ProductCount extends Component{
         // clearInterval(this.interval) 
       }
     render(){
-        let {value,prevValue} = this.state;
+        let {value,prevValue,popup} = this.state;
         let {min = 0,onChange,max = Infinity,style} = this.props;
         if(this.props.value !== prevValue){setTimeout(()=>this.setState({value:this.props.value,prevValue:this.props.value}),0)}
         let touch = 'ontouchstart' in document.documentElement;
         return (
-            <RVD
+            <>
+                <RVD
                 layout={{
                     childsProps: { align: "vh" },
                     style:{height:36,...style},
@@ -75,7 +76,10 @@ export default class ProductCount extends Component{
                         { 
                             show:!!value,
                             html:(
-                                <input type='number' value={value} className='product-count-input' onChange={(e)=>this.change(e.target.value)}/>
+                                <div
+                                    className='product-count-input'
+                                    onClick={()=>this.setState({popup:true})}
+                                >{value}</div>
                             )
                         },
                         {
@@ -103,6 +107,37 @@ export default class ProductCount extends Component{
                     ] 
                 }}
             />
+            {
+                popup &&
+                <RVD
+                    layout={{
+                        className:'fullscreen',
+                        style:{zIndex:10,background:'rgba(0,0,0,0.6)'},
+                        column:[
+                            {
+                                flex:1,
+                                onClick:()=>this.setState({popup:false})
+                            },
+                            {
+                                html:(
+                                    <CountPopup 
+                                        onChange={(value)=>{
+                                            this.change(value);
+                                            this.setState({popup:false})
+                                        }}
+                                        onRemove={()=>{
+                                            this.change(0)
+                                            this.setState({popup:false})
+                                        }}
+                                        value={value}
+                                    />
+                                )
+                            }
+                        ]
+                    }}
+                />
+            }
+            </>
         )
     }
 }
@@ -119,7 +154,7 @@ class CountPopup extends Component{
         return (
             <RVD
                 layout={{
-                    style:{padding:12,background:'#fff',flex:'none',height:'fit-content'},
+                    style:{padding:12,background:'#fff',flex:'none',height:'fit-content',width:'100%'},
                     column:[
                         {html:'تعداد را وارد کنید',className:'fs-12 bold theme-medium-font-color'},
                         {size:6},

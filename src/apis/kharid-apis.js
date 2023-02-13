@@ -415,7 +415,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             )
         }
     },
-    async pardakhte_noorvare3({address,SettleType,PaymentTime,DeliveryType,PayDueDate,total}){
+    async pardakhte_noorvare3({address,SettleType,PaymentTime,DeliveryType,PayDueDate,total,cartId}){
         let freeLamps;
         if(total < 105000000){
             freeLamps = 0;
@@ -429,10 +429,13 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         else{
             freeLamps = 200
         }
-        let {userInfo,shipping} = getState();
-        
-        let marketingLines = shipping.cartItems.map((o) => {
-            return { ItemCode: o.variant.code, ItemQty: o.count };
+        let {userInfo,cart} = getState();
+        let cartTab = cart[cartId];
+        let {getCartItems} = cartTab;
+        let cartItems = getCartItems();
+        let marketingLines = cartItems.map(({variantId,count,product}) => {
+            let variant = product.variants.find((o)=>o.id === variantId)
+            return { ItemCode: variant.code, ItemQty: count };
         });
 
         marketingLines.push({ ItemCode: "2372F", ItemQty: freeLamps });
@@ -450,8 +453,14 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             SettleType,PaymentTime,DeliveryType,PayDueDate
         }
         let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
-        try { return res.data.data[0].docNum }
-        catch { return false }
+        try {
+             
+            return res.data.data[0].docNum 
+        }
+        catch { 
+            console.log('nv3 error',res)
+            return false 
+        }
     },
     async newOrders() {
       let products=await this.getProductsByTaxonId({Taxons:'10932'});
@@ -724,7 +733,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     },
     async sendToVisitor({address,SettleType,PaymentTime,DeliveryType,PayDueDate,cartId}) {
         let {userInfo,cart} = getState();
-      let cartItems = cart[cartId].getCartItems();
+        let cartItems = cart[cartId].getCartItems();
 
       let body = {
         "marketdoc":{
@@ -1083,7 +1092,14 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       catch{
         result = '{}'
       }
-      return JSON.parse(result)
+      let cart = JSON.parse(result)
+      let keys = Object.keys(cart)
+      for(let i = 0; i < keys.length; i++){
+        if(!cart[keys[i]].variantId){
+            return {};
+        }
+      }
+      return cart
     },
     async setCart(cart){
       let res = await Axios.post(`${baseUrl}/orderuidata/updatejson`,{JsonData:JSON.stringify(cart)});

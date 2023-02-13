@@ -9,6 +9,7 @@ import nv3billboard from './../images/nv3-billboard.png';
 import yaldaye_roshanayi from './../images/yaldaye-roshanayi.png';
 import yaldaye_batri from './../images/yaldaye-batri.png';
 import nv3Icon from './../images/land1.png';
+import NoorvareDescription from './../components/kharid/noorvare-description';
 export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOServiceShowAlert,baseUrl}) {
   return {
     updateProductPrice({products,campaignId,cartId}){
@@ -400,6 +401,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     async nv3(){
         let products=await this.getProductsByTaxonId({Taxons:'10954'});
         products = this.updateProductPrice({products,cartId:'نورواره 3'});
+        
         return {
             cartId:'نورواره 3',
             name:'نورواره 3',
@@ -408,9 +410,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             products:products.map((o)=>{
                 return {...o,cartId:'نورواره 3'}
             }),
-            description:`
-            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-            `
+            description:(
+                <NoorvareDescription/>
+            )
         }
     },
     async pardakhte_noorvare3({address,SettleType,PaymentTime,DeliveryType,PayDueDate,total}){

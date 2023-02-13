@@ -150,11 +150,11 @@ export default class Register extends Component{
                                 />
                             )
                         }},
+                        {label:'آدرس',type:'textarea',field:'model.address',validations:[['required']],disabled:mode === 'edit'},
                         {type:'html',html:()=><div style={{color:'red'}}>تنظیم موقعیت جغرافیایی الزامیست</div>,show:model.latitude === 35.699739 && model.longitude === 35.699739},
                         {label:'استان',type:'select',field:'model.userProvince',rowKey:'2',options:provinces,optionText:'option',optionValue:'option',validations:[['required']]},
                         {type:'html',html:()=>'',rowKey:'2',rowWidth:12},
                         {label:'شهر',type:'select',field:'model.userCity',options:this.cities,optionValue:'option.text',rowKey:'2',validations:[['required']]},
-                        {label:'آدرس',type:'textarea',field:'model.address',validations:[['required']],disabled:mode === 'edit'},
                         // {label:'شماره شبا',type:'text',field:'model.sheba'},
                         // {label:'شماره کارت بانکی',type:'number',field:'model.cardBankNumber'},
                         // {label:'نام دارنده کارت بانکی',type:'text',field:'model.cardBankName'},
@@ -166,13 +166,30 @@ export default class Register extends Component{
     }
     
     componentDidMount(){
-        $(this.dom.current).animate({
-            height: '100%',
-            width: '100%',
-            left:'0%',
-            top:'0%',
-            opacity:1
-        }, 300);
+        // $(this.dom.current).animate({
+        //     height: '100%',
+        //     width: '100%',
+        //     left:'0%',
+        //     top:'0%',
+        //     opacity:1
+        // }, 300);
+    }
+    async changeAddress(latitude,longitude){
+        let {mode} = this.props;
+        if(mode !== 'register'){return;}
+        let param = {
+            headers:{
+                'Api-Key':'service.05feac099b574f18a11b8fce31f7382f',
+                'Authorization':undefined
+            }
+        }
+        let url = `https://api.neshan.org/v5/reverse?lat=${latitude}&lng=${longitude}`;
+        let res = await Axios.get(url,param);
+        if(res.status !== 200){return}
+        let {model} = this.state;
+        let address = res.data.formatted_address;
+        model.address = address;
+        this.change(model)
     }
     render(){
         let {showMap,model,prevProvince,loading} = this.state;
@@ -189,7 +206,7 @@ export default class Register extends Component{
                 <RVD
                     layout={{
                         attrs:{ref:this.dom},
-                        style:{width:'100%',height:'100%',overflow:'hidden',position:'fixed',left:'50%',top:'100%',height:'0%',width:'0%',opacity:0,background:'#f8f8f8'},
+                        style:{width:'100%',height:'100%',overflow:'hidden',position:'fixed',left:'0%',top:'0%',height:'100%',width:'100%',opacity:1,background:'#f8f8f8'},
                         column:[
                             this.header_layout(),
                             {size:12},
@@ -223,10 +240,10 @@ export default class Register extends Component{
                     }}
                 />
                 {showMap && <ShowMap latitude={model.latitude} longitude={model.longitude} onClose={()=>this.setState({showMap:false})} onChange={(latitude,longitude)=>{
-                    debugger;
                     let {model} = this.state;
                     model.latitude = latitude;
                     model.longitude = longitude;
+                    this.changeAddress(latitude,longitude)
                     this.setState({model,showMap:false})
                 }}/>}
                 {loading && <div style={{zIndex:1000000000,position:'fixed',left:0,top:0,width:'100%',height:'100%'}}></div>}

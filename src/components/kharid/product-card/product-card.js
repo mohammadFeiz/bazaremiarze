@@ -76,7 +76,6 @@ export default class ProductCard extends Component{
         let {details = []} = this.props;
         if(!details.length){return false}
         let text = '';
-        details = details.concat(details,details,details)
         for(let i = 0; i < details.length; i++){
             let [title,value] = details[i];
             text += `${title}:${value} `

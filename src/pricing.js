@@ -1,8 +1,12 @@
 ﻿
+
+//Version 1.1.0
+//Edited: 2023-2-14
+
 export default class Pricing {
     "use strict";
     //dbrequest = {};
-    updateInterval = 10 * 60 * 1000; // 10min
+    updateInterval = 100 * 60 * 1000; // 100min
     ndbrequest = {};
     //updateTimer = setTimeout(this.refresh, this.updateInterval);
     pricingData = {
@@ -10,7 +14,7 @@ export default class Pricing {
     };
     db = {};
 
-    constructor(fetchURL, applicator, interval = 10 * 60 * 1000) {
+    constructor(fetchURL, applicator, interval = 100 * 60 * 1000) {
 
         this.fetchUrl = fetchURL;
 
@@ -350,7 +354,7 @@ export default class Pricing {
             let res = await self.#getAllFromDataBase();
         }
         console.log((new Date()) + ": update finished");
-        self.updateTimer = setTimeout(self.refresh, 10000, self);
+        self.updateTimer = setTimeout(self.refresh, this.updateInterval, self);
     }
 
     stopUpdate() {
@@ -615,6 +619,19 @@ export default class Pricing {
                 case 16:
                     MD.marketingdetails.DocumentDiscountPercent = 7.5;
                     break;
+                case 17:
+                    MD.marketingdetails.DocumentDiscountPercent = 4.8;
+                    break;
+                case 18:
+                    MD.marketingdetails.DocumentDiscountPercent = 3.6;
+                    break;
+                case 19:
+                    MD.marketingdetails.DocumentDiscountPercent = 4.5;
+                    break;
+                case 20:
+                    MD.marketingdetails.DocumentDiscountPercent = 10.5;
+                    break;
+
                 case 14:
                 case 5:
                 default:
@@ -1101,6 +1118,10 @@ export default class Pricing {
                                 br.qty += line.ItemQty;
                             }
 
+                        }
+                        else {
+                            line.CampaignDetails.Status = 1;
+                            br.qty += line.ItemQty;
                         }
                         // قواعد حداکثر مبلغ
                     }

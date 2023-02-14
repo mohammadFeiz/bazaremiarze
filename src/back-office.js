@@ -60,6 +60,44 @@ export default {
         {value:14,text:'پخش گرم'},//HotDelivery
         {value:15,text:'ارسال توسط ویزیتور'}//BySalesMan
     ],
+    campaignsDictionary:{
+        
+        'خرید عادی':1,
+        '1':'خرید عادی',
+        'NA':'خرید عادی',
+        
+        'طرح شب یلدای روشنایی':16,
+        '16':'طرح شب یلدای روشنایی',
+        'YaldaLighting':'طرح شب یلدای روشنایی',
+        
+        'طرح شب یلدای باطری':17,
+        '17':'طرح شب یلدای باطری',
+        'YaldaBattery':'طرح شب یلدای باطری',
+        
+        'بلکس':19,
+        '19':'بلکس',
+        'BELEX2022Shiraz':'بلکس',
+        
+        'نورواره 3':20,
+        '20':'نورواره 3',
+        'Noorvareh3':'نورواره 3',
+        
+        YaldaPacks:18,
+        LinearSpecialSale:2,
+        GoldenWatt:5,
+        Golden10W:4,
+        ArianSpecialSale:3,
+        NULL:6,
+        Noorvareh2:7,
+        NoorvarehSpecial:8,
+        Eidaneh:9,
+        Special10w:10,
+        HotDelivery:11,
+        HotSummer2022:12,
+        Harjestan:13,
+        HaftehEstandard:14,
+        BELEX2022:15
+    },
     'فروش ویژه':{
         defaultShipping:{
             PayDueDate:1,

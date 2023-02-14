@@ -333,7 +333,7 @@ export default class Main extends Component {
         let paymentMethodDiscount = (total * paymentMethodDiscountPercent) / 100;
         let paymentAmount = total - paymentMethodDiscount;
         return {
-          total,discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount
+          total,discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount,factorDetails
         }
       }
       cartTab.getProductCards = (renderIn)=>{
@@ -361,7 +361,9 @@ export default class Main extends Component {
         let {cart} = this.state;
         let cartTab = cart[cartId];
         let {getAmounts} = cartTab;
-        let {discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount} = getAmounts(shippingOptions);
+        let res = getAmounts(shippingOptions);
+        let {discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount,factorDetails} = res;
+        
         return [
           {
             key:'تخفیف',

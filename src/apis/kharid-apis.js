@@ -133,7 +133,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       return tabs;
     },
     async orderProducts(order) {
-      let { userInfo } = getState();
+      let { userInfo,backOffice } = getState();
 
       const docTypeDictionary = {
         Customer: 2,
@@ -160,20 +160,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         PurchaseRequest: 1470000113,
       };
 
-      const campaignDictionary = {
-        NA: 1,
-        LinearSpecialSale: 2,
-        GoldenWatt: 5,
-        Golden10W: 4,
-        ArianSpecialSale: 3,
-        NULL: 6,
-        Noorvareh2: 7,
-        NoorvarehSpecial: 8,
-        Eidaneh: 9,
-        Special10w: 10,
-        HotDelivery: 11,
-        HotSummer2022: 12,
-      }
       let res = await Axios.post(`${baseUrl}/BOne/GetDocument`, {
         "DocEntry": order.code,
         "DocType": docTypeDictionary[order.mainDocType],
@@ -240,6 +226,14 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         discount = result.marketingdetails.documentDiscount || 0;
       }
       catch{discount = 0;}
+      let campaignName = '';
+      debugger;
+      try{
+        campaignName = backOffice.campaignsDictionary[result.marketingdetails.campaign.toString()];
+      }
+      catch{
+        campaignName = ''
+      }
       return {
         products,
         nahve_ersal:dic3[result.marketingdetails.deliveryType],
@@ -252,7 +246,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         customerCode: result.cardCode,
         customerGroup: result.cardGroupCode,
         basePrice: result.documentTotal + discount,
-        campaignName: campaignDictionary[result.marketingdetails.campaign],
+        campaignName,
         address: result.deliverAddress,
         phone: userInfo.landline,
         mobile: userInfo.phoneNumber,

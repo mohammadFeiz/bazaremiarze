@@ -227,7 +227,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       }
       catch{discount = 0;}
       let campaignName = '';
-      debugger;
       try{
         campaignName = backOffice.campaignsDictionary[result.marketingdetails.campaign.toString()];
       }
@@ -448,7 +447,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         }
         let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
         try {
-             
             return res.data.data[0].docNum 
         }
         catch { 

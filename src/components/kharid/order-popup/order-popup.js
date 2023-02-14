@@ -3,6 +3,15 @@ import RVD from "./../../../interfaces/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
 import functions from "./../../../functions";
 import NoSrc from './../../../images/no-src.png';
+// code:25965
+// date:"1401/11/24"
+// docStatus:"CustomerApproved"
+// mainDocNum:25679
+// mainDocType:"Quotation"
+// mainDocisDraft:false
+// total:1584660
+// translate:"در حال بررسی"
+// _time:"00:00:00"
 export default class OrderPopup extends Component {
     static contextType = appContext;
     state = {details:{}}
@@ -50,7 +59,8 @@ export default class OrderPopup extends Component {
     async getDetails(){
       let {kharidApis} = this.context;
       let {order} = this.props;
-      let details = await kharidApis({api:'orderProducts',parameter:order,loading:false})
+      console.log(order)
+      let details = await kharidApis({api:'orderProducts',parameter:order,loading:false,cacheName:'order-popup-' + order.mainDocNum,cache:100000})
       this.setState({details})
     }
     async pardakht(){

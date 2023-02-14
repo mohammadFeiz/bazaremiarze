@@ -30,11 +30,6 @@ export default class OrdersHistory extends Component {
         )
       }
     }
-    async getDetails(o){
-      let { SetState,kharidApis } = this.context;
-      let res = await kharidApis({api:"joziatepeygiriyesefareshekharid", parameter:o});
-      SetState({popup: {mode: "joziate-sefareshe-kharid",order: res}})
-    }
     orders_layout(){
       let { activeTab,tabs } = this.state;
       let tab = tabs.filter(({text})=>text === activeTab)[0];
@@ -120,6 +115,19 @@ export default class OrdersHistory extends Component {
         ],
       }
     }
+    cartId_layout(){
+      let {order} = this.props;
+      let res = localStorage.getItem('storage-order-popup-' + order.mainDocNum);
+      let cartId
+      if(typeof res === 'string'){
+        res = JSON.parse(res);
+        res = res.data.campaignName;
+        cartId = res;
+      }
+      return {
+        html:cartId,style:{color:'orange'},className:'fs-10 bold'
+      }
+    }
     render() {
       let {mounted} = this.state;
       let {loading,onClick} = this.props;
@@ -130,7 +138,7 @@ export default class OrdersHistory extends Component {
           layout={{
             onClick,
             className: "theme-card-bg theme-box-shadow theme-border-radius theme-gap-h p-12 rvd-rotate-card" + (mounted?' mounted':''),
-            column: [this.header_layout(),this.footer_layout(),],
+            column: [this.cartId_layout(),this.header_layout(),this.footer_layout(),],
           }}
         />
       );

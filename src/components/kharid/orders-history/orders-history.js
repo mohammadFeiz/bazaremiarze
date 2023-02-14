@@ -8,11 +8,14 @@ export default class OrdersHistory extends Component {
       super(props);
       this.state = {activeTab:'در حال بررسی',tabs:fakeData,loading:true};
     }
+    updateCache(tabs){
+      
+    }
     async componentDidMount() {
       let {kharidApis} = this.context;
-      let {activeTab} = this.props;
       let tabs = await kharidApis({api:"ordersHistory"});
-      try{this.setState({tabs,activeTab:activeTab || tabs[0].text,loading:false});}
+      let {activeTab = tabs[0]?.text} = this.props;
+      try{this.setState({tabs,activeTab,loading:false});}
       catch{return}
     }
     tabs_layout() {
@@ -121,7 +124,7 @@ export default class OrdersHistory extends Component {
       let cartId
       if(typeof res === 'string'){
         res = JSON.parse(res);
-        res = res.data.campaignName;
+        res = res.data.details.campaignName;
         cartId = res;
       }
       return {

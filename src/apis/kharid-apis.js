@@ -233,7 +233,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       catch{
         campaignName = ''
       }
-      return {
+      let details = {
         products,
         nahve_ersal:dic3[result.marketingdetails.deliveryType],
         mohlate_tasvie:result.marketingdetails.paymentTime === 'ByOnlineOrder'?undefined:dic1[result.marketingdetails.payDueDate],
@@ -250,6 +250,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         phone: userInfo.landline,
         mobile: userInfo.phoneNumber,
       }
+      return {...order,details}
     },
     async joziatepeygiriyesefareshekharid(order) {
       let { userInfo } = getState();

@@ -14,7 +14,7 @@ import NoSrc from './../../../images/no-src.png';
 // _time:"00:00:00"
 export default class OrderPopup extends Component {
     static contextType = appContext;
-    state = {details:{}}
+    state = {order:this.props.order}
     getRow(key, value = '-------------',show = true) {
       if(value === null){value = '-------------'}
       if(!show){return false}
@@ -58,10 +58,10 @@ export default class OrderPopup extends Component {
     }
     async getDetails(){
       let {kharidApis} = this.context;
-      let {order} = this.props;
-      console.log(order)
-      let details = await kharidApis({api:'orderProducts',parameter:order,loading:false,cacheName:'order-popup-' + order.mainDocNum,cache:100000})
-      this.setState({details})
+      let {order} = this.state;
+      if(order.details){return}
+      let newOrder = await kharidApis({api:'orderProducts',parameter:order,loading:false,cacheName:'order-popup-' + order.mainDocNum,cache:100000})
+      this.setState({order:newOrder})
     }
     async pardakht(){
       let {kharidApis} = this.context;
@@ -75,8 +75,8 @@ export default class OrderPopup extends Component {
     }
     details_layout(){
       let {userInfo} = this.context;
-      let {order} = this.props;
-      let {details = {}} = this.state;
+      let {order} = this.state;
+      let {details = {}} = order;
       details.basePrice = details.basePrice || 0
       return {
         className: "box gap-no-color theme-gap-h p-12",gap: 12,
@@ -103,9 +103,9 @@ export default class OrderPopup extends Component {
       }
     }
     dokmeye_pardakht_layout(){
-      let {order} = this.props;
+      let {order} = this.state;
       let {docStatus} = order;
-      let {details = {}} = this.state;
+      let {details = {}} = order;
       let {nahve_pardakht} = details;
       if(docStatus !== 'WaitingForPayment' || nahve_pardakht !== 'اینترنتی'){return false}
       return {
@@ -114,7 +114,8 @@ export default class OrderPopup extends Component {
       }
     }
     products_layout(){
-      let {details = {}} = this.state;
+      let {order} = this.state;
+      let {details = {}} = order;
       let {products} = details;
       let loading = false;
       if(!products){

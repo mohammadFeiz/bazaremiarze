@@ -50,20 +50,7 @@ export default class ProductCard extends Component{
     name_layout(){
         let {product} = this.props;
         let {name} = product;
-        return {html:this.debuggerMode?(
-            <AIOButton
-                type='button' style={{background:'none',fontSize:'inherit',color:'inherit',fontFamily:'inherit',fontWeight:'inherit'}} caret={false}
-                text={name}
-                hover={true}
-                popOver={()=>{
-                    return (
-                        <pre style={{width:'100vw',height:500,overflowY:'auto',direction:'ltr'}}>
-                           {JSON.stringify(product,null,4)} 
-                        </pre>
-                    )
-                }}
-            />
-        ):name,className:'fs-14 theme-medium-font-color bold',style:{whiteSpace:'normal'}}
+        return {html:name,className:'fs-12 theme-medium-font-color bold',style:{whiteSpace:'normal',textAlign:'right'}}
     }
     discount_layout(){
         let {product,count = 1} = this.props;
@@ -88,10 +75,18 @@ export default class ProductCard extends Component{
     details_layout(){
         let {details = []} = this.props;
         if(!details.length){return false}
+        let text = '';
+        details = details.concat(details,details,details)
+        for(let i = 0; i < details.length; i++){
+            let [title,value] = details[i];
+            text += `${title}:${value} `
+        }
         return {
-            column:details.map(([title,value])=>{
-                return {size:20,html:`${title} : ${value}`,align:'v',className:'fs-10 theme-light-font-color'}
-            })
+            html:text,className:'fs-9',
+            style:{
+                whiteSpace:'nowrap',
+                overflow:'hidden'
+            }
         }
     }
     notExist_layout(){
@@ -134,7 +129,7 @@ export default class ProductCard extends Component{
             <RVD
                 loading={loading}
                 layout={{
-                    className:'theme-card-bg theme-box-shadow theme-border-radius gap-no-color m-h-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
+                    className:'theme-card-bg theme-box-shadow theme-border-radius gap-no-color m-h-12 rvd-rotate-card' + (mounted?' mounted':''),
                     attrs:{onClick:()=>this.onClick()},
                     style:{
                         padding:6,height:130,
@@ -158,8 +153,8 @@ export default class ProductCard extends Component{
                                 {flex:1},
                                 this.title_layout(),
                                 this.name_layout(),
-                                {flex:1},
                                 this.details_layout(),
+                                {flex:2},
                                 this.discount_layout(),
                                 this.notExist_layout(),
                                 {row:[{flex:1},this.price_layout()]},

@@ -26,18 +26,18 @@ export default class NV3Report extends Component{
                                         background:amount >= value?'#EFF0FF':'#F3F3F3',
                                         borderRadius:12,fontSize:12,padding:'3px 0',
                                         color:amount >= value?'#3B55A5':'#A19F9D',
-                                        opacity:amount >= value?1:0.5
+                                        opacity:amount >= value?1:0.5,
                                     },
                                     column:[
                                         {align:'vh',html:<Icon path={mdiLightbulbOutline} size={0.7} style={{color:amount >= value?'orange':'#A19F9D'}}/>},
-                                        {html:{'10.5':'50','20.5':'100','40.5':'200'}[value.toString()],align:'vh'}
+                                        {html:{'10.5':'50','20.5':'100','40.5':'200'}[value.toString()],align:'vh',className:'fs-14'}
                                     ]
                                 }}
                             />
                         )
                     }}
                     labelStep={[10.5,20.5,40.5]}
-                    labelStyle={()=>{return {top:72}}}
+                    labelStyle={()=>{return {top:72,fontSize:14}}}
                     scaleStyle={()=>{return {width:24,height:48,transform:'translateX(12px)',top:12,background:'none'}}}
                     end={40.5}
                     step={0.5}

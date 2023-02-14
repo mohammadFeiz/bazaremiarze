@@ -73,7 +73,7 @@ export default class Shipping extends Component{
           {
             html:(
               <AIOButton
-                className='shipping-options'
+                className='shipping-options fs-14'
                 type='radio'
                 optionAfter={(option)=>{
                   if(option.percent){return `${option.percent}% تخفیف`}

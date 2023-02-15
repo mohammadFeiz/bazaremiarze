@@ -1,6 +1,6 @@
 .product-count-button{
     color: dodgerblue;
-    width: 30px;
+    width: 38px;
     height: 24px;
     display: flex;
     align-items: center;
@@ -14,7 +14,6 @@
   margin: 0;
 }
 .product-count-input{
-    width:24px;
     text-align: center;
 }
 .product-count-button.disabled{

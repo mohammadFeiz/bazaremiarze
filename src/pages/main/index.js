@@ -20,6 +20,7 @@ import Sefareshe_Ersal_Shode_Baraye_Vizitor from "./../../components/kharid/sefa
 import JoziateDarkhastHayeGaranti from "./../../components/garanti/joziate-darkhast-haye-garanti/joziate-darkhast-haye-garanti";
 import OrderPopup from "./../../components/kharid/order-popup/order-popup";
 import PasswordPopup from "../../components/password-popup/password-popup";
+import CountPopup from "../../components/kharid/product-count/count-popup";
 
 //npm////////////////////////////////////////
 import {Icon} from '@mdi/react';
@@ -557,7 +558,12 @@ export default class Main extends Component {
   openPopup(type,parameter){
     let {rsa_actions} = this.state;
     let {addPopup,removePopup,setNavId} = rsa_actions;
-    if(type === 'password'){
+    if(type === 'count-popup'){
+      addPopup({
+        type:'bottom',
+        body:()=><CountPopup {...parameter}/>,title:'تعداد را وارد کنید',backClose:true,closeType:'close button'})
+    }
+    else if(type === 'password'){
       addPopup({body:()=><PasswordPopup/>,title:'مشاهده و ویرایش رمز عبور'})
     }
     else if(type === 'peygiriye-sefareshe-kharid'){

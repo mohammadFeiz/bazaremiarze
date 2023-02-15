@@ -39,25 +39,28 @@ export default class CartButton extends Component{
                             className:'fs-12 color3B55A5',
                             onClick:(e)=>this.openCart(e),
                             row:[
-                                {html:<Icon path={mdiCart} size={0.7}/>,align:'vh'},
+                                {html:<Icon path={mdiCart} size={1}/>,align:'vh'},
                                 {size:3},
-                                {html:count,align:'v'}
+                                {html:count,align:'v',className:'fs-18'}
                             ]
                         },
                         {
-                            show:!!cartItems.length,align:'h',
+                            show:!!cartItems.length,align:'h',align:'vh',
                             className:'fs-12 color3B55A5',
                             onClick:(e)=>this.openCart(e),
+                            size:36,
                             row:[
-                                {html:<Icon path={mdiCart} size={0.7}/>,align:'vh'},
+                                {html:<Icon path={mdiCart} size={1}/>,align:'vh'},
                                 {size:3},
-                                {html:cartItems.length,align:'v'}
+                                {html:cartItems.length,align:'v',className:'fs-18'}
                             ]
                         },
                         {
-                            show:['product','shipping','cart'].indexOf(renderIn) === -1 && !!count,
+                            show:['product','shipping','cart'].indexOf(renderIn) === -1 && !!count,align:'vh',
+                            style:{background:'yellow'},
+                            size:36,
                             row:[
-                                {html:<Icon path={mdiCart} size={0.8}/>,align:'vh'},
+                                {html:<Icon path={mdiCart} size={1}/>,align:'vh'},
                                 {size:3},
                                 {html:count,align:'v'}
                             ]
@@ -71,12 +74,12 @@ export default class CartButton extends Component{
                                         onChange(1)
                                     }} 
                                     className="button-2"
-                                    style={{fontSize:12,height:36,padding:'0 12px'}}
+                                    style={{fontSize:12,height:36,padding:'0 8px'}}
                                 >افزودن به سبد خرید</button>
                             )
                         },
                         {
-                            show:renderIn === 'product' && !!count,
+                            show:renderIn === 'product' && !!count,align:'vh',
                             html:'تعداد در سبد خرید',className:'fs-12 color3B55A5'
                         },
                         {

@@ -74,10 +74,8 @@ export default class Cart extends Component{
       let {cart} = this.context;
       let {activeTabId} = this.state;
       if(!activeTabId){return false}
-      if(activeTabId === 'فروش ویژه'){return this.foroosheVije_payment_layout()}
-      if(activeTabId === 'بلکس'){return this.belex_payment_layout()}
       let cartTab = cart[activeTabId];
-      let total = cartTab.getAmounts().total;
+      let {total} = cartTab.getAmounts();
       let {continued} = this.state;
       return {
         size: 72,className: "bgFFF p-h-12 theme-box-shadow",
@@ -87,10 +85,9 @@ export default class Cart extends Component{
             column: [
               { flex: 1 },
               {align: "v",html: "مبلغ قابل پرداخت",className: "theme-medium-font-color fs-12"},
-              {size:3},
               {
                 row:[
-                  {align: "v",html: this.splitPrice(total),className: "theme-dark-font-color fs-14 bold"},
+                  {align: "v",html: this.splitPrice(total),className: "theme-dark-font-color fs-20 bold"},
                   {size:4},
                   {align: "v",html: " ریال",className: "theme-dark-font-color fs-12"}
                 ]
@@ -98,66 +95,7 @@ export default class Cart extends Component{
               { flex: 1 },
             ],
           },
-          {html: <button disabled={continued} onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
-        ],
-      }
-    }
-    foroosheVije_payment_layout(){
-      let {cart} = this.context;
-      let {activeTabId} = this.state;
-      if(!activeTabId){return false}
-      let cartTab = cart[activeTabId];
-      let {total} = cartTab.getAmounts()
-      let {continued} = this.state;
-      return {
-        size: 72,className: "bgFFF p-h-12 theme-box-shadow",
-        row: [
-          {
-            flex: 1,
-            column: [
-              { flex: 1 },
-              {align: "v",html: "مبلغ قابل پرداخت",className: "theme-medium-font-color fs-12"},
-              {size:3},
-              {
-                row:[
-                  {align: "v",html: this.splitPrice(total),className: "theme-dark-font-color fs-14 bold"},
-                  {size:4},
-                  {align: "v",html: " ریال",className: "theme-dark-font-color fs-12"}
-                ]
-              },
-              { flex: 1 },
-            ],
-          },
-          {html: <button disabled={continued} onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
-        ],
-      }
-    }
-    belex_payment_layout(){
-      let {cart} = this.context;
-      let {activeTabId} = this.state;
-      if(!activeTabId){return false}
-      let cartTab = cart[activeTabId];
-      let {total} = cartTab.getAmounts()
-      return {
-        size: 72,className: "bgFFF p-h-12 theme-box-shadow",
-        row: [
-          {
-            flex: 1,
-            column: [
-              { flex: 1 },
-              {align: "v",html: "مبلغ قابل پرداخت",className: "theme-medium-font-color fs-12"},
-              {size:3},
-              {
-                row:[
-                  {align: "v",html: this.splitPrice(total),className: "theme-dark-font-color fs-14 bold"},
-                  {size:4},
-                  {align: "v",html: " ریال",className: "theme-dark-font-color fs-12"}
-                ]
-              },
-              { flex: 1 },
-            ],
-          },
-          {html: <button onClick={()=>this.continue()} className="button-2" style={{height:36}}>ادامه فرایند خرید</button>,align: "v"},
+          {html: <button disabled={continued} onClick={()=>this.continue()} className="button-2" style={{height:36,padding:'0 12px'}}>ادامه فرایند خرید</button>,align: "v"},
         ],
       }
     }

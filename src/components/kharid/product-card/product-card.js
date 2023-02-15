@@ -41,7 +41,7 @@ export default class ProductCard extends Component{
     }
     count_layout(){
         let {product,renderIn,variantId} = this.props;
-        return {size:30,html:()=><CartButton renderIn={renderIn} product={product} variantId={variantId}/>}
+        return {size:36,html:()=><CartButton renderIn={renderIn} product={product} variantId={variantId}/>}
     }
     title_layout(){
         let {product} = this.props;
@@ -128,10 +128,10 @@ export default class ProductCard extends Component{
             <RVD
                 loading={loading}
                 layout={{
-                    className:'theme-card-bg theme-box-shadow theme-border-radius gap-no-color m-h-12 rvd-rotate-card' + (mounted?' mounted':''),
+                    className:'theme-card-bg theme-box-shadow gap-no-color rvd-rotate-card' + (mounted?' mounted':''),
                     attrs:{onClick:()=>this.onClick()},
                     style:{
-                        padding:6,height:130,
+                        height:148,border:'1px solid #eee',
                         borderBottomLeftRadius:!isLast?0:undefined,
                         borderBottomRightRadius:!isLast?0:undefined,
                         borderTopLeftRadius:!isFirst?0:undefined,
@@ -140,7 +140,7 @@ export default class ProductCard extends Component{
                     gap:12,
                     row:[
                         {
-                            size:96,
+                            size:116,
                             column:[
                                 this.image_layout(),
                                 this.count_layout()
@@ -149,15 +149,16 @@ export default class ProductCard extends Component{
                         {
                             flex:1,
                             column:[
-                                {flex:1},
+                                {size:6},
                                 this.title_layout(),
                                 this.name_layout(),
                                 this.details_layout(),
-                                {flex:2},
+                                {flex:1},
                                 this.discount_layout(),
                                 this.notExist_layout(),
                                 {row:[{flex:1},this.price_layout()]},
-                                {flex:1}
+                                {size:6},
+                                
                             ]
                         }
                     ]

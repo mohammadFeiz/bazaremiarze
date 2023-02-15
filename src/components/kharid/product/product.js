@@ -260,7 +260,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
     }
     footer_layout() {
         return {
-            size: 80, style: { boxShadow:'0 0px 6px 1px rgba(0,0,0,.1)' }, className: "p-h-24 bg-fff",
+            size: 80, style: { boxShadow:'0 0px 6px 1px rgba(0,0,0,.1)' }, className: "p-h-12 bg-fff",
             row: [
                 this.addToCart_layout(), 
                 { flex: 1 }, 
@@ -299,17 +299,17 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
                     row: [
                         { flex: 1 },
                         { show:!!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt,html: ()=><del>{functions.splitPrice(selectedVariant.Price * count)}</del>, className: "theme-light-font-color" },
-                        { size: 3 },
+                        { size: 1 },
                         {
                             html: "%" + B1Dscnt,show:!!B1Dscnt,
                             style: { background: "#FDB913", color: "#fff", borderRadius: 8, padding: "0 3px" },
                         },
-                        { size: 3 },
+                        { size: 1 },
                         {
                             html: "%" + CmpgnDscnt,show:!!CmpgnDscnt,
                             style: { background: "#FDB913", color: "#fff", borderRadius: 8, padding: "0 3px" },
                         },
-                        { size: 3 },
+                        { size: 1 },
                         {
                             html: "%" + PymntDscnt,show:!!PymntDscnt,
                             style: { background: "#ff4335", color: "#fff", borderRadius: 8, padding: "0 3px" },

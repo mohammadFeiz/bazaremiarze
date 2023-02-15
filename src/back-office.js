@@ -3,7 +3,7 @@ export default {
         garanti:false,
         belex:false,
         forooshe_vije:false,
-        campaigns:false,
+        campaigns:true,
         bazargah:true,
         wallet:false,
         noorvare3:true,
@@ -40,7 +40,11 @@ export default {
         {value:17,text:'20% نقد و 80% چک سه ماهه',percent:4.8},//Cash20_ThreeMonth80
         {value:18,text:'30% نقد و 70% چک چهار ماهه',percent:3.6},//Cash30_FourMonth70
         {value:19,text:'50% نقد و 50% چک پنج ماهه',percent:4.5},//Cash50_FiveMonth50
-        {value:20,text:'50% نقد و 50% چک یک ماهه',percent:10.5}//Cash50_OneMonth50
+        {value:20,text:'50% نقد و 50% چک یک ماهه',percent:10.5},//Cash50_OneMonth50
+        {value:21,text:'10% نقد 90% چک یک ماهه',percent:9.3},
+        {value:22,text:'10% نقد 90% چک دو ماهه',percent:6.6},
+        {value:23,text:'10% نقد 90% چک سه ماهه',percent:3.9},
+        {value:24,text:'10% نقد 90% چک چهار ماهه',percent:1.2}
     ],
     PaymentTime_options:[
         {value:5,text:'اینترنتی'},//ByOnlineOrder
@@ -133,7 +137,7 @@ export default {
             PayDueDate:1,
             PaymentTime:1,
             DeliveryType:11,
-            PayDueDateOptions:[1,15,16,17,18,19],
+            PayDueDateOptions:[1,15,16,17,18,19,21,22,23,24],
             PaymentTimeOptions:[1,2],
             DeliveryTypeOptions:[11,12,13,15]
         }

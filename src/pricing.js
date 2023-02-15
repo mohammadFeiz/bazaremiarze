@@ -1,6 +1,4 @@
-﻿
-
-//Version 1.1.0
+﻿///***Version 1.1.1****///
 //Edited: 2023-2-14
 
 export default class Pricing {
@@ -321,9 +319,6 @@ export default class Pricing {
         return this.pricingData.ItemPrices;
     }
 
-
-
-
     startservice() {
         let self = this;
         let result = new Promise(async function (resolve, reject) {
@@ -630,6 +625,18 @@ export default class Pricing {
                     break;
                 case 20:
                     MD.marketingdetails.DocumentDiscountPercent = 10.5;
+                    break;
+                case 21:
+                    MD.marketingdetails.DocumentDiscountPercent = 9.3;
+                    break;
+                case 22:
+                    MD.marketingdetails.DocumentDiscountPercent = 6.6;
+                    break;
+                case 23:
+                    MD.marketingdetails.DocumentDiscountPercent = 3.9;
+                    break;
+                case 24:
+                    MD.marketingdetails.DocumentDiscountPercent = 1.2;
                     break;
 
                 case 14:

@@ -12,7 +12,7 @@ import nv3Icon from './../images/land1.png';
 import NoorvareDescription from './../components/kharid/noorvare-description';
 export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOServiceShowAlert,baseUrl}) {
   return {
-    updateProductPrice({products,campaignId,cartId}){
+    updateProductPrice({products,campaign,cartId}){
         if(products === false){return false}
         let {fixPrice} = getState();
         return products.map((o)=>{
@@ -25,7 +25,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
               itemCode:res.code,itemQty:1
             }
           })
-          let array = fixPrice(a,campaignId);
+          let array = fixPrice(a,campaign);
           let result;
           for(let i = 0; i < array.length; i++){
             let obj = array[i];
@@ -394,7 +394,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     },
     async nv3(){
         let products=await this.getProductsByTaxonId({Taxons:'10954'});
-        products = this.updateProductPrice({products,cartId:'نورواره 3'});
+        products = this.updateProductPrice({products,cartId:'نورواره 3',campaign:{CampaignId:20,PriceListNum:43}});
         
         return {
             cartId:'نورواره 3',

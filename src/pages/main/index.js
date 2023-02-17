@@ -523,7 +523,7 @@ export default class Main extends Component {
         "marketingdetails": {
           "PriceList": campaign.PriceListNum,
           "SlpCode": userInfo.slpcode,
-          "Campaign":campaign.CampaigId
+          "Campaign":campaign.CampaignId
         },
         "MarketingLines": items
       }

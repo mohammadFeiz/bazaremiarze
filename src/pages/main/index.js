@@ -72,8 +72,6 @@ export default class Main extends Component {
       }
     
     }
-    let signalR=new SignalR(()=>this.state);
-    signalR.start();
     
     let images = localStorage.getItem('electricy-images');
     if(images === undefined || images === null){
@@ -101,7 +99,6 @@ export default class Main extends Component {
       SetState: (obj) => this.setState(obj),
       showMessage:this.showMessage.bind(this),
       images,
-      signalR,
       messages:[],
       campaigns:[],
       testedChance: true,
@@ -127,6 +124,9 @@ export default class Main extends Component {
     let getState = ()=>{
       return {...this.state,userInfo:props.userInfo}
     }
+    let signalR=new SignalR(()=>this.state);
+    signalR.start();
+    this.state.signalR = signalR;
     this.state.kharidApis = AIOService({token,getState,apis:kharidApis,log,baseUrl});
     this.state.bazargahApis = AIOService({token,getState,apis:bazargahApis,log,baseUrl});
     this.state.walletApis = AIOService({token,getState,apis:walletApis,log,baseUrl});

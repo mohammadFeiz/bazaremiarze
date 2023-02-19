@@ -1,8 +1,9 @@
 import {HubConnectionBuilder} from "@microsoft/signalr";
 
 export default function SignalR(getState) {
-    
-    var connection = new HubConnectionBuilder().withUrl("https://retailerapp.bbeta.ir/hubclient").build();
+    let {baseUrl} = getState();
+    let addr = baseUrl === 'https://retailerapp.bbeta.ir/api/v1'?'https://retailerapp.bbeta.ir/hubclient':'https://apimy.burux.com/hubclient';
+    var connection = new HubConnectionBuilder().withUrl(addr).build();
     const orderStatuses=
     {
         Pending : 1,

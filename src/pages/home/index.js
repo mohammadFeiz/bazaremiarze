@@ -326,7 +326,7 @@ export default class Home extends Component {
         }
     }
     async componentDidMount(){
-        this.getPreOrders();
+        //this.getPreOrders();
     }
     render() {
         let {showAwards,showCallPopup} = this.state;

@@ -328,11 +328,16 @@ export default class Main extends Component {
           factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
         }
         let factorDetails = getFactorDetails(factorDetailsItems,shippingOptions);
-        let total = factorDetails.DocumentTotal;
-        let discount = factorDetails.marketingdetails.DocumentDiscount;
+        let total = 0;
+        for(let i = 0; i < factorDetails.MarketingLines.length; i++){
+          let o = factorDetails.MarketingLines[i];
+          total += o.Price;
+        }
         let paymentMethodDiscountPercent = factorDetails.marketingdetails.DocumentDiscountPercent
-        let paymentMethodDiscount = (total * paymentMethodDiscountPercent) / 100;
-        let paymentAmount = total - paymentMethodDiscount;
+        let paymentMethodDiscount = factorDetails.marketingdetails.DocumentDiscount;
+        let paymentAmount = factorDetails.DocumentTotal;
+        let discount = total - (paymentAmount + paymentMethodDiscount);
+        
         return {
           total,discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount,factorDetails
         }
@@ -363,23 +368,23 @@ export default class Main extends Component {
         let cartTab = cart[cartId];
         let {getAmounts} = cartTab;
         let res = getAmounts(shippingOptions);
-        let {discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount,factorDetails} = res;
+        let {discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount,total} = res;
         
         return [
           {
-            key:'تخفیف',
-            value:functions.splitPrice(discount) + ' ریال',
+            key:'قیمت کالاها',
+            value:functions.splitPrice(this.fix(total)) + ' ریال',
+            className:'theme-medium-font-color fs-14'
+          },
+          {
+            key:'تخفیف گروه مشتری',
+            value:functions.splitPrice(this.fix(discount)) + ' ریال',
             className:'colorFDB913 fs-14'
           },
           {
             key:'تخفیف نحوه پرداخت',
             value:`${functions.splitPrice(this.fix(paymentMethodDiscount)) + ' ریال'} (${paymentMethodDiscountPercent} %)`,
             className:'color00B5A5 fs-14'
-          },
-          {
-            key:'قیمت کالاها',
-            value:functions.splitPrice(this.fix(paymentAmount + discount + paymentMethodDiscount)) + ' ریال',
-            className:'theme-medium-font-color fs-14'
           },
           {
             key:'مبلغ قابل پرداخت',
@@ -496,11 +501,13 @@ export default class Main extends Component {
   async componentDidMount() {
     let {kharidApis,backOffice} = this.state;
     let version = await kharidApis({api:'getVersion'});
-    let cacheVersion = localStorage.getItem('bazarmiarzeversion')
-    if(typeof cacheVersion !== 'string' || version !== cacheVersion){
-      localStorage.clear();
-      localStorage.setItem('bazarmiarzeversion',version);
-      window.location.reload()
+    if(version){
+      let cacheVersion = localStorage.getItem('bazarmiarzeversion')
+      if(typeof cacheVersion !== 'string' || version.toString() !== cacheVersion.toString()){
+        localStorage.clear();
+        localStorage.setItem('bazarmiarzeversion',version);
+        window.location.reload()
+      }
     }
     let {userInfo} = this.props;
     let getFactorDetails = (items,obj = {})=>{

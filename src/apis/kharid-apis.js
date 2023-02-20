@@ -393,7 +393,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       });
     },
     async nv3(){
-        let products=await this.getProductsByTaxonId({Taxons:'10954'});
+        let products=await this.getProductsByTaxonId({Taxons:'10708'});
         products = this.updateProductPrice({products,cartId:'نورواره 3',campaign:{CampaignId:20,PriceListNum:43}});
         
         return {

@@ -110,7 +110,7 @@ class ProductReqular extends Component {
         return {
             flex: 1,className: "ofy-auto",gap: 12,
             column: [
-                this.image_layout(name, selectedVariant.code, srcs[srcIndex]),
+                this.image_layout(name, selectedVariant?selectedVariant.code:undefined, srcs[srcIndex]),
                 this.options_layout(),
                 this.optionTypes_layout(optionTypes),
                 this.details_layout(details),
@@ -143,6 +143,7 @@ class ProductReqular extends Component {
         let { product } = this.props;
         if (product.optionTypes.length < 2) { return false }
         let {selectedVariant} = this.state;
+
         return {
             className: 'theme-card-bg theme-box-shadow theme-border-radius m-h-12',hide_xs:true,
             column: [
@@ -162,7 +163,7 @@ class ProductReqular extends Component {
                             popupAttrs={{ style: { maxHeight: 400 } }}
                             options={this.options}
                             popupWidth='fit'
-                            value={selectedVariant.id}
+                            value={selectedVariant?selectedVariant.id:undefined}
                             optionStyle='{height:28,fontSize:12}'
                             onChange={(value, obj) => {
                                 this.changeOptionType(obj.option.variant.optionValues)

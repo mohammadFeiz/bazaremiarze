@@ -6876,10 +6876,17 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       }
     },
     async getVersion(){
-        return '2.0.0'
+        // let res = await Axios.get(`${baseUrl}/Update/NewVersion`);
+        let res = await Axios.get(`${baseUrl}/Update/GetLastVersion`);
+
+        if(res.data.isSuccess){
+            return res.data.data.version;
+        }
+
+        return false;
     },
     async changeVersion(){
-
+        let res = await Axios.get(`${baseUrl}/Update/NewVersion`);
     }
   }
 }

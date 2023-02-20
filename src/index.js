@@ -24,8 +24,8 @@ import reportWebVitals from './reportWebVitals';
 class App extends Component {
   constructor(props) {
     super(props);
-    //this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";
-    this.apiBaseUrl = "https://apimy.burux.com/api/v1";
+    this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";
+    //this.apiBaseUrl = "https://apimy.burux.com/api/v1";
     this.state = { isAutenticated: false, registered: false, pageError: false, userInfo: {}, landing: true }
   }
 

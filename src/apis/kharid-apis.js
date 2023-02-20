@@ -191,7 +191,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           console.error('items is:',item)
           continue
         }
-        const srcs = defaultVariantImages.map(x => "https://shopback.miarze.com" + x.attributes.original_url);
+        const srcs = defaultVariantImages.map(x => "https://spree.burux.com" + x.attributes.original_url);
         let firstItem = products.find(x=>x.itemCode === defaultVariantSku);
         if(firstItem === null || firstItem === undefined) continue;
         firstItem.src=srcs[0];
@@ -313,7 +313,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         if (imgData !== undefined && imgData != null) {
           const taxonImage = includedResult.find(x => x.type === "taxon_image" && x.id === imgData.id)
           if (taxonImage !== undefined && taxonImage != null) {
-            src = "https://shopback.miarze.com" + taxonImage.attributes.original_url;
+            src = "https://spree.burux.com" + taxonImage.attributes.original_url;
           }
         }
         let icon;
@@ -492,7 +492,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           src = included.filter((m) => m.id === imgId)[0].attributes.original_url;
         }
         catch { src = ""; }
-        return { name: o.attributes.name, price: o.attributes.price, unit: "", src: `https://shopback.miarze.com${src}`, discountPercent: 0, discountPrice: 0 };
+        return { name: o.attributes.name, price: o.attributes.price, unit: "", src: `https://spree.burux.com${src}`, discountPercent: 0, discountPrice: 0 };
       });
     },
     async getCategories() {
@@ -506,7 +506,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         if (imgData !== undefined && imgData != null) {
           const taxonImage = included.find(x => x.type === "taxon_image" && x.id === imgData.id)
           if (taxonImage !== undefined && taxonImage != null) {
-            src = "https://shopback.miarze.com" + taxonImage.attributes.original_url;
+            src = "https://spree.burux.com" + taxonImage.attributes.original_url;
           }
         }
 
@@ -614,7 +614,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           }
           const itemFromB1=b1Result.find(x=>x.itemCode===defaultVariantSku);
           const srcs=defaultVariantImages.map(x=>{
-            return "https://shopback.miarze.com" + x.attributes.original_url;
+            return "https://spree.burux.com" + x.attributes.original_url;
           });
 
           if(itemFromB1==undefined) continue;
@@ -675,7 +675,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           id = id.toString();
           let { attributes } = include_srcs[id];
           let { original_url } = attributes;
-          srcs.push("https://shopback.miarze.com" + original_url)
+          srcs.push("https://spree.burux.com" + original_url)
         }
         let variants = [];
         let defaultVariant;
@@ -799,7 +799,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         const variantImagesId = variant.relationships.images.data.map(x=>x.id);
         const variantImages=included.filter(x=>x.type==="image" && variantImagesId.includes(x.id));
         const srcs=variantImages.map(x=>{
-          return "https://shopback.miarze.com" + x.attributes.original_url;
+          return "https://spree.burux.com" + x.attributes.original_url;
         });
 
         let price=fixPrice([{itemCode : varSku, itemQty : 1}])[0];
@@ -993,6 +993,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
       const spreeData = res.data.data;
       const b1Data = userInfo.itemPrices.map((i)=>{
+        if(!i.inventory){
+            debugger;
+        }
         const onHand=i.inventory.filter(x=>x.whsCode==="01");
         return {
           "itemCode": i.itemCode,
@@ -1037,7 +1040,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         if(productDefaultVariantSku && productDefaultVariantId){
           const itemFromB1=b1Result.find(x=>x.itemCode === productDefaultVariantSku || x.mainSku === productDefaultVariantSku);
           const srcs=defaultVariantImages.map(x=>{
-            return "https://shopback.miarze.com" + x.attributes.original_url;
+            return "https://spree.burux.com" + x.attributes.original_url;
           });
 
           if(itemFromB1 != undefined && itemFromB1) {

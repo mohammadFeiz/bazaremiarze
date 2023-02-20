@@ -65,7 +65,7 @@ export default class ProductCount extends Component{
             onClose:()=>{
                 rsa_actions.removePopup()
             },
-            value
+            value,
         }
         openPopup('count-popup',config)
       }

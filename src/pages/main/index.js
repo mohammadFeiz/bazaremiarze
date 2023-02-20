@@ -495,6 +495,13 @@ export default class Main extends Component {
   }
   async componentDidMount() {
     let {kharidApis,backOffice} = this.state;
+    let version = await kharidApis({api:'getVersion'});
+    let cacheVersion = localStorage.getItem('bazarmiarzeversion')
+    if(typeof cacheVersion !== 'string' || version !== cacheVersion){
+      localStorage.clear();
+      localStorage.setItem('bazarmiarzeversion',version);
+      window.location.reload()
+    }
     let {userInfo} = this.props;
     let getFactorDetails = (items,obj = {})=>{
       let {SettleType,PaymentTime,PayDueDate,DeliveryType} = obj;
@@ -560,7 +567,7 @@ export default class Main extends Component {
     let {addPopup,removePopup,setNavId} = rsa_actions;
     if(type === 'count-popup'){
       addPopup({
-        type:'bottom',
+        type:'bottom',id:'count-popup',
         body:()=><CountPopup {...parameter}/>,title:'تعداد را وارد کنید',backClose:true,closeType:'close button'})
     }
     else if(type === 'password'){

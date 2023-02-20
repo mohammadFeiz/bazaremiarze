@@ -151,24 +151,38 @@ export default class Profile extends Component{
                 },
                 {size:16},
                 this.parts_layout(),
-                {size:120,html:footerSvg(),align:'vh'},
-                {html:(
-                    <AIOButton position='bottom' className='theme-medium-font-color fs-14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
-                        return (
-                            <div style={{background:'#fff'}}>
-                                <div style={{height:60,display:'flex',alignItems:'center'}} className='theme-dark-font-color fs-16 bold p-h-24'>موارد اضافه شده به این نسخه</div>
-                                <ul>
-                                    <li>تکمیل بازارگاه تا تحویل به مشتری</li>
-                                    <li>بهبود گرافیک</li>
-                                    <li>بهبود تجربه کاربری  در خرید</li>
-                                    <li>اتصال به بک آفیس</li>
-                                    <li>افزایش سرعت دریافت داده ها از سرور</li>
+                {
+                    size:120,html:footerSvg(),align:'vh',
+                    egg:{
+                        callback:async ()=>{
+                            let {kharidApis} = this.context;
+                            let res = await kharidApis({api:'changeVersion'})
+                            if(res){
+                                alert('تغییر ورژن با موفقیت انجام شد')
+                            }
+                        },
+                        count:12
+                    }
+                },
+                {
+                    html:(
+                        <AIOButton position='bottom' className='theme-medium-font-color fs-14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
+                            return (
+                                <div style={{background:'#fff'}}>
+                                    <div style={{height:60,display:'flex',alignItems:'center'}} className='theme-dark-font-color fs-16 bold p-h-24'>موارد اضافه شده به این نسخه</div>
+                                    <ul>
+                                        <li>تکمیل بازارگاه تا تحویل به مشتری</li>
+                                        <li>بهبود گرافیک</li>
+                                        <li>بهبود تجربه کاربری  در خرید</li>
+                                        <li>اتصال به بک آفیس</li>
+                                        <li>افزایش سرعت دریافت داده ها از سرور</li>
 
-                                </ul>
-                            </div>
-                        )
-                    }}/>
-                ),align:'vh'},
+                                    </ul>
+                                </div>
+                            )
+                        }}/>
+                    ),align:'vh'
+                },
                 {size:24}
             ]
         }

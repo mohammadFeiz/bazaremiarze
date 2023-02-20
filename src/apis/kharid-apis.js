@@ -6874,6 +6874,12 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         //   }
         // ]
       }
+    },
+    async getVersion(){
+        return '2.0.0'
+    },
+    async changeVersion(){
+
     }
   }
 }

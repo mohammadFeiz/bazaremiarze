@@ -6887,6 +6887,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     },
     async changeVersion(){
         let res = await Axios.get(`${baseUrl}/Update/NewVersion`);
+        return res.data.isSuccess
     }
   }
 }

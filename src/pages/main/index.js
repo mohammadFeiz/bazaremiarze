@@ -337,7 +337,6 @@ export default class Main extends Component {
         let paymentMethodDiscount = factorDetails.marketingdetails.DocumentDiscount;
         let paymentAmount = factorDetails.DocumentTotal;
         let discount = total - (paymentAmount + paymentMethodDiscount);
-        debugger;
         return {
           total,discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount,factorDetails
         }

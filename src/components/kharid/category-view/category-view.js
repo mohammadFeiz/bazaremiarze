@@ -37,7 +37,7 @@ export default class CategoryView extends Component {
         if(product.cartId === 'بلکس'){
             return {html:<BelexCard index={index} product={product} renderIn='category'/>,className:'of-visible'}    
         }
-        return {html:<ProductCard index={index} product={product} renderIn='category' cartId={product.cartId} isFirst={true} isLast={true} type='horizontal' />,className:'of-visible'}
+        return {html:<ProductCard key={product.ItemCode} index={index} product={product} renderIn='category' cartId={product.cartId} isFirst={true} isLast={true} type='horizontal' />,className:'of-visible'}
     }
     nv3Report_layout(){
         let {cart} = this.context;

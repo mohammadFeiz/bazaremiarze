@@ -3,7 +3,7 @@ export default {
         garanti:false,
         belex:false,
         forooshe_vije:false,
-        campaigns:false,
+        campaigns:true,
         bazargah:true,
         wallet:false,
         noorvare3:true,

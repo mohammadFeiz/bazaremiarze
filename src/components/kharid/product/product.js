@@ -107,10 +107,11 @@ class ProductReqular extends Component {
         let { product } = this.props;
         let { name, optionTypes, details, srcs } = product;
         let { srcIndex,selectedVariant } = this.state;
+        let code = selectedVariant?selectedVariant.code:undefined;
         return {
             flex: 1,className: "ofy-auto",gap: 12,
             column: [
-                this.image_layout(name, selectedVariant?selectedVariant.code:undefined, srcs[srcIndex]),
+                this.image_layout(name, code, srcs[srcIndex]),
                 this.options_layout(),
                 this.optionTypes_layout(optionTypes),
                 this.details_layout(details),
@@ -724,6 +725,7 @@ class Belex extends Component {
         },1000)
     }
     image_layout(name, code, src) {
+        debugger;
         let { product } = this.props, { srcIndex } = this.state;
         return {
             size: 346, className: "theme-box-shadow theme-card-bg theme-border-radius m-h-12",

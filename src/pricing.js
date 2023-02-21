@@ -798,7 +798,7 @@ export default class Pricing {
                         temprule = rule;
                     }
                 }
-                if (temprule.price != null) {
+                if (temprule && temprule.price != null) {
                     //Price from Period and Volume Founded
                     res.Price = temprule.price;
                     pvdisount = temprule.discountPercent;

@@ -130,7 +130,13 @@ export default class ProductCard extends Component{
                 loading={loading}
                 layout={{
                     className:'theme-card-bg theme-box-shadow gap-no-color rvd-rotate-card' + (mounted?' mounted':''),
-                    attrs:{onClick:()=>this.onClick()},
+                    //attrs:{onClick:()=>this.onClick()},
+                    egg:{
+                        count:3,
+                        callback:()=>{
+                            console.log(this.props)
+                        }
+                    },
                     style:{
                         height:148,border:'1px solid #eee',
                         borderBottomLeftRadius:!isLast?0:undefined,
@@ -191,7 +197,10 @@ export default class ProductCard extends Component{
         )
     }
     render(){
-        let {type} = this.props;
+        let {type,product} = this.props;
+        if(product.ItemCode === '5332'){
+            console.log(product.B1Dscnt);
+        }
         return this[type +'_layout']()
     }
 }

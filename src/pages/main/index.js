@@ -337,12 +337,18 @@ export default class Main extends Component {
         let paymentMethodDiscount = factorDetails.marketingdetails.DocumentDiscount;
         let paymentAmount = factorDetails.DocumentTotal;
         let discount = total - (paymentAmount + paymentMethodDiscount);
-        
+        debugger;
         return {
           total,discount,paymentMethodDiscount,paymentMethodDiscountPercent,paymentAmount,factorDetails
         }
       }
-      cartTab.getProductCards = (renderIn)=>{
+      cartTab.getProductCards = (renderIn,shippingOptions)=>{
+        let paymentMethodDiscountPercent;
+        if(renderIn === 'shipping'){
+          let {PayDueDate_options,PayDueDate} = shippingOptions;
+          paymentMethodDiscountPercent = PayDueDate_options.find(({value})=>value === PayDueDate).percent;
+        }
+        
         let {cart} = this.state;
         let cartTab = cart[cartId];
         if(!cartTab){return []}
@@ -358,6 +364,7 @@ export default class Main extends Component {
           }
           let props = {
             product,details,type:'horizontal',renderIn,cartId,
+            paymentMethodDiscountPercent,
             isFirst:i === 0,isLast: i === cartItems.length - 1,
           }
           return <ProductCard key={variantId} variantId={variantId} {...props} index={i}/>
@@ -384,7 +391,7 @@ export default class Main extends Component {
           {
             key:'تخفیف نحوه پرداخت',
             value:`${functions.splitPrice(this.fix(paymentMethodDiscount)) + ' ریال'} (${paymentMethodDiscountPercent} %)`,
-            className:'color00B5A5 fs-14'
+            className:'colorFF4335 fs-14'
           },
           {
             key:'مبلغ قابل پرداخت',

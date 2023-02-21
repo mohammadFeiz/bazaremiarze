@@ -53,8 +53,9 @@ export default class ProductCard extends Component{
         return {html:name,className:'fs-12 theme-medium-font-color bold',style:{whiteSpace:'normal',textAlign:'right'}}
     }
     discount_layout(){
-        let {product,count = 1} = this.props;
+        let {product,count = 1,paymentMethodDiscountPercent} = this.props;
         let {inStock,Price,B1Dscnt = 0,CmpgnDscnt = 0,PymntDscnt = 0,FinalPrice} = product;
+
         if(!Price || !inStock){return false}
         return {
             gap:4,className:'p-h-12',
@@ -66,7 +67,7 @@ export default class ProductCard extends Component{
                     row:[
                         {show:!!B1Dscnt,html:<div style={{background:'#FFD335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{B1Dscnt + '%'}</div>},
                         {show:!!CmpgnDscnt,html:<div style={{background:'#ffa835',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{CmpgnDscnt + '%'}</div>},
-                        {show:!!PymntDscnt,html:<div style={{background:'#ff4335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{PymntDscnt + '%'}</div>}
+                        {show:!!paymentMethodDiscountPercent || !!PymntDscnt,html:<div style={{background:'#ff4335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{(paymentMethodDiscountPercent || PymntDscnt) + '%'}</div>}
                     ]
                 },
             ]

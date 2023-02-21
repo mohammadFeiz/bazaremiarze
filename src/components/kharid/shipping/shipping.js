@@ -103,7 +103,7 @@ export default class Shipping extends Component{
     products_layout(){
       let {cart} = this.context;
       let {cartId} = this.props;
-      let cards = cart[cartId].getProductCards('shipping');
+      let cards = cart[cartId].getProductCards('shipping',{...this.state});
       return {
         column:[
           {size:36,align:'v',className:'theme-medium-font-color fs-14 bold p-h-12',html:'محصولات'},

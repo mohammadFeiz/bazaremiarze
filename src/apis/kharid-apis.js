@@ -27,9 +27,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         }  
           
         let res = products.map((o,i)=>{
-          if(fixed[i].ItemCode === '9403'){debugger;}  
           return {...o,...fixed[i],cartId}
         })
+        
         
         return res;
     },
@@ -563,10 +563,11 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       if(!b1_item){
         return false
       }
-      let price, discountPrice, discountPercent, inStock;
+      let price, discountPrice, discountPercent, inStock,dropShipping;
       try { price = b1_item.finalPrice } catch { price = 0 }
       try { discountPercent = b1_item.pymntDscnt } catch { discountPrice = 0 }
-      try { inStock = !!b1_item.onHand.qtyLevel } catch { inStock = 0 }
+      try { inStock = !!b1_item.canSell } catch { inStock = 0 }
+      try { dropShipping = b1_item.qtyRelation === 4} catch { dropShipping = 0 }
       try { discountPrice = Math.round(b1_item.price * discountPercent / 100) } catch { discountPrice = 0 }
       let optionValues = this.getVariantOptionValues(relationships.option_values.data, optionTypes)
       let code = '';
@@ -578,9 +579,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       }
       return {
         id, optionValues, discountPrice, price, inStock, srcs,
-        code,
-        discountPercent,
-        isDefault: defaultVariantId === id
+        dropShipping,code,discountPercent,isDefault: defaultVariantId === id
       };
 
     },
@@ -616,7 +615,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           const defaultVariantImages=included.filter(x=>x.type==="image" && defaultVariantImagesId.includes(x.id));
           const defaultVariantSku=defaultVariant.attributes.sku;
           
-        if(typeof defaultVariantSku !== "string" ) debugger;
           if(!defaultVariantSku){
               // console.error('there is an item without sku');
               // console.error('items is:',item)
@@ -629,10 +627,9 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
           if(itemFromB1 == undefined) continue;
 
-          const defaultVariantQty=!!itemFromB1.onHand.qtyLevel;
-          if(item.attributes.name.includes("8")) debugger;
+          const dropShipping=itemFromB1.qtyRelation === 4;
           finalResult.push({name:item.attributes.name,id:item.id,
-              inStock:defaultVariantQty, details:[], optionTypes:[], variants:[], srcs,
+              dropShipping,inStock:!!itemFromB1.canSell, details:[], optionTypes:[], variants:[], srcs,
                 defaultVariant:{code:defaultVariantSku,srcs},
               price:0, discountPrice:0, discountPercent:0});
         }
@@ -776,7 +773,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
       const included = res.data.data.included;
       let { relationships } = productResult;
-      let {fixPrice} = getState();
+      let {fixPrice,userInfo} = getState();
       let variants = [];
       let details = [];
       let optionTypes = [];
@@ -806,6 +803,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         const variant = included.find(x=>x.type==="variant" && x.id===item.id);
         let varId = variant.id.toString();
         let varSku = variant.attributes.sku;
+        if(!varSku){continue}
         let optionValues = this.getVariantOptionValues(variant.relationships.option_values.data, optionTypes)
         const variantImagesId = variant.relationships.images.data.map(x=>x.id);
         const variantImages=included.filter(x=>x.type==="image" && variantImagesId.includes(x.id));
@@ -817,11 +815,15 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         if(product.campaign){
           price = this.updateCampaignPrice(product.campaign.id,price)
         }
-        if(price==undefined) continue;
+        if(price === undefined) continue;
+        let sss = userInfo.itemPrices.find(x=>x.itemCode === varSku || x.mainSku === varSku);
+        if(!sss){debugger;}
+        let {canSell,qtyRelation} = sss;
         variants.push({
           id:varId,
           optionValues,
-          inStock:!!price.OnHand.qtyLevel,
+          inStock:!!canSell,
+          dropShipping:qtyRelation === 4,
           srcs,
           code:varSku,
           isDefault: defaultVariantId === varId,
@@ -966,7 +968,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       const spreeData = res.data.data;
       // const b1Data = b1Res.data.data;
       const b1Data = userInfo.itemPrices.map((i)=>{
-        const onHand=i.inventory.filter(x=>x.whsCode==="01");
         return {
           "itemCode": i.itemCode,
           "price": 0,
@@ -974,13 +975,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           "b1Dscnt": 0,
           "cmpgnDscnt": 0,
           "pymntDscnt": 0,
-          "onHand":onHand.length ? onHand[0] : {},
-          //   "onHand": {
-          //   "whsCode": "01",
-          //   "qty": 269.3,
-          //   "qtyLevel": 300,
-          //   "qtyLevRel": "Less"
-          // }
+          "canSell":i.canSell
         };
       });
       return this.getMappedAllProducts({ spreeResult: spreeData, b1Result: b1Data, loadType });
@@ -1004,10 +999,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
       const spreeData = res.data.data;
       const b1Data = userInfo.itemPrices.map((i)=>{
-        if(!i.inventory){
-            debugger;
-        }
-        const onHand=i.inventory.filter(x=>x.whsCode==="01");
         return {
           "itemCode": i.itemCode,
           "price": 0,
@@ -1016,7 +1007,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           "cmpgnDscnt": 0,
           "pymntDscnt": 0,
           "mainSku":i.mainSku,
-          "onHand":onHand.length ? onHand[0] : {},
+          "canSell":i.canSell
           //   "onHand": {
           //   "whsCode": "01",
           //   "qty": 269.3,
@@ -1038,7 +1029,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         // 11922 ,
         // 12314 ,
         // 12395
-        if( product.id=="12395") continue;
+        if( product.id==="12395") continue;
 
         if(product.relationships.default_variant==undefined || product.relationships.default_variant.data==undefined) continue;
 
@@ -1059,14 +1050,15 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
               "id": productDefaultVariantId,
               "discountPrice": 0,
               "price": 0,
-              "inStock": !!itemFromB1.onHand.qtyLevel,
+              "inStock": !!itemFromB1.canSell,
+              "dropShipping":itemFromB1.qtyRelation === 4,
               "srcs": [],
               "code": productDefaultVariantSku,
               "discountPercent": 0,
               "isDefault": true
             };
             let aaa = {
-                inStock:!!itemFromB1.onHand.qtyLevel, details:[], optionTypes:[], variants:[defVariantFinalResult], srcs,
+                inStock:!!itemFromB1.canSell, details:[], optionTypes:[], variants:[defVariantFinalResult], srcs,
                 name: product.attributes.name, defaultVariant:defVariantFinalResult,
                 price:0, discountPrice:0, discountPercent:0, id: product.id
             }
@@ -1357,7 +1349,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
               let src;
               for (const t3Item of taxondepth3Items) {
                 if(!src){src = t3Item.imageurl;}
-                if(!t3Item.itemcodes[0].Qty){debugger;}
+                
                 variants.push({
                   name:t3Item.itemname,
                   totalQty:t3Item.itemcodes[0].Qty,

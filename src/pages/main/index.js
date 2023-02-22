@@ -505,6 +505,11 @@ export default class Main extends Component {
       this.setState({garanti_products_dic});
   }
   async componentDidMount() {
+    let {userInfo} = this.props;
+    let pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode,12 * 60 * 60 * 1000)
+    pricing.startservice().then((value) => { return value; });
+    await pricing.forceFetchData();
+    
     let {kharidApis,backOffice} = this.state;
     let version = await kharidApis({api:'getVersion'});
     if(version){
@@ -518,7 +523,6 @@ export default class Main extends Component {
         window.location.reload()
       }
     }
-    let {userInfo} = this.props;
     let getFactorDetails = (items,obj = {})=>{
       let {SettleType,PaymentTime,PayDueDate,DeliveryType} = obj;
       let {userInfo} = this.props;
@@ -551,8 +555,8 @@ export default class Main extends Component {
         "MarketingLines": items
       }
       let list = items.map(({itemCode})=>itemCode);
-      if(log){debugger;}
-      list = pricing.autoPriceList(list, data, null, null, null, null, null, "01");
+      // if(log){debugger;}
+      list = pricing.autoPriceList(list, data);
       return list
     }
     this.state.fixPrice = fixPrice;
@@ -564,10 +568,6 @@ export default class Main extends Component {
     if(backOffice.activeManager.bazargah){this.getBazargahOrders();}
     if(backOffice.activeManager.noorvare3){this.get_nv3();}
     //let testedChance = await gardooneApis({type:"get_tested_chance"});
-    let pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode,12 * 60 * 60 * 1000)
-    pricing.startservice().then((value) => { return value; });
-    
-    
     let cart = await kharidApis({api:'getCart',loading:false});
     for(let prop in cart){
       cart[prop] = this.getCartTab(prop,cart[prop])

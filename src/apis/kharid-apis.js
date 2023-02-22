@@ -12,6 +12,7 @@ import eydane_roshanayi from './../images/eydane-roshanayi.png';
 import eydane_batri from './../images/eydane-batri.png';
 import nv3Icon from './../images/land1.png';
 import NoorvareDescription from './../components/kharid/noorvare-description';
+import backOfficeObject from './../back-office';
 export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOServiceShowAlert,baseUrl}) {
   return {
     updateProductPrice({products,campaign,cartId}){
@@ -1093,6 +1094,18 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       );
       const included = res.data.data.included;
       return res;
+    },
+    async getBackOffice(){
+      let backOffice = backOfficeObject;
+      let success = true
+      if(success){
+        return backOffice
+      }
+      return 'خطا در دریافت اطلاعت اولیه مرکز کنترل'
+    },
+    async setBackOffice(backOffice){
+      return true
+
     },
     async getCart(){
       let res = await Axios.get(`${baseUrl}/orderuidata`);

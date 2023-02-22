@@ -8,6 +8,7 @@ import Buy from "./../buy/index";
 import Bazargah from "../bazargah/bazargah";
 import Profile from "./../profile/profile";
 import Noorvare3 from './../../pages/noorvare3/noorvare3';
+import BackOffice from './../../back-office-panel';
 
 //popups/////////////////////////////////////
 import OrdersHistory from "./../../components/kharid/orders-history/orders-history";
@@ -24,7 +25,7 @@ import CountPopup from "../../components/kharid/product-count/count-popup";
 
 //npm////////////////////////////////////////
 import {Icon} from '@mdi/react';
-import { mdiShieldCheck,mdiCellphoneMarker,mdiClipboardList,mdiExitToApp, mdiCart, mdiBell, mdiPower, mdiMagnify, mdiPalette, mdiOpacity} from "@mdi/js";
+import { mdiShieldCheck,mdiCellphoneMarker,mdiClipboardList,mdiExitToApp, mdiCart, mdiBell, mdiPower, mdiMagnify, mdiPalette, mdiOpacity, mdiClose} from "@mdi/js";
 import RSA from './../../npm/react-super-app/react-super-app';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import AIOService from './../../npm/aio-service/aio-service';
@@ -86,6 +87,7 @@ export default class Main extends Component {
     let noorvare3 = !!!props.userInfo.norvareh3Agreement;
     if(!this.noorvare3Storage.load('show',true)){noorvare3 = false}
     this.state = {
+      showBackOffice:true,
       backOffice,
       setBackOffice:(backOffice)=>{
         this.setState({backOffice})
@@ -674,7 +676,7 @@ export default class Main extends Component {
   }
   render() {
     let {userInfo,logout} = this.props;
-    let {opacity,theme,noorvare3,backOffice} = this.state;
+    let {opacity,theme,noorvare3,backOffice,showBackOffice} = this.state;
     let context = {
       ...this.state,
       userInfo,
@@ -757,6 +759,7 @@ export default class Main extends Component {
           splash={()=><Splash/>}
           splashTime={7000}
         />
+        {showBackOffice && <BackOffice/>}
       </appContext.Provider>
     );
   }
@@ -884,3 +887,4 @@ class Header extends Component{
     )
   }
 }
+

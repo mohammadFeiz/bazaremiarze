@@ -3,10 +3,10 @@ export default {
         garanti:false,
         belex:false,
         forooshe_vije:false,
-        campaigns:true,
+        campaigns:false,
         bazargah:true,
         wallet:false,
-        noorvare3:true,
+        noorvare3:false,
     },
     bazargah:{
         forsate_ersale_sefareshe_bazargah:16 * 60,

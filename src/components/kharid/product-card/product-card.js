@@ -130,13 +130,13 @@ export default class ProductCard extends Component{
                 loading={loading}
                 layout={{
                     className:'theme-card-bg theme-box-shadow gap-no-color rvd-rotate-card' + (mounted?' mounted':''),
-                    //attrs:{onClick:()=>this.onClick()},
-                    egg:{
-                        count:3,
-                        callback:()=>{
-                            console.log(this.props)
-                        }
-                    },
+                    attrs:{onClick:()=>this.onClick()},
+                    // egg:{
+                    //     count:3,
+                    //     callback:()=>{
+                    //         console.log(this.props)
+                    //     }
+                    // },
                     style:{
                         height:148,border:'1px solid #eee',
                         borderBottomLeftRadius:!isLast?0:undefined,

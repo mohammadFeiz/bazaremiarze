@@ -108,7 +108,7 @@ export default class Cart extends Component{
       let {total} = cartTab.getAmounts()
       
       return {
-          html:<NV3Report amount={total/10000000}/>
+          html:<NV3Report amount={total}/>
       }
     }
     continue(){

@@ -50,7 +50,7 @@ export default class CategoryView extends Component {
             total = getAmounts().total
         }
         return {
-            html:<NV3Report amount={total / 10000000}/>
+            html:<NV3Report amount={total}/>
         }
     }
     render() {

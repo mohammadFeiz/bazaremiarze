@@ -121,7 +121,6 @@ export default class Shipping extends Component{
       let {cartId} = this.props;
       if(cartId !== 'نورواره 3'){return false}
       let amount = cart[cartId].getAmounts().total;
-      amount = amount / 10000000
       return {
         html:<NV3Report amount={amount} renderIn='shipping'/>
       }

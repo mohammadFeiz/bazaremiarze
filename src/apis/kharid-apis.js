@@ -404,6 +404,18 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             )
         }
     },
+    async nv3Details(){
+      let res = await Axios.get(`${baseUrl}/Visit/GiftOnPurchaseByCardCode`)
+      if(res.data.isSuccess){
+        return res.data.data.map((o)=>{
+          return {lamp:o.giftQty,amount:o.minimumPurchase}
+        })
+      }
+      else{
+        return 'خطا'
+      }
+      
+    },
     async eydane_batri(){
         let products=await this.getProductsByTaxonId({Taxons:'10677'});
         products = this.updateProductPrice({products,cartId:'عیدانه باتری',campaign:{CampaignId:17}});

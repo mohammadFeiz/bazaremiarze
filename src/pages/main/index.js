@@ -331,7 +331,7 @@ export default class Main extends Component {
         let total = 0;
         for(let i = 0; i < factorDetails.MarketingLines.length; i++){
           let o = factorDetails.MarketingLines[i];
-          total += o.Price;
+          total += o.Price * o.ItemQty;
         }
         let paymentMethodDiscountPercent = factorDetails.marketingdetails.DocumentDiscountPercent
         let paymentMethodDiscount = factorDetails.marketingdetails.DocumentDiscount;
@@ -478,7 +478,8 @@ export default class Main extends Component {
   async get_nv3() {
     let {kharidApis} = this.state;
     let nv3 = await kharidApis({api:"nv3",loading:false});
-    this.setState({ nv3});
+    let nv3Details = await kharidApis({api:"nv3Details",loading:false});
+    this.setState({ nv3,nv3Details});
   }
   async get_belex() {
     let {kharidApis} = this.state;

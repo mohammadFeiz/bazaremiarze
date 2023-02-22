@@ -22,7 +22,10 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             return {itemCode:code,itemQty:1};
         })
         let fixed = fixPrice(config,campaign)
-        
+        if(!fixed[0].B1Dscnt){
+          fixed = fixPrice(config,campaign,true);
+        }  
+          
         let res = products.map((o,i)=>{
           if(fixed[i].ItemCode === '9403'){debugger;}  
           return {...o,...fixed[i],cartId}
@@ -563,7 +566,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       let price, discountPrice, discountPercent, inStock;
       try { price = b1_item.finalPrice } catch { price = 0 }
       try { discountPercent = b1_item.pymntDscnt } catch { discountPrice = 0 }
-      try { inStock = b1_item.onHand.qtyLevel } catch { inStock = 0 }
+      try { inStock = !!b1_item.onHand.qtyLevel } catch { inStock = 0 }
       try { discountPrice = Math.round(b1_item.price * discountPercent / 100) } catch { discountPrice = 0 }
       let optionValues = this.getVariantOptionValues(relationships.option_values.data, optionTypes)
       let code = '';
@@ -626,7 +629,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
 
           if(itemFromB1 == undefined) continue;
 
-          const defaultVariantQty=itemFromB1.onHand.qty;
+          const defaultVariantQty=!!itemFromB1.onHand.qtyLevel;
           if(item.attributes.name.includes("8")) debugger;
           finalResult.push({name:item.attributes.name,id:item.id,
               inStock:defaultVariantQty, details:[], optionTypes:[], variants:[], srcs,
@@ -687,7 +690,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         }
         let variants = [];
         let defaultVariant;
-        let inStock = 0;
+        let inStock = false;
         let defaultVariantId = product.relationships.default_variant.data.id;
         for (let i = 0; i < relationships.variants.data.length; i++) {
           let { id } = relationships.variants.data[i];
@@ -695,7 +698,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
           let variant = this.getProductVariant(include_variants[id], include_srcs, b1Result, optionTypes, defaultVariantId,product)
           if(variant === false){continue}
           if (variant.isDefault) { defaultVariant = variant }
-          inStock += variant.inStock;
+          inStock = !!inStock || !!variant.inStock;
           variants.push(variant)
         }
         let price = 0, discountPrice = 0, discountPercent = 0;
@@ -818,7 +821,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         variants.push({
           id:varId,
           optionValues,
-          inStock:price.OnHand !== null?price.OnHand.qty:0,
+          inStock:!!price.OnHand.qtyLevel,
           srcs,
           code:varSku,
           isDefault: defaultVariantId === varId,
@@ -1056,14 +1059,14 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
               "id": productDefaultVariantId,
               "discountPrice": 0,
               "price": 0,
-              "inStock": itemFromB1.onHand.qty,
+              "inStock": !!itemFromB1.onHand.qtyLevel,
               "srcs": [],
               "code": productDefaultVariantSku,
               "discountPercent": 0,
               "isDefault": true
             };
             let aaa = {
-                inStock:itemFromB1.onHand.qty, details:[], optionTypes:[], variants:[defVariantFinalResult], srcs,
+                inStock:!!itemFromB1.onHand.qtyLevel, details:[], optionTypes:[], variants:[defVariantFinalResult], srcs,
                 name: product.attributes.name, defaultVariant:defVariantFinalResult,
                 price:0, discountPrice:0, discountPercent:0, id: product.id
             }

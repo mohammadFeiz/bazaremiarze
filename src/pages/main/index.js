@@ -511,8 +511,10 @@ export default class Main extends Component {
       let cacheVersion = localStorage.getItem('bazarmiarzeversion')
       if(typeof cacheVersion !== 'string'){cacheVersion = version}
       if(version.toString() !== cacheVersion.toString()){
+        let loginStorage = localStorage.getItem('brxelctoken');
         localStorage.clear();
         localStorage.setItem('bazarmiarzeversion',version);
+        localStorage.setItem('brxelctoken',loginStorage);
         window.location.reload()
       }
     }
@@ -536,7 +538,7 @@ export default class Main extends Component {
       let res = pricing.autoCalcDoc(config)
       return res
     }
-    let fixPrice = (items,campaign = {})=>{
+    let fixPrice = (items,campaign = {},log)=>{
       let {userInfo} = this.props;
       let data = {
         "CardGroupCode": userInfo.groupCode,
@@ -549,8 +551,9 @@ export default class Main extends Component {
         "MarketingLines": items
       }
       let list = items.map(({itemCode})=>itemCode);
-        list = pricing.autoPriceList(list, data, null, null, null, null, null, "01");
-        return list
+      if(log){debugger;}
+      list = pricing.autoPriceList(list, data, null, null, null, null, null, "01");
+      return list
     }
     this.state.fixPrice = fixPrice;
     this.state.getFactorDetails = getFactorDetails;

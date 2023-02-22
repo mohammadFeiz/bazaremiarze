@@ -24,7 +24,7 @@ class ProductReqular extends Component {
         this.mounted = true;
         let { product } = this.props;
         this.getVariants()
-        let firstVariant = product.inStock ? (product.variants.filter((o) => o.inStock === null ? false : !!o.inStock)[0]) : undefined;
+        let firstVariant = product.inStock ? (product.variants.filter((o) => o.inStock)[0]) : undefined;
         this.setState({
             optionValues: firstVariant ? { ...firstVariant.optionValues } : undefined, showDetails: true,
             selectedVariant: firstVariant, srcIndex: 0
@@ -49,7 +49,7 @@ class ProductReqular extends Component {
             
         for (let i = 0; i < variants.length; i++) {
             let { optionValues, inStock, id } = variants[i];
-            if (!inStock || inStock === null) { continue }
+            if (!inStock) { continue }
             let str = [];
             for (let prop in optionValues) {
                 str.push(optionTypesDict[prop] + ' : ' + optionValuesDict[optionValues[prop]])
@@ -96,12 +96,6 @@ class ProductReqular extends Component {
                 selectedVariant: variant
             });
         }
-    }
-    getInStock() {
-        let { selectedVariant } = this.state;
-        let { inStock = 0 } = selectedVariant;
-        if (inStock === null) { inStock = 0 }
-        return inStock;
     }
     body_layout() {
         let { product } = this.props;
@@ -273,7 +267,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
     addToCart_layout() {
         let {product} = this.props;
         let { selectedVariant } = this.state;
-        if (!selectedVariant || !selectedVariant.inStock || selectedVariant.inStock === null) {
+        if (!selectedVariant || !selectedVariant.inStock) {
             return { html: '' }
         }
         return {
@@ -286,7 +280,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
     }
     price_layout() {
         let { selectedVariant } = this.state;
-        if (!selectedVariant || !selectedVariant.inStock || selectedVariant.inStock === null) {
+        if (!selectedVariant || !selectedVariant.inStock) {
             return { column: [{ flex: 1 }, { html: "ناموجود", className: "colorD83B01 bold fs-14" }, { flex: 1 }] };
         }
         let {product} = this.props;

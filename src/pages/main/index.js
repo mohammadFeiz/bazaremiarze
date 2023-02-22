@@ -509,7 +509,8 @@ export default class Main extends Component {
     let version = await kharidApis({api:'getVersion'});
     if(version){
       let cacheVersion = localStorage.getItem('bazarmiarzeversion')
-      if(typeof cacheVersion !== 'string' || version.toString() !== cacheVersion.toString()){
+      if(typeof cacheVersion !== 'string'){cacheVersion = version}
+      if(version.toString() !== cacheVersion.toString()){
         localStorage.clear();
         localStorage.setItem('bazarmiarzeversion',version);
         window.location.reload()

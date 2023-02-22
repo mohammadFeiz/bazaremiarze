@@ -24,7 +24,8 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         let fixed = fixPrice(config,campaign)
         
         let res = products.map((o,i)=>{
-            return {...o,...fixed[i],cartId}
+          if(fixed[i].ItemCode === '9403'){debugger;}  
+          return {...o,...fixed[i],cartId}
         })
         
         return res;

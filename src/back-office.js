@@ -102,64 +102,67 @@ export default {
         HaftehEstandard:14,
         BELEX2022:15
     },
-    'فروش ویژه':{
-        defaultShipping:{
-            PayDueDate:1,
-            SettleType:16,
-            DeliveryType:11,
-            PayDueDateOptions:[1,17,18,19,20],
-            SettleTypeOptions:[8,16],
-            DeliveryTypeOptions:[11,12,13,15]
-        }
-    },
-    'بلکس':{
-        defaultShipping:{
-            PayDueDate:1,
-            SettleType:16,
-            DeliveryType:11,
-            PayDueDateOptions:[1,17,18,19,20],
-            SettleTypeOptions:[8,16],
-            DeliveryTypeOptions:[11,12,13,15]
-        }
-    },
-    'خرید عادی':{
-        defaultShipping:{
-            PayDueDate:1,
-            PaymentTime:1,
-            DeliveryType:11,
-            PayDueDateOptions:[1,15,16],
-            PaymentTimeOptions:[1,2],
-            DeliveryTypeOptions:[11,12,13,15]
-        }
-    },
-    'نورواره 3':{
-        defaultShipping:{
-            PayDueDate:1,
-            PaymentTime:1,
-            DeliveryType:11,
-            PayDueDateOptions:[1,15,16,17,18,19,21,22,23,24],
-            PaymentTimeOptions:[1,2],
-            DeliveryTypeOptions:[11,12,13,15]
-        }
-    },
-    'طرح شب یلدای روشنایی':{
-        defaultShipping:{
-            PayDueDate:1,
-            PaymentTime:1,
-            DeliveryType:11,
-            PayDueDateOptions:[1,15,16],
-            PaymentTimeOptions:[1,2],
-            DeliveryTypeOptions:[11,12,13,15]
-        }
-    },
-    'طرح شب یلدای باطری':{
-        defaultShipping:{
-            PayDueDate:1,
-            PaymentTime:1,
-            DeliveryType:11,
-            PayDueDateOptions:[1,15,16],
-            PaymentTimeOptions:[1,2],
-            DeliveryTypeOptions:[11,12,13,15]
+    tarhHa:{
+        'فروش ویژه':{
+            defaultShipping:{
+                PayDueDate:1,
+                SettleType:16,
+                DeliveryType:11,
+                PayDueDateOptions:[1,17,18,19,20],
+                SettleTypeOptions:[8,16],
+                DeliveryTypeOptions:[11,12,13,15]
+            }
+        },
+        'بلکس':{
+            defaultShipping:{
+                PayDueDate:1,
+                SettleType:16,
+                DeliveryType:11,
+                PayDueDateOptions:[1,17,18,19,20],
+                SettleTypeOptions:[8,16],
+                DeliveryTypeOptions:[11,12,13,15]
+            }
+        },
+        'خرید عادی':{
+            defaultShipping:{
+                PayDueDate:1,
+                PaymentTime:1,
+                DeliveryType:11,
+                PayDueDateOptions:[1,15,16],
+                PaymentTimeOptions:[1,2],
+                DeliveryTypeOptions:[11,12,13,15]
+            }
+        },
+        'نورواره 3':{
+            defaultShipping:{
+                PayDueDate:1,
+                PaymentTime:1,
+                DeliveryType:11,
+                PayDueDateOptions:[1,15,16,17,18,19,21,22,23,24],
+                PaymentTimeOptions:[1,2],
+                DeliveryTypeOptions:[11,12,13,15]
+            }
+        },
+        'طرح شب یلدای روشنایی':{
+            defaultShipping:{
+                PayDueDate:1,
+                PaymentTime:1,
+                DeliveryType:11,
+                PayDueDateOptions:[1,15,16],
+                PaymentTimeOptions:[1,2],
+                DeliveryTypeOptions:[11,12,13,15]
+            }
+        },
+        'طرح شب یلدای باطری':{
+            defaultShipping:{
+                PayDueDate:1,
+                PaymentTime:1,
+                DeliveryType:11,
+                PayDueDateOptions:[1,15,16],
+                PaymentTimeOptions:[1,2],
+                DeliveryTypeOptions:[11,12,13,15]
+            }
         }
     }
+    
 }

@@ -25,7 +25,7 @@ import CountPopup from "../../components/kharid/product-count/count-popup";
 
 //npm////////////////////////////////////////
 import {Icon} from '@mdi/react';
-import { mdiShieldCheck,mdiCellphoneMarker,mdiClipboardList,mdiExitToApp, mdiCart, mdiBell, mdiPower, mdiMagnify, mdiPalette, mdiOpacity, mdiClose} from "@mdi/js";
+import { mdiShieldCheck,mdiCellphoneMarker,mdiClipboardList,mdiExitToApp, mdiCart, mdiBell, mdiPower, mdiMagnify, mdiPalette, mdiOpacity, mdiClose, mdiSecurity} from "@mdi/js";
 import RSA from './../../npm/react-super-app/react-super-app';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import AIOService from './../../npm/aio-service/aio-service';
@@ -87,7 +87,6 @@ export default class Main extends Component {
     let noorvare3 = !!!props.userInfo.norvareh3Agreement;
     if(!this.noorvare3Storage.load('show',true)){noorvare3 = false}
     this.state = {
-      showBackOffice:true,
       backOffice,
       setBackOffice:(backOffice)=>{
         this.setState({backOffice})
@@ -481,6 +480,7 @@ export default class Main extends Component {
     let {kharidApis} = this.state;
     let nv3 = await kharidApis({api:"nv3",loading:false});
     let nv3Details = await kharidApis({api:"nv3Details",loading:false});
+    debugger;
     this.setState({ nv3,nv3Details});
   }
   async get_belex() {
@@ -565,7 +565,7 @@ export default class Main extends Component {
     this.state.fixPrice = fixPrice;
     this.state.getFactorDetails = getFactorDetails;
     if(backOffice.activeManager.garanti && userInfo.slpcode){this.getGuaranteeItems();}
-    if(backOffice.activeManager.campaigns){this.getCampaignsData();}
+    if(backOffice.activeManager.campaigns){await this.getCampaignsData();}
     if(backOffice.activeManager.forooshe_vije){this.get_forooshe_vije();}
     if(backOffice.activeManager.belex){this.get_belex();}
     if(backOffice.activeManager.bazargah){this.getBazargahOrders();}
@@ -585,6 +585,12 @@ export default class Main extends Component {
   openPopup(type,parameter){
     let {rsa_actions} = this.state;
     let {addPopup,removePopup,setNavId} = rsa_actions;
+    if(type === 'admin-panel'){
+      addPopup({
+        id:'admin-popup',
+        body:()=><BackOffice/>,title:'پنل ادمین',closeType:'close button'
+      })
+    }
     if(type === 'count-popup'){
       addPopup({
         type:'bottom',id:'count-popup',
@@ -676,7 +682,7 @@ export default class Main extends Component {
   }
   render() {
     let {userInfo,logout} = this.props;
-    let {opacity,theme,noorvare3,backOffice,showBackOffice} = this.state;
+    let {opacity,theme,noorvare3,backOffice} = this.state;
     let context = {
       ...this.state,
       userInfo,
@@ -727,6 +733,7 @@ export default class Main extends Component {
             { text: 'بازارگاه', icon: ()=> <Icon path={mdiCellphoneMarker} size={0.8}/>,onClick:()=>this.state.rsa_actions.setNavId('bazargah')},
             { text: 'پیگیری سفارش خرید', icon: ()=> <Icon path={mdiClipboardList} size={0.8} />,onClick:()=>this.openPopup('peygiriye-sefareshe-kharid')},
             { text: 'درخواست گارانتی', icon: ()=> <Icon path={mdiShieldCheck} size={0.8} />,onClick:()=>this.openPopup('sabte-garanti-jadid'),show:()=>!!backOffice.activeManager.garanti && userInfo.slpcode},
+            { text: 'پنل ادمین', icon: ()=> <Icon path={mdiSecurity} size={0.8} />,onClick:()=>this.openPopup('admin-panel'),show:()=>['c39801','c39838'].indexOf(userInfo.cardCode) !== -1},
             { text: 'خروج از حساب کاربری', icon: ()=> <Icon path={mdiExitToApp} size={0.8} />,className:'colorFDB913',onClick:()=>logout() }
           ]}
           navHeader={()=>{
@@ -759,7 +766,6 @@ export default class Main extends Component {
           splash={()=><Splash/>}
           splashTime={7000}
         />
-        {showBackOffice && <BackOffice/>}
       </appContext.Provider>
     );
   }

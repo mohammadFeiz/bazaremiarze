@@ -109,7 +109,7 @@ export default class NV3Report extends Component{
         }
     }
     header_layout(){
-        let {nv3Details} = this.context;
+        let {nv3Details = []} = this.context;
         let {renderIn,amount} = this.props;
         let text = '';
         if(!amount){text = 'از نورواره خرید کنید لامپ رایگان هدیه بگیرید'}

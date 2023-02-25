@@ -1118,12 +1118,21 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       }
       let cart = JSON.parse(result)
       let keys = Object.keys(cart)
+      let {backOffice,campaigns} = getState();
+      let {activeManager} = backOffice;
+      let newCart = {}
       for(let i = 0; i < keys.length; i++){
-        if(!cart[keys[i]].items){
-            return {};
+        if(activeManager[keys[i]] !== undefined && activeManager[keys[i]] === false){continue}
+        
+        if(activeManager.campaigns === false){
+          let res = campaigns.find((o)=>o.name === keys[i]);
+          if(res){
+            if(activeManager[keys[i]] === false){continue}
+          }
         }
+        newCart[keys[i]] = cart[keys[i]]
       }
-      return cart
+      return newCart
     },
     async setCart(cart){
       let res = await Axios.post(`${baseUrl}/orderuidata/updatejson`,{JsonData:JSON.stringify(cart)});

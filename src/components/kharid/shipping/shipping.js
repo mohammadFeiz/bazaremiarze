@@ -29,7 +29,7 @@ export default class Shipping extends Component{
     async componentDidMount(){
       let {userInfo,backOffice} = this.context;
       let {cartId} = this.props;
-      let {defaultShipping} = backOffice[cartId];
+      let {defaultShipping} = backOffice.tarhHa[cartId];
       let {PayDueDate,PaymentTime,DeliveryType,SettleType,
         PayDueDateOptions = [],PaymentTimeOptions = [],SettleTypeOptions = [],DeliveryTypeOptions = []
       } = defaultShipping;

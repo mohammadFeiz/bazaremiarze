@@ -932,6 +932,9 @@ class Eydane extends Component{
                 return {html:o,className:'fs-12 bold p-h-16'}
               })
             },
+            {
+              html:price + ' ریال',className:'bold fs-14 p-h-12'
+            },
             {flex:1},
             {
               html:(

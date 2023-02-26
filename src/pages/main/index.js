@@ -909,7 +909,7 @@ class Eydane extends Component{
   static contextType = appContext
   render(){
     let {eydane,kharidApis} = this.context;
-    let {icon,name,description} = eydane;
+    let {icon,name,description,contain} = eydane;
     return(
       <RVD
         layout={{
@@ -921,7 +921,16 @@ class Eydane extends Component{
               html:name,className:'bold fs-14 p-h-12'
             },
             {
-              html:description,className:'fs-12 p-h-12'
+              html:description,className:'fs-14 p-h-12',style:{textAlign:'right'}
+            },
+            {size:12},
+            {
+              html:'این بسته شامل موارد زیر است',className:'p-h-16 fs-16'
+            },
+            {
+              column:contain.map((o)=>{
+                return {html:o,className:'fs-12 bold p-h-16'}
+              })
             },
             {flex:1},
             {

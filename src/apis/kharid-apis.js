@@ -1459,8 +1459,16 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         name:'بسته عیدانه',
         icon:eydaneIcon,
         src:eydaneBillboard,
-        price:12341231,
-        description:'بسته های زیبا ، جذاب و خفن و مناسب برای همه ی سنین  ، قابل تهیه از تمامی فروشگاه های مجاز سراسر کشور'
+        price:153343360,
+        description:'بسته عیدانه بروکس. این بسته استثنایی فقط یکبار قابل خرید است و دیگر تکرار نخواهد شد. این فرصت طلایی را از دست ندهید. ',
+        contain:[
+          'دو کارتن حبابی 10 وات',
+          'یک کارتن حبابی 7 وات',
+          'یک کارتن اشکی 6 وات',
+          'یک کارتن حبابی 15 وات',
+          'یک کارتن هالوژن 7 وات'
+        ]
+        
       }
     },
     async kharide_eydane(){

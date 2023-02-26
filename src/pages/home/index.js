@@ -215,10 +215,10 @@ export default class Home extends Component {
     }
     noorvare3_layout(){
         let {backOffice,userInfo,openPopup,nv3} = this.context;
-        let registered = userInfo.norvareh3Agreement;
         if(!backOffice.activeManager.noorvare3){
             return false
         }
+        let registered = userInfo.norvareh3Agreement;
         return {
             html:<NoorvareBillboard after={registered}/>,
             className:'theme-gap-h theme-border-radius',
@@ -234,7 +234,10 @@ export default class Home extends Component {
         }
     }
     noorvare3Qr_layout(){
-        let {userInfo} = this.context;
+        let {userInfo,backOffice} = this.context;
+        if(!backOffice.activeManager.noorvare3){
+            return false
+        }
         let {showQr} = this.state;
         let qr = userInfo.norvareh3QR
         if(!qr){return false}

@@ -444,6 +444,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         else{
             freeLamps = 200
         }
+        debugger;
         let {userInfo,cart} = getState();
         let cartTab = cart[cartId];
         let {getCartItems} = cartTab;

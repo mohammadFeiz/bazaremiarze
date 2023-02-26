@@ -64,7 +64,7 @@ export default class Billboard extends Component{
         }
         return {
             column:[
-                {html:'جشنواره ها',className:'fs-14 bold theme-dark-font-color p-h-24',size:36,align:'v'},
+                {show:!!list.length,html:'جشنواره ها',className:'fs-14 bold theme-dark-font-color p-h-24',size:36,align:'v'},
                 {row:list.map((campaign)=>this.campaign_layout(campaign))},
                 {size:12}
             ]

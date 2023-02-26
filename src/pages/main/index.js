@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import backOffice from './../../back-office';
 import functions from "../../functions";
 import eydanetable from './../../images/eydane-table.png';
+import eydaneproduct from './../../images/eydane-product.png';
 //pages//////////////////////////////////
 import Home from "./../home/index";
 import Buy from "./../buy/index";
@@ -924,7 +925,7 @@ class Eydane extends Component {
               flex:1,className:'ofy-auto',
               column: [
                 { size: 12 },
-                { html: <img src={icon} alt='' width='160' height='160' />, align: 'vh' },
+                { html: <img src={eydaneproduct} alt='' width='100%' />, align: 'vh' },
                 {
                   html: name, className: 'bold fs-14 p-h-12'
                 },

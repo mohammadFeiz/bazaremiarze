@@ -50,7 +50,7 @@ export default class Billboard extends Component{
                 openPopup('category',{category:{...nv3}})
             }}/>)
         }
-        if(eydane && renderIn === 'buy'){
+        if(eydane){
             items.push(<img src={eydane.src} alt="" width='100%' onClick={()=>{
                 openPopup('eydane')
             }}/>)

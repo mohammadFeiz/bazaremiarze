@@ -1464,8 +1464,27 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       }
     },
     async kharide_eydane(){
-
+      let {userInfo} = getState();
+      
+      let body = {
+        "marketdoc":{
+          "CardCode":userInfo.cardCode,
+          "CardGroupCode": userInfo.groupCode,
+          "MarketingLines":[{ ItemCode: 'x1401', ItemQty: 1 }],
+          "DeliverAddress":userInfo.address,
+          "marketingdetails":{}
+        },
+        SettleType:1,
+        PaymentTime:5,
+        DeliveryType:11,
+        PayDueDate:1
+      }
+    let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
+    try { return res.data.data[0].docNum }
+    catch { return false }
       
     }
   }
 }
+
+//تقدی آنلاین

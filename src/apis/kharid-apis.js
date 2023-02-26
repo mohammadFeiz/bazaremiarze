@@ -13,6 +13,8 @@ import eydane_batri from './../images/eydane-batri.png';
 import nv3Icon from './../images/land1.png';
 import NoorvareDescription from './../components/kharid/noorvare-description';
 import backOfficeObject from './../back-office';
+import eydaneIcon from './../images/eydane.png';
+import eydaneBillboard from './../images/eydane-billboard.png';
 export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOServiceShowAlert,baseUrl}) {
   return {
     updateProductPrice({products,campaign,cartId}){
@@ -1446,12 +1448,24 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         if(res.data.isSuccess){
             return res.data.data.version;
         }
-
         return false;
     },
     async changeVersion(){
         let res = await Axios.get(`${baseUrl}/Update/NewVersion`);
         return res.data.isSuccess
+    },
+    async eydane(){
+      return {
+        name:'بسته عیدانه',
+        icon:eydaneIcon,
+        src:eydaneBillboard,
+        price:12341231,
+        description:'بسته های زیبا ، جذاب و خفن و مناسب برای همه ی سنین  ، قابل تهیه از تمامی فروشگاه های مجاز سراسر کشور'
+      }
+    },
+    async kharide_eydane(){
+
+      
     }
   }
 }

@@ -6,7 +6,8 @@ export default {
         campaigns:false,
         bazargah:true,
         wallet:false,
-        noorvare3:true,
+        noorvare3:false,
+        eydane:true
     },
     bazargah:{
         forsate_ersale_sefareshe_bazargah:16 * 60,

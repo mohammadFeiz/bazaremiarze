@@ -13,13 +13,16 @@ export default class Billboard extends Component{
         else if(campaign.cartId === 'نورواره 3'){
             openPopup('category',{category:{...campaign}})
         }
+        else if(campaign.name === 'بسته عیدانه'){
+            openPopup('eydane')
+        }
         else{
             let products = await kharidApis({api:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.cartId});
             openPopup('category',{category:{...campaign,products}})
         }
     }
     billboard_layout(){
-        let {campaigns,openPopup,backOffice,forooshe_vije,belex,userInfo,nv3} = this.context,{renderIn} = this.props;
+        let {campaigns,openPopup,backOffice,forooshe_vije,belex,userInfo,nv3,eydane} = this.context,{renderIn} = this.props;
         let items = []
         if(renderIn === 'buy'){
             items = items.concat(campaigns.map((o)=><img src={o.src} width='100%' alt='' onClick={async ()=>this.onClick(o)}/>))
@@ -47,10 +50,15 @@ export default class Billboard extends Component{
                 openPopup('category',{category:{...nv3}})
             }}/>)
         }
+        if(eydane && renderIn === 'buy'){
+            items.push(<img src={eydane.src} alt="" width='100%' onClick={()=>{
+                openPopup('eydane')
+            }}/>)
+        }
         return {html:<ACS items={items}/>}
     }
     campaigns_layout(){
-        let {campaigns,forooshe_vije,belex,nv3} = this.context,{renderIn} = this.props;
+        let {campaigns,forooshe_vije,belex,nv3,eydane} = this.context,{renderIn} = this.props;
         if(renderIn !== 'buy'){return false}
         let list = [...campaigns];
         if(forooshe_vije){
@@ -62,6 +70,9 @@ export default class Billboard extends Component{
         if(nv3){
             list.push(nv3)
         }
+        if(eydane){
+            list.push(eydane)
+        }
         return {
             column:[
                 {show:!!list.length,html:'جشنواره ها',className:'fs-14 bold theme-dark-font-color p-h-24',size:36,align:'v'},
@@ -71,13 +82,14 @@ export default class Billboard extends Component{
         }
     }
     campaign_layout(campaign){
+        let {name,icon} = campaign;
         return {
             flex:1,align:'h',
             attrs:{onClick:async ()=>this.onClick(campaign)},
             column:[
-                {html:<img src={campaign.icon} width={54} height={54} alt='' style={{borderRadius:16}}/>},
+                {html:<img src={icon} width={54} height={54} alt='' style={{borderRadius:16}}/>},
                 {size:3},
-                {html:campaign.name,className:'fs-12 bold theme-dark-font-color'}
+                {html:name,className:'fs-12 bold theme-dark-font-color'}
             ]
         }
     }

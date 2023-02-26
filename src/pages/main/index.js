@@ -476,6 +476,11 @@ export default class Main extends Component {
     let forooshe_vije = await kharidApis({api:"forooshe_vije",loading:false});
     this.setState({ forooshe_vije});
   }
+  async get_eydane(){
+    let {kharidApis} = this.state;
+    let eydane = await kharidApis({api:"eydane",loading:false});
+    this.setState({ eydane});
+  }
   async get_nv3() {
     let {kharidApis} = this.state;
     let nv3 = await kharidApis({api:"nv3",loading:false});
@@ -570,6 +575,7 @@ export default class Main extends Component {
     if(backOffice.activeManager.belex){this.get_belex();}
     if(backOffice.activeManager.bazargah){this.getBazargahOrders();}
     if(backOffice.activeManager.noorvare3){this.get_nv3();}
+    if(backOffice.activeManager.eydane){this.get_eydane();}
     //let testedChance = await gardooneApis({type:"get_tested_chance"});
     let cart = await kharidApis({api:'getCart',loading:false});
     for(let prop in cart){
@@ -591,7 +597,12 @@ export default class Main extends Component {
         body:()=><BackOffice/>,title:'پنل ادمین',closeType:'close button'
       })
     }
-    if(type === 'count-popup'){
+    if(type === 'eydane'){
+      addPopup({
+        id:'eydane',
+        body:()=><Eydane/>,title:'بسته عیدانه',closeType:'close button'})
+    }
+    else if(type === 'count-popup'){
       addPopup({
         type:'bottom',id:'count-popup',
         body:()=><CountPopup {...parameter}/>,title:'تعداد را وارد کنید',backClose:true,closeType:'close button'})
@@ -894,3 +905,36 @@ class Header extends Component{
   }
 }
 
+class Eydane extends Component{
+  static contextType = appContext
+  render(){
+    let {eydane,kharidApis} = this.context;
+    let {icon,name,description} = eydane;
+    return(
+      <RVD
+        layout={{
+          style:{height:'100%'},
+          column:[
+            {size:12},
+            {html:<img src={icon} alt='' width='160' height='160'/>,align:'vh'},
+            {
+              html:name,className:'bold fs-14 p-h-12'
+            },
+            {
+              html:description,className:'fs-12 p-h-12'
+            },
+            {flex:1},
+            {
+              html:(
+                <button onClick={async ()=>{
+                  let res = kharidApis({api:'kharide_eydane'});
+                  
+                }} className='button-2'>خرید</button>
+              )
+            }
+          ]
+        }}
+      />
+    )
+  }
+}

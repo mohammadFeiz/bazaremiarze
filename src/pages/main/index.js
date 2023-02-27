@@ -944,14 +944,6 @@ class Eydane extends Component {
                 },
                 { size: 12 },
                 {
-                  className: 'bold fs-14 p-h-12',
-                  row: [
-                    { html: 'قیمت بسته' },
-                    { flex: 1 },
-                    { html: functions.splitPrice(153343360) + ' ریال'}
-                  ]
-                },
-                {
                   className: 'fs-14 p-12',
                   style: { textAlign: 'right' },
                   column: [

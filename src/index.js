@@ -26,7 +26,7 @@ class App extends Component {
     super(props);
     this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";
     //this.apiBaseUrl = "https://apimy.burux.com/api/v1";
-    this.state = { isAutenticated: false, registered: false, pageError: false, userInfo: {}, landing: true }
+    this.state = { isAutenticated: false, registered: false, pageError: false, userInfo: {}, landing: false }
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,6 +129,7 @@ class App extends Component {
     localStorage.setItem('brxelctoken', JSON.stringify({ token, userInfo: newUserInfo }));
   }
   async getUserInfo(userInfo = this.state.userInfo) {
+    debugger;
     const b1Info = await fetch(`https://b1api.burux.com/api/BRXIntLayer/GetCalcData/${userInfo.cardCode}`, {
       mode: 'cors', headers: { 'Access-Control-Allow-Origin': '*' }
     }).then((response) => {

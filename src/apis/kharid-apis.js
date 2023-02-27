@@ -1465,7 +1465,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         name:'بسته عیدانه',
         icon:eydaneIcon,
         src:eydaneBillboard,
-        price:150343360,
+        price:155693760,
         description:'بسته عیدانه بروکس. این بسته استثنایی فقط یکبار قابل خرید است و دیگر تکرار نخواهد شد. این فرصت طلایی را از دست ندهید. ',
         contain:[
           'دو کارتن حبابی 10 وات',
@@ -1506,7 +1506,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             DeliveryType:11,
             PayDueDate:1}
         },
-        "Price" : "150343360" , 
+        "Price" : "155693760" , 
         "CallbackUrl" : "https://bazar.miarze.com" , 
 
         

@@ -1125,12 +1125,18 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       let {activeManager} = backOffice;
       let newCart = {}
       for(let i = 0; i < keys.length; i++){
+        debugger;
         if(activeManager[keys[i]] !== undefined && activeManager[keys[i]] === false){continue}
         
         if(activeManager.campaigns === false){
           let res = campaigns.find((o)=>o.name === keys[i]);
           if(res){
             if(activeManager[keys[i]] === false){continue}
+          }
+        }
+        if(activeManager.noorvare3 === false){
+          if(keys[i] === 'نورواره 3'){
+            continue
           }
         }
         newCart[keys[i]] = cart[keys[i]]
@@ -1459,7 +1465,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         name:'بسته عیدانه',
         icon:eydaneIcon,
         src:eydaneBillboard,
-        price:153343360,
+        price:150343360,
         description:'بسته عیدانه بروکس. این بسته استثنایی فقط یکبار قابل خرید است و دیگر تکرار نخواهد شد. این فرصت طلایی را از دست ندهید. ',
         contain:[
           'دو کارتن حبابی 10 وات',
@@ -1500,7 +1506,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             DeliveryType:11,
             PayDueDate:1}
         },
-        "Price" : "153343360" , 
+        "Price" : "150343360" , 
         "CallbackUrl" : "https://bazar.miarze.com" , 
 
         

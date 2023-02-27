@@ -49,7 +49,24 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         "QtyInPage": 1000,
         "PageNo": 1
       });
-      let results = res.data.data.results;
+      let tabs = [
+        {text:'در حال بررسی',orders:[]},
+        {text:'در انتظار پرداخت',orders:[]},
+        {text:'در حال پردازش',orders:[]},
+        {text:'تحویل شده',orders:[]},
+        {text:'لغو شده',orders:[]},
+        {text:'مرجوع شده',orders:[]}
+      ]
+      
+      let results;
+      
+      try{
+        results = res.data.data.results;
+      }
+      catch{
+        console.error(`ای پی آی گرفتن لیست سفارشات درست کار نمیکنه. ریزالتی که از سرور اومده اینه:`,res)
+        return tabs
+      }
       // results = [
       //   {docStatus:'Returned',mainDocEntry:'123456',mainDocNum:'53453',mainDocisDraft:false,mainDocTotal:10},
       //   {docStatus:'Cancelled',mainDocEntry:'123456',mainDocNum:'53453',mainDocisDraft:false,mainDocTotal:10},
@@ -75,14 +92,6 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
       //   {docStatus:'SettledWithBadDept',mainDocEntry:'123456',mainDocNum:'53453',mainDocisDraft:false,mainDocTotal:10},
       // ]
 
-      let tabs = [
-        {text:'در حال بررسی',orders:[]},
-        {text:'در انتظار پرداخت',orders:[]},
-        {text:'در حال پردازش',orders:[]},
-        {text:'تحویل شده',orders:[]},
-        {text:'لغو شده',orders:[]},
-        {text:'مرجوع شده',orders:[]}
-      ]
       if(!Array.isArray(results)){return tabs}
       let statuses = {
         Returned:[-390,'مرجوع شده','مرجوع شده'],//
@@ -1120,12 +1129,18 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         result = '{}'
       }
       let cart = JSON.parse(result)
+      
+      if(typeof cart !== 'object'){
+        return {}
+      }
+      
       let keys = Object.keys(cart)
       let {backOffice,campaigns} = getState();
       let {activeManager} = backOffice;
       let newCart = {}
       for(let i = 0; i < keys.length; i++){
-        debugger;
+        let cartTab = cart[keys[i]];
+        if(!cartTab.items){return {}}
         if(activeManager[keys[i]] !== undefined && activeManager[keys[i]] === false){continue}
         
         if(activeManager.campaigns === false){

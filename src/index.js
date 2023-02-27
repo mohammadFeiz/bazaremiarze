@@ -218,7 +218,12 @@ class App extends Component {
           />
         )
       }
-      localStorage.setItem('brxelctoken', JSON.stringify({ token, userInfo }));
+      try{
+        localStorage.setItem('brxelctoken', JSON.stringify({ token, userInfo }));
+      }
+      catch(err){
+        alert(`${err.message}. محدوده حافظه کش کلاینت به حد غیر مجاز رسیده است. لطفا این موضوع را با مرکز پشتیبانی در میان بگذارید`)
+      }
       return (
         <>
           <Main

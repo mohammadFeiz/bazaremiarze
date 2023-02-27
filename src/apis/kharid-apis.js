@@ -1474,21 +1474,40 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
     async kharide_eydane(){
       let {userInfo} = getState();
       
+      // let body = {
+      //   "marketdoc":{
+      //     "CardCode":userInfo.cardCode,
+      //     "CardGroupCode": userInfo.groupCode,
+      //     "MarketingLines":[{ ItemCode: 'x1401', ItemQty: 1 }],
+      //     "DeliverAddress":userInfo.address,
+      //     "marketingdetails":{}
+      //   },
+      //   SettleType:1,
+      //   PaymentTime:5,
+      //   DeliveryType:11,
+      //   PayDueDate:1
+      // }
+
       let body = {
-        "marketdoc":{
+        "Document":{
           "CardCode":userInfo.cardCode,
           "CardGroupCode": userInfo.groupCode,
           "MarketingLines":[{ ItemCode: 'x1401', ItemQty: 1 }],
           "DeliverAddress":userInfo.address,
-          "marketingdetails":{}
+          "marketingdetails":{
+            SettleType:1,
+            PaymentTime:5,
+            DeliveryType:11,
+            PayDueDate:1}
         },
-        SettleType:1,
-        PaymentTime:5,
-        DeliveryType:11,
-        PayDueDate:1
+        "Price" : "153343360" , 
+        "CallbackUrl" : "https://bazar.miarze.com" , 
+
+        
       }
-    let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
-    try { return res.data.data[0].docNum }
+    let res = await Axios.post(`${baseUrl}/PayMent/EydaneRequest`, body);
+    try { 
+    window.location.href = res.data.data }
     catch { return false }
       
     }

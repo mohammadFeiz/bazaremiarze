@@ -440,14 +440,14 @@ class JoziateSefaresheBazargah extends Component{
     details_layout(){
         if(!this.getVisibility('details')){return false}
         let {order} = this.props;
-        let {orderId,createdDate,receiverName,receiverNumber,shippingAddress,amount,benefit,city} = order;
+        let {orderId,createdDate,receiverName,receiverNumber,shippingAddress,amount,benefit,city,orderNumber} = order;
         return {
             className:'theme-card-bg theme-border-radius theme-gap-h theme-box-shadow theme-gap-b',
             column:[
                 {
                     column:[
                         {size:12},
-                        this.detailRow_layout('کد سفارش',orderId),
+                        this.detailRow_layout('کد سفارش',orderNumber),
                         this.detailRow_layout('تاریخ ثبت',createdDate),
                         this.detailRow_layout('تحویل گیرنده',receiverName),
                         this.detailRow_layout('شهر',city),

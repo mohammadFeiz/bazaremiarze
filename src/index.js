@@ -107,22 +107,21 @@ class App extends Component {
     if (!storage || storage === null) { this.setState({}); return; }
     storage = JSON.parse(storage);
     Axios.defaults.headers.common['Authorization'] = 'Bearer ' + storage.token;
-    let res;
     $('.loading').css({ display: 'flex' });
-    try {
-      res = await Axios.post(`${this.apiBaseUrl}/BOne/GetCustomer`, { "DocCode": storage.userInfo.cardCode });
-      //$('.loading').css({display:'none'});
-    }
-    catch (err) {
-      this.setState({ pageError: { text: 'سرویس دهنده در دسترس نیست', subtext: 'BOne/GetCustomer ' + err.message } })
-    }
-    if (res.status === 401) {
+    let res = await Axios.get(`${this.apiBaseUrl}/Users/CheckExpireToken`).catch((error)=>{
       debugger;
-      localStorage.removeItem('brxelctoken')
-      window.location.reload()
-      return;
-    }
-    this.setState({ isAutenticated: true, userInfo: storage.userInfo, token: storage.token, registered: true })
+      if(error.response.status === 200){
+        this.setState({ isAutenticated: true, userInfo: storage.userInfo, token: storage.token, registered: true })
+      }
+      else if(error.response.status === 401){
+        localStorage.removeItem('brxelctoken')
+        window.location.reload()
+        return;
+      }
+      else{
+        this.setState({ pageError: { text: 'سرویس دهنده در دسترس نیست', subtext: ''} })
+      }
+    });
   }
   async componentDidMount() {
     this.mounted = true;

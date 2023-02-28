@@ -52,6 +52,7 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
         "cityId": null,
         "provinceId": null,
         "buyerId": order.buyerId,
+        "orderNumber":order.orderNumber,
         "receiverId": order.receiverId,
         "buyerName": order.buyerName,
         "receiverName": order.receiverName,

@@ -98,8 +98,7 @@ class App extends Component {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   logout() {
-    localStorage.clear('brxelctoken');
-    this.state.recodeIn = false;
+    localStorage.removeItem('brxelctoken');
     this.setState({ isAutenticated: false })
   }
   async interByStorage() {
@@ -108,20 +107,27 @@ class App extends Component {
     storage = JSON.parse(storage);
     Axios.defaults.headers.common['Authorization'] = 'Bearer ' + storage.token;
     $('.loading').css({ display: 'flex' });
+    let success = true;
+      
     let res = await Axios.get(`${this.apiBaseUrl}/Users/CheckExpireToken`).catch((error)=>{
-      debugger;
-      if(error.response.status === 200){
-        this.setState({ isAutenticated: true, userInfo: storage.userInfo, token: storage.token, registered: true })
-      }
-      else if(error.response.status === 401){
-        localStorage.removeItem('brxelctoken')
-        window.location.reload()
-        return;
-      }
-      else{
-        this.setState({ pageError: { text: 'سرویس دهنده در دسترس نیست', subtext: ''} })
-      }
+      success = false;
+      this.handleStatus(error.response.status,storage)
     });
+    if(success){
+      this.handleStatus(res.status,storage);
+    }
+  }
+  handleStatus(status,storage){
+    if(status === 200){
+      this.setState({ isAutenticated: true, userInfo: storage.userInfo, token: storage.token, registered: true })
+    }
+    else if(status === 401){
+      localStorage.removeItem('brxelctoken')
+      window.location.reload()
+    }
+    else{
+      this.setState({ pageError: { text: 'سرویس دهنده در دسترس نیست', subtext: ''} })
+    }
   }
   async componentDidMount() {
     this.mounted = true;
@@ -135,7 +141,6 @@ class App extends Component {
     localStorage.setItem('brxelctoken', JSON.stringify({ token, userInfo: newUserInfo }));
   }
   async getUserInfo(userInfo = this.state.userInfo) {
-    debugger;
     const b1Info = await fetch(`https://b1api.burux.com/api/BRXIntLayer/GetCalcData/${userInfo.cardCode}`, {
       mode: 'cors', headers: { 'Access-Control-Allow-Origin': '*' }
     }).then((response) => {

@@ -24,7 +24,12 @@ import reportWebVitals from './reportWebVitals';
 class App extends Component {
   constructor(props) {
     super(props);
-    this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";
+    let url = window.location.href;
+    if(url.indexOf('localhost') !== -1){this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";}
+    else if(url.indexOf('bazar') !== -1){this.apiBaseUrl = "https://apimy.burux.com/api/v1";}
+    else if(url.indexOf('bbeta') !== -1){this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";}
+    else(alert('error'))
+    console.log(`base url is ${this.apiBaseUrl}`)
     //this.apiBaseUrl = "https://apimy.burux.com/api/v1";
     this.state = { isAutenticated: false, registered: false, pageError: false, userInfo: {}, landing: false }
   }

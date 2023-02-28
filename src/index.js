@@ -117,7 +117,9 @@ class App extends Component {
       this.setState({ pageError: { text: 'سرویس دهنده در دسترس نیست', subtext: 'BOne/GetCustomer ' + err.message } })
     }
     if (res.status === 401) {
-      this.setState({});
+      debugger;
+      localStorage.removeItem('brxelctoken')
+      window.location.reload()
       return;
     }
     this.setState({ isAutenticated: true, userInfo: storage.userInfo, token: storage.token, registered: true })

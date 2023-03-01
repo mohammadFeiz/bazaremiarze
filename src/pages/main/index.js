@@ -481,8 +481,11 @@ export default class Main extends Component {
   }
   async get_eydane() {
     let { kharidApis } = this.state;
-    let eydane = await kharidApis({ api: "eydane", loading: false });
     let eydaneRegistered = await kharidApis({ api: "eydane_registered", loading: false });
+    let eydane;
+    if(!eydaneRegistered){//اگر تا حالا از این طرح خرید نکرده است
+      eydane = await kharidApis({ api: "eydane", loading: false });
+    }
     this.setState({ eydane, eydaneRegistered });
   }
   async get_nv3() {

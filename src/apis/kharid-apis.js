@@ -17,6 +17,9 @@ import eydaneIcon from './../images/eydane.png';
 import eydaneBillboard from './../images/eydane-billboard.png';
 export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOServiceShowAlert,baseUrl}) {
   return {
+    async eydane_registered(){
+      
+    },
     updateProductPrice({products,campaign,cartId}){
         if(products === false){return false}
         let {fixPrice} = getState();

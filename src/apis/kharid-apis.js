@@ -1525,7 +1525,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
             DeliveryType:11,
             PayDueDate:1}
         },
-        "Price" : "155693760" , 
+        "Price" : "117021120" , 
         "CallbackUrl" : "https://bazar.miarze.com" , 
 
         

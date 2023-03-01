@@ -600,7 +600,7 @@ export default class Main extends Component {
       })
     }
     if (type === 'eydane') {
-      let {rsa_actions} = this.state;
+      let {rsa_actions,kharidApis} = this.state;
       let eydaneRegistered = await kharidApis({ api: "eydane_registered", loading: false });
       if(eydaneRegistered){//اگر تا حالا از این طرح خرید نکرده است
         rsa_actions.setConfirm({

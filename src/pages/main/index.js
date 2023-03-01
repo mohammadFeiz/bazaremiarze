@@ -481,12 +481,8 @@ export default class Main extends Component {
   }
   async get_eydane() {
     let { kharidApis } = this.state;
-    let eydane;
-    let eydaneRegistered = await kharidApis({ api: "eydane_registered", loading: false });
-    //if(!eydaneRegistered){//اگر تا حالا از این طرح خرید نکرده است
-      eydane = await kharidApis({ api: "eydane", loading: false });
-    //}
-    this.setState({ eydane, eydaneRegistered });
+    let eydane = await kharidApis({ api: "eydane", loading: false });
+    this.setState({ eydane });
   }
   async get_nv3() {
     let { kharidApis } = this.state;
@@ -594,7 +590,7 @@ export default class Main extends Component {
       getFactorDetails
     });
   }
-  openPopup(type, parameter) {
+  async openPopup(type, parameter) {
     let { rsa_actions } = this.state;
     let { addPopup, removePopup, setNavId } = rsa_actions;
     if (type === 'admin-panel') {
@@ -604,8 +600,9 @@ export default class Main extends Component {
       })
     }
     if (type === 'eydane') {
-      let {eydaneRegistered,rsa_actions} = this.state;
-      if(eydaneRegistered){
+      let {rsa_actions} = this.state;
+      let eydaneRegistered = await kharidApis({ api: "eydane_registered", loading: false });
+      if(eydaneRegistered){//اگر تا حالا از این طرح خرید نکرده است
         rsa_actions.setConfirm({
           type:'warning',
           text:'شما مجاز به خرید در این طرح نیستید',

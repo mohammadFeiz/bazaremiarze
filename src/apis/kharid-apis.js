@@ -1177,7 +1177,7 @@ export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOS
         "IsDraft":order.mainDocisDraft,
         "DocNum":order.mainDocNum,
         "DocEntry":order.code,
-        "CallbackUrl":baseUrl === 'https://retailerapp.bbeta.ir/api/v1'?'https://retailerapp.bbeta.ir/':'https://apimy.burux.com/'
+        "CallbackUrl":baseUrl === 'https://retailerapp.bbeta.ir/api/v1' ? 'https://uiretailerapp.bbeta.ir/' : 'https://bazar.miarze.com/'
       });
 
       if(res.data.isSuccess){

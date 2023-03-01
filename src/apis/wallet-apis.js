@@ -77,7 +77,7 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
     async variz({amount}){
       let res = await Axios.post(`${baseUrl}/payment/request`,{
         "Price":amount,
-        "CallbackUrl":baseUrl === 'https://retailerapp.bbeta.ir/api/v1'?'https://retailerapp.bbeta.ir/':'https://apimy.burux.com/'
+        "CallbackUrl":baseUrl === 'https://retailerapp.bbeta.ir/api/v1' ? 'https://uiretailerapp.bbeta.ir/':'https://bazar.miarze.com/'
       });
       
       if(res.data.isSuccess){

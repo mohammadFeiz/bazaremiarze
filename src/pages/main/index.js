@@ -481,18 +481,17 @@ export default class Main extends Component {
   }
   async get_eydane() {
     let { kharidApis } = this.state;
-    let eydaneRegistered = await kharidApis({ api: "eydane_registered", loading: false });
     let eydane;
-    if(!eydaneRegistered){//اگر تا حالا از این طرح خرید نکرده است
+    let eydaneRegistered = await kharidApis({ api: "eydane_registered", loading: false });
+    //if(!eydaneRegistered){//اگر تا حالا از این طرح خرید نکرده است
       eydane = await kharidApis({ api: "eydane", loading: false });
-    }
+    //}
     this.setState({ eydane, eydaneRegistered });
   }
   async get_nv3() {
     let { kharidApis } = this.state;
     let nv3 = await kharidApis({ api: "nv3", loading: false });
     let nv3Details = await kharidApis({ api: "nv3Details", loading: false });
-    debugger;
     this.setState({ nv3, nv3Details });
   }
   async get_belex() {
@@ -605,6 +604,15 @@ export default class Main extends Component {
       })
     }
     if (type === 'eydane') {
+      let {eydaneRegistered,rsa_actions} = this.state;
+      if(eydaneRegistered){
+        rsa_actions.setConfirm({
+          type:'warning',
+          text:'شما مجاز به خرید در این طرح نیستید',
+          subtext:'کاربر گرامی. هر کاربر فقط یک بار می تواند از این طرح استفاده کند. شما قبلا از این طرح عملیات خرید انجام داده اید'
+        })
+        return;
+      }
       addPopup({
         id: 'eydane',
         body: () => <Eydane />, title: 'بسته عیدانه', closeType: 'close button'

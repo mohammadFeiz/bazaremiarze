@@ -197,23 +197,23 @@ export default class OrderPopup extends Component {
       }
     }
     discount_layout(){
-      let {discountPercent,priceAfterVat} = this.props;
+      let {discountPercent,price} = this.props;
       if(!discountPercent){return false}
       return {
         gap:4,
         row:[
             {flex:1},
-            {html:<del>{functions.splitPrice(priceAfterVat)}</del>,className:'fs-14 theme-light-font-color',align:'v'},
+            {html:<del>{functions.splitPrice(price)}</del>,className:'fs-14 theme-light-font-color',align:'v'},
             {html:<div style={{background:'#FFD335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{discountPercent + '%'}</div>,align:'v'},
         ]  
       }
     }
     price_layout(){
-      let {price} = this.props;
+      let {priceAfterVat} = this.props;
       return {
         row:[
             {flex:1},
-            {html:functions.splitPrice(price) + ' ریال',className:'fs-12 color404040 bold',align:'v'}
+            {html:functions.splitPrice(priceAfterVat) + ' ریال',className:'fs-12 color404040 bold',align:'v'}
         ]
       }
     }

@@ -18,7 +18,8 @@ import eydaneBillboard from './../images/eydane-billboard.png';
 export default function kharidApis({getState,token,getDateAndTime,showAlert,AIOServiceShowAlert,baseUrl}) {
   return {
     async eydane_registered(){
-      
+      const result =  await Axios.get(`${baseUrl}/Users/GetEydaneStatus`);
+      return result.data.isSuccess && result.data.data;
     },
     updateProductPrice({products,campaign,cartId}){
         if(products === false){return false}

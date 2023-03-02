@@ -240,23 +240,20 @@
   align-items: center;
   justify-content: center;
   padding: 0 12px;
-  border: 1px solid #d8d8d8;
   height: 100%;
   box-sizing: border-box;
 }
 
 .aio-form-affix {
-  color: #fff;
-  background: #bbb;
-  border: 1px solid #d8d8d8;
   border-radius: 0 4px 4px 0;
 }
 
 .aio-form-prefix {
-  color: #fff;
-  background: #bbb;
-  border: 1px solid #d8d8d8;
   border-radius: 4px 0 0 4px;
+}
+.aio-form.rtl .aio-form-prefix {
+  border-radius: 0px 4px 4px 0px;
+  border-left-width: 0;
 }
 
 .aio-form-affix.rtl {
@@ -288,12 +285,15 @@
   border-left-width: 0;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+  border-left-width: 0;
 }
 
 .aio-form-input.has-prefix.rtl {
   border-right-width: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
+  border-right-width: 0;
+
 }
 
 .aio-form-inline-error {

@@ -163,7 +163,7 @@ function Service(services,loader) {
       AIOServiceShowAlert({type:'error',text:typeof errorMessage === 'function'?errorMessage():errorMessage,subtext:result});
       return def;
     }
-    if(successMessage){
+    if(successMessage && result !== undefined){
       successMessage = typeof successMessage === 'function'?successMessage():successMessage
       if(!Array.isArray(successMessage)){successMessage = [successMessage]}
       AIOServiceShowAlert({type:'success',text:successMessage[0],subtext:successMessage[1]});

@@ -343,10 +343,14 @@ export default function AIODate(){
         return {days,hours,minutes,seconds,tenthseconds}
       },
       getDateOffset(time){
-        if(time[0] === '1'){
-          time = $$.jalaliToGregorian(time);
+        if(typeof time === 'string'){
+          if(time[0] === '1'){
+            time = $$.jalaliToGregorian(time);
+          }
         } 
-        time = $$.convertToString(time);
+        if(Array.isArray(time)){
+          time = $$.convertToString(time);
+        }
         time = new Date(time).getTime();
         let now = new Date().getTime();
         let dif = time - now;

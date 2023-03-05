@@ -22,6 +22,7 @@ export default class Register extends Component{
             phoneNumber,//دیفالت ندارد و همیشه باید مقدارش ارسال بشه
             storeName = '',address = '',userProvince = '',userCity = '',landline = '',password = ''
         } = model;
+        if(phoneNumber === null){phoneNumber = model.userName;}
         latitude = isNaN(parseFloat(latitude))?35.699739:parseFloat(latitude);
         longitude = isNaN(parseFloat(longitude))?51.338097:parseFloat(longitude);
         this.cities = allCities.filter(({province})=>province === userProvince)

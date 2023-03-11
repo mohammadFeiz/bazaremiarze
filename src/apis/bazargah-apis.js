@@ -30,10 +30,10 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
         distance = 0;
         orderItems=[];
       }
-      let passedTime = AIODate().getPassedTime(order.orderDate).minutes;
+      let passedTime = AIODate().getDelta({date:order.orderDate}).miliseconds;
       let forsat = {'wait_to_get':'forsate_akhze_sefareshe_bazargah','wait_to_send':'forsate_ersale_sefareshe_bazargah'}[type];
       let totalTime = getState().backOffice.bazargah[forsat];
-      if(passedTime > totalTime){return false}
+      if(passedTime > totalTime * 60 * 1000){return false}
       return {
         type,
         sendStatus:{

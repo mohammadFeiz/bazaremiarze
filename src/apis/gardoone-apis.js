@@ -7,8 +7,8 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       return res.data && res.data.isSuccess ? res.data.data : [];
     },
     async get_tested_chance() {
-      let today = AIODate.getToday("jalali"), date = [1401, 1, 1];
-      return (`${today[0]},${today[1]},${today[2]}` === `${date[0]},${date[1]},${date[2]}`);
+      let today = AIODate.getToday({calendarType:"jalali",pattern:'{year},{month},{day}'}), date = [1401, 1, 1];
+      return (today === `${date[0]},${date[1]},${date[2]}`);
     },
     async save_catched_chance({award,result}) {
       let res = await Axios.post(`${baseUrl}/UserAwards`, { UserId: 1, AwardId: award.id, Win: result });

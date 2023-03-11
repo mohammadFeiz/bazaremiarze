@@ -54,7 +54,7 @@ export default function services({getState,apis,token,loader,baseUrl}) {
       else {atime = value.split(" ")[1];}
     } 
     catch {atime = undefined;}
-    try {adate = dateCalculator.gregorianToJalali(value).join("/");
+    try {adate = dateCalculator.toJalali({date:value}).join("/");
     } 
     catch {adate = "";}
     return {date:adate,time:atime}

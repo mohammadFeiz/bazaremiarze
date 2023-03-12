@@ -10,6 +10,7 @@ import Buy from "./../buy/index";
 import Bazargah from "../bazargah/bazargah";
 import Profile from "./../profile/profile";
 import Noorvare3 from './../../pages/noorvare3/noorvare3';
+import Vitrin from './../../pages/vitrin/vitrin';
 import BackOffice from './../../back-office-panel';
 
 //popups/////////////////////////////////////
@@ -752,6 +753,7 @@ export default class Main extends Component {
             { text: "خانه", icon: () => getSvg(19), id: "khane" },
             { text: "خرید", icon: () => getSvg('buy'), id: "kharid" },
             { text: "بازارگاه", icon: () => getSvg(20), id: "bazargah" },
+            { text: "ویترین", icon: () => getSvg('vitrin'), id: "vitrin" },
             { text: this.getProfileName(userInfo), icon: () => getSvg(21), id: "profile" },
           ]}
           sides={[
@@ -777,11 +779,12 @@ export default class Main extends Component {
             />
           )}
           header={({ navId }) => <Header type='page' navId={navId} />}
-          navId='khane'
+          navId='vitrin'
           body={({ navId }) => {
             if (navId === "khane") { return <Home />; }
             if (navId === "kharid") { return <Buy />; }
             if (navId === "bazargah") { return <Bazargah />; }
+            if (navId === "vitrin") { return <Vitrin />; }
             if (navId === "profile") { return <Profile />; }
           }}
           getActions={({ setConfirm, addPopup, removePopup, setNavId }) => {

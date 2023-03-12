@@ -408,7 +408,7 @@ export default function AIODate(){
       let second = Math.floor(dif / (1000));
       dif -= second * (1000);
       let tenthsecond = Math.floor(dif / (100));
-      return {day,hour,minute,second,tenthsecond}
+      return {day,hour,minute,second,tenthsecond,miliseconds:dif}
     },
     getDelta(obj){
       if(!obj || !obj.date){

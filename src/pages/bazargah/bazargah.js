@@ -114,8 +114,8 @@ export default class Bazargah extends Component{
                 <AIOButton 
                     type='tabs' 
                     options={[
-                        {text:'اطراف من',value:0,badge:bazargahOrders.wait_to_get.length},
-                        {text:'اخذ شده',value:1,badge:bazargahOrders.wait_to_send.length}
+                        {text:'اطراف من',value:0,badge:bazargahOrders.wait_to_get?.length},
+                        {text:'اخذ شده',value:1,badge:bazargahOrders.wait_to_send?.length}
                     ]}  
                     optionStyle={{flex:1}}
                     value={activeTabId} 

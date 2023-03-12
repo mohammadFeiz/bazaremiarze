@@ -20,10 +20,12 @@ export default function SignalR(getState) {
             connection.on("BazargahOrder", async (order)=> {
                 let {SetState,bazargahOrders,showMessage,userInfo,bazargahApis} = getState();                
                 let type;
+                debugger;
                 if(order.status === 'Pending' || order.status===1){type = 'wait_to_get'}
                 else if(order.status === 'Taken'  || order.status===2){type = 'wait_to_send'}
                 else {return}
                 order = await bazargahApis({api:'bazargahItem',parameter:{order,type}})
+                
                 if(order === false){return;}
                 if(type === 'wait_to_get'){
                     bazargahOrders.wait_to_get = bazargahOrders.wait_to_get || [];

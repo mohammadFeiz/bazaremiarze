@@ -1,8 +1,10 @@
-﻿
+﻿///***Version 1.1.5****///
+//Edited: 2023-6-18
+
 export default class Pricing {
     "use strict";
     //dbrequest = {};
-    updateInterval = 10 * 60 * 1000; // 10min
+    updateInterval = 100 * 60 * 1000; // 100min
     ndbrequest = {};
     //updateTimer = setTimeout(this.refresh, this.updateInterval);
     pricingData = {
@@ -10,7 +12,7 @@ export default class Pricing {
     };
     db = {};
 
-    constructor(fetchURL, applicator, interval = 10 * 60 * 1000) {
+    constructor(fetchURL, applicator, interval = 100 * 60 * 1000) {
 
         this.fetchUrl = fetchURL;
 
@@ -317,9 +319,6 @@ export default class Pricing {
         return this.pricingData.ItemPrices;
     }
 
-
-
-
     startservice() {
         let self = this;
         let result = new Promise(async function (resolve, reject) {
@@ -350,7 +349,7 @@ export default class Pricing {
             let res = await self.#getAllFromDataBase();
         }
         console.log((new Date()) + ": update finished");
-        self.updateTimer = setTimeout(self.refresh, 10000, self);
+        self.updateTimer = setTimeout(self.refresh, this.updateInterval, self);
     }
 
     stopUpdate() {
@@ -569,58 +568,95 @@ export default class Pricing {
         }
         MD.marketingdetails.DocumentDiscountPercent = 0;
 
-            if (MD.marketingdetails.PayDueDate == null) {
-                MD.marketingdetails.PayDueDate = 1;
-            }
-            switch (parseInt(MD.marketingdetails.PayDueDate)) {
-                case 1:
-                    MD.marketingdetails.DocumentDiscountPercent = 12;
-                    break;
-                case 2:
-                    MD.marketingdetails.DocumentDiscountPercent = 10.5;
-                    break;
-                case 3:
-                    MD.marketingdetails.DocumentDiscountPercent = 9;
-                    break;
-                case 4:
-                    MD.marketingdetails.DocumentDiscountPercent = 7.5;
-                    break;
-                case 6:
-                    MD.marketingdetails.DocumentDiscountPercent = 6;
-                    break;
-                case 7:
-                    MD.marketingdetails.DocumentDiscountPercent = 4.5;
-                    break;
-                case 8:
-                    MD.marketingdetails.DocumentDiscountPercent = 3;
-                    break;
-                case 9:
-                    MD.marketingdetails.DocumentDiscountPercent = 1.5;
-                    break;
-                case 10:
-                    MD.marketingdetails.DocumentDiscountPercent = 0;
-                    break;
-                case 11:
-                    MD.marketingdetails.DocumentDiscountPercent = 0;
-                    break;
-                case 12:
-                    MD.marketingdetails.DocumentDiscountPercent = 0;
-                    break;
-                case 13:
-                    MD.marketingdetails.DocumentDiscountPercent = 0;
-                    break;
-                case 15:
-                    MD.marketingdetails.DocumentDiscountPercent = 7.5;
-                    break;
-                case 16:
-                    MD.marketingdetails.DocumentDiscountPercent = 7.5;
-                    break;
-                case 14:
-                case 5:
-                default:
-                    MD.marketingdetails.DocumentDiscountPercent = 0;
-                    break;
-            }
+        if (MD.marketingdetails.PayDueDate == null) {
+            MD.marketingdetails.PayDueDate = 1;
+        }
+        switch (parseInt(MD.marketingdetails.PayDueDate)) {
+            case 1:
+                MD.marketingdetails.DocumentDiscountPercent = 12;
+                break;
+            case 2:
+                MD.marketingdetails.DocumentDiscountPercent = 10.5;
+                break;
+            case 3:
+                MD.marketingdetails.DocumentDiscountPercent = 9;
+                break;
+            case 4:
+                MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                break;
+            case 6:
+                MD.marketingdetails.DocumentDiscountPercent = 6;
+                break;
+            case 7:
+                MD.marketingdetails.DocumentDiscountPercent = 4.5;
+                break;
+            case 8:
+                MD.marketingdetails.DocumentDiscountPercent = 3;
+                break;
+            case 9:
+                MD.marketingdetails.DocumentDiscountPercent = 1.5;
+                break;
+            case 10:
+                MD.marketingdetails.DocumentDiscountPercent = 0;
+                break;
+            case 11:
+                MD.marketingdetails.DocumentDiscountPercent = 0;
+                break;
+            case 12:
+                MD.marketingdetails.DocumentDiscountPercent = 0;
+                break;
+            case 13:
+                MD.marketingdetails.DocumentDiscountPercent = 0;
+                break;
+            case 15:
+                MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                break;
+            case 16:
+                MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                break;
+            case 17:
+                MD.marketingdetails.DocumentDiscountPercent = 4.8;
+                break;
+            case 18:
+                MD.marketingdetails.DocumentDiscountPercent = 3.6;
+                break;
+            case 19:
+                MD.marketingdetails.DocumentDiscountPercent = 4.5;
+                break;
+            case 20:
+                MD.marketingdetails.DocumentDiscountPercent = 9.3;
+                break;
+            case 21:
+                MD.marketingdetails.DocumentDiscountPercent = 6.6;
+                break;
+            case 22:
+                MD.marketingdetails.DocumentDiscountPercent = 3.9;
+                break;
+            case 23:
+                MD.marketingdetails.DocumentDiscountPercent = 1.2;
+                break;
+            case 24:
+                MD.marketingdetails.DocumentDiscountPercent = 10.5;
+                break;
+            case 25:
+                MD.marketingdetails.DocumentDiscountPercent = 7.8;
+                break;
+            case 26:
+                MD.marketingdetails.DocumentDiscountPercent = 6.6;
+                break;
+            case 27:
+                MD.marketingdetails.DocumentDiscountPercent = 6.0;
+                break;
+            case 28:
+                MD.marketingdetails.DocumentDiscountPercent = 7.2;
+                break;
+
+            case 14:
+            case 5:
+            default:
+                MD.marketingdetails.DocumentDiscountPercent = 0;
+                break;
+        }
 
         return MD;
     }
@@ -722,7 +758,7 @@ export default class Pricing {
                         temprule = rule;
                     }
                 }
-                if (temprule.price != null) {
+                if (temprule && temprule.price != null) {
                     res.Price = temprule.price;
                     res.DiscountPercent = temprule.discountPercent;
                     res.DiscountSrc = 66;
@@ -746,7 +782,7 @@ export default class Pricing {
                         temprule = rule;
                     }
                 }
-                if (temprule.price != null) {
+                if (temprule && temprule.price != null) {
                     res.Price = temprule.price;
                     res.DiscountPercent = temprule.discountPercent;
                     res.FiscountSrc = 83;
@@ -774,7 +810,7 @@ export default class Pricing {
                         temprule = rule;
                     }
                 }
-                if (temprule.price != null) {
+                if (temprule && temprule.price != null) {
                     //Price from Period and Volume Founded
                     res.Price = temprule.price;
                     pvdisount = temprule.discountPercent;
@@ -962,7 +998,8 @@ export default class Pricing {
         let DocAfterB1 = MD;
         let camrule = null;
 
-        if (typeof MD.marketingdetails.Campaign == 'object' && (MD.marketingdetails?.Campaign ?? null) != null) {
+        if (MD.marketingdetails.Campaign != null && (MD.marketingdetails?.Campaign ?? null) != null
+            && MD.marketingdetails.Campaign!=-1) {
             for (let item of campaignRules) {
                 if (item.campaignId == MD.marketingdetails.Campaign) {
                     camrule = item;
@@ -983,11 +1020,11 @@ export default class Pricing {
                 return DocAfterCa;
             }
         }
-            else {
-                DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
-                return DocAfterB1;
-            }
-        
+        else {
+            DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
+            return DocAfterB1;
+        }
+
         //    let DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes);
         //    let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, false);
         //    return DocAfterCa;
@@ -1021,7 +1058,7 @@ export default class Pricing {
                 && (!itemrules.camCardGroupCode || (itemrules.camCardGroupCode.indexOf("," + MD.CardGroupCode + ",")) > -1)
                 && (!itemrules.camValidFrom || MD.DocTime >= itemrules.camValidFrom)
                 && (!itemrules.camValidTo || MD.DocTime <= itemrules.camValidTo)
-                && (!itemrules.camSettleType || (itemrules.camSettleType == MD.marketingdetails.SettleType || itemrules.camSettleType == 2))
+                //&& (!itemrules.camSettleType || (itemrules.camSettleType == MD.marketingdetails.SettleType || itemrules.camSettleType == 2))
                 && (!itemrules.camSalesChannel || (itemrules.camSalesChannel == MD.marketingdetails.SaleChannel || itemrules.camSalesChannel == 1))
             ) {
                 shortrules.push(itemrules);
@@ -1041,7 +1078,7 @@ export default class Pricing {
         let PrssdLine = [];
         let br = {};
         // فعلا فقط پیاده سازی تعدادی انجام شده است. پیاده سازی مبلغی باید بعدا اضافه شود.
-
+//debugger;
         if (shortrules.length > 0) {
             let isReq = false;
             let linenum = 0;
@@ -1082,9 +1119,10 @@ export default class Pricing {
                                 line.CampaignDetails.Status = 0;
                                 line.CampaignDetails.Information += "مقدار تقاضا شده این خط بیشتر از مقدار مجاز (" + item.lineMaxReqQty + ") است. این خط حذف میشود.";
                                 line.CampaignDetails.RequestedQty = line.ItemQty;
-                                line.ItemQty = 0;
+                                //line.ItemQty = 0;
                                 br.isFull = true;
                                 br.status = 0;
+                                //debugger;
                                 if (!KeepOthers ?? false) this.ZerolineMarketing(line);
                             }
                             else if ((br.qty + line.ItemQty > item.lineMaxReqQty) && !br.isFull) {
@@ -1102,6 +1140,10 @@ export default class Pricing {
                             }
 
                         }
+                        else {
+                            line.CampaignDetails.Status = 1;
+                            br.qty += line.ItemQty;
+                        }
                         // قواعد حداکثر مبلغ
                     }
                     linenum++;
@@ -1117,7 +1159,8 @@ export default class Pricing {
                             results.MarketingLines[itemb1].CampaignDetails.Status = 0;
                             results.MarketingLines[itemb1].CampaignDetails.Information += "مقدار تقاضا شده این خط کمتر از مقدار مجاز (" + item.lineMinReqQty ?? 0 + ") است. این خط حذف می شود.";
                             results.MarketingLines[itemb1].CampaignDetails.RequestedQty = results.MarketingLines[itemb1].ItemQty;
-                            results.MarketingLines[itemb1].ItemQty = 0;
+                           // results.MarketingLines[itemb1].ItemQty = 0;
+                            //debugger;
                             if (!KeepOthers ?? false) this.ZerolineMarketing(results.MarketingLines[itemb1]);
                         }
                         br.disQty = 0;
@@ -1152,25 +1195,31 @@ export default class Pricing {
                 for (linenum = 0; linenum < maxline; linenum++) {
                     let lineMD = MD.MarketingLines[linenum];
                     if (br.lines.indexOf(linenum) > -1)
-                        if (lineMD.CampaignDetails.Status == 1 || lineMD.CampaignDetails.Status == 2) {
-                            if (!lineMD.Price) {
+                        if (lineMD.CampaignDetails.Status == 1 || lineMD.CampaignDetails.Status == 2
+                            || (KeepOthers ?? false)) {
+                            if ((item.lineBasePrice ?? 0) > 0 && (lineMD.Price ?? 0) == 0) {
+                                lineMD.Price = item.lineBasePrice ?? 0;
+                            } else if (!lineMD.Price) {
                                 lineMD.CampaignDetails.Information += "اطلاعات قیمت کالا موجود نمی باشد.";
                                 lineMD.CampaignDetails.Status = -1;
                                 continue;
                             }
+
                             // اصلاح شود
-                            let newPrice = this.CalcColumns(item.lineDisRelationId, lineMD.Price, item.camCanHaveB1Dis ? lineMD.DiscountPercent : 0
-                                , item.lineBaseDis ?? 0, br.disQty, br.disVol ?? 0, 0, item.lineFixedValue ?? 0, 0);
+                            let newPrice = this.CalcColumns(item.lineDisRelationId, lineMD.Price, item.camCanHaveB1Dis ? lineMD.DiscountPercent : (item.lineBaseDis ?? 0)
+                                , item.lineBaseDis ?? 0, br.disQty, br.disVol ?? 0, 0, item.lineFixedValue ?? 0, Math.min(item.lineMaxDisPrcnt ?? 80, item.camMaxDisPrcnt ?? 80));
                             lineMD.DiscountPercent = Math.round(Math.max(0.0, 100.0 - newPrice / lineMD.Price * 100), 2);
                             if (item.lineFixedValue != null) lineMD.CampaignDetails.Information += "مبلغ " + item.lineFixedValue + " ریال از مبلغ قلم کالا کسر شد.";
                             results.MarketingLines[linenum] = this.FilllineMarketing(lineMD);
                         }
                         else {
+                            //debugger;
                             if (!KeepOthers) this.ZerolineMarketing(lineMD);
                         }
                 }
                 bri.push(br);
             }
+            //debugger;
             // پردازش قواعد تخفیف کل فاکتور
             // قاعده وجود کالاهای لازم
             if (isReq) {
@@ -1195,7 +1244,7 @@ export default class Pricing {
                     return results;
                 }
             }
-
+//debugger;
             // قاعده تعداد خطوط فاکتور
             let rownum = bri.filter(x => x.isExist).length;
             if (rownum > shortrules[0].camMaxRow || rownum < shortrules[0].camMinRow) {
@@ -1241,6 +1290,7 @@ export default class Pricing {
                 CommissionEffect = 0;
             }
             //محاسبه جمع فاکتور و اعمال تخفیف اقلامی
+            //debugger;
             let sum = 0;
             linenum = 0;
             maxline = results.MarketingLines.length;
@@ -1341,7 +1391,6 @@ export default class Pricing {
                     break;
                 }
         }
-
         //محاسبه تخفیف نحوه پرداخت
         doctocalc = this.CalculatePaymentDiscount(doctocalc);
         let PaymentDic = doctocalc.marketingdetails?.DocumentDiscountPercent ?? 0;
@@ -1402,7 +1451,7 @@ export default class Pricing {
         if (doctocalc.marketingdetails?.Campaign) {
             let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, true);
             let lp = {};
-            for (let item in DocAfterCa.MarketingLines) {
+            for (let item of DocAfterCa.MarketingLines) {
                 lp = {};
                 for (let itemresult of result) {
                     if (itemresult.ItemCode == item.ItemCode) {
@@ -1481,10 +1530,3 @@ export default class Pricing {
         return newdoc;// this.CaseUpPropOfDoc(newdoc);
     }
 }
-
-
-
-
-
-
-

@@ -175,6 +175,7 @@
     height:48px;
     margin:6px;
     border-radius:8px;
+    font-size:14px;
   }
 .rsa-navigation-item.active{
   color:#fff;
@@ -204,64 +205,4 @@
   display:flex;
   position:relative;
 
-}
-.rsa-popup-container{
-  position:fixed;
-  display:flex;
-  width:100%;
-  height:100%;
-  left:0;
-  top:0;
-  align-items: center;
-  justify-content: center;
-  z-index:10;
-  flex-direction:column;
-}
-.rsa-popup{
-  font-family:IRANSans-light;
-  width:90%;
-  height:90%;
-  border-radius:12px;
-  box-shadow:2px 2px 12px 3px rgb(0 0 0 / 30%)
-}
-.rsa-popup.rtl{
-  direction:rtl;
-}
-.rsa-popup-container.fullscreen .rsa-popup{
-  width:100%;
-  height:100%;
-}
-.rsa-popup-container.bottom-popup{
-  justify-content:flex-end;
-}
-.rsa-popup-container.bottom-popup .rsa-popup{
-  width:100%;
-  height:fit-content;
-}
-.rsa-popup-header{
-  background:#DDD;
-  color:#323130;
-  padding:0 12px;
-  font-size:20px;
-  font-weight:bold;
-}
-
-.rsa-popup-body{
-  flex:1;
-  width:100%;
-}
-.rsa-confirm{
-  background:#fff;
-}
-.rsa-confirm .rsa-popup-body{
-  padding:12px;
-}
-.rsa-popup-footer-button{
-  height:30px;
-  background:dodgerblue;
-  border:none;
-  padding:0 24px;
-  color:#fff;
-  font-family:inherit;
-  border-radius:4px;
 }

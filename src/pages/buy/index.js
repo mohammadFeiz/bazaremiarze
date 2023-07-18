@@ -42,27 +42,27 @@ export default class Buy extends Component {
   }
   async getCategories() {
     let {kharidApis} = this.context;
-    let categories = await kharidApis({api:"getCategories",cache:24 * 60});
+    let categories = await kharidApis({api:"getCategories",cache:24 * 60 * 60 * 1000,name:'دریافت لیست دسته بندی ها'});
     this.setState({ categories });
   }
   async getFamilies() {
     let {kharidApis} = this.context;
-    let families = await kharidApis({api:'families',cache:24 * 60});
+    let families = await kharidApis({api:'families',cache:24 * 60 * 60 * 1000,name:'دریافت لیست خانواده های محصولات'});
     this.setState({ families });
   }
   async get_recommendeds() {
     let {kharidApis} = this.context;
-    let recommendeds = await kharidApis({api:'recommendeds',cache:24 * 60});
+    let recommendeds = await kharidApis({api:'recommendeds',cache:24 * 60 * 60 * 1000,name:'دریافت لیست پیشنهاد سفارش'});
     this.setState({ recommendeds });
   }
   async get_newOrders() {
     let {kharidApis} = this.context;
-    let newOrders = await kharidApis({api:"newOrders",cache:24 * 60});
+    let newOrders = await kharidApis({api:"jadid_tarin_mahsoolat",cache:24 * 60 * 60 * 1000,name:'دریافت جدید ترین محصولات'});
     this.setState({ newOrders });
   }
   async get_bestSellings() {
     let {kharidApis} = this.context;
-    let bestSellings = await kharidApis({api:'bestSellings',cache:24 * 60});
+    let bestSellings = await kharidApis({api:'bestSellings',cache:24 * 60 * 60 * 1000,name:'دریافت لیست پر فروش ترین محصولات'});
     this.setState({ bestSellings });
   }
   //dont set async for parallel data fetching
@@ -160,4 +160,3 @@ export default class Buy extends Component {
     )
   }
 }
-

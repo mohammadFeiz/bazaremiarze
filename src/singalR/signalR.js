@@ -1,8 +1,9 @@
 import {HubConnectionBuilder} from "@microsoft/signalr";
 
 export default function SignalR(getState) {
-    
-    var connection = new HubConnectionBuilder().withUrl("https://retailerapp.bbeta.ir/hubclient").build();
+    let {baseUrl} = getState();
+    let addr = baseUrl === 'https://retailerapp.bbeta.ir/api/v1'?'https://retailerapp.bbeta.ir/hubclient':'https://apimy.burux.com/hubclient';
+    var connection = new HubConnectionBuilder().withUrl(addr).build();
     const orderStatuses=
     {
         Pending : 1,
@@ -23,6 +24,7 @@ export default function SignalR(getState) {
                 else if(order.status === 'Taken'  || order.status===2){type = 'wait_to_send'}
                 else {return}
                 order = await bazargahApis({api:'bazargahItem',parameter:{order,type}})
+                
                 if(order === false){return;}
                 if(type === 'wait_to_get'){
                     bazargahOrders.wait_to_get = bazargahOrders.wait_to_get || [];

@@ -2,8 +2,9 @@ import React,{Component,createContext,createRef} from 'react';
 import {Icon} from '@mdi/react';
 import {mdiChevronLeft,mdiChevronRight,mdiChevronDown,mdiClose,mdiMagnify,mdiEye,mdiFilter,mdiFilterMenu,mdiSort,mdiArrowDown,mdiArrowUp,mdiFileTree,mdiFileExcel,
 mdiChevronDoubleRight,mdiChevronDoubleLeft,mdiCircleMedium} from '@mdi/js';
-import AIOButton from './../../npm/aio-button/aio-button';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import AIOInput from './../../npm/aio-input/aio-input';
+import { ExportToExcel,GetClient } from '../aio-functions/aio-functions';
 import $ from 'jquery';
 import './index.css';
 let TableContext = createContext();
@@ -38,7 +39,6 @@ export default class Table extends Component {
       openDictionary,filters:[],searchText:'',touch:'ontouchstart' in document.documentElement,
       groupsOpen:{},rowHeight:props.rowHeight,freezeSize:240,paging:props.paging,
       getValueByField:functions.getValueByField,
-      Excel:Excel(()=>this.props),
       Sort:Sort(()=>this.props,()=>this.state,this.setColumns.bind(this)),
       Group:Group(()=>this.props,()=>this.state,this.setColumns.bind(this)),
       columns:(props.columns || []).map((c)=>{return {...c}}),
@@ -107,12 +107,14 @@ export default class Table extends Component {
     let unfreezeCells = [];
     let values = {};
     let json = {}
+    this.freezeMode = false;
     for(let j = 0; j < columns.length; j++){
       let column = columns[j];
       if(column.show === false){continue}
       let value = getValueByField(row,column);
       values[column.dataColumnId] = value;
-      json[column.title] = value === undefined?'':value;
+      let title = column.title || column.label;
+      json[title] = value === undefined?'':value;
       let cell = (striped)=>{
         let {_show} = this.getRowDetailById(id);
         if(_show === false){return null}
@@ -403,6 +405,12 @@ export default class Table extends Component {
     let {paging} = this.state;
     if(!paging){return false}
     let {rtl,model} = this.props;
+    try{
+      if(this.props.paging.length !== this.state.paging.length){
+        setTimeout(()=>this.setState({paging:this.props.paging}),0)
+      }
+    }
+    catch{console.log()}
     let {number = 1,sizes = [1,5,10,15,20,30,40,50,70,100,150,200],size = sizes[0],length = model.length} = paging;
     let pages = Math.ceil(length / size);
     paging.sizes = sizes;
@@ -432,7 +440,7 @@ export default class Table extends Component {
         },
         {
           html:(
-            <AIOButton 
+            <AIOInput center={true}
               className={TableCLS.toolbarIconButton} type='select' options={sizes} optionValue='option' optionText='option' search={false} caret={false} text={size} optionStyle='{height:24}'
               onChange={(value)=>this.changePaging('size',value)}
             />
@@ -491,7 +499,6 @@ class TableUnit extends Component{
     this.resizeDown = functions.resizeDown;
     this.resizeMove = functions.resizeMove;
     this.resizeUp = functions.resizeUp;
-    this.getClient = functions.getClient;
   }
   
   title_layout(column,setFlex){
@@ -502,6 +509,7 @@ class TableUnit extends Component{
     let {hide_xs,hide_sm,hide_md,hide_lg,show_xs,show_sm,show_md,show_lg} = column;
     if(setFlex){width = undefined; flex = 1}
     if(width === undefined && flex === undefined){flex = 1;}
+    let title = column.title || column.label || '';
     return {
       hide_xs,hide_sm,hide_md,hide_lg,show_xs,show_sm,show_md,show_lg,
       size:width,align:'vh',flex,style:{minWidth,height:headerHeight || rowHeight,...titleAttrs.style},
@@ -531,7 +539,7 @@ class TableUnit extends Component{
 
       row:[
         this.resize_layout(column,resizable,'start'),
-        {html:column.title || '',flex:1,align:column.titleJustify !== false?'h':undefined},
+        {html:title,flex:1,align:column.titleJustify !== false?'h':undefined},
         this.filter_layout(column),
         this.resize_layout(column,resizable,'end')
       ]
@@ -554,17 +562,17 @@ class TableUnit extends Component{
       setColumn(column,{filter:{}})
     }
     let {items = [],booleanType = 'or',add,operators,valueOptions} = filter;
-    
+    let title = column.title || column.label || '';
     return {
       html:(
-        <AIOButton
-          style={{background:'none',color:'inherit'}}
+        <AIOInput
+          style={{background:'none',color:'inherit',border:'none'}}
           type='button' rtl={rtl} caret={false} text={<Icon path={items.length?mdiFilterMenu:mdiFilter} size={0.6}/>}
           popOver={()=>{
             let {columns} = this.props;
             return (
               <AIOTableFilterPopup 
-                title={column.title}
+                title={title}
                 translate={translate} type={type} items={items} booleanType={booleanType} add={add} operators={operators} valueOptions={valueOptions}
                 onChangeBooleanType={(booleanType)=>{
                   let {filter} = column;
@@ -673,7 +681,7 @@ class TableUnit extends Component{
     let headerLayout = this.header_layout();
     let rowsLayout = this.rows_layout()
     let className = TableCLS.rows;
-    className += ' of-auto';
+    className += ' of-auto table-unit';
     if(cellsType === 'freezeCells'){className += ' ' + TableCLS.freezeContainer}
     else if(cellsType === 'unfreezeCells'){className += ' ' + TableCLS.unfreezeContainer}
     return (
@@ -742,23 +750,25 @@ class Toolbar extends Component{
     let {columns,setColumn} = state;
     if(!columns || !columns.length){return false}
     let options = columns.filter(({toggle})=>toggle).map((column)=>{
-      return {column,text:column.title,checked:column.show !== false}
+      let title = column.title || column.label || '';
+      return {
+        text:title,checked:column.show !== false,close:false,
+        onClick:()=>{
+          let {state,setColumns} = this.context;
+          let {columns} = state;
+          let {show = true} = column;
+          setColumn(column,{show:!show})
+          state.saveColumnInStorage(column,'show',column.show)
+          setColumns(columns)
+        }
+      }
     })
     if(!options.length){return false}
     return (
-      <AIOButton
+      <AIOInput
         popupHeader={<div className={TableCLS.toolbarPopupHeader}>{translate('Show Columns')}</div>}
         key='togglebutton' caret={false} type='select' options={options} className={TableCLS.toolbarIconButton}
         text={<Icon path={mdiEye} size={0.7}/>}
-        onChange={(value,obj)=>{
-          let {state,setColumns} = this.context;
-          let {columns} = state;
-          let {column} = obj.option;
-          let {show = true} = column;
-          setColumn(column,{show:!show})
-          state.saveColumnInStorage(column,'show',obj.option.column.show)
-          setColumns(columns)
-        }}
       />
     )
   }
@@ -768,7 +778,7 @@ class Toolbar extends Component{
     if(!sorts.length || !model.length){return false}
     let options = sorts.map((sort,i)=>{
       return {
-        text:sort.title,checked:!!sort.active,
+        text:sort.title,checked:!!sort.active,close:false,
         after:(
           <Icon 
             path={sort.dir === 'dec'?mdiArrowDown:mdiArrowUp} size={0.8}
@@ -778,49 +788,52 @@ class Toolbar extends Component{
               state.Sort.set(sorts)
             }} 
           />
-        )
+        ),
+        onClick:()=>{
+          sorts[i].active = !sorts[i].active;
+          state.Sort.set(sorts)
+        }
       }
     })
     return (
-      <AIOButton
+      <AIOInput
         popupHeader={<div className={TableCLS.toolbarPopupHeader}>{translate('Sort By')}</div>}
         key='sortbutton' caret={false} type='select' options={options} className={TableCLS.toolbarIconButton}
         text={<Icon path={mdiSort} size={0.7}/>}
-        onChange={(value,obj)=>{
-          sorts[obj.realIndex].active = !sorts[obj.realIndex].active;
-          state.Sort.set(sorts)
-        }}
         onSwap={(from,to,swap)=>state.Sort.set(swap(sorts,from,to))}
       />
     )
   }
   getExcelButton(){
-    let {state,rows_array,getRowDetailById} = this.context;
+    let {rows_array,getRowDetailById,translate} = this.context;
     return (
-      <AIOButton
+      <AIOInput
         key='excelbutton' caret={false} type='button' className={TableCLS.toolbarIconButton}
         text={<Icon path={mdiFileExcel} size={0.7}/>}
-        onClick={()=>state.Excel.export(rows_array.filter(({_isGroup_})=>!_isGroup_).map(({_id})=>getRowDetailById(_id)._json))}
+        onClick={()=>{
+          let list = rows_array.filter(({_isGroup_})=>!_isGroup_).map(({_id})=>getRowDetailById(_id)._json)
+          ExportToExcel(list,translate('Inter Excel File Name'))
+        }}
       />
     )
   }
   getGroupButton(){
     var {model,state,groups,translate} = this.context;
     if(!groups.length || !model.length){return false}
-    let options = groups.map((group)=>{
+    let options = groups.map((group,i)=>{
       return {
-        text:group.title,checked:!!group.active
+        text:group.title,checked:!!group.active,close:false,
+        onClick:()=>{
+          groups[i].active = !groups[i].active;
+          state.Group.set(groups)
+        }
       }
     })
     return (
-      <AIOButton
+      <AIOInput
         popupHeader={<div className={TableCLS.toolbarPopupHeader}>{translate('Group By')}</div>}
         key='groupbutton' caret={false} type='select' options={options} className={TableCLS.toolbarIconButton}
         text={<Icon path={mdiFileTree} size={0.7}/>}
-        onChange={(value,obj)=>{
-          groups[obj.realIndex].active = !groups[obj.realIndex].active;
-          state.Group.set(groups)
-        }}
         onSwap={(from,to,swap)=>state.Group.set(swap(groups,from,to))}
       />
     )
@@ -868,17 +881,18 @@ class Cell extends Component{
     let {rows_object,details_object,verticalTabIndex} = this.context;
     let {rowId,colId} = this.props;
     if(this.inlineEdit){
+      let {spin = false,type} = this.inlineEdit;
       if(this.inlineEdit.type === 'text' || this.inlineEdit.type === 'number'){
         let props = {
-          type:column.type,className:TableCLS.inlineEditInput,defaultValue:value,tabIndex:verticalTabIndex?colId:0,
+          type,className:TableCLS.inlineEditInput,value,tabIndex:verticalTabIndex?colId:0,spin,
           style:{textAlign:column.justify?'center':undefined},'data-col-id':colId,'data-row-id':rowId,
-          onBlur:(e)=>this.onChange(e.target.value)
+          onChange:(value)=>this.onChange(value)
         }
-        return <input {...props}/>
+        return <AIOInput {...props}/>
       }
       if(this.inlineEdit.type === 'select'){
         return (
-          <AIOButton
+          <AIOInput
             attrs={{'data-col-id':colId,'data-row-id':rowId,tabIndex:verticalTabIndex?colId:0}}
             {...{popupAttrs:{style:{maxHeight:360}},...this.inlineEdit}} className={TableCLS.inlineEditInput}
             onChange={(value)=>this.onChange(value)}
@@ -888,12 +902,21 @@ class Cell extends Component{
       }
       if(this.inlineEdit.type === 'checkbox'){
         return (
-          <AIOButton
+          <AIOInput
             attrs={{'data-col-id':colId,'data-row-id':rowId,tabIndex:verticalTabIndex?colId:0}}
             {...this.inlineEdit} className={TableCLS.inlineEditInput}
             value={value}
-            style={{padding:0}}
-            onChange={(value)=>this.onChange(!value)}
+            onChange={(value)=>this.onChange(value)}
+          />
+        )
+      }
+      if(this.inlineEdit.type === 'datepicker'){
+        return (
+          <AIOInput
+            attrs={{'data-col-id':colId,'data-row-id':rowId,tabIndex:verticalTabIndex?colId:0}}
+            {...this.inlineEdit} className={TableCLS.inlineEditInput}
+            value={value}
+            onChange={(value)=>this.onChange(value)}
           />
         )
       }
@@ -928,6 +951,7 @@ class Cell extends Component{
     if(!inlineEdit){return false}
     if(inlineEdit === true){inlineEdit = {}}
     let {disabled = ()=>false,type = column.type || 'text'} = inlineEdit;
+    if(type === 'date'){type = 'datepicker'}
     if(disabled(row)){return false}
     return {...inlineEdit,type};
   }
@@ -1010,6 +1034,8 @@ class Cell extends Component{
     return {row:[{className:TableCLS.cellAfter,html}]}
   }
 }
+
+
 function FilterResult(items = [],booleanType = 'or',value,reverse){
   let fn = {
     and(){ 
@@ -1142,7 +1168,7 @@ class AIOfilterItem extends Component{
       return {
         size:90,
         html:(
-          <AIOButton 
+          <AIOInput 
             style={{width:'100%'}}
             type='button' className={TableCLS.filterOperator} text={operators[0].text}
           />
@@ -1152,7 +1178,7 @@ class AIOfilterItem extends Component{
     return {
       size:90,
       html:(
-        <AIOButton 
+        <AIOInput 
           style={{width:'100%'}}
           type='select' className={TableCLS.filterOperator} value={operator} options={operatorOptions} onChange={(value)=>onChange('operator',value)}
         />
@@ -1208,7 +1234,7 @@ function Sort(getProps,getState,setColumns){
           let column = columns[i];
           setColumn(column,{sort:{}})
         }
-        let {sort,field,dataColumnId,title} = columns[i];
+        let {sort,field,dataColumnId,label,title = label || ''} = columns[i];
         let {dir = 'inc',order,active = true} = sort;
         let type = sort.type || columns[i].type || 'text';
         if(order === undefined){
@@ -1335,7 +1361,7 @@ function Group (getProps,getState,setColumns){
       for(let i = 0; i < columns.length; i++){
         if(!columns[i].group){continue}
         if(typeof columns[i].group !== 'object'){columns[i].group = {};}
-        let {group,type = 'text',field,dataColumnId,title} = columns[i];
+        let {group,type = 'text',field,dataColumnId,label,title = label || ''} = columns[i];
         let {order,active = true} = group;
         if(order === undefined){
           let newOrder = 0;
@@ -1353,60 +1379,6 @@ function Group (getProps,getState,setColumns){
     }
   }
   return {get:o.get.bind(o),set:o.set.bind(o),groupBy:o.groupBy.bind(o)}
-}
-function Excel(getProps){
-  let o = {
-    fixPersianAndArabicNumbers (str){
-      if(typeof srt !== 'string'){return str}
-      var persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g],
-      arabicNumbers  = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g];
-      for(var i=0; i<10; i++){str = str.replace(persianNumbers[i], i).replace(arabicNumbers[i], i);}
-      return str;
-    },
-    getJSON(rows){
-      let result = [];
-      for (let i = 0; i < rows.length; i++) {
-        let json = rows[i],fixedJson = {};
-        for(let prop in json){fixedJson[prop] = this.fixPersianAndArabicNumbers(json[prop])} 
-        result.push(fixedJson);
-      }
-      return result;
-    },
-    export(rows) {
-      let {translate = (o)=>o} = getProps();
-      let name = window.prompt(translate('Inter Excel File Name'));
-      if (!name || name === null || !name.length) return;
-      var data = this.getJSON(rows);
-      var arrData = typeof data != "object" ? JSON.parse(data) : data;
-      var CSV = "";
-      // CSV += 'title';
-      CSV += '\r\n\n';
-      if (true) {
-          let row = "";
-          for (let index in arrData[0]) { row += index + ","; }
-          row = row.slice(0, -1);
-          CSV += row + "\r\n";
-      }
-      for (var i = 0; i < arrData.length; i++) {
-          let row = "";
-          for (let index in arrData[i]) { row += '"' + arrData[i][index] + '",'; }
-          row.slice(0, row.length - 1);
-          CSV += row + "\r\n";
-      }
-      if (CSV === "") { alert("Invalid data"); return; }
-      var fileName = name.replace(/ /g, "_");
-      var universalBOM = "\uFEFF";
-      var uri = "data:text/csv;charset=utf-8," + encodeURIComponent(universalBOM + CSV);
-      var link = document.createElement("a");
-      link.href = uri;
-      link.style = "visibility:hidden";
-      link.download = fileName + ".csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  }
-  return {export:o.export.bind(o)}
 }
 let functions = {   
   async onScroll(index){
@@ -1506,8 +1478,6 @@ let functions = {
   },
   
   ///ok
-  getClient(e){return this.context.touch?[e.changedTouches[0].clientX,e.changedTouches[0].clientY]:[e.clientX,e.clientY];},
-  ///ok
   resizeDown(e,column,type){
     e.stopPropagation();
     this.downOnResizeHandle = true;
@@ -1517,7 +1487,7 @@ let functions = {
     $(window).bind(touch?'touchmove':'mousemove',$.proxy(this.resizeMove,this));
     $(window).bind(touch?'touchend':'mouseup',$.proxy(this.resizeUp,this));
     this.resizeDetails = {
-      client:this.getClient(e),
+      client:GetClient(e),
       width:column.width,
       column,type
     }
@@ -1526,7 +1496,7 @@ let functions = {
   resizeMove(e){
     this.resized =true;
     var {rtl} = this.props;
-    var Client = this.getClient(e);
+    var Client = GetClient(e);
     var {client,width,column,type} = this.resizeDetails;
     var offset = (Client[0] - client[0]) * (type === 'start'?-1:1);
     let newWidth = (width + offset * (rtl?-1:1));

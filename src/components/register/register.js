@@ -22,6 +22,7 @@ export default class Register extends Component{
             phoneNumber,//دیفالت ندارد و همیشه باید مقدارش ارسال بشه
             storeName = '',address = '',userProvince = '',userCity = '',landline = '',password = ''
         } = model;
+        if(!phoneNumber || phoneNumber === null){phoneNumber = model.userName;}
         latitude = isNaN(parseFloat(latitude))?35.699739:parseFloat(latitude);
         longitude = isNaN(parseFloat(longitude))?51.338097:parseFloat(longitude);
         this.cities = allCities.filter(({province})=>province === userProvince)
@@ -150,7 +151,7 @@ export default class Register extends Component{
                                 />
                             )
                         }},
-                        {label:'آدرس',type:'textarea',field:'model.address',validations:[['required']],disabled:mode === 'edit'},
+                        {label:'آدرس',type:'textarea',field:'model.address',validations:[['required']]},
                         {type:'html',html:()=><div style={{color:'red'}}>تنظیم موقعیت جغرافیایی الزامیست</div>,show:model.latitude === 35.699739 && model.longitude === 35.699739},
                         {label:'استان',type:'select',field:'model.userProvince',rowKey:'2',options:provinces,optionText:'option',optionValue:'option',validations:[['required']]},
                         {type:'html',html:()=>'',rowKey:'2',rowWidth:12},
@@ -175,8 +176,9 @@ export default class Register extends Component{
         // }, 300);
     }
     async changeAddress(latitude,longitude){
+        //debugger;
         let {mode} = this.props;
-        if(mode !== 'register'){return;}
+        //if(mode !== 'register'){return;}
         let param = {
             headers:{
                 'Api-Key':'service.05feac099b574f18a11b8fce31f7382f',

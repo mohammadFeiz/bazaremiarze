@@ -2,17 +2,21 @@ import React, { Component } from "react";
 import RVD from "./../../../interfaces/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
 import AIOButton from './../../../interfaces/aio-button/aio-button';
+import SplitNumber from "../../../npm/aio-functions/split-number";
 export default class OrdersHistory extends Component {
     static contextType = appContext;
     constructor(props) {
       super(props);
       this.state = {activeTab:'در حال بررسی',tabs:fakeData,loading:true};
     }
+    updateCache(tabs){
+      
+    }
     async componentDidMount() {
       let {kharidApis} = this.context;
-      let {activeTab} = this.props;
-      let tabs = await kharidApis({api:"ordersHistory"});
-      try{this.setState({tabs,activeTab:activeTab || tabs[0].text,loading:false});}
+      let tabs = await kharidApis({api:"tarikhche_sefareshate_kharid",name:'تاریخچه سفارشات خرید'});
+      let {activeTab = tabs[0]?.text} = this.props;
+      try{this.setState({tabs,activeTab,loading:false});}
       catch{return}
     }
     tabs_layout() {
@@ -29,11 +33,6 @@ export default class OrdersHistory extends Component {
             }}/>
         )
       }
-    }
-    async getDetails(o){
-      let { SetState,kharidApis } = this.context;
-      let res = await kharidApis({api:"joziatepeygiriyesefareshekharid", parameter:o});
-      SetState({popup: {mode: "joziate-sefareshe-kharid",order: res}})
     }
     orders_layout(){
       let { activeTab,tabs } = this.state;
@@ -79,18 +78,6 @@ export default class OrdersHistory extends Component {
             this.setState({mounted:true})
         },index * 100 + 100)
     }
-    splitPrice(price){
-      if(!price){return price}
-      let str = price.toString(),dotIndex = str.indexOf('.');
-      if(dotIndex !== -1){str = str.slice(0,dotIndex)}
-      let res = '',index = 0;
-      for(let i = str.length - 1; i >= 0; i--){
-          res = str[i] + res;
-          if(index === 2){index = 0; if(i > 0){res = ',' + res;}}
-          else{index++}
-      }
-      return res
-    }
     header_layout(){
       let {order} = this.props;
       let {mainDocNum,date} = order;
@@ -114,10 +101,23 @@ export default class OrdersHistory extends Component {
         row: [
           {html:order.translate,className:'fs-12 theme-dark-font-color'},
           {flex:1},
-          {html:this.splitPrice(total),className: "fs-14 theme-dark-font-color"},
+          {html:SplitNumber(total),className: "fs-14 theme-dark-font-color"},
           {size:6},
           {html:unit,className: "fs-12 theme-medium-font-color"},
         ],
+      }
+    }
+    cartId_layout(){
+      let {order} = this.props;
+      let res = localStorage.getItem('storage-order-popup-' + order.mainDocNum);
+      let cartId
+      if(typeof res === 'string'){
+        res = JSON.parse(res);
+        res = res.data.details.campaignName;
+        cartId = res;
+      }
+      return {
+        html:cartId,style:{color:'orange'},className:'fs-10 bold'
       }
     }
     render() {
@@ -130,7 +130,7 @@ export default class OrdersHistory extends Component {
           layout={{
             onClick,
             className: "theme-card-bg theme-box-shadow theme-border-radius theme-gap-h p-12 rvd-rotate-card" + (mounted?' mounted':''),
-            column: [this.header_layout(),this.footer_layout(),],
+            column: [this.cartId_layout(),this.header_layout(),this.footer_layout(),],
           }}
         />
       );

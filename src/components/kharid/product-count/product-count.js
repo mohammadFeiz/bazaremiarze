@@ -4,24 +4,25 @@ import {Icon} from '@mdi/react';
 import { mdiPlus,mdiMinus, mdiTrashCanOutline } from '@mdi/js';
 import AIOButton from './../../../npm/aio-button/aio-button';
 import InlineNumberKeyboard from '../../inline-number-keyboard/inline-number-keyboard';
+import appContext from '../../../app-context';
 import $ from 'jquery';
 import './index.css';
 export default class ProductCount extends Component{
+    static contextType = appContext;
     constructor(props){
         super(props);
         let {value} = this.props;
         this.state = {value,prevValue:value,popup:false}
     }
     change(value,min = this.props.min || 0){
+        value = +value;
+        if(isNaN(value)){value = 0}
         let {onChange,max = Infinity} = this.props;
         this.setState({value});
         clearTimeout(this.changeTimeout);
         this.changeTimeout = setTimeout(()=>{
-            
-            if(!isNaN(+value)){
-                if(+value > max){value = max}
-                if(+value < min){value = min}
-            }
+            if(value > max){value = max}
+            if(value < min){value = min}
             onChange(value)
         },500)
         
@@ -49,8 +50,27 @@ export default class ProductCount extends Component{
         // clearTimeout(this.timeout)
         // clearInterval(this.interval) 
       }
+      openPopup(){
+        let {openPopup,rsa_actions} = this.context;
+        let {value} = this.state;
+        let config = {
+            onChange:(value)=>{
+                this.change(value);
+                rsa_actions.removePopup()
+            },
+            onRemove:()=>{
+                this.change(0)
+                rsa_actions.removePopup()
+            },
+            onClose:()=>{
+                rsa_actions.removePopup()
+            },
+            value,
+        }
+        openPopup('count-popup',config)
+      }
     render(){
-        let {value,prevValue,popup} = this.state;
+        let {value,prevValue} = this.state;
         let {min = 0,onChange,max = Infinity,style} = this.props;
         if(this.props.value !== prevValue){setTimeout(()=>this.setState({value:this.props.value,prevValue:this.props.value}),0)}
         let touch = 'ontouchstart' in document.documentElement;
@@ -69,15 +89,20 @@ export default class ProductCount extends Component{
                                     onTouchStart={(e)=>this.touchStart(1,touch,true)} 
                                     className={'product-count-button' + (value >= max?' disabled':'')}
                                 >
-                                    <Icon path={mdiPlus} size={0.8}/>
+                                    <Icon path={mdiPlus} size={1}/>
                                 </div>
                             ),
+                            align:'vh',
                             show:onChange!== undefined
                         },
                         { 
                             show:!!value,
+                            flex:1,
                             html:(
-                                <div type='number' onClick={()=>this.setState({popup:true})} className='product-count-input'>{value}</div>
+                                <div
+                                    className='product-count-input'
+                                    onClick={()=>this.openPopup()}
+                                >{value}</div>
                             )
                         },
                         {
@@ -87,7 +112,7 @@ export default class ProductCount extends Component{
                                     onTouchStart={(e) =>this.touchStart(-1,touch,true)} 
                                     className='product-count-button'
                                 >
-                                    <Icon path={mdiMinus} size={0.8}/>
+                                    <Icon path={mdiMinus} size={1}/>
                                 </div>),
                             show:value > 1 && onChange!== undefined
                         },
@@ -105,107 +130,8 @@ export default class ProductCount extends Component{
                     ] 
                 }}
             />
-            {
-                popup &&
-                <RVD
-                    layout={{
-                        style:{position:'fixed',left:0,top:0,width:'100%',height:'100%',zIndex:10,background:'rgba(0,0,0,0.5)'},
-                        column:[
-                            {
-                                html:(
-                                    <CountPopup
-                                        value={value}
-                                        onRemove={()=>{
-                                            this.change(0)
-                                            this.setState({popup:false})
-                                        }}
-                                        onChange={(value)=>{
-                                            this.change(value)
-                                            this.setState({popup:false})
-                                        }}
-                                    />
-                                )
-                            },
-                            {
-                                flex:1,
-                                onClick:()=>this.setState({popup:false})
-                            }
-                        ]
-                    }}
-                />
-            }
             </>
         )
     }
 }
 
-class CountPopup extends Component{
-    constructor(props){
-        super(props);
-        this.dom = createRef();
-        this.state = {value:props.value}
-    }
-    render(){
-        let {value} = this.state;
-        let {onRemove,onChange} = this.props;
-        return (
-            <RVD
-                layout={{
-                    style:{padding:12,background:'#fff',flex:'none',height:'fit-content',width:'100%'},
-                    column:[
-                        {html:'تعداد را وارد کنید',className:'fs-12 bold theme-medium-font-color'},
-                        {size:6},
-                        {
-                            gap:3,
-                            row:[
-                                {
-                                    flex:1,
-                                    html:(
-                                        <input 
-                                            type='number' value={value} min={0}
-                                            ref={this.dom}
-                                            onChange={(e)=>{
-                                                let val = e.target.value;
-                                                this.setState({value:val});
-                                            }}
-                                            onClick={()=>{
-                                                $(this.dom.current).focus().select()
-                                            }}
-                                            style={{width:'100%',border:'none',border:'1px solid lightblue',height:36,textAlign:'center',borderRadius:4}}
-                                        />
-                                    )
-                                },
-                                
-                                
-                            ]
-                        },
-                        {size:12},
-                        {
-                            row:[
-                                {
-                                    flex:1,
-                                    html:(
-                                        <button 
-                                            className='button-2' style={{background:'red',border:'none'}}
-                                            onClick={()=>onRemove()}
-                                        >حذف محصول</button>
-                                    )
-                                },
-                                {size:12},
-                                {
-                                    flex:1,
-                                    html:(
-                                        <button onClick={()=>onChange(value)} className='button-2'>
-                                                تایید
-                                        </button>
-                                    )
-                                },
-                            ]
-                        },
-                        {size:24}
-                    ]
-                }}
-            />
-        )
-    }
-}

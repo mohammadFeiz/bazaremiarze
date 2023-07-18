@@ -7,7 +7,7 @@ import BelexCard from '../belex-card/belex-card';
 import NV3Report from '../nv3-report';
 import appContext from '../../../app-context';
 export default class CategoryView extends Component {
-    static contextType = appContext
+    static contextType = appContext;
     constructor(props) {
         super(props);
         this.state = { searchValue: '' }
@@ -31,33 +31,34 @@ export default class CategoryView extends Component {
     product_layout(product,index){
         let {searchValue} = this.state;
         if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
-        if(product.type === 'forooshe_vije'){
-            return {html:<ForoosheVijeCard index={index} product={product}/>,className:'of-visible'}    
+        if(product.cartId === 'فروش ویژه'){
+            return {html:<ForoosheVijeCard index={index} product={product} renderIn='category'/>,className:'of-visible'}    
         }
-        if(product.type === 'belex'){
-            return {html:<BelexCard index={index} product={product}/>,className:'of-visible'}    
+        if(product.cartId === 'بلکس'){
+            return {html:<BelexCard index={index} product={product} renderIn='category'/>,className:'of-visible'}    
         }
-        return {html:<ProductCard index={index} product={product} isFirst={true} isLast={true} type='horizontal' />,className:'of-visible'}
+        return {html:<ProductCard key={product.ItemCode} index={index} product={product} renderIn='category' cartId={product.cartId} isFirst={true} isLast={true} type='horizontal' />,className:'of-visible'}
     }
     nv3Report_layout(){
+        let {cart} = this.context;
         let {category} = this.props;
         if(category.name !== 'نورواره 3'){return false}
-        let {cart,getFactorDetails} = this.context;
-        let variantIds = Object.keys(cart);
-        let cartItems = []
-        for(let i = 0; i < variantIds.length; i++){
-            let variantId = variantIds[i];
-            let { product } = cart[variantId];
-            if(product.cartId !== 'نورواره 3'){continue}
-            cartItems.push(cart[variantId])
+        let cartTab = cart['نورواره 3']
+        let total = 0;
+        if(cartTab){
+            let {getAmounts} = cartTab;
+            total = getAmounts().total
         }
-        let items = cartItems.map((o)=>{
-            return { ItemCode: o.variant.code, ItemQty: o.count }
-        })
-        let factorDetails =  getFactorDetails(items);
         return {
-            html:<NV3Report amount={factorDetails.DocumentTotal/10000000}/>
+            html:<NV3Report amount={total}/>
         }
+    }
+    getProductsBySearch(products){
+        let {searchValue} = this.state;
+        return products.filter((o)=>{
+            if (!searchValue){return true}
+            return o.name.indexOf(searchValue) !== -1
+        })
     }
     render() {
         let {category} = this.props;
@@ -79,7 +80,7 @@ export default class CategoryView extends Component {
                                 {size:12},
                                 {
                                     gap: 12,
-                                    column: products.map((product,index)=>this.product_layout(product,index))
+                                    column: this.getProductsBySearch(products).map((product,index)=>this.product_layout(product,index))
                                 }
                             ]
                         },

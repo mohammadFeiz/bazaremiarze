@@ -1,18 +1,16 @@
 import React,{Component} from "react";
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
-import ProductCount from "../product-count/product-count";
-import functions from "../../../functions";
+import SplitNumber from "../../../npm/aio-functions/split-number";
 import appContext from "../../../app-context";
 import {Icon} from '@mdi/react';
 import {mdiDelete} from '@mdi/js';
-import $ from 'jquery';
 export default class ForoosheVijeCard extends Component{
     static contextType = appContext;
     state = {mounted:false,removeMode:false}
     onClick(){
         let {openPopup} = this.context;
-        let {product,variantId} = this.props;
-        openPopup('product',{product,variantId})
+        let {product,variantId,cartId} = this.props;
+        openPopup('product',{product,variantId,cartId})
     }
     label_layout(){
         return {
@@ -79,11 +77,11 @@ export default class ForoosheVijeCard extends Component{
                     align:'v',
                     row:[
                         {flex:1},
-                        {html:functions.splitPrice(min)},
+                        {html:SplitNumber(min)},
                         {size:3},
                         {html:'تا',className:'fs-12 theme-medium-font-color'},
                         {size:3},
-                        {html:functions.splitPrice(max)},
+                        {html:SplitNumber(max)},
                         {size:3},
                         {html:'تومان'}
                     ]
@@ -93,7 +91,7 @@ export default class ForoosheVijeCard extends Component{
                     align:'v',
                     row:[
                         {flex:1},
-                        {html:()=>functions.splitPrice(variant.finalPrice)},
+                        {html:()=>SplitNumber(variant.finalPrice)},
                         {size:3},
                         {html:'تومان'}
                     ]
@@ -108,7 +106,7 @@ export default class ForoosheVijeCard extends Component{
         let {changeCart} = this.context;
         return {align:'vh',html:'حذف',onClick:(e)=>{
             e.stopPropagation();
-            changeCart(0,variantId,product)
+            changeCart({count:0,variantId,product})
         }}
     }
     componentDidMount(){
@@ -138,7 +136,7 @@ export default class ForoosheVijeCard extends Component{
                                     {flex:1,onClick:()=>this.cancelRemoveMode()},
                                     {
                                         html:<Icon path={mdiDelete} size={1} style={{padding:16,background:'#A4262C',color:'#fff',borderRadius:'100%'}}/>,align:'vh',
-                                        onClick:()=>changeCart(0,variantId,product)
+                                        onClick:()=>changeCart({count:0,variantId,product})
                                     },
                                     {flex:1,onClick:()=>this.cancelRemoveMode()}
                                 ]

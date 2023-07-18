@@ -26,9 +26,9 @@ export default class SabteGarantiJadidBaJoziat extends Component {
     async onSubmit() {
         let { guarantiApis, openPopup,SetState,rsa_actions } = this.context;
         let { items } = this.state;
-        let res = await guarantiApis({ api: "sabte_kala", parameter: items });
+        let res = await guarantiApis({ api: "sabte_kalahaye_garanti", parameter: items,name:'ثبت کالاهای گارانتی' });
         if (res) {
-            let guaranteeItems = await guarantiApis({ api: "items" });
+            let guaranteeItems = await guarantiApis({ api: "garantiItems",name:'دریافت لیست کالاهای گارانتی کاربر' });
             rsa_actions.removePopup('all');
             SetState({guaranteeItems})
             openPopup('payame-sabte-garanti',{

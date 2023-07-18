@@ -1,0 +1,132 @@
+.aio-input-table{
+    border:1px solid #ddd;
+    box-sizing:border-box;
+    border-radius:4px;
+    font-size:12px;
+    height:fit-content;
+    display:flex;
+    flex-direction: column;
+    width:100%;
+    background:#fff;
+    color:#666;
+  }
+  .aio-input-table .aio-button{
+    color:inherit;
+  }
+  .aio-input-table-unit{
+    width:100%;
+    flex:1;
+    overflow:auto;
+  }
+  .aio-input-table-header{
+    top:0;
+    display:flex;
+    position:sticky;
+    position: -webkit-sticky;
+    z-index:10;
+  }
+  .aio-input-table-title{
+    padding:0 12px;
+    font-weight:bold;
+    height:36px;
+    display:flex;
+    align-items: center;
+    box-sizing: border-box;
+    flex-shrink:0;
+    overflow:hidden;
+  }
+  .aio-input-table-title-justify{
+    padding:0;
+    justify-content: center;
+  }
+  .aio-input-table-row{
+    display:flex;
+  }
+  .aio-input-table-cell{
+    padding:0 12px;
+    box-sizing: border-box;
+    display:flex;
+    align-items: center;
+    flex-shrink:0;
+  }
+  .aio-input-table-cell .aio-input-container{
+    width:100%;
+  }
+  .aio-input-table-cell .aio-button{
+    width:100%;
+    background:none;
+  }
+  .aio-input-table .aio-input{
+    border:1px solid transparent;
+    border-radius:0;
+    background:none;
+  }
+  .aio-input-table .aio-input input{
+    padding:0;
+    background:none;
+  }
+  .aio-input-table-cell-justify .aio-input input{
+    text-align: center;
+  }
+
+  .aio-input-table-toolbar{
+    left:0;
+    display:flex;
+    height:36px;
+    width:100%;
+    align-items: center;
+  }
+  .aio-input-table-toolbar-header{
+    flex:1;
+    font-weight:bold;
+    padding:0 12px;
+    height:100%;
+    display:flex;
+    width:100%;
+    align-items: center;
+  }
+  .aio-input-table-toolbar-add{
+    height:100%;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    width:36px;
+  }
+  .aio-input-table-remove{
+    border:none;
+    width:36px;
+    background: none;
+    color:inherit;
+  }
+  .aio-input-table-unit::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+  }
+  
+  .aio-input-table-unit::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  
+  .aio-input-table-unit::-webkit-scrollbar-thumb {
+    background-color: #cdd4e0;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+  }
+  
+  .aio-input-table-unit::-webkit-scrollbar-thumb {
+    background-color: #b1b9ca;
+  }
+  
+  .aio-input-table-unit::-webkit-scrollbar-thumb:hover {
+    background-color: #6f7888;
+  }
+
+  .aio-input-table-border-h{
+    height:1px;
+    background:#ddd;
+  }
+  .aio-input-table-border-v{
+    width:1px;
+    background:#ddd;
+  }

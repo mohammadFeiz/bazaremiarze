@@ -71,6 +71,9 @@ body{
 	transition: all .3s;
 	width: 92%;
   }
+  input{
+	font-family: inherit;
+  }
   .rsa{
 	max-width:770px;
 	background:#fff;
@@ -113,17 +116,17 @@ body{
 	color:#666 !important;
 }
 
-.rsa-popup{
+.aio-popup{
 	border-radius:0;
 }
-.rsa-popup-header{
+.aio-popup-header{
 	box-shadow: 0 0 6px 0 rgba(0,0,0,0.2);
 	z-index:10;
 	border-bottom:none;
 	font-size:16px;
 	height:60px !important;
 }
-.rsa-popup-header svg{
+.aio-popup-header svg{
 	border-radius: 100%;
 	padding:6px;
 }
@@ -252,6 +255,9 @@ button{
 .colorA4262C{
 	color:#d0000a;
 }
+.colorFF4335{
+	color:#FF4335;
+}
 .bgD83B01{
 	background:#D83B01;
 }
@@ -273,6 +279,13 @@ button{
 }
 .color00B5A5{
 	color:#00B5A5;
+}
+.shipping-options .aio-button-radio-option{
+	color:#00B5A5;
+}
+.shipping-options .aio-button-text{
+	color:#323130;
+	font-size:14px;
 }
 .color3B55A5{
 	color:#3B55A5;
@@ -349,14 +362,14 @@ button{
 	top:50%;
 }
 .tab-badge{
-	background:dodgerblue;
+	background:#3B55A5;
 	color:#fff;
 	text-align:center;
 	min-width:16px;
 	height:16px;
 	line-height: 16px;
 	padding:0 3px;
-	border-radius:24px;
+	border-radius:4px;
 }
 .button-2.disabled,.button-2:disabled{
 	background: #A19F9D;

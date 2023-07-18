@@ -1,11 +1,20 @@
 import React, { Component } from "react";
 import RVD from "./../../../interfaces/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
-import functions from "./../../../functions";
+import SplitNumber from "../../../npm/aio-functions/split-number";
 import NoSrc from './../../../images/no-src.png';
+// code:25965
+// date:"1401/11/24"
+// docStatus:"CustomerApproved"
+// mainDocNum:25679
+// mainDocType:"Quotation"
+// mainDocisDraft:false
+// total:1584660
+// translate:"در حال بررسی"
+// _time:"00:00:00"
 export default class OrderPopup extends Component {
     static contextType = appContext;
-    state = {details:{}}
+    state = {order:this.props.order}
     getRow(key, value = '-------------',show = true) {
       if(value === null){value = '-------------'}
       if(!show){return false}
@@ -49,14 +58,19 @@ export default class OrderPopup extends Component {
     }
     async getDetails(){
       let {kharidApis} = this.context;
-      let {order} = this.props;
-      let details = await kharidApis({api:'orderProducts',parameter:order,loading:false})
-      this.setState({details})
+      let {order} = this.state;
+      if(order.details){return}
+      let newOrder = await kharidApis({
+        api:'mahsoolate_sefareshe_kharid',parameter:order,loading:false,name:'دریافت محصولات سفارش خرید'
+        //cacheName:'order-popup-' + order.mainDocNum,
+        //cache:10000000
+      })
+      this.setState({order:newOrder})
     }
     async pardakht(){
       let {kharidApis} = this.context;
       let {order} = this.props;
-      let res = await kharidApis({api:'pardakhte_kharid',parameter:{order}})
+      let res = await kharidApis({api:'pardakhte_kharid',parameter:{order},name:'پرداخت خرید عادی'})
     }
     splitter_layout(){
       return {
@@ -65,8 +79,8 @@ export default class OrderPopup extends Component {
     }
     details_layout(){
       let {userInfo} = this.context;
-      let {order} = this.props;
-      let {details = {}} = this.state;
+      let {order} = this.state;
+      let {details = {}} = order;
       details.basePrice = details.basePrice || 0
       return {
         className: "box gap-no-color theme-gap-h p-12",gap: 12,
@@ -77,7 +91,7 @@ export default class OrderPopup extends Component {
           this.getRow("نام مشتری",details.customerName + " - " + details.customerCode),
           this.getRow("گروه مشتری", userInfo.groupName),
           this.getRow("نام کمپین", details.campaignName),
-          this.getRow("قیمت پایه", functions.splitPrice(details.basePrice) + ' ریال'),
+          this.getRow("قیمت پایه", SplitNumber(details.basePrice) + ' ریال'),
           this.getRow("نام ویزیتور", details.visitorName),
           this.getRow("کد ویزیتور", details.visitorCode),
           this.splitter_layout(),
@@ -88,14 +102,14 @@ export default class OrderPopup extends Component {
           this.getRow("نحوه ارسال", details.nahve_ersal),
           this.getRow("نحوه پرداخت", details.nahve_pardakht),
           this.getRow("مهلت تسویه", details.mohlate_tasvie,!!details.mohlate_tasvie),
-          this.getRow("مبلغ پرداختی کل", functions.splitPrice(order.total) + ' ریال')
+          this.getRow("مبلغ پرداختی کل", SplitNumber(order.total) + ' ریال')
         ],
       }
     }
     dokmeye_pardakht_layout(){
-      let {order} = this.props;
+      let {order} = this.state;
       let {docStatus} = order;
-      let {details = {}} = this.state;
+      let {details = {}} = order;
       let {nahve_pardakht} = details;
       if(docStatus !== 'WaitingForPayment' || nahve_pardakht !== 'اینترنتی'){return false}
       return {
@@ -104,7 +118,8 @@ export default class OrderPopup extends Component {
       }
     }
     products_layout(){
-      let {details = {}} = this.state;
+      let {order} = this.state;
+      let {details = {}} = order;
       let {products} = details;
       let loading = false;
       if(!products){
@@ -186,23 +201,23 @@ export default class OrderPopup extends Component {
       }
     }
     discount_layout(){
-      let {discountPercent,priceAfterVat} = this.props;
+      let {discountPercent,price} = this.props;
       if(!discountPercent){return false}
       return {
         gap:4,
         row:[
             {flex:1},
-            {html:<del>{functions.splitPrice(priceAfterVat)}</del>,className:'fs-14 theme-light-font-color',align:'v'},
+            {html:<del>{SplitNumber(price)}</del>,className:'fs-14 theme-light-font-color',align:'v'},
             {html:<div style={{background:'#FFD335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{discountPercent + '%'}</div>,align:'v'},
         ]  
       }
     }
     price_layout(){
-      let {price} = this.props;
+      let {priceAfterVat} = this.props;
       return {
         row:[
             {flex:1},
-            {html:functions.splitPrice(price) + ' ریال',className:'fs-12 color404040 bold',align:'v'}
+            {html:SplitNumber(priceAfterVat) + ' ریال',className:'fs-12 color404040 bold',align:'v'}
         ]
       }
     }

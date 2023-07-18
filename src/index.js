@@ -8,8 +8,6 @@ import Loading from './components/loading/index';
 import getSvg from './utils/getSvg';
 import { Icon } from '@mdi/react';
 import { mdiAlert,mdiHelpCircleOutline,mdiHelpCircle } from '@mdi/js';
-import landsrc1 from './images/land1.png';
-import landsrc2 from './images/land2.png';
 import logo from './images/logo5.png';
 import { OTPLogin } from './npm/aio-login/aio-login';
 import $ from 'jquery';
@@ -24,8 +22,14 @@ import reportWebVitals from './reportWebVitals';
 class App extends Component {
   constructor(props) {
     super(props);
-    this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";
-    this.state = { isAutenticated: false, registered: false, pageError: false, userInfo: {}, landing: true }
+    let url = window.location.href;
+    if(url.indexOf('localhost') !== -1){this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";}
+    else if(url.indexOf('bazar') !== -1){this.apiBaseUrl = "https://apimy.burux.com/api/v1";}
+    else if(url.indexOf('bbeta') !== -1){this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";}
+    else(alert('error'))
+    console.log(`base url is ${this.apiBaseUrl}`)
+    //this.apiBaseUrl = "https://apimy.burux.com/api/v1";
+    this.state = { isAutenticated: false, registered: false, pageError: false, userInfo: {}, landing: false }
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,8 +96,7 @@ class App extends Component {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   logout() {
-    localStorage.clear('brxelctoken');
-    this.state.recodeIn = false;
+    localStorage.removeItem('brxelctoken');
     this.setState({ isAutenticated: false })
   }
   async interByStorage() {
@@ -101,20 +104,28 @@ class App extends Component {
     if (!storage || storage === null) { this.setState({}); return; }
     storage = JSON.parse(storage);
     Axios.defaults.headers.common['Authorization'] = 'Bearer ' + storage.token;
-    let res;
     $('.loading').css({ display: 'flex' });
-    try {
-      res = await Axios.post(`${this.apiBaseUrl}/BOne/GetCustomer`, { "DocCode": storage.userInfo.cardCode });
-      //$('.loading').css({display:'none'});
+    let success = true;
+      
+    let res = await Axios.get(`${this.apiBaseUrl}/Users/CheckExpireToken`).catch((error)=>{
+      success = false;
+      this.handleStatus(error.response.status,storage)
+    });
+    if(success){
+      this.handleStatus(res.status,storage);
     }
-    catch (err) {
-      this.setState({ pageError: { text: 'سرویس دهنده در دسترس نیست', subtext: 'BOne/GetCustomer ' + err.message } })
+  }
+  handleStatus(status,storage){
+    if(status === 200){
+      this.setState({ isAutenticated: true, userInfo: storage.userInfo, token: storage.token, registered: true })
     }
-    if (res.status === 401) {
-      this.setState({});
-      return;
+    else if(status === 401){
+      localStorage.removeItem('brxelctoken')
+      window.location.reload()
     }
-    this.setState({ isAutenticated: true, userInfo: storage.userInfo, token: storage.token, registered: true })
+    else{
+      this.setState({ pageError: { text: 'سرویس دهنده در دسترس نیست', subtext: ''} })
+    }
   }
   async componentDidMount() {
     this.mounted = true;
@@ -216,7 +227,12 @@ class App extends Component {
           />
         )
       }
-      localStorage.setItem('brxelctoken', JSON.stringify({ token, userInfo }));
+      try{
+        localStorage.setItem('brxelctoken', JSON.stringify({ token, userInfo }));
+      }
+      catch(err){
+        alert(`${err.message}. محدوده حافظه کش کلاینت به حد غیر مجاز رسیده است. لطفا این موضوع را با مرکز پشتیبانی در میان بگذارید`)
+      }
       return (
         <>
           <Main
@@ -232,10 +248,6 @@ class App extends Component {
 
       )
     }
-    let { landing } = this.state;
-    if (landing) {
-      return <Landing onClose={() => this.setState({ landing: false })} />
-    }
     return (
       <RVD
         layout={{
@@ -247,7 +259,7 @@ class App extends Component {
             {
               html: (
                 <OTPLogin
-                  time={30}
+                  time={90}
                   number={this.getNumberFromURL()}
                   header={<img src={logo} alt='' width={160} height={160} />}
                   onInterNumber={(number) => this.onInterNumber(number)}
@@ -273,99 +285,6 @@ class App extends Component {
               )
             },
             { flex: 1, style: { minHeight: 240 } }
-          ]
-        }}
-      />
-    )
-  }
-}
-class Landing extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { img: 1,hint:false }
-    setInterval(() => {
-      this.setState({ img: this.state.img * -1 })
-    }, 1000)
-  }
-  render() {
-    let { img,hint } = this.state;
-    let { onClose } = this.props;
-    let bullet = <div style={{ width: 6, height: 6, background: '#333', borderRadius: '100%' }}></div>;
-    return (
-      <RVD
-        layout={{
-          className: 'fullscreen',
-          column: [
-            {
-              flex:1,className: 'ofy-auto',
-              column: [
-                { html: getSvg('mybrxlogo'), align: 'vh', size: 96 },
-                { html: <img src={img === 1 ? landsrc1 : landsrc2} alt='' width='100%' height='100%' className='br-12' style={{ maxWidth: 460 }} />, align: 'vh' },
-                { html: 'می ارزه; مجری جشنواره نورواره بروکس ', className: 'fs-24 bold m-h-12', style: { textAlign: 'right' } },
-                { size: 12 },
-                {
-                  html: `
-یار قدیمی بروکس
-همه مون سال سخت و متفاوتی رو گذروندیم و خیلی تغییر کردیم به همین خاطر اجرای نورواره امسال رو از چند جهت متفاوت کردیم :
-
-
-              `,
-                  className: 'fs-16 m-h-12', style: { textAlign: 'right' }
-                },
-                { size: 12 },
-                {
-                  className: 'm-h-12',
-                  column: [
-                    {
-                      row: [
-                        { size: 30, html: bullet, align: 'vh' },
-                        { html: 'تخفیف های باور نکردنی', className: 'bold' }
-                      ]
-                    },
-                    {
-                      row: [
-                        { size: 30, html: bullet, align: 'vh' },
-                        { html: 'اعطای لامپ رایگان', className: 'bold' },
-                      ]
-                    },
-                    {
-                      row: [
-                        { size: 30, html: bullet, align: 'vh' },
-                        {
-                          onClick:()=>this.setState({hint:!hint}),
-                          row:[
-                            { html: 'حذف دریافت لامپ سوخته', className: 'bold' },
-                            {size:6},
-                            {html:<Icon path={hint?mdiHelpCircle:mdiHelpCircleOutline} size={1}/>,className:'color3B55A5'}
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      show:!!hint,
-                      html:'در نورواره امسال بر خلاف نورواره ی سال های قبل که مشتری به ازای تحویل هر لامپ سوخته امکان خرید یک لامپ نو با تخفیف را داشت ، دیگر مشتری نیازی به تحویل لامپ سوخته ندارد  ',
-                      className:'fs-14 p-r-36 m-v-12',
-                      style:{textAlign:'right'}
-                    
-                    },
-                    {
-                      row: [
-                        { size: 30, html: bullet, align: 'vh' },
-                        { html: 'مشتری اینترنتی علاوه بر حضوری', className: 'bold' },
-                      ]
-                    },
-                  ]
-                },
-                { size: 12 },
-                {
-                  html: 'مثل همیشه نیازمند همراهی گرمتون هستیم', className: 'm-h-12',style:{textAlign:'right'}
-                },
-
-              ]
-            },
-            { size: 6 },
-            { html: <button className='button-2 m-h-6' onClick={() => onClose()}>ورود به بازار می ارزه</button> },
-            { size: 6 }
           ]
         }}
       />

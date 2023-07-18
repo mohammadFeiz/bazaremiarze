@@ -2,20 +2,17 @@ import React, { Component } from 'react';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import getSvg from './../../utils/getSvg';
 import appContext from '../../app-context';
-import functions from '../../functions';
+import SplitNumber from '../../npm/aio-functions/split-number';
 import GarantiCard from '../../components/garanti/garanti-card/garanti-card';
 import AIOButton from './../../interfaces/aio-button/aio-button';
 import Awards from './../awards/index';
 import Card from '../../components/card/card';
 import Billboard from '../../components/billboard/billboard';
 import blankGuarantee from './../../images/blank-guarantee.png';
-import Noor1 from './../../images/noor1.png';
-import Noor2 from './../../images/noor2.png';
 import Bazargah from '../bazargah/bazargah';
-import afterSrc from './../../images/after.png';
 import './index.css';
 import Icon from '@mdi/react';
-import { mdiPlusBox } from '@mdi/js';
+import { mdiLoading, mdiPlusBox } from '@mdi/js';
 
 export default class Home extends Component {
     static contextType = appContext;
@@ -36,7 +33,7 @@ export default class Home extends Component {
     }
     async getPreOrders() {
         let {kharidApis} = this.context;
-        let preOrders = await kharidApis({api:"preOrders",loading:false});
+        let preOrders = await kharidApis({api:"preOrders",loading:false,name:'دریافت لیست پیش سفارشات'});
         this.setState({ preOrders });
     }
     
@@ -62,7 +59,8 @@ export default class Home extends Component {
         return { html: <Billboard renderIn='home'/>,align:'h' }
     }
     cartAndWallet_layout(){
-        let {userInfo,cart,openPopup,backOffice} = this.context;
+        let {userInfo,getCartLength,openPopup,backOffice} = this.context;
+        let cartLength = getCartLength()
         return {
             className:'of-visible theme-gap-h',
             row: [
@@ -71,7 +69,7 @@ export default class Home extends Component {
                     className:'of-visible',flex:1,
                     html:()=>(
                         <Card
-                            type='card1' title='کیف پول' value={functions.splitPrice(Math.max(userInfo.ballance * 10,0))} unit='ریال'
+                            type='card1' title='کیف پول' value={SplitNumber(Math.max(userInfo.ballance * 10,0))} unit='ریال'
                             icon={getSvg(29,{width:30,height:30})} onClick={()=>openPopup('wallet')}
                         />
                     )
@@ -81,7 +79,7 @@ export default class Home extends Component {
                     className:'of-visible',flex:1,
                     html:(
                         <Card
-                            type='card1' title='سبد خرید' value={Object.keys(cart).length} unit='کالا'
+                            type='card1' title='سبد خرید' value={cartLength} unit='کالا'
                             icon={getSvg(28,{width:30,height:30})} onClick={()=>openPopup('cart')}
                         />
                     )
@@ -197,7 +195,7 @@ export default class Home extends Component {
                 {
                     flex: 1,
                     column: [
-                        {className:'theme-vertical-gap'},
+                        {size:12},
                         { align:'v',row: [{ html: '5',className: 'color3B55A5 fs-28 bold', align: 'v' }, { size: 6 }, { html: 'الماس', align: 'v',className: 'theme-dark-font-color fs-18 bold'}]},
                         { html: 'به ازای اخذ هر سفارش از بازارگاه',className: 'theme-medium-font-color bold fs-14',align:'v' },
                         {size:12},
@@ -212,27 +210,11 @@ export default class Home extends Component {
     bazargah_layout(){
         return {className:'of-visible theme-gap-h',html:<Bazargah renderInHome={true}/>}
     }
-    noorvare3_layout(){
-        let {backOffice,userInfo} = this.context;
-        let registered = userInfo.norvareh3Agreement;
+    noorvare3Qr_layout(){
+        let {userInfo,backOffice} = this.context;
         if(!backOffice.activeManager.noorvare3){
             return false
         }
-        return {
-            html:<NoorvareBillboard after={registered}/>,
-            className:'theme-gap-h theme-border-radius',
-            style:{boxShadow:'0px 2px 8px 0px rgb(153 153 153 / 21%)'},
-            onClick:()=>{
-                if(registered){
-                    return false
-                }
-                let {SetState} = this.context;
-                SetState({noorvare3:true})
-            }
-        }
-    }
-    noorvare3Qr_layout(){
-        let {userInfo} = this.context;
         let {showQr} = this.state;
         let qr = userInfo.norvareh3QR
         if(!qr){return false}
@@ -251,18 +233,58 @@ export default class Home extends Component {
                     column:[
                         {
                             html:showQr?'بارکد نورواره شما':'نمایش بارکد نورواره',
-                            className:'fs-14 bold p-h-24 color3B55A5',align:'v',size:36,
+                            className:'fs-14 theme-dark-font-color bold p-h-24',align:'v',size:36,
                             onClick:()=>{
                                 this.setState({showQr:!showQr})
                             }
                         },
                         {
-                            show:!!showQr,html:<img src={qr} alt='' width='180'/>,align:'vh'
+                            show:!!showQr && !!qr,html:<img src={qr} alt='در حال بارگذاری' width='180'/>,align:'vh'
+                        },
+                        {
+                            size:60,show:!!showQr && !!!qr,html:<Icon path={mdiLoading} size={1.5} spin={0.4}/>,align:'vh'
                         }
                     ]
                 },
                 {className:'theme-vertical-gap'},
                 
+            ]
+        }
+    }
+    priceList_layout(){
+        let {openPopup,backOffice} = this.context;
+        if(!backOffice.activeManager.priceList){
+            return false
+        }
+        return {
+            onClick:()=>openPopup('price list'),
+            className:'theme-gap-h theme-border-radius p-12',
+            style:{background:'#2BBA8F'},
+            row:[
+                {html:getSvg('price list')},
+                {
+                    flex:1,
+                    column:[
+                        {flex:1},
+                        {html:'از آخرین قیمت همه تولید کنندگان مطلع شو!',className:'fs-20 t-a-right',style:{color:'#fff',width:'100%'}},
+                        {size:12},
+                        {
+                            row:[
+                                {flex:1},
+                                {
+                                    style:{background:'#eee'},
+                                    className:'p-3 br-6 p-r-12',
+                                    row:[
+                                        {html:'برای مشاهده ضربه بزنید',align:'v',className:'fs-14'},
+                                        {size:6},
+                                        {html:getSvg('tap'),align:'vh'}
+                                    ]
+                                }
+                            ]
+                        },
+                        {flex:1}
+                    ]
+                }
             ]
         }
     }
@@ -276,12 +298,13 @@ export default class Home extends Component {
                     flex:1,className:'ofy-auto',
                     column: [
                         this.billboard_layout(),
-                        this.noorvare3_layout(),
                         this.noorvare3Qr_layout(),
                         { className: 'theme-vertical-gap'},
                         this.cartAndWallet_layout(),
                         { className: 'theme-vertical-gap'},
                         this.preOrders_layout(),
+                        { className: 'theme-vertical-gap'},
+                        this.priceList_layout(),
                         { className: 'theme-vertical-gap'},
                         // { className: 'theme-vertical-gap'},
                         this.bazargah_layout(),
@@ -321,7 +344,7 @@ export default class Home extends Component {
         }
     }
     async componentDidMount(){
-        this.getPreOrders();
+        //this.getPreOrders();
     }
     render() {
         let {showAwards,showCallPopup} = this.state;
@@ -429,22 +452,4 @@ class Help extends Component{
     }
 }
 
-
-class NoorvareBillboard extends Component{
-    constructor(props){
-        super(props);
-        this.state = {mode:1}
-        this.interval = setInterval(()=>this.setState({mode:this.state.mode * -1}),1000) 
-    }
-    render(){
-        let {mode} = this.state;
-        let {after} = this.props;
-        if(after){
-            clearInterval(this.interval)
-        }
-        return (
-            <img src={after?afterSrc:(mode === 1?Noor1:Noor2)} width='100%' alt=''/>
-        )
-    }
-}
 

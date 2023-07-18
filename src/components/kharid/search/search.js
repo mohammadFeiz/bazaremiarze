@@ -25,7 +25,6 @@ export default class Search extends Component {
       this.setState({loading:true})
       let res = await kharidApis({api:"getTaxonProducts", parameter:{Name:searchValue},loading:false});
       this.setState({loading:false})
-      console.log(res)
       this.setState({ result: res });
     }
     async changeSearch(searchValue) {
@@ -48,7 +47,7 @@ export default class Search extends Component {
       return {
         flex: 1,className:'ofy-auto',
         column: result.map((o, i) => {
-          return {html:<ProductCard index={i} isFirst={i === 0} isLast={i === result.length - 1} product={o} type='horizontal'/>}
+          return {html:<ProductCard index={i} isFirst={i === 0} isLast={i === result.length - 1} cartId={'خرید عادی'} product={o} type='horizontal' renderIn='search'/>}
         }),
       }
     }

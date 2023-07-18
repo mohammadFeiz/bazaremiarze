@@ -3,28 +3,41 @@ import ACS from './../../npm/aio-content-slider/aio-content-slider';
 import Sookhte from './../../images/banner1111.png';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import appContext from '../../app-context';
+import landingsrc from './../../images/haraj1.png';
 export default class Billboard extends Component{
     static contextType = appContext;
     async onClick(campaign){
-        let {kharidApis,openPopup} = this.context;
-        if(campaign.type === 'forooshe_vije' || campaign.type === 'belex'){
-            openPopup('category',{category:campaign,name:campaign.name})
+        let {kharidApis,openPopup,belex} = this.context;
+        if(campaign.cartId === 'forooshe_vije' || campaign.cartId === 'belex'){
+            openPopup('category',{category:campaign})
         }
-        else if(campaign.id === 'nv3'){
+        else if(campaign.cartId === 'نورواره 3'){
             openPopup('category',{category:{...campaign}})
         }
+        else if(campaign.cartId === 'بلکس'){
+            openPopup('category',{category:belex})
+        }
+        
         else{
-            let products = await kharidApis({api:'getCampaignProducts',parameter:campaign,cacheName:'campaign' + campaign.id});
-            openPopup('category',{category:{...campaign,products}})
+            kharidApis({
+                api:'getCampaignProducts',parameter:campaign,
+                //cacheName:'campaign' + campaign.cartId,cache:24 * 60 * 60 * 1000,
+                name:'دریافت محصولات کمپین',
+                callback:(products)=>openPopup('category',{category:{...campaign,products}})
+            });
         }
     }
     billboard_layout(){
         let {campaigns,openPopup,backOffice,forooshe_vije,belex,userInfo,nv3} = this.context,{renderIn} = this.props;
+        let {SetState} = this.context;
         let items = []
         if(renderIn === 'buy'){
             items = items.concat(campaigns.map((o)=><img src={o.src} width='100%' alt='' onClick={async ()=>this.onClick(o)}/>))
             
         }
+        items.push(<img src={landingsrc} alt="" width='100%' className='sookhte' onClick={()=>{
+            SetState({landing_takhfif:true})
+        }}/>)
         if(renderIn === 'home' && !!backOffice.activeManager.garanti && userInfo.slpcode){
             // items.push(<img src={HomeSlide2} alt="" width='100%'/>)
             items.push(<img src={Sookhte} alt="" width='100%' className='sookhte' onClick={()=>{
@@ -37,8 +50,9 @@ export default class Billboard extends Component{
                 openPopup('category',{category:forooshe_vije})
             }}/>)
         }
-        if(belex && renderIn === 'buy'){
+        if(belex){
             items.push(<img src={belex.src} alt="" width='100%' onClick={()=>{
+                debugger
                 openPopup('category',{category:belex})
             }}/>)
         }
@@ -50,7 +64,7 @@ export default class Billboard extends Component{
         return {html:<ACS items={items}/>}
     }
     campaigns_layout(){
-        let {campaigns,forooshe_vije,belex,nv3} = this.context,{renderIn} = this.props;
+        let {campaigns,forooshe_vije,belex,nv3,eydane} = this.context,{renderIn} = this.props;
         if(renderIn !== 'buy'){return false}
         let list = [...campaigns];
         if(forooshe_vije){
@@ -62,22 +76,26 @@ export default class Billboard extends Component{
         if(nv3){
             list.push(nv3)
         }
+        if(eydane){
+            list.push(eydane)
+        }
         return {
             column:[
-                {html:'جشنواره ها',className:'fs-14 bold theme-dark-font-color p-h-24',size:36,align:'v'},
+                {show:!!list.length,html:'جشنواره ها',className:'fs-14 bold theme-dark-font-color p-h-24',size:36,align:'v'},
                 {row:list.map((campaign)=>this.campaign_layout(campaign))},
                 {size:12}
             ]
         }
     }
     campaign_layout(campaign){
+        let {name,icon} = campaign;
         return {
             flex:1,align:'h',
             attrs:{onClick:async ()=>this.onClick(campaign)},
             column:[
-                {html:<img src={campaign.icon} width={54} height={54} alt='' className='br-16'/>},
+                {html:<img src={icon} width={54} height={54} alt='' style={{borderRadius:16}}/>},
                 {size:3},
-                {html:campaign.name,className:'fs-12 bold theme-dark-font-color'}
+                {html:name,className:'fs-12 bold theme-dark-font-color'}
             ]
         }
     }

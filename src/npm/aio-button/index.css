@@ -17,9 +17,49 @@ body.aio-button-open {
   -webkit-user-select: none;
   font-size: 12px;
   font-family: inherit;
+  background:#eee;
+  height:36px;
 }
-
-.aio-button:disabled {
+.aio-button.has-label:before{
+  content:attr(data-label);
+  background:#fff;
+  color:#888;
+  white-space: nowrap;
+  position:absolute;
+  top:-8px;
+  left:16px;
+  padding:0 3px;
+  box-sizing: border-box;
+  font-size:11px;
+  height:fit-content;
+}
+.aio-button-radio.has-label:before{
+  content:attr(data-label);
+  background:#fff;
+  color:#888;
+  white-space: nowrap;
+  position:absolute;
+  top:-8px;
+  left:16px;
+  padding:0 3px;
+  box-sizing: border-box;
+  font-size:11px;
+  height:fit-content;
+}
+.aio-button-checkbox.has-label:before{
+  content:attr(data-label);
+  background:#fff;
+  color:#888;
+  white-space: nowrap;
+  position:absolute;
+  top:-8px;
+  left:16px;
+  padding:0 3px;
+  box-sizing: border-box;
+  font-size:11px;
+  height:fit-content;
+}
+.aio-button:disabled,.aio-button.disabled,.aio-button-tabs.disabled,.aio-button-tabs-option.disabled {
   cursor: not-allowed !important;
   opacity: 0.3;
 }
@@ -366,7 +406,6 @@ a.aio-button-option {
   align-items: center;
   cursor: pointer;
   padding: 12px;
-  overflow: hidden;
   max-width: 100%;
   min-width: fit-content;
   box-sizing: border-box;
@@ -375,6 +414,7 @@ a.aio-button-option {
 }
 
 .aio-button-checkbox {
+  position:relative;
   padding: 0;
   width: fit-content;
 }
@@ -560,4 +600,33 @@ a.aio-button-option {
   transition: 0.4s;
   position: relative;
   transform: translateY(0) rotateX(0);
+}
+.aio-button-files{
+  border:1px solid #ddd;
+  padding:6px;
+  box-sizing: border-box;
+}
+.aio-button-file{
+  display:flex;
+  font-size:10px;
+  box-sizing: border-box;
+  align-items: center;
+}
+.aio-button-file:hover{
+  background:#f4f4f4;
+}
+.aio-button-file-name{
+  flex:1;
+}
+.aio-button-file-icon{
+  width:24px;
+  height:24px;
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  opacity:0.5;
+}
+.aio-button-popover{
+  display:flex;
+  flex-direction: column;
 }

@@ -1,23 +1,22 @@
 import React,{Component} from "react";
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
-import ProductCount from "../product-count/product-count";
-import functions from "../../../functions";
 import appContext from "../../../app-context";
 import {Icon} from '@mdi/react';
 import {mdiDelete} from '@mdi/js';
+import SplitNumber from './../../../npm/aio-functions/split-number';
 import $ from 'jquery';
 export default class BelexCard extends Component{
     static contextType = appContext;
     state = {mounted:false,removeMode:false}
     onClick(){
         let {openPopup} = this.context;
-        let {product,variantId} = this.props;
-        openPopup('product',{product,variantId})
+        let {product,variantId,cartId} = this.props;
+        openPopup('product',{product,variantId,cartId})
     }
     label_layout(){
         return {
             row:[
-                {html:'همایش بلکس شیراز',style:{color:'#FDB913'},className:'fs-12 bold',align:'v'},
+                {html:'فروش ویژه لامپ حبابی 10 وات',style:{color:'#FDB913'},className:'fs-12 bold',align:'v'},
                 {size:3},
                 {flex:1,html:(<div style={{height:2,width:'1100%',background:'#FDB913'}}></div>),align:'v'}
             ]
@@ -69,7 +68,7 @@ export default class BelexCard extends Component{
                     align:'v',
                     row:[
                         {flex:1},
-                        {html:functions.splitPrice(product.price)},
+                        {html:SplitNumber(product.price)},
                         {size:3},
                         {html:'ریال'}
                     ]
@@ -84,7 +83,7 @@ export default class BelexCard extends Component{
         if(!variantId){variantId = product.variants[0].id}
         if(!count){return false}
         let {changeCart} = this.context;
-        changeCart(0,product.code,product)
+        changeCart({count:0,variantId:product.code,product})
         
     }
     componentDidMount(){
@@ -125,7 +124,7 @@ export default class BelexCard extends Component{
                                         html:<Icon path={mdiDelete} size={1} style={{padding:16,background:'#A4262C',color:'#fff',borderRadius:'100%'}}/>,align:'vh',
                                         onClick:()=>{
                                             let {product} = this.props;
-                                            changeCart(0,product.code,product)
+                                            changeCart({count:0,variantId:product.code,product})
                                         }
                                     },
                                     {flex:1,onClick:()=>this.cancelRemoveMode()}

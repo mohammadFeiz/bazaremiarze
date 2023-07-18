@@ -56,11 +56,12 @@ export default class AIOForm extends Component {
     let {onChange} = this.props;
     if (input.onChange) {return await input.onChange(value);} 
     else if(onChange){
-      onChange(this.setValue(input.field,value,{model:this.getModel()}).model)
+      onChange(this.setValue(input.field,value,{model:this.getModel()}).model,this.isThereError)
     }
   }
   getInput_text({className,value,onChange,options,disabled,style,placeholder,min,max}, input){
-    let props = {min,max,...input.attrs,autoHeight:input.autoHeight,type:input.type,value,className,onChange,options,disabled,style,placeholder,options,optionText:input.optionText,optionValue:input.optionValue};
+    let {delay = true} = this.props;
+    let props = {delay,justNumber:input.justNumber,min,max,...input.attrs,maxLength:input.maxLength,autoHeight:input.autoHeight,type:input.type,value,className,onChange,options,disabled,style,placeholder,options,optionText:input.optionText,optionValue:input.optionValue};
     let {defaults = {}} = this.props;
     let def = defaults[input.type]
     def = def === undefined?{}:def;
@@ -90,9 +91,9 @@ export default class AIOForm extends Component {
     if(type === 'boolean'){
       let {theme:themeProps = {}} = this.props;
       let {theme:themeInput = {}} = input;
-      let p = !!themeProps[key];
-      let i = !!themeInput[key];
-      return p || i;
+      let p = themeProps[key];
+      let i = themeInput[key];
+      return i === undefined?p:i;
     }
     
   }
@@ -158,9 +159,10 @@ export default class AIOForm extends Component {
     return (<Slider {...props}/>);
   }
   getInput_select({className,value,onChange,options,disabled,style,text}, input) {
+    let {fixPopupPosition} = this.props;
     let props = {
       options,value,onChange,className,search:input.search,disabled,style,optionText:input.optionText,optionValue:input.optionValue,
-      optionBefore:input.optionBefore,optionAfter:input.optionAfter,optionStyle:input.optionStyle,
+      optionBefore:input.optionBefore,optionAfter:input.optionAfter,optionStyle:input.optionStyle,fixPopupPosition,
       text,before:input.before,optionSubtext:input.optionSubtext
     }
     let {defaults = {},rtl} = this.props;
@@ -169,7 +171,8 @@ export default class AIOForm extends Component {
     return (<AIOButton {...props} type='select' popupWidth='fit' popupAttrs={{style:{maxHeight: 400 }}} rtl={rtl}/>);
   }
   getInput_multiselect({className,value,onChange,options,disabled,style,text,subtext,theme}, input) {
-    let props = {className,value,onChange,options,text,subtext,disabled,search:input.search,style,popupWidth:'fit',
+    let {fixPopupPosition} = this.props;
+    let props = {className,value,onChange,options,text,subtext,disabled,search:input.search,style,popupWidth:'fit',fixPopupPosition,
       optionText:input.optionText,optionValue:input.optionValue,optionBefore:input.optionBefore,optionAfter:input.optionAfter,
       text,before:input.before,optionSubtext:input.optionSubtext,optionStyle:input.optionStyle,
       optionIconSize:theme.checkIconSize,optionIconColor:theme.checkIconColor,optionTagAttrs:{style:{...theme.tag}}
@@ -294,7 +297,7 @@ export default class AIOForm extends Component {
     let max = this.getValue({field:input.max});
     let subtext = this.getValue({field:input.subtext});
     let columns = this.getValue({field:input.columns,def:[]});
-    let placeholder = this.getValue({field:input.placeholder,def:false});
+    let placeholder = this.getValue({field:input.placeholder,def:''});
     let onChange = (value) => this.onChange(input, value);
     let style = this.getTheme(input,'inputStyle')
     let className = this.getInputClassName(input,disabled,prefix,affix);
@@ -397,7 +400,8 @@ export default class AIOForm extends Component {
     let {rowStyle = {}} = theme;
     let rows = this.sortByRows(this.handleGroups(inputs));
     return rows.map((row,i)=>{
-      let style = {...rowStyle};
+      let {rowKey} = row[0];
+      let style = {...(typeof rowStyle === 'function'?rowStyle(rowKey):rowStyle)};
       if(i === rows.length - 1){style.marginBottom = 0}
       return {
         swapId:onSwap?row._index.toString():undefined,
@@ -410,10 +414,25 @@ export default class AIOForm extends Component {
       }
     })
   }
+  changeErrors(newErrors){
+    let {getErrors = ()=>{}} = this.props;
+    this.errors = {...newErrors}
+    if(!this.lastErrors){
+      getErrors(Object.keys(newErrors).map((o)=>newErrors[o]))
+      this.lastErrors = {...newErrors};
+    }
+    else{
+      let isDif = JSON.stringify(newErrors) !== JSON.stringify(this.lastErrors);
+      if(isDif){
+        getErrors(Object.keys(newErrors).map((o)=>newErrors[o]));
+        this.lastErrors = {...newErrors}
+      }
+    }
+  }
   getError(o,value,options){
     let {lang = 'en',getErrors = ()=>{}} = this.props;
-    let {validations = []} = o
-    if(!validations.length){return ''}
+    let {validations = [],type} = o
+    if(!validations.length || type === 'html'){return ''}
     
     let a = { 
       value,title:o.label,lang,
@@ -435,7 +454,9 @@ export default class AIOForm extends Component {
     let error = AIOValidation(a);
     if(error){
       if(!this.isThereError){this.isThereError = true}
-      this.errors['a' + o._index] = error;
+      let newErrors = {...this.errors}
+      newErrors['a' + o._index] = error;
+      this.changeErrors(newErrors)
     }
     else{
       let newErrors = {};
@@ -444,11 +465,11 @@ export default class AIOForm extends Component {
           newErrors[prop] = this.errors[prop];
         }
       }
-      this.errors = newErrors;
-      if(JSON.stringify(this.lastErrors) !== JSON.stringify(this.errors)){
-        this.lastErrors = this.errors
-        getErrors(Object.keys(this.errors).map((o)=>this.errors[o]))
-      }
+      this.changeErrors(newErrors)
+      // if(JSON.stringify(this.lastErrors) !== JSON.stringify(this.errors)){
+      //   this.lastErrors = this.errors
+      //   getErrors(Object.keys(this.errors).map((o)=>this.errors[o]))
+      // }
       
     }
     return error;
@@ -484,13 +505,16 @@ export default class AIOForm extends Component {
     ]}
   }
   footer_layout(){
-    let {onSubmit,submitText = 'Submit',closeText = 'Close',resetText = 'Reset',onClose,footerAttrs,reset} = this.props;
-    if(!onSubmit && !reset && !onClose){return false}
+    let {onSubmit,submitText = 'Submit',closeText = 'Close',resetText = 'Reset',onClose,footerAttrs,reset,footer} = this.props;
+    if(!onSubmit && !reset && !onClose && !footer){return false}
+    let isModelChanged = this.state.initialModel !== JSON.stringify(this.props.model)
     return {
       html:()=>(
         <AIOFormFooter 
+          footer={footer}
           isThereError={this.isThereError}
-          isModelChanged={this.state.initialModel === JSON.stringify(this.props.model)}
+          errors={this.errors}
+          isModelChanged={isModelChanged}
           onClose={onClose} 
           onSubmit={onSubmit?()=>onSubmit(this.getModel()):undefined} 
           closeText={closeText} submitText={submitText} resetText={resetText}
@@ -501,13 +525,13 @@ export default class AIOForm extends Component {
     }
   }
   render() {
-    let {tabs = [],style,className} = this.props;
+    let {tabs = [],style,className,rtl} = this.props;
     this.isThereError = false;
     return (
       <ReactVirtualDom
         layout={{
           attrs:{ref:this.dom},
-          className: 'aio-form' + (className?' ' + className:''),
+          className: 'aio-form' + (className?' ' + className:'') + (rtl?' rtl':''),
           style,
           column: [
             this.header_layout(),
@@ -552,7 +576,15 @@ class AIOFormHeader extends Component {
 }
 class AIOFormFooter extends Component{
   render(){
-    let {onClose,onSubmit,closeText,submitText,footerAttrs = {},onReset,resetText,isThereError,isModelChanged} = this.props;
+    let {onClose,onSubmit,closeText,submitText,footerAttrs = {},onReset,resetText,isThereError,isModelChanged,footer,errors} = this.props;
+    if(footer){
+      return footer({
+        onReset,
+        isModelChanged,
+        isThereError,
+        errors
+      })
+    }
     return (
       <ReactVirtualDom
         layout={{
@@ -565,7 +597,7 @@ class AIOFormFooter extends Component{
             { size: 12, show:onSubmit !== undefined },
             {
               show: onSubmit !== undefined,
-              html: () => (<button className="aio-form-footer-button aio-form-submit-button" disabled={isThereError || isModelChanged} onClick={() => onSubmit()}>{submitText}</button>)
+              html: () => (<button className="aio-form-footer-button aio-form-submit-button" disabled={isThereError || !isModelChanged} onClick={() => onSubmit()}>{submitText}</button>)
             },
             { size: 12, show:onSubmit !== undefined },
             {
@@ -587,15 +619,30 @@ class Input extends Component{
     }
   }
   onChange(value){
-    let {type,onChange} = this.props;
+    let {type,onChange,maxLength = Infinity,justNumber,delay} = this.props;
     if (type === 'number') {
-      if(value){value = +value;}
+      if(value){
+        value = +value;
+      }
     } 
+    else if(type === 'text' || value === 'textarea'){
+      if(value){
+        if(justNumber){
+          value = value.toString();
+          let lastChar = value[value.length - 1];
+          if(isNaN(+lastChar)){value = value.slice(0,value.length - 1)}
+        }
+        if(value.toString().length > maxLength){
+          value = value.toString().slice(0,maxLength);
+        }
+
+      }
+    }
     this.setState({value});
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       onChange(value)
-    }, 800);
+    }, delay?400:0);
   }
   getOptions(uid){
     let {optionText,options} = this.props;
@@ -658,12 +705,21 @@ class Input extends Component{
       return <div className='aio-form-inline-error aio-form-input' onClick={()=>this.setState({error:false})}>{error}</div>
     }
     let props = { ...this.props, onChange: (e) => this.onChange(e.target.value) ,ref:this.dom};
+    let attrs = {};
+    for(let prop in props){
+      if(prop ==='optionValue'){continue}
+      if(prop ==='optionText'){continue}
+      if(prop ==='autoHeight'){continue}
+      if(prop ==='justNumber'){continue}
+      if(prop ==='delay'){continue}
+      attrs[prop] = props[prop]
+    }
     let uid = 'a' + Math.random();
     return type === 'textarea' ? (
-      <textarea {...props} value={value === undefined?'':value}/>
+      <textarea {...attrs} value={value === undefined?'':value}/>
     ) : (
       <>
-        <input {...props} value={value === undefined?'':value} list={uid}/>
+        <input {...attrs} value={value === undefined?'':value} list={uid}/>
         {Array.isArray(options) && options.length !== 0 && this.getOptions(uid)}
       </>
     );

@@ -1,9 +1,9 @@
 import React,{Component} from 'react';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
-import ProductCount from './../product-count/product-count';
 import NoSrc from './../../../images/no-src.png';
 import appContext from './../../../app-context';
-import AIOButton from './../../../interfaces/aio-button/aio-button';
+import CartButton from '../cart-button';
+import SplitNumber from '../../../npm/aio-functions/split-number';
 //props
 //1 - product {name = '',variants = [{id}],price = 0,discountPrice = 0,discountPercent = 0,inStock = false,srcs = ['...']}
 //3 - details = [[title = '',value = '']]
@@ -16,86 +16,45 @@ export default class ProductCard extends Component{
     static contextType = appContext;
     debuggerMode = false;
     state = {mounted:false}
-    isInCart(){
-        let {cart} = this.context;
-        let {product} = this.props;
-        try{
-            for(let i = 0; i < product.variants.length; i++){
-                if(cart[product.variants[i].id]){return true}
-            }
-            return false
-        }
-        catch{
-            return false
-        }
-    
-        
-    }
-    splitPrice(price){
-        if(!price){return price}
-        let str = price.toString(),dotIndex = str.indexOf('.');
-        if(dotIndex !== -1){str = str.slice(0,dotIndex)}
-        let res = '',index = 0;
-        for(let i = str.length - 1; i >= 0; i--){
-            res = str[i] + res;
-            if(index === 2){index = 0; if(i > 0){res = ',' + res;}}
-            else{index++}
-        }
-        return res
-    }
     image_layout(){
         let {product} = this.props;
         let {srcs = []} = product;
         return {flex:1,align:'vh',html:<img src={srcs[0] || NoSrc} width={'100%'} alt=''/>}
     }
+    changeCount(count){
+        let {changeCart} = this.context;
+        let {variantId,product} = this.props;
+        changeCart({variantId,product,count})
+    }
     count_layout(){
-        let {count,changeCount,max} = this.props;
-        let {shipping} = this.context;
-        if(shipping && count){return {html:count + ' عدد',align:'vh'}}
-        if(count === undefined){return false}
-        return {size:30,html:()=><ProductCount value={count} onChange={(count)=>changeCount(count)} max={max}/>}
+        let {product,renderIn,variantId} = this.props;
+        return {size:36,html:()=><CartButton renderIn={renderIn} product={product} variantId={variantId}/>}
     }
     title_layout(){
         let {product} = this.props;
-        if(product.cartId){
-            return {html:product.cartId,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}    
-        }
-        if(!product.campaign){return false}
-        return {html:product.campaign.name,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}
+        return {html:product.cartId,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}    
     }
     name_layout(){
         let {product} = this.props;
         let {name} = product;
-        return {html:this.debuggerMode?(
-            <AIOButton
-                type='button' style={{background:'none',fontSize:'inherit',color:'inherit',fontFamily:'inherit',fontWeight:'inherit'}} caret={false}
-                text={name}
-                hover={true}
-                popOver={()=>{
-                    return (
-                        <pre style={{width:'100vw',height:500,overflowY:'auto',direction:'ltr'}}>
-                           {JSON.stringify(product,null,4)} 
-                        </pre>
-                    )
-                }}
-            />
-        ):name,className:'fs-14 theme-medium-font-color bold',style:{whiteSpace:'normal'}}
+        return {html:name,className:'fs-12 theme-medium-font-color bold',style:{whiteSpace:'normal',textAlign:'right'}}
     }
     discount_layout(){
-        let {product,count = 1} = this.props;
+        let {product,count = 1,paymentMethodDiscountPercent} = this.props;
         let {inStock,Price,B1Dscnt = 0,CmpgnDscnt = 0,PymntDscnt = 0,FinalPrice} = product;
+
         if(!Price || !inStock){return false}
         return {
             gap:4,className:'p-h-12',
             row:[
                 {flex:1},
-                {show:!!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt,html:<del>{this.splitPrice(Price)}</del>,className:'fs-14 theme-light-font-color'},
+                {show:!!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt,html:<del>{SplitNumber(Price)}</del>,className:'fs-14 theme-light-font-color'},
                 {
                     gap:3,
                     row:[
                         {show:!!B1Dscnt,html:<div style={{background:'#FFD335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{B1Dscnt + '%'}</div>},
                         {show:!!CmpgnDscnt,html:<div style={{background:'#ffa835',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{CmpgnDscnt + '%'}</div>},
-                        {show:!!PymntDscnt,html:<div style={{background:'#ff4335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{PymntDscnt + '%'}</div>}
+                        {show:!!paymentMethodDiscountPercent || !!PymntDscnt,html:<div style={{background:'#ff4335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{(paymentMethodDiscountPercent || PymntDscnt) + '%'}</div>}
                     ]
                 },
             ]
@@ -104,10 +63,17 @@ export default class ProductCard extends Component{
     details_layout(){
         let {details = []} = this.props;
         if(!details.length){return false}
+        let text = '';
+        for(let i = 0; i < details.length; i++){
+            let [title,value] = details[i];
+            text += `${title}:${value} `
+        }
         return {
-            column:details.map(([title,value])=>{
-                return {size:20,html:`${title} : ${value}`,align:'v',className:'fs-10 theme-light-font-color'}
-            })
+            html:text,className:'fs-9',
+            style:{
+                whiteSpace:'nowrap',
+                overflow:'hidden'
+            }
         }
     }
     notExist_layout(){
@@ -116,11 +82,6 @@ export default class ProductCard extends Component{
         if(inStock){return false}
         return {row:[{flex:1},{html:'نا موجود',className:'colorD83B01 bold fs-12'},{size:12}]}
     }
-    isInCart_layout(){
-        let {showIsInCart = true} = this.props;
-        if(!this.isInCart() || !showIsInCart){return {flex:1}}
-        return {flex:1,align:'v',html:'موجود در سبد خرید شما',className:'colorD83B01 bold fs-10 p-h-12'}
-    }
     price_layout(){
         let {product} = this.props;
         let {FinalPrice,inStock} = product;
@@ -128,19 +89,19 @@ export default class ProductCard extends Component{
         return {
             row:[
                 {flex:1},
-                {html:this.splitPrice(FinalPrice) + ' ریال',className:'fs-12 theme-dark-font-color bold p-h-12'}
+                {html:SplitNumber(FinalPrice) + ' ریال',className:'fs-12 theme-dark-font-color bold p-h-12'}
             ]
         }
     }
     async onClick(){
         if(this.debuggerMode){return }
         let {kharidApis,openPopup} = this.context;
-        let {product} = this.props;
+        let {product,cartId} = this.props;
         if(!product.hasFullDetail){
             product = await kharidApis({api:'getProductFullDetail',parameter:{id:product.id,code:product.defaultVariant.code,product}})
             product.hasFullDetail = true;
         }
-        openPopup('product',{product})
+        openPopup('product',{product,cartId})
     }
     componentDidMount(){
         let {index = 0} = this.props;
@@ -155,10 +116,16 @@ export default class ProductCard extends Component{
             <RVD
                 loading={loading}
                 layout={{
-                    className:'theme-card-bg theme-box-shadow theme-border-radius gap-no-color m-h-12 of-visible rvd-rotate-card' + (mounted?' mounted':''),
+                    className:'theme-card-bg theme-box-shadow gap-no-color rvd-rotate-card' + (mounted?' mounted':''),
                     attrs:{onClick:()=>this.onClick()},
+                    // egg:{
+                    //     count:3,
+                    //     callback:()=>{
+                    //         console.log(this.props)
+                    //     }
+                    // },
                     style:{
-                        padding:6,height:130,
+                        height:148,border:'1px solid #eee',
                         borderBottomLeftRadius:!isLast?0:undefined,
                         borderBottomRightRadius:!isLast?0:undefined,
                         borderTopLeftRadius:!isFirst?0:undefined,
@@ -167,21 +134,25 @@ export default class ProductCard extends Component{
                     gap:12,
                     row:[
                         {
-                            size:96,
-                            column:[this.image_layout(),this.count_layout()]
+                            size:116,
+                            column:[
+                                this.image_layout(),
+                                this.count_layout()
+                            ]
                         },
                         {
                             flex:1,
                             column:[
-                                {flex:1},
+                                {size:6},
                                 this.title_layout(),
                                 this.name_layout(),
-                                {flex:1},
                                 this.details_layout(),
+                                {flex:1},
                                 this.discount_layout(),
                                 this.notExist_layout(),
-                                {row:[this.isInCart_layout(),this.price_layout()]},
-                                {flex:1}
+                                {row:[{flex:1},this.price_layout()]},
+                                {size:6},
+                                
                             ]
                         }
                     ]
@@ -203,7 +174,6 @@ export default class ProductCard extends Component{
                         {html:name,className:'fs-12 p-v-6 p-h-12 theme-medium-font-color bold',style:{whiteSpace:'normal'}},
                         //this.name_layout(),
                         {flex:1},
-                        this.isInCart_layout(),
                         this.discount_layout(),
                         this.price_layout(),
                         this.notExist_layout(),
@@ -214,7 +184,10 @@ export default class ProductCard extends Component{
         )
     }
     render(){
-        let {type} = this.props;
+        let {type,product} = this.props;
+        if(product.ItemCode === '5332'){
+            console.log(product.B1Dscnt);
+        }
         return this[type +'_layout']()
     }
 }

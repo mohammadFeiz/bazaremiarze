@@ -1,6 +1,5 @@
-import AIODate from './../../npm/aio-date/aio-date';
+import AIODate from './../aio-date/aio-date';
 export default function AIOValidation(props) {
-    let dateCalc = AIODate();
     let $$ = {
       translate(text){
         if(!text){return text}
@@ -119,25 +118,25 @@ export default function AIOValidation(props) {
       },
       dateLess(target,validation,value,a,exact){
         if(exact){return this.getMessage(target,{validation,be:'should be before'})}
-        if(dateCalc.isGreater(value,target) || dateCalc.isEqual(value,target)){
+        if(AIODate().isGreater(value,target) || AIODate().isEqual(value,target)){
           return this.getMessage(target,{validation,be:'should be before'})
         }
       },
       dateLessEqual(target,validation,value,a,exact){
         if(exact){return this.getMessage(target,{validation,be:'cannot be after'})}
-        if(dateCalc.isGreater(value,target)){
+        if(AIODate().isGreater(value,target)){
           return this.getMessage(target,{validation,be:'cannot be after'})
         }
       },
       dateMore(target,validation,value,a,exact){
         if(exact){return this.getMessage(target,{validation,be:'should be after'})}
-        if(dateCalc.isLess(value,target) || dateCalc.isEqual(value,target)){
+        if(AIODate().isLess(value,target) || AIODate().isEqual(value,target)){
           return this.getMessage(target,{validation,be:'should be after'})
         }
       },
       dateMoreEqual(target,validation,value,a,exact){
         if(exact){this.getMessage(target,{validation,be:'cannot be before'})}
-        if(dateCalc.isLess(value,target)){
+        if(AIODate().isLess(value,target)){
           return this.getMessage(target,{validation,be:'cannot be before'})
         }
       },

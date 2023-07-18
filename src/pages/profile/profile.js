@@ -4,7 +4,7 @@ import headerSvg from '../../images/header-svg';
 import footerSvg from '../../images/footer-svg';
 import getSvg from '../../utils/getSvg';
 import appContext from '../../app-context';
-import functions from '../../functions';
+import SplitNumber from './../../npm/aio-functions/split-number';
 import {Icon} from '@mdi/react';
 import {mdiAccountCircle} from '@mdi/js';
 import AIOButton from '../../interfaces/aio-button/aio-button';
@@ -35,7 +35,7 @@ export default class Profile extends Component{
                     show:()=>!!this.context.backOffice.activeManager.garanti && !!this.context.userInfo.slpcode,
                     onClick:async ()=>{
                         let {SetState,guarantiApis,openPopup} = this.context;
-                        let guaranteeItems = await guarantiApis({api:'items'});
+                        let guaranteeItems = await guarantiApis({api:'garantiItems',name:'دریافت لیست کالاهای گارانتی کاربر'});
                         SetState({guaranteeItems});
                         openPopup('joziate-darkhast-haye-garanti'); 
                     }
@@ -72,8 +72,7 @@ export default class Profile extends Component{
                     egg:{
                         count:6,
                         callback:()=>{
-                            debugger
-                            kharidApis({api:'setCart',parameter:{},loading:false});
+                            kharidApis({api:'setCart',parameter:{},loading:false,name:'ثبت سبد خرید'});
                             SetState({cart:{}})
                         }
                     },
@@ -126,7 +125,7 @@ export default class Profile extends Component{
                             html:()=>(
                                 <Card
                                     type='card3' footer='جزییات کیف پول'
-                                    rows={[[['کیف پول',functions.splitPrice(Math.max(userInfo.ballance * 10,0)) + ' ریال']]]}
+                                    rows={[[['کیف پول',SplitNumber(Math.max(userInfo.ballance * 10,0)) + ' ریال']]]}
                                     onClick={()=>this.setState({showWallet:true})}
                                 />
                             )
@@ -151,27 +150,45 @@ export default class Profile extends Component{
                 },
                 {size:16},
                 this.parts_layout(),
-                {size:120,html:footerSvg(),align:'vh'},
-                {html:(
-                    <AIOButton position='bottom' className='theme-medium-font-color fs-14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
-                        return (
-                            <div style={{background:'#fff'}}>
-                                <div style={{height:60,display:'flex',alignItems:'center'}} className='theme-dark-font-color fs-16 bold p-h-24'>موارد اضافه شده به این نسخه</div>
-                                <ul>
-                                    <li>تکمیل بازارگاه تا تحویل به مشتری</li>
-                                    <li>بهبود گرافیک</li>
-                                    <li>بهبود تجربه کاربری  در خرید</li>
-                                    <li>اتصال به بک آفیس</li>
-                                    <li>افزایش سرعت دریافت داده ها از سرور</li>
+                {
+                    size:120,html:footerSvg(),align:'vh',
+                    egg:{
+                        callback:async ()=>{
+                            let {kharidApis} = this.context;
+                            let res = await kharidApis({api:'changeVersion',name:'تغییر ورژن اپلیکیشن'})
+                            if(res){
+                                alert('تغییر ورژن با موفقیت انجام شد')
+                            }
+                        },
+                        count:12
+                    }
+                },
+                {
+                    html:(
+                        <AIOButton position='bottom' className='theme-medium-font-color fs-14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
+                            return (
+                                <div style={{background:'#fff'}}>
+                                    <div style={{height:60,display:'flex',alignItems:'center'}} className='theme-dark-font-color fs-16 bold p-h-24'>موارد اضافه شده به این نسخه</div>
+                                    <ul>
+                                        <li>تکمیل بازارگاه تا تحویل به مشتری</li>
+                                        <li>بهبود گرافیک</li>
+                                        <li>بهبود تجربه کاربری  در خرید</li>
+                                        <li>اتصال به بک آفیس</li>
+                                        <li>افزایش سرعت دریافت داده ها از سرور</li>
 
-                                </ul>
-                            </div>
-                        )
-                    }}/>
-                ),align:'vh'},
+                                    </ul>
+                                </div>
+                            )
+                        }}/>
+                    ),align:'vh'
+                },
                 {size:24}
             ]
         }
+    }
+    componentDidMount(){
+        let {addAnaliticsHistory} = this.context;
+        addAnaliticsHistory({url:'Profile',title:'Profile'})
     }
     render(){
         let {showProfile,showWallet} = this.state;

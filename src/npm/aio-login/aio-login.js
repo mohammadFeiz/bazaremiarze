@@ -20,7 +20,7 @@ export class OTPLogin extends Component{
     }
     getDelta(){
       let {time} = this.props; 
-      let lastTime = this.storage.load('lastTime',new Date().getTime() - (time * 1000));
+      let lastTime = this.storage.load({name:'lastTime',def:new Date().getTime() - (time * 1000)});
       return new Date().getTime() - lastTime;
     }
     async onInterPhone(number) {
@@ -29,9 +29,9 @@ export class OTPLogin extends Component{
       if(delta >= time * 1000){
         console.log('send phone number to server',number);
         let res = await onInterNumber(number);
-        this.storage.save(new Date().getTime(),'lastTime');
+        this.storage.save({value:new Date().getTime(),name:'lastTime'});
         if(typeof res === 'string'){
-          this.storage.save(new Date().getTime() - (time * 1000),'lastTime');
+          this.storage.save({value:new Date().getTime() - (time * 1000),name:'lastTime'});
           this.setState({mode:'error',error:res})
           this.changeNumber('')
           return

@@ -1,8 +1,8 @@
 import Axios from "axios";
-export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) {
-  let {userInfo} = getState();
+export default function apis({ getState,helper }) {
   return {
-    async items(gregorianDate){
+    async walletItems(gregorianDate) {
+      let { userInfo, baseUrl } = getState();
       let res = await Axios.post(`${baseUrl}/BOne/UserTransaction`, {
         "requests": [
           {
@@ -13,78 +13,69 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
         ]
       });
 
-      var result=res.data.data.results[0].lineDetails;
-      let titleDic= {
-        IncomingPayment:"واریز به کیف پول",
-        OutgoingPayment:"برداشت از کیف پول"
+      var lineDetails = res.data.data.results[0].lineDetails;
+      let titleDic = {
+        IncomingPayment: "واریز به کیف پول",
+        OutgoingPayment: "برداشت از کیف پول"
       }
-      let typeDic= {
-        IncomingPayment:"in",
-        OutgoingPayment:"out"
+      let typeDic = {
+        IncomingPayment: "in",
+        OutgoingPayment: "out"
       }
-      return result.map((x)=>{
-        let {date,time} = getDateAndTime(x.date);
-        return {title:titleDic[x.realtedDoc.docType] ,date,_time:time,type:typeDic[x.realtedDoc.docType] ,amount:x.credit}
-      });
-    },
-    async ettelaate_banki(){
-
-    const res = await Axios.get(`${baseUrl}/CreditCard`);
-
-    if(!res.data.isSuccess) return res.data.message;
-
-      //در صورت خطا
-      //return 'خطایی رخ داد'
-      return res.data.data.map(x=>{
-        return {name:x.cardTitle,number:x.cardNumber,id:x.id};
+      let result = lineDetails.map((x) => {
+        let { date, time } = helper.getDateAndTime(x.date);
+        return { title: titleDic[x.realtedDoc.docType], date, _time: time, type: typeDic[x.realtedDoc.docType], amount: x.credit }
       })
+      return {result};
     },
-    async afzoozane_cart(parameter){
-      let {name,number}=parameter;
-      
-      const res = await Axios.post(`${baseUrl}/CreditCard`,{
+    async ettelaate_banki() {
+      let {baseUrl} = getState();
+      const res = await Axios.get(`${baseUrl}/CreditCard`);
+      if (!res.data.isSuccess) {return {result:res.data.message};}
+      let result = res.data.data.map(x => {
+        return { name: x.cardTitle, number: x.cardNumber, id: x.id };
+      })
+      return {result}
+    },
+    async afzoozane_cart(parameter) {
+      let {baseUrl} = getState();
+      let { name, number } = parameter;
+
+      const res = await Axios.post(`${baseUrl}/CreditCard`, {
         "cardNumber": number,
         "cardTitle": name
       });
-
-      if(!res.data.isSuccess) return res.data.message;
-
-      return true;
+      let result;
+      if (!res.data.isSuccess) {result = res.data.message;}
+      else {result = true}
+      return {result}
     },
-    async hazfe_cart(parameter){
+    async hazfe_cart(parameter) {
+      let {baseUrl} = getState();
       let id = parameter;
 
       const res = await Axios.get(`${baseUrl}/CreditCard/DeleteCard?id=${id}`);
-
-      if(!res.data.isSuccess) return res.data.message;
-
-      return true;
+      let result = !res.data.isSuccess?res.data.message:true;
+      return {result}
     },
-    async bardasht(parameter){
-      let {amount,card} = parameter;
-
-      let res = await Axios.post(`${baseUrl}/WithdrawRequest`,{"creditCardId": card,"amount": amount})
-      
-      let {getUserInfo} = getState();
+    async bardasht(parameter) {
+      let {baseUrl,getUserInfo} = getState();
+      let { amount, card } = parameter;
+      let res = await Axios.post(`${baseUrl}/WithdrawRequest`, { "creditCardId": card, "amount": amount })
       getUserInfo()
-      
-      //در صورت موفقیت
-      return res.data.isSuccess;
-      //در صورت خطا
-      //return false
-      
+      return {result:res.data.isSuccess}
     },
-    async variz({amount}){
-      let res = await Axios.post(`${baseUrl}/payment/request`,{
-        "Price":amount,
-        "CallbackUrl":"https://bazar.miarze.com/",
-        // "CallbackUrl":"https://uiretailerapp.bbeta."+"ir/"
+    async variz({ amount }) {
+      let {baseUrl} = getState();
+      let res = await Axios.post(`${baseUrl}/payment/request`, {
+        "Price": amount,
+        "CallbackUrl": baseUrl === 'https://retailerapp.bbeta.ir/api/v1' ? 'https://uiretailerapp.bbeta.ir/' : 'https://bazar.miarze.com/'
       });
-      
-      if(res.data.isSuccess){
-        let {getUserInfo} = getState();
+
+      if (res.data.isSuccess) {
+        let { getUserInfo } = getState();
         getUserInfo()
-      
+
         window.location.href = res.data.data;
       }
     }

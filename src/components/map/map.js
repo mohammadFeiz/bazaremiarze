@@ -111,6 +111,7 @@ export default class Map extends Component{
                     maxZoom:changeView === false?zoom:undefined,
                 }}
                 onZoom={()=>{
+                  console.log('msf')
                 }}
                 onInit={(L, myMap) => {
                     this.map = myMap;

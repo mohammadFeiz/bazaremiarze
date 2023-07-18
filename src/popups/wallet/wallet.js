@@ -1,7 +1,7 @@
 import React,{Component,createRef} from "react";
 import RVD from "./../../interfaces/react-virtual-dom/react-virtual-dom";
 import getSvg from "../../utils/getSvg";
-import functions from "../../functions";
+import SplitNumber from "../../npm/aio-functions/split-number";
 import GAH from './../../npm/aio-datepicker/aio-datepicker';
 import appContext from "../../app-context";
 import Form from "./../../interfaces/aio-form-react/aio-form-react";
@@ -36,7 +36,7 @@ export default class Wallet extends Component{
     async componentDidMount(){
         let {walletApis,showMessage} = this.context;
         let {fromDate}=this.state;
-        let items = await walletApis({api:'items',parameter:fromDate,loading:false});
+        let items = await walletApis({api:'walletItems',parameter:fromDate,loading:false,name:'دریافت جزییات کیف پول'});
         let cards = []; 
         let res = await walletApis({api:'ettelaate_banki'})
         if(typeof res === 'string'){showMessage(res);}
@@ -73,7 +73,7 @@ export default class Wallet extends Component{
                         {html:'تراز حساب',className:'fs-12 colorC7E7F4',align:'v'},
                         {size:12},
                         {row:[{html:' بدهکاری',align:'v'},{size:6}],show:userInfo.ballance < 0,className:'colorA4262C fs-16 bold'},
-                        {html:userInfo.ballance < 0?functions.splitPrice(-userInfo.ballance):functions.splitPrice(userInfo.ballance),className:`color-fff ${userInfo.ballance < 0?'fs-16':'fs-28'} bold`,align:'v'},
+                        {html:userInfo.ballance < 0?SplitNumber(-userInfo.ballance):SplitNumber(userInfo.ballance),className:`color-fff ${userInfo.ballance < 0?'fs-16':'fs-28'} bold`,align:'v'},
                         {size:6},
                         {html:'ریال',className:'fs-14 color-fff',align:'v'},
                         {flex:1}
@@ -141,7 +141,7 @@ export default class Wallet extends Component{
     filter_layout(){
         let {walletApis}=this.context;
         let {fromDate,toDate,items = []} = this.state;
-        if(!items.length){return false}
+        //if(!items.length){return false}
         let style = {borderRadius:24,width:100,height:24,border:'1px solid #605E5C'}
         let fromStyle = !fromDate?{color:'#605E5C'}:{border:'1px solid #605E5C',color:'#fff',background:'#605E5C'}
         let toStyle = toDate === false?{color:'#605E5C'}:{border:'1px solid #605E5C',color:'#fff',background:'#605E5C'}
@@ -159,13 +159,13 @@ export default class Wallet extends Component{
                             calendarType='jalali'
                             onChange={async ({gregorian,dateString})=>{
                                 this.setState({fromDate:dateString});
-                                let items = await walletApis({api:'items',parameter:`${gregorian[0]}/${gregorian[1]}/${gregorian[2]}`});
+                                let items = await walletApis({api:'walletItems',parameter:`${gregorian[0]}/${gregorian[1]}/${gregorian[2]}`,name:'دریافت جزییات کیف پول'});
                                 this.setState({items});
                             }}
                             theme={['#0d436e','#fff']}
                             onClear={async ()=>{
                                 this.setState({fromDate:''});
-                                let items = await walletApis({api:'items',parameter:''});
+                                let items = await walletApis({api:'walletItems',parameter:'',name:'دریافت جزییات کیف پول'});
                                 this.setState({items});
                             }}
                         />
@@ -218,7 +218,7 @@ export default class Wallet extends Component{
                     column:[
                         {flex:1},
                         {
-                            html:functions.splitPrice(o.amount) + ' ریال',align:'v',className:'fs-12 theme-medium-font-color bold',
+                            html:SplitNumber(o.amount) + ' ریال',align:'v',className:'fs-12 theme-medium-font-color bold',
                             style:{
                                 background:o.type === 'in'?'#5FD25533':undefined,
                                 color:o.type === 'in'?'#107C10':undefined
@@ -310,7 +310,7 @@ class BardashtPopup extends Component{
                                     style:{height:48,flex:'none'},gap:6,
                                     row:[
                                         {html:'موجودی:',className:'fs-14 theme-medium-font-color bold',align:'v'},
-                                        {html:`${functions.splitPrice(mojoodi)} ریال`,className:'fs-14 color3B55A5 bold',align:'v'},
+                                        {html:`${SplitNumber(mojoodi)} ریال`,className:'fs-14 color3B55A5 bold',align:'v'},
                                     ]
                                 }}
                             />

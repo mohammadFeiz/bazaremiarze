@@ -1,19 +1,16 @@
 import Axios from "axios";
-export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) {
-  let {userInfo} = getState();
+export default function apis({getState,helper}) {
   return {
-    async items() {
+    async garantiItems() {
+      let {baseUrl,userInfo} = getState();
       let res = await Axios.get(`${baseUrl}/Guarantee/Requests?slpCode=${userInfo.slpcode}&page=${1}&perPage=${20}`);
-      if(res.status === 401){return false}
-      if (res.data === null || !res.data || !res.data.isSuccess || !res.data.data) {return []}
-      
-
+      if(res.status === 401){return {result:false}}
+      if (res.data === null || !res.data || !res.data.isSuccess || !res.data.data) {return {result:[]}}
       let items = res.data.data.data;
-      if(!Array.isArray(items)){return []}
+      if(!Array.isArray(items)){return {result:[]}}
       items = items.map((o) => {
         let {CreationDate,RequestID} = o;
-        let {date,time} = getDateAndTime(CreationDate);
-
+        let {date,time} = helper.getDateAndTime(CreationDate);
         return { 
           vaziat:{color:'#662D91',text:o.Summary},
           tarikh:date,
@@ -23,18 +20,15 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
           id:RequestID
         }
       })
-      return items
+      return {result:items}
     },
     async mahsoolate_garanti(o){
       let {Details} = o;
-      return Details.map(({Quantity,Name}) => {   
-        return {
-          onvan:Name,
-          tedad:Quantity,
-        } 
-      }) 
+      let result = Details.map(({Quantity,Name}) => {return {onvan:Name,tedad:Quantity}}) 
+      return {result}
     },
-    async kalahaye_mojood() {
+    async kalahaye_ghabele_garanti() {
+      let {baseUrl} = getState();
       let res = await Axios.get(`${baseUrl}/Guarantee/GetItems`);
       if (!res || !res.data || !res.data.isSuccess || !res.data.data) {
         console.error('Guarantee/GetItems data error')
@@ -42,8 +36,8 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
       else if (!res.data.data.length) {
         console.error('Guarantee/GetItems list is empty')
       }
-      if(!res.data || !res.data.isSuccess || !res.data.data){return []}
-      return res.data.data.map((x)=>{
+      if(!res.data || !res.data.isSuccess || !res.data.data){return {result:[]}}
+      let result = res.data.data.map((x)=>{
         return {
           onvan:x.RejectedName,
           tedad:0,
@@ -53,9 +47,10 @@ export default function apis({getState,token,getDateAndTime,showAlert,baseUrl}) 
           })
         }
       });
+      return {result}
     },
-    async sabte_kala(items) {
-debugger;
+    async sabte_kalahaye_garanti(items) {
+      let {baseUrl,userInfo} = getState();
       let res = await Axios.post(`${baseUrl}/Guarantee/Equivalent`, { SlpCode: userInfo.slpcode,
          Detail: items.map(x=>{
           return {
@@ -77,16 +72,19 @@ debugger;
       //       }
       //     })
       //   }});
-      return !!res.data && !!res.data.isSuccess;
+      return {result:!!res.data && !!res.data.isSuccess};
     },
-    async getImages(itemCodes) {
+    async daryafte_tasavire_kalahaye_garanti(itemCodes) {
+      let {baseUrl} = getState();
       let res = await Axios.get(`${baseUrl}/Guarantee/GetGuaranteesImages?ids=${itemCodes.toString()}`); // itemCodes => itemCode of products, seprtaed by comma
+      let result;
       try{
-        return res.data.data || []
+        result = res.data.data || []
       }
       catch{
-        return []
+        result = []
       }
+      return {result}
       //response
       // var res=[{"ItemCode":"3254","ImagesUrl":"http://link.com"}]
     }

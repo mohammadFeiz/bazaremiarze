@@ -1,0 +1,169 @@
+.aio-input-datepicker-today {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    background: dodgerblue;
+    color: #fff;
+}
+
+.aio-input-datepicker-calendar {
+    user-select: none;
+    -webkit-user-select: none;
+    direction: ltr;
+    display: flex;
+    flex-direction: column;
+    stroke: #333;
+}
+
+.aio-input-datepicker-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    direction: ltr;
+}
+
+.aio-input-datepicker-arrow {
+    display: flex;
+    align-items: center;
+    z-index: 1;
+    justify-content: center;
+    border-radius: 100%;
+    stroke: inherit;
+}
+
+.aio-input-datepicker-footer {
+    display: flex;
+    justify-content: flex-end;
+    direction: ltr;
+}
+
+.aio-input-datepicker-button {
+    background: none;
+    font-weight: bold;
+    border: none;
+    font-size: inherit;
+    cursor: pointer;
+    outline: none;
+    flex: 1;
+    margin: 0 1px;
+    color: inherit;
+}
+
+.aio-input-datepicker-calendar option {
+    font-size: 16px;
+    padding: 6px 0;
+}
+
+.aio-input-datepicker-today div {
+    display: flex;
+    align-items: center;
+
+}
+
+.aio-input-datepicker-calendar svg {
+    cursor: pointer;
+}
+
+.aio-input-datepicker-select {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    cursor: pointer;
+}
+
+.aio-input-datepicker-select .aio-button {
+    background: none;
+    color: inherit;
+    font-size: inherit;
+    padding: 0 3px;
+}
+
+.aio-input-datepicker-body {
+    display: grid;
+    flex: 1 1;
+    position: relative;
+    box-sizing: border-box;
+    padding-bottom: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* custom scrollbar */
+.aio-input-datepicker-calendar select::-webkit-scrollbar {
+    width: 10px !important;
+    height: 10px !important;
+}
+
+.aio-input-datepicker-calendar select::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.aio-input-datepicker-calendar select::-webkit-scrollbar-thumb {
+    background-color: #e6e7e9;
+    border-radius: 20px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+.aio-input-datepicker-calendar select::-webkit-scrollbar-thumb:hover {
+    background-color: #a8bbbf;
+}
+
+.aio-input-datepicker-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    outline: none;
+    background: #fff;
+}
+
+.aio-input-datepicker-cell.aio-input-datepicker-disabled {
+    box-shadow: none;
+    border-radius: 0;
+    background: rgba(128, 128, 128, .2);
+    color: #fff;
+    cursor: not-allowed !important;
+}
+
+.aio-input-datepicker-cell.aio-input-datepicker-active {
+    background: dodgerblue;
+    color: #fff;
+}
+
+.aio-input-datepicker-cell.today {
+    border: 1px solid dodgerblue;
+}
+
+.aio-input-datepicker-weekday {
+    font-weight: bold;
+    font-size: 110%;
+}
+
+.aio-input-datepicker-container button {
+    width: unset !important;
+    border: none !important;
+    background: none !important;
+}
+
+.aio-input-datepicker-cell:not(.aio-input-datepicker-weekday):not(.aio-input-datepicker-space):not(.aio-input-datepicker-disabled):hover {
+    position: relative;
+    transform: scale(1.2);
+    box-shadow: 2px 2px 5px 0 rgba(0, 0, 0, .3);
+    cursor: pointer;
+    z-index: 100;
+}
+
+.aio-input-datepicker-dropdown{
+    background:none;
+    color:inherit;
+    font-size:inherit;
+    padding:0 3px;
+    border:none !important;
+    width:unset !important;
+}

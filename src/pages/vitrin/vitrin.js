@@ -43,7 +43,7 @@ export default class Vitrin extends Component {
         })
     }
     async componentDidMount() {
-        let { vitrinApis } = this.context;
+        let { vitrinApis,userInfo } = this.context;
         let started = await vitrinApis({
             api: 'v_getStarted',
             name: 'دریافت وضعیت ویترین'
@@ -55,7 +55,8 @@ export default class Vitrin extends Component {
         })
         let selectedProducts = await vitrinApis({
             api: 'v_mahsoolate_entekhab_shode',
-            name: 'دریافت لیست محصولات انتخاب شده ی ویترین'
+            name: 'دریافت لیست محصولات انتخاب شده ی ویترین',
+            parameter:userInfo.cardCode
         });
         let categoryOptions = await vitrinApis({
             api: 'v_category_options',

@@ -6,7 +6,6 @@ import vitrin_brand_src from './../images/vitrin-brand.png';
 export default function apis({ getState,helper }) {
     return {
         async v_getStarted(){
-            return {result:false}
             let {baseUrl} = getState();
             var res = await Axios.get(`${baseUrl}/vitrin/GetVitrinState`);
             if(res.data.isSuccess === true){
@@ -24,7 +23,6 @@ export default function apis({ getState,helper }) {
             return {result:res.data.message}
         },
         async v_updateMyVitrin({id,state,product}){
-            debugger
             let {baseUrl} = getState();
             let res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrin` , {ProductId : id , state : state , B1Code : product.code});
             if(res.data.isSuccess === true){
@@ -32,15 +30,17 @@ export default function apis({ getState,helper }) {
             }
             return {result:false}
         },
-        async v_kolle_mahsoolat(){          
+        async v_kolle_mahsoolat(){
             let {kharidApis} = getState();
-            let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10713' ,  Taxons: '10709' }});
+            let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10056' }});
             let pr = await kharidApis({api:'updateProductPrice',parameter:{ products, cartId: 'خرید عادی' }})
             let allProducts;
             allProducts = pr.map((o)=>{return {id : o.id , name : o.name , price:o.FinalPrice , src:o.srcs[0] , inStock:true , code : o.defaultVariant?o.defaultVariant.code:o.code}  });
             return {mock:false,result:allProducts}
         },
-        async v_mahsoolate_entekhab_shode(){     
+        async v_mahsoolate_entekhab_shode(cardCode){     
+            debugger          
+
             let {baseUrl} = getState();
             let res = await Axios.get(`${baseUrl}/vitrin/GetAllVitrins`);       
             return {result:res.data.data}

@@ -5,9 +5,13 @@ import Axios from 'axios';
 import Register from './components/register/register';
 import RVD from './interfaces/react-virtual-dom/react-virtual-dom';
 import Loading from './components/loading/index';
-import getSvg from './utils/getSvg';
 import { Icon } from '@mdi/react';
-import { mdiAlert,mdiHelpCircleOutline,mdiHelpCircle } from '@mdi/js';
+import haraj1 from './images/haraj1.png';
+import haraj2 from './images/haraj2.png';
+import haraj3 from './images/haraj3.png';
+import haraj4 from './images/haraj4.png';
+
+import { mdiAlert,mdiClose } from '@mdi/js';
 import logo from './images/logo5.png';
 import { OTPLogin } from './npm/aio-login/aio-login';
 import $ from 'jquery';
@@ -29,7 +33,10 @@ class App extends Component {
     else(alert('error'))
     console.log(`base url is ${this.apiBaseUrl}`)
     //this.apiBaseUrl = "https://apimy.burux.com/api/v1";
-    this.state = { isAutenticated: false, registered: false, pageError: false, userInfo: {}, landing: false }
+    this.state = { 
+      isAutenticated: false, registered: false, pageError: false, userInfo: {}, landing: false ,
+      landing:true
+    }
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +192,10 @@ class App extends Component {
   }
   render() {
     if (!this.mounted) { return <Loading /> }
-    let { isAutenticated, userInfo, token, registered, pageError } = this.state;
+    let { isAutenticated, userInfo, token, registered, pageError,landing } = this.state;
+    if(landing){
+      return <LandingTakhfif onClose={()=>this.setState({landing:false})}/>
+    }
     if (pageError) {
       return (
         <>
@@ -287,6 +297,121 @@ class App extends Component {
             { flex: 1, style: { minHeight: 240 } }
           ]
         }}
+      />
+    )
+  }
+}
+
+class LandingTakhfif extends Component{
+  close_layout(){
+    let {onClose} = this.props;
+    return {
+      size:48,
+      row:[
+        {flex:1},
+        {
+          align:'vh',
+          className:'p-h-12',
+          onClick:()=>onClose(),
+          html:<Icon path={mdiClose} size={1}/>
+        }
+      ]
+    }
+  }
+  header_layout(src){
+    return {
+      column:[
+        {
+          html:(
+            <img src={src} width='100%' alt=''/>
+          )
+        }
+      ]
+    }
+  }
+  billboard_layout(src){
+    return {
+      className:'p-12',
+      html:(
+        <img src={src} alt='' width='100%'/>
+      )
+    }
+  }
+  description_layout(text){
+    return {
+      style:{textAlign:'right'},
+      className:'m-b-12 p-h-12 fs-12',
+      html:text
+    }
+  }
+  label_layout(text){
+    return {
+      className:'theme-dark-font-color fs-16 bold p-h-12',
+      html:text
+    }
+  }
+  link_be_kharid(){
+    let {onClose} = this.props;
+    return {
+      className:'m-b-12 p-h-12',
+      html:(
+        <button 
+          onClick={()=>{
+            onClose()
+          }}
+          className='button-2'
+        >همین الان خرید کنید</button>
+      )
+    }
+  }
+  link_be_belex(){
+    let {onClose} = this.props;
+    return {
+      className:'m-b-12 p-h-12',
+      html:(
+        <button 
+          onClick={()=>{
+            onClose()
+          }}
+          className='button-2'
+        >خرید لامپ 10 وات</button>
+      )
+    }
+  }
+  render(){
+    return (
+      <RVD
+        layout={{
+          style:{background:'#fff',height:'100%'},
+          className:'fullscreen',
+          column:[
+            this.close_layout(),
+            {
+              className:'ofy-auto',flex:1,
+              column:[
+                this.header_layout(haraj1),
+                this.billboard_layout(haraj2),
+                this.billboard_layout(haraj3),
+                this.description_layout(
+                  `
+                  این روزها که شاهد گرونی های روزافزون و کاهش قدرت خرید هستیم، شرکت بروکس با در نظر گرفتن شرایط اقتصادی فعلی جامعه و نرخ تورم سعی در کمک به کسب و کار الکتریکی‌ها داره. برای همین طی مذاکرات و تصمیم گیری‌ها، در نظر گرفتیم تمامی محصولات روشنایی و الکتریکی خود را با 25 الی 30 درصد زیر قیمت به فروش برسونیم!
+                  `
+                ),
+                this.link_be_kharid(),
+                this.billboard_layout(haraj4),
+                this.label_layout('لامپ 10 وات بروکس فقط 20 هزارتومن!'),
+                this.description_layout(
+                  `
+                  در صورت خرید از محصولاتی که کاهش قیمت داشتند روی هر سبد خریدتون 2 عدد کارتن (بله درست خوندید! دو عدد کارتن 100 عددی!) لامپ 10 وات رو میتونین با قیمت 20 هزارتومان خریداری کنید! یعنی ۴ میلیون ریال هدیه ما به شما!
+                  `
+                ),
+                this.link_be_belex(),
+                
+              ]
+            }  
+          ]
+        }}
+      
       />
     )
   }

@@ -603,7 +603,6 @@ export default class Main extends Component {
     }
     this.setState({
       backOffice,
-      landing_takhfif:true,
       cart,
       fixPrice,
       pricing,
@@ -798,7 +797,7 @@ export default class Main extends Component {
             this.setState({ rsa_actions: obj })
           }}
           splash={() => <Splash />}
-          splashTime={7000}
+          splashTime={2000}
         />
         {
           landing_takhfif &&

@@ -48,7 +48,7 @@ export default class Cart extends Component{
             style={{marginBottom:12}}
             value={activeTabId} 
             optionAfter={(option)=><div className='tab-badge'>{Object.keys(cart[option].items).length}</div>}
-            optionText='option'
+            optionText='option === "بلکس"?"لامپ 10 وات طلایی":option'
             optionValue='option'
             onChange={(activeTabId)=>this.setState({activeTabId})}
           />

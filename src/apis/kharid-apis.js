@@ -148,6 +148,7 @@ export default function kharidApis({ getState,helper }) {
     },
     async updateProductPrice({ products, campaign, campaignId, cartId }) {
       if (!products) { return {result:false} }
+      if (!products.length) { return {result:[]} }
       let { fixPrice } = getState();
       let config = products.map(({ defaultVariant }) => {return { ItemCode: defaultVariant.code , itemCode : defaultVariant.code , ItemQty: 1 , itemQty : 1 };})
       let fixed = fixPrice(config, campaignId)
@@ -1080,7 +1081,7 @@ export default function kharidApis({ getState,helper }) {
           // }
         };
       });
-      let result = await kharidApis({api:'getModifiedProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data,debug:Taxons === '10709' }})
+      let result = await kharidApis({api:'getModifiedProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data,debug:Taxons === '10056' }})
       if(!Array.isArray(result)){result = []}
       return {result}
     },
@@ -1095,7 +1096,7 @@ export default function kharidApis({ getState,helper }) {
         if (product.id === "12395" || product.relationships.default_variant === undefined || product.relationships.default_variant.data === undefined) {      
           continue;
         }
-
+        if(debug){debugger}
         const productDefaultVariantId = product.relationships.default_variant.data.id;
         const productDefaultVariant = spreeResult.included.find(x => x.type === "variant" && x.id === productDefaultVariantId);
         const productDefaultVariantSku = productDefaultVariant.attributes.sku;

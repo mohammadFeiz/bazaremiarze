@@ -62,7 +62,7 @@ export default function apis({ getState,helper }) {
         },
         async v_miarze_categories(){
             let {kharidApis,baseUrl} = getState();
-            let res = await Axios.get(`${baseUrl}/Spree/GetAllCategoriesbyIds?ids=10709,10711,10714,10713`);         
+            let res = await Axios.get(`${baseUrl}/Spree/GetAllCategoriesbyIds?ids=10709,10056`);         
             let dataResult = res.data.data.data;
             let included = res.data.data.included;
             let categories = dataResult.map((o) => {

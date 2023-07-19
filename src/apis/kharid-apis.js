@@ -533,21 +533,21 @@ export default function kharidApis({ getState,helper }) {
         return {result:false}
       }
     },
-    async jadid_tarin_mahsoolat() {
+    async jadid_tarin_mahsoolat(count) {
       let {kharidApis} = getState();
-      let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10715' }});
+      let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10715',count }});
       let result = await kharidApis({api:'updateProductPrice',parameter:{ products, cartId: 'خرید عادی' }})
       return {result}
     },
-    async recommendeds() {
+    async recommendeds(count) {
       let {kharidApis} = getState();
-      let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10714' }});
+      let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10714',count }});
       let result = await kharidApis({api:'updateProductPrice',parameter:{ products, cartId: 'خرید عادی' }})
       return {result}
     },
-    async bestSellings() {
+    async bestSellings(count) {
       let {kharidApis} = getState();
-      let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10709' }});
+      let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10709',count }});
       let result = await kharidApis({api:'updateProductPrice',parameter:{ products, cartId: 'خرید عادی' }})
       return {result}
     },
@@ -1043,13 +1043,13 @@ export default function kharidApis({ getState,helper }) {
       let result = await kharidApis({api:'getMappedAllProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data, loadType }})
       return {result};
     },
-    async getProductsByTaxonId({ Taxons }) {
+    async getProductsByTaxonId({ Taxons,count = 250 }) {
       let { userInfo,baseUrl,kharidApis } = getState();
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
         {
           CardCode: userInfo.cardCode,
           Taxons,
-          PerPage: 250,
+          PerPage: count,
           ProductFields: "id,name,type,sku,slug,default_variant,images",
           VariantFields: "id,sku,type,images",
           Include: "default_variant,images"
@@ -1104,7 +1104,9 @@ export default function kharidApis({ getState,helper }) {
 
         if (productDefaultVariantSku && productDefaultVariantId) {
           const itemFromB1 = b1Result.find(x => x.itemCode === productDefaultVariantSku || x.mainSku === productDefaultVariantSku);
-          const srcs = defaultVariantImages.map(x => "https://spree.burux.com" + x.attributes.original_url);
+          const srcs = defaultVariantImages.map((x) => {
+            return "https://spree.burux.com" + x.attributes.styles[9].url;
+          });
 
           if (itemFromB1 !== undefined && itemFromB1) {
             const defVariantFinalResult = {
@@ -1199,15 +1201,7 @@ export default function kharidApis({ getState,helper }) {
         "CallbackUrl": baseUrl === 'https://retailerapp.bbeta.ir/api/v1' ? 'https://uiretailerapp.bbeta.ir/' : 'https://bazar.miarze.com/'
       });
       if (res.data.isSuccess) {
-        let { getUserInfo } = getState();
-        try{
-          getUserInfo()
-        }
-        catch(err){
-          console.log(err)
-          getUserInfo()
-        }
-        //window.location.href = res.data.data;
+        window.location.href = res.data.data;
       }
     },
     async belexData(){
@@ -1407,7 +1401,7 @@ export default function kharidApis({ getState,helper }) {
       // }
       let result = {
         cartId: 'بلکس',
-        name: 'بلکس',
+        name: 'لامپ 10 وات طلایی',
         src: belexbillboard,
         icon: belexIcon,
         products

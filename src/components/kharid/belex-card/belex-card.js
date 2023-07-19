@@ -16,7 +16,7 @@ export default class BelexCard extends Component{
     label_layout(){
         return {
             row:[
-                {html:'فروش ویژه لامپ حبابی 10 وات',style:{color:'#FDB913'},className:'fs-12 bold',align:'v'},
+                {html:'10 وات طلایی',style:{color:'#FDB913'},className:'fs-12 bold',align:'v'},
                 {size:3},
                 {flex:1,html:(<div style={{height:2,width:'1100%',background:'#FDB913'}}></div>),align:'v'}
             ]

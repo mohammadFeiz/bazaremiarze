@@ -50,27 +50,32 @@ export default class Buy extends Component {
     let families = await kharidApis({api:'families',cache:24 * 60 * 60 * 1000,name:'دریافت لیست خانواده های محصولات'});
     this.setState({ families });
   }
-  async get_recommendeds() {
+  async get_recommendeds(all) {
     let {kharidApis} = this.context;
-    let recommendeds = await kharidApis({api:'recommendeds',cache:24 * 60 * 60 * 1000,name:'دریافت لیست پیشنهاد سفارش'});
-    this.setState({ recommendeds });
+    let recommendeds = await kharidApis({api:'recommendeds',cache:24 * 60 * 60 * 1000,cacheName:'rec-6' + (all?'all':''),parameter:all?undefined:6,name:'دریافت لیست پیشنهاد سفارش'});
+    if(all){return recommendeds}
+    else{this.setState({ recommendeds });}
+    
   }
-  async get_newOrders() {
+  async get_newOrders(all) {
     let {kharidApis} = this.context;
-    let newOrders = await kharidApis({api:"jadid_tarin_mahsoolat",cache:24 * 60 * 60 * 1000,name:'دریافت جدید ترین محصولات'});
-    this.setState({ newOrders });
+    let newOrders = await kharidApis({api:"jadid_tarin_mahsoolat",cache:24 * 60 * 60 * 1000,cacheName:'neworder-6' + (all?'all':''),parameter:all?undefined:6,name:'دریافت جدید ترین محصولات'});
+    if(all){return newOrders}
+    else{this.setState({ newOrders });}
   }
-  async get_bestSellings() {
+  async get_bestSellings(all) {
     let {kharidApis} = this.context;
-    let bestSellings = await kharidApis({api:'bestSellings',cache:24 * 60 * 60 * 1000,name:'دریافت لیست پر فروش ترین محصولات'});
-    this.setState({ bestSellings });
+    let bestSellings = await kharidApis({api:'bestSellings',cache:24 * 60 * 60 * 1000,cacheName:'best-6' + (all?'all':''),parameter:all?undefined:6,name:'دریافت لیست پر فروش ترین محصولات'});
+    if(all){return bestSellings}
+    else{this.setState({ bestSellings });}
+    
   }
   //dont set async for parallel data fetching
   componentDidMount() {
-    this.get_newOrders(10);
+    this.get_newOrders();
     this.getFamilies();
-    this.get_recommendeds(10);
-    this.get_bestSellings(10);
+    this.get_recommendeds();
+    this.get_bestSellings();
     this.getCategories();
     this.context.SetState({buy_view:undefined})//reset temporary state
   }
@@ -135,14 +140,16 @@ export default class Buy extends Component {
     return {
       className:'of-visible',
       column:sliders.map(([key,name])=>{
-        let products = this.state[key] || [];
         return {
           className:'of-visible',
           style:{marginBottom:12},
           html:()=>(
             <CategorySlider 
               title={name} products={this.state[key]} 
-              showAll={()=>openPopup('category',{name,category:{products,name}})}
+              showAll={async ()=>{
+                let products = await this['get_' + key](true)
+                openPopup('category',{name,category:{products,name}})
+              }}
             />
           )
         }

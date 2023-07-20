@@ -3,7 +3,6 @@ import haraj1 from './../../images/haraj1.png';
 import haraj2 from './../../images/haraj2.png';
 import haraj3 from './../../images/haraj3.png';
 import haraj4 from './../../images/haraj4.png';
-import haraj5 from './../../images/haraj5.png';
 import SplitNumber from "../../npm/aio-functions/split-number";
 //pages//////////////////////////////////
 import Home from "./../home/index";
@@ -537,10 +536,8 @@ export default class Main extends Component {
         cacheVersion = version
       }
       if (version.toString() !== cacheVersion.toString()) {
-        let loginStorage = localStorage.getItem('brxelctoken');
         localStorage.clear();
         localStorage.setItem('bazarmiarzeversion', version);
-        localStorage.setItem('brxelctoken', loginStorage);
         window.location.reload()
       }
     }

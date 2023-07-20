@@ -178,6 +178,10 @@ export default class Form extends Component {
             className: 'aio-input-form-error' + (className ? ' ' + className : '')
         }
     }
+    componentDidMount(){
+        let {onChange = ()=>{}} = this.props;
+        onChange(this.getValue(),this.errors)
+    }
     input_layout(obj) {
         let {rtl,inputAttrs} = this.props;
         let { label, footer, inlineLabel, input, flex, size, props = {},field } = obj;

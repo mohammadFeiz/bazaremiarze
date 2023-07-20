@@ -1,439 +1,424 @@
-import React,{Component} from 'react';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOStorage from './../../npm/aio-storage/aio-storage';
-import {Icon} from '@mdi/react';
-import {mdiCellphone,mdiLock,mdiLoading} from '@mdi/js';
+import React, { Component, createRef } from 'react';
+import RVD from './../react-virtual-dom/react-virtual-dom';
+import AIOStorage from './../aio-storage/aio-storage';
+import AIOInput from './../aio-input/aio-input';
+import { Icon } from '@mdi/react';
+import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
+import AIOService from './../aio-service/aio-service';
+
 import './index.css';
-export class OTPLogin extends Component{
-    constructor(props){
-      super(props);
-      this.storage = AIOStorage('otp-login');
-      let {number} = props;
-      this.state = {
-        mode:'inter-phone',error:'',number,exactNumber:number
-      }
-    }
-    changeNumber(number){
-      let {exactNumber} = this.state;
-      if(exactNumber){number = exactNumber}
-      this.setState({number})
-    }
-    getDelta(){
-      let {time} = this.props; 
-      let lastTime = this.storage.load({name:'lastTime',def:new Date().getTime() - (time * 1000)});
-      return new Date().getTime() - lastTime;
-    }
-    async onInterPhone(number) {
-      let {time,onInterNumber} = this.props;
-      let delta = this.getDelta(number);
-      if(delta >= time * 1000){
-        console.log('send phone number to server',number);
-        let res = await onInterNumber(number);
-        this.storage.save({value:new Date().getTime(),name:'lastTime'});
-        if(typeof res === 'string'){
-          this.storage.save({value:new Date().getTime() - (time * 1000),name:'lastTime'});
-          this.setState({mode:'error',error:res})
-          this.changeNumber('')
-          return
+export default class AIOLogin extends Component {
+    constructor(props) {
+        super(props);
+        let {id, checkToken,COMPONENT,onSubmit} = props;
+        if (!id) { console.error(`aio-login error=> missing id props`) }
+        if (!COMPONENT) { console.error(`aio-login error=> missing COMPONENT props`) }
+        this.valid = true
+        this.tokenStorage = AIOStorage(`${id}-token`);
+        this.state = {
+            isAutenticated: false,
+            apis: AIOService({
+                id: `${id}login`,
+                getResponse: () => {
+                    return {
+                        checkToken: async () => {
+                            let token = this.tokenStorage.load({ name: 'token', def: false });
+                            let isAuthenticated = this.tokenStorage.load({ name: 'isAuthenticated', def: false });
+                            if (!token || !isAuthenticated) { return { result: false } }
+                            let result = await checkToken(token);
+                            return { result }
+                        },
+                        async onSubmit({model,mode}){
+                            let {mode:Mode,error = 'خطایی رخ داد',token} = await onSubmit(model,mode);
+                            if(Mode === 'Error'){return {result:error}}
+                            return {result:{Mode,token}}
+                        }
+                    }
+                },
+                onCatch: (res) => { 
+                    this.setState({ isAutenticated: false }); 
+                    return 'error' 
+                }
+            })
         }
-        else if(res !== true){return}
-      }
-      this.setState({ mode: 'inter-code'})
-      this.changeNumber(number)
     }
-    async onInterCode(code) {
-      let {onInterCode} = this.props;
-      let res = await onInterCode(code);
-      if(typeof res === 'string') {
-          this.setState({ error: res,mode:'error' })
-      }
+    async componentDidMount() {
+        if (!this.valid) { return }
+        let res = await this.state.apis({
+            api: 'checkToken', name: 'بررسی توکن',
+            errorMessage: 'اتصال خود را بررسی کنید',
+        })
+        this.mounted = true;
+        this.setState({ isAutenticated: res });
     }
-    async onInterPassword(number,password){
-      let {onInterPassword} = this.props;
-      let res = await onInterPassword(number,password);
-      if(typeof res === 'string') {
-          this.setState({ error: res,mode:'error' })
-      }
-    }
-    render(){
-      let {mode,number,error,exactNumber} = this.state;
-      let {time} = this.props;
-      return (
-        <RVD
-          layout={{
-            className:'otp-login ofy-auto',
-            column: [
-              { 
-                show:mode === 'inter-phone',align:'h',
-                html:()=>(
-                  <NumberForm
-                    time={time}
-                    exactNumber={exactNumber}
-                    onSubmit={(number)=>this.onInterPhone(number)}
-                    onInterPassword={(number,password)=>this.onInterPassword(number,password)}
-                    getDelta={this.getDelta.bind(this)}
-                  />
-                )
-              },
-              { 
-                show:mode === 'inter-code',align:'h',
-                html:()=>(
-                  <CodeForm 
-                    number={number}
-                    time={time}
-                    getDelta={this.getDelta.bind(this)}
-                    onSubmit={async (code)=>await this.onInterCode(code)} 
-                    onClose={()=>this.setState({ mode: 'inter-phone'})}
-                    onResend={async (number)=>await this.onInterPhone(number)}
-                  />
-                )
-              },
-              { show:mode === 'error',html:()=><CodeError error={error} onClose={()=>this.setState({ error: '',mode:'inter-phone' })}/>},
-            ]
-          }}
-        />
-      )
-    }
-  }
-  OTPLogin.defaultProps = {time:60}
-  //time getDelta onSubmit
-  class NumberForm extends Component{
-    constructor(props){
-      super(props);
-      this.state = {number:props.exactNumber || '',password:'',error:!props.exactNumber?'شماره همراه خود را وارد کنید':'',remainingTime:props.time,mode:'otp'}
-    }
-    changeNumber(number){
-      let {exactNumber} = this.props;
-      if(exactNumber){number = exactNumber}
-      this.setState({number})
-    }
-    componentDidMount(){
-      this.update()
-    }
-    update(){
-      let {getDelta,time} = this.props;
-      clearTimeout(this.tiomeout);
-      let delta = getDelta();
-      if(delta >= time * 1000){this.setState({remainingTime:0})}
-      else{
-        this.setState({remainingTime:Math.round(((time * 1000) - delta) / 1000)})
-        this.tiomeout = setTimeout(()=>this.update(),1000)
-      }
-    }
-    getError(number) {
-      if (!number || !number.length) { return 'شماره همراه خود را وارد کنید' }
-      if (number.indexOf('09') !== 0) { return 'شماره همراه باید با 09 شروع شود' }
-      if (number.length !== 11) { return 'شماره همراه باید 11 رقم باشد' }
-      return false;
-    }
-    onChangeNumber(e){
-      let value = e.target.value;
-      if (value.length > 11) { return }
-      this.setState({error:this.getError(value)})
-      this.changeNumber(value)
-    }
-    async onSubmit(){
-      let {error,number,password,mode} = this.state;
-      if(error){return}
-      if(mode === 'otp'){
-        let {onSubmit} = this.props;
-        await onSubmit(number)
-      }
-      else if(mode === 'password'){
-        let {onInterPassword} = this.props;
-        await onInterPassword(number,password);
-      }
-    }
-    getInput(type){
-      let {number,mode,password} = this.state;
-      if(type === 'number'){
-        return (
-          <div className='otp-login-input'>
-            <div className='otp-login-input-icon'>
-              <Icon path={mdiCellphone} size={0.8} />
-            </div>
-            <input key={mode}
-              type='number' tabIndex={0}
-              onKeyDown={(e) => {if (e.keyCode === 13) { this.onSubmit() }}}
-              value={number} onChange={(e) => this.onChangeNumber(e)} placeholder='09...'
-            />
-          </div>
-        )
-      }
-      if(type === 'password'){
-        return (
-          <div className='otp-login-input'>
-            <div className='otp-login-input-icon'>
-              <Icon path={mdiLock} size={0.8} />
-            </div>
-            <input key={mode}
-              type='password' tabIndex={0}
-              onKeyDown={(e) => {if (e.keyCode === 13) { this.onSubmit() }}}
-              value={password} onChange={(e) => this.setState({password:e.target.value})}
-            />
-          </div>
-        )
-      }
-      
-    }
-    title_layout(){
-      return { html: 'ورود | ثبت نام', className: 'otp-login-text1' }
-    }
-    subtitle_layout(){
-      let {remainingTime,mode} = this.state;
-      if(mode === 'otp'){
-        if(remainingTime){
-          return { html: `شماره تلفن همراه خود را پس از ${remainingTime} ثانیه وارد کنید`, className: 'otp-login-text2' }
+    logout() { this.tokenStorage.remove({ name: 'token' }); window.location.reload() }
+    render() {
+        if (!this.valid) { return null }
+        if (!this.mounted) { return null }
+        let { registerFields, layout, otpLength, COMPONENT, id, time = 16,methods,className,style,model } = this.props;
+        let { isAutenticated,apis } = this.state;
+        if (isAutenticated) {
+            let props = {
+                token: this.tokenStorage.load({ name: 'token' }),
+                userId: this.tokenStorage.load({ name: 'userId' }),
+                logout: this.logout.bind(this)
+            }
+            COMPONENT(props)
+            return null
         }
-        else{
-          return {html:'شماره تلفن همراه خود را وارد کنید. پیامکی حاوی کد برای شما ارسال میشود',className:'otp-login-text2'}
+        if (registerFields) {
+            registerFields = registerFields.map(({ before, label, field, type,required }) => {
+                return { label, field, type, before,required }
+            })
         }
-      }
-      if(mode === 'password'){
-        return {html:'شماره تلفن همراه و رمز عبور را وارد کنید.',className:'otp-login-text2'}
-      }
-    }
-    inputs_layout(){
-      let {remainingTime,mode} = this.state;
-      if(remainingTime && mode === 'otp'){return false}
-      return {
-        gap:12,
-        column:[
-          {style:{padding:'0 12px'},html: ()=>this.getInput('number')},
-          { show:mode === 'password',style:{padding:'0 12px'},html: ()=>this.getInput('password') }
-        ]
-      }
-    }
-    error_layout(){
-      let {error,remainingTime,mode,password} = this.state;
-      if(remainingTime && mode === 'otp'){return false}
-      return {
-        className:'otp-login-error-container',
-        column:[
-          { show:!!error,html: error, align: 'v', className: 'otp-login-error'},
-          { show:mode === 'password' && password.length < 6,html: 'رمز عبور باید حداقل 6 کاراکتر باشد', align: 'v', className: 'otp-login-error'}  
-        ]
-      }
-    }
-    submit_layout(){
-      let {error,remainingTime,mode,password} = this.state;
-      if(remainingTime && mode === 'otp'){return false}
-      return {
-        style:{padding:'0 12px'},
-        html: (
-          <SubmitButton 
-            disabled={!!error || (mode === 'password' && password.length < 6)}
-            onClick={async () => await this.onSubmit()}
-          />
-        )
-      }
-    }
-    changeMode_layout(){
-      let {mode} = this.state;
-      return {
-        column:[
-          {
-            gap:6,className:'p-h-12',
-            row:[
-              {flex:1,html:<div className='otp-login-splitter'></div>,align:'v'},
-              {html:'یا',align:'v',className:'otp-login-or'},
-              {flex:1,html:<div className='otp-login-splitter'></div>,align:'v'},
-            ]
-          },
-          {
-            html:(
-              <button 
-                className='otp-login-change-mode' 
-                onClick={()=>{
-                  this.setState({mode:mode === 'otp'?'password':'otp',password:''})
-                  this.changeNumber('')
+        let html = (
+            <LoginForm
+                time={time} fields={registerFields} otpLength={otpLength} id={id} methods={methods} className={className} style={style} model={model}
+                onSubmit={async (model,mode)=>{
+                    let name = {
+                        "OTPPhoneNumber":'ارسال شماره همراه',
+                        "OTPCode":'ارسال کد یکبار مصرف',
+                        "UserName":'ارسال نام کاربری و رمز عبور',
+                        "PhoneNumber":'ارسال شماره همراه و رمز عبور',
+                        "Email":'ارسال آدرس ایمیل و رمز عبور',
+                        "Register":'عملیات ثبت نام'
+                    }[mode];
+                    let {token,Mode} = await apis({
+                        api:'onSubmit', parameter: {model,mode}, name,loading:false
+                    })
+                    let modes = [];
+                    if(mode === 'OTPPhoneNumber'){modes = ['Error','OTPCode','Authenticated']}
+                    else{modes = ['Error','Authenticated']}
+                    if(registerFields){modes.push('Register')}
+                    if(modes.indexOf(Mode) === -1){
+                        console.error(`aio-login error => onSubmit props should returns an object contain mode(${modes.join(' | ')})`)
+                        return
+                    }
+                    if (token) { 
+                        this.tokenStorage.save({ value: token, name: 'token' });
+                        this.tokenStorage.save({ value:model[mode], name: 'userId' });
+                        this.setState({ token})
+                    }
+                    if(Mode === 'Authenticated'){
+                        this.tokenStorage.save({name:'isAuthenticated',value:true})
+                        this.setState({isAutenticated:true})
+                    }
+                    else {return Mode}
                 }}
-              >{mode === 'otp'?'ورود با رمز عبور':'ورود با کد یکبار مصرف'}</button>
-            ),
-            className:'p-h-12 of-visible'
-          }
-        ]
-      }
+            />
+        )
+        if (layout) { return layout(html) }
+        return html
     }
-    render(){
-      return (
-        <RVD
-          layout={{
-            className:'otp-login-form',
-            column: [
-              {
-                className:'of-visible',
-                column: [
-                  this.title_layout(),
-                  {size:12},
-                  this.subtitle_layout(),
-                  {size:12},
-                  this.inputs_layout(),
-                  this.error_layout(),
-                  this.submit_layout(),
-                  {size:12},
-                  this.changeMode_layout()
+}
+class LoginForm extends Component {
+    constructor(props) {
+        super(props);
+        this.dom = createRef()
+        this.storage = AIOStorage(props.id + 'aio-login');
+        let { time = 30, fields = [],model = {} } = props;
+        let mode = props.methods[0];
+        this.state = {
+            mode,fields, time, recode: false,
+            formError: true,
+            userId: model[mode],
+            model: this.getInitialModel(mode)
+        }
+    }
+    changeMode(mode){
+        let { model = {} } = this.props;
+        this.setState({
+            mode,
+            formError: true,
+            userId: model[mode],
+            model: this.getInitialModel(mode)
+        })
+    }
+    getInitialModel(mode) {
+        if(!mode){mode = this.state.mode}
+        let { model = {},methods } = this.props;
+        let obj = {password:'',OTPCode:''};
+        for(let i = 0; i < methods.length; i++){
+            obj[methods[i]] = model[methods[i]] || '';
+        }
+        return obj;
+    }
+    getWaitingTime(){
+        let {time,mode} = this.state;
+        let lastTry = this.storage.load({name:'lastTry' + mode,def: new Date().getTime() - (time * 1000)})
+        let now = new Date().getTime();
+        let res = Math.round((now - lastTry) / 1000);
+        if(res < time){return time - res}
+        return 0
+    }
+    setLastTry(){
+        let {mode} = this.state;
+        this.storage.save({name:'lastTry' + mode,value:new Date().getTime()})
+    }
+    async onSubmit() {
+        let {onSubmit} = this.props;
+        let { loading, formError,model,mode } = this.state;
+        if (formError || loading) { return }
+        this.setState({loading:true})
+        let Mode = await onSubmit(model,mode);
+        this.setState({loading:false})
+        this.setLastTry();
+        if(Mode === 'Register'){this.setState({mode:'Register',userId:model[mode]})}
+        if(Mode === 'OTPCode'){this.setState({mode:'OTPCode',userId:model[mode]})}
+    }
+    title_layout() {
+        let { mode } = this.state;
+        if(mode === 'OTPCode'){return false}
+        let dic = {OTPPhoneNumber:'کد یکبار مصرف',Email:'ایمیل',UserName:'نام کاربری',PhoneNumber:'شماره همراه'}
+        let html = mode === 'Register'?`ثبت نام`:`ورود با ${dic[mode]}`
+        return {
+            className: 'aio-login-title',
+            html, align: 'v'
+        }
+    }
+    subtitle_layout() {
+        let { mode,userId } = this.state;
+        let html = '';
+        if(mode === 'OTPPhoneNumber'){
+            html = 'شماره همراه خود را وارد کنید . پیامکی حاوی کد برای شما ارسال خواهد شد'
+        }
+        else if(mode === 'OTPCode'){
+            html = `کد پیامک شده به شماره ی ${userId} را وارد کنید`
+        }
+        return { html, className: 'aio-login-subtitle' }
+    }
+    getInputs() {
+        let { fields, mode, model, userId } = this.state;
+        let {otpLength} = this.props;
+        if (mode === 'Register') {
+            return [...fields.map((o) => { return { input:{...o,label:undefined},label:o.label, field: 'value.register.' + o.field, validations: o.required ? [['required']] : undefined } })]
+        }
+        let inputs = [
+            {
+                show:mode === 'UserName',field: 'value.UserName',label: 'نام کاربری', 
+                input:{
+                    type: 'text',placeholder: 'نام کاربری',before: <Icon path={mdiAccount} size={0.8} />,
+                    style:{direction:'ltr'}
+                },
+                validations: [['function', () => errorHandler('UserName', model.UserName)]]
+            },
+            {
+                show:mode === 'OTPPhoneNumber' || mode === 'PhoneNumber',field: `value.${mode}`,label: 'شماره همراه',
+                input:{
+                    type: 'text',justNumber: true,before: <Icon path={mdiCellphone} size={0.8} />, 
+                    placeholder: '09...',maxLength:11,style:{direction:'ltr'}
+                },  
+                validations: [['function', () => errorHandler('PhoneNumber', model[mode])]]
+            },
+            {
+                show:mode === 'Email',field: 'value.Email',label: 'ایمیل', 
+                input:{type: 'text',before: <Icon path={mdiAccount} size={0.8} />,style:{direction:'ltr'}}, 
+                validations: [['function', () => errorHandler('Email', model.Email)]],
+            },
+            {
+                show:!!userId && mode === 'OTPCode',field: 'value.OTPCode', label: 'کد پیامک شده',
+                input:{
+                    maxLength: otpLength, justNumber: true, type: 'text', placeholder: Array(otpLength).fill('-').join(''),
+                    className:'aio-login-otp-code'
+                },
+                validations: [['function', () => errorHandler('OTPCode', model.OTPCode, otpLength)]]
+            },
+            {
+                show:mode !== 'OTPPhoneNumber' && mode !== 'OTPCode',field: 'value.password',label: 'رمز عبور', 
+                input:{type: 'password',before: <Icon path={mdiLock} size={0.8} />,style:{direction:'ltr'}}, 
+                validations: [['function', () => errorHandler('password', model.password)]]
+            }
+        ];
+        return inputs
+    }
+    form_layout() {
+        let { model,userId,mode } = this.state;
+        return {
+            className:'ofy-auto',
+            html: (
+                <AIOInput
+                    type='form' key={mode + userId} lang='fa' value={model} rtl={true} 
+                    onChange={(model,errors) => this.setState({ model,formError:!!errors.length})}
+                    inputs={{props:{gap:12},column:this.getInputs()}}
+                />
+            )
+        }
+    }
+    submit_layout() {
+        let { loading,formError,mode } = this.state;
+        let waitingTime = this.getWaitingTime();
+        let text = mode === 'Register'?'ثبت نام':'ورود';
+        if(waitingTime){
+            setTimeout(()=>this.setState({}),1000)
+            text = `لطفا ${waitingTime} ثانیه صبر کنید`
+        }
+        return {
+            style: { padding: '0 12px' }, className: 'm-b-12',
+            gap:12,
+            row: [
+                {
+                    flex: 1,
+                    html: (
+                        <SubmitButton
+                            text={text}
+                            disabled={() => !!formError || !!waitingTime}
+                            onClick={() => this.onSubmit()}
+                            loading={loading}
+                        />
+                    )
+                }
+            ]
+        }
+    }
+    changeUserId_layout(){
+        let { mode } = this.state;
+        if(mode !== 'OTPCode'){return false}
+        return {
+            onClick: () => this.changeMode('OTPPhoneNumber'), 
+            className: 'aio-login-text m-b-12', align: 'vh', html: 'تغییر شماره همراه'
+        }
+    }
+    recode_layout() {
+        let { mode ,userId} = this.state;
+        if (mode !== 'OTPCode') { return false }
+        let waitingTime = this.getWaitingTime();
+        if(!!waitingTime){return false}
+        return {
+            className: 'aio-login-text m-b-12', html: `ارسال مجدد کد`, align: 'vh',
+            onClick: () => {
+                this.setState({mode:'OTPPhoneNumber'})
+
+            }
+        }    
+    }
+    changeMode_layout() {
+        let { mode } = this.state;
+        if (mode === 'Register') { return false }
+        let { methods } = this.props;
+        let others = []
+        for (let i = 0; i < methods.length; i++) {
+            let key = methods[i];
+            if (mode === key) { continue }
+            if(mode === 'OTPCode' && key === 'OTPPhoneNumber'){continue}
+            let title = {OTPPhoneNumber:'رمز یکبار مصرف',UserName:'نام کاربری',Email:'آدرس ایمیل',PhoneNumber:'شماره همراه'}[key];
+            let icon = {OTPPhoneNumber: mdiAccount,PhoneNumber: mdiCellphone,UserName: mdiAccountBoxOutline,Email:mdiEmail}[key]
+            others.push({
+                flex: 1,
+                className: `of-visible aio-login-other-method aio-login-${key}`,
+                onClick: () => this.changeMode(key),
+                row: [
+                    { html: <Icon path={icon} size={1}/>, align: 'vh' },
+                    { size: 6 },
+                    { align: 'v', html: title }
                 ]
-              },
-              { size: 16 }
-            ]
-          }}
-        />
-      )
-    }
-  }
-  //getDelta number onSubmit onClose onResend
-  class CodeForm extends Component{
-    constructor(props){
-      super(props);
-      this.state = {code:'',recode:false}
-      this.update();
-    }
-    label_layout(){
-      let {number} = this.props;
-      return {
-        column:[
-          {html: 'کد تایید را وارد کنید',className: 'otp-login-text1'},
-          { size: 12 },
-          {html: `کد تایید برای شماره ${number} پیامک شد`,className: 'otp-login-text2'}    
-        ]
-      }
-    }
-    input_layout(){
-      let {code} = this.state;
-      return {
-        style:{padding:'0 12px'},
-        html: (
-          <div className='otp-login-input'>
-            <input className='otp-login-code' type='number' value={code} onChange={(e) => this.onChange(e.target.value)} maxLength={4} placeholder='- - - -'/>
-          </div>
-        )
-      }
-    }
-    submit_layout(){
-      let {onSubmit} = this.props;
-      let {code} = this.state;
-      return {
-        style:{padding:'0 12px'},
-        html: (<SubmitButton disabled={isNaN(+code) || code.length !== 4} onClick={async () => await onSubmit(code)}/>)
-      }
-    }
-    update(){
-      let {getDelta,number,time} = this.props;
-      clearTimeout(this.tiomeout);
-      let delta = getDelta(number);
-      if(delta > time * 1000){this.setState({recode:true})}
-      else{
-        this.setState({remainingTime:Math.round(((time * 1000) - delta) / 1000),recode:false})
-        this.tiomeout = setTimeout(()=>this.update(),1000)
-      }
-    }
-    onChange(code){
-      if (code.length > 4) { return }
-      this.setState({code});
-    }
-    remainingTime_layout(){
-      let {recode,remainingTime} = this.state;
-      if(recode || !remainingTime){return false}
-      return {
-        gap: 3,className: 'otp-login-text3', align: 'h',
-        row: [
-          { html: `${remainingTime} ثانیه`, style: {fontWeight:'bold' }},
-          { html: 'مانده تا دریافت مجدد کد' }
-        ]
-      }
-    }
-    recode_layout(){
-      let {number,onResend} = this.props;
-      let {recode} = this.state;
-      if(!recode){return false}
-      return {
-        style:{padding:'0 12px'}, show: recode, align: 'h',
-        html: (
-          <button className='button-3' style={{ width: 'fit-content' }} 
-            onClick={async () => {
-              await onResend(number);
-              this.update();
-            }}
-          >دریافت مجدد کد</button>
-        )
-      }
-    }
-    changePhone_layout(){
-      let {onClose} = this.props;
-      return {
-        attrs: { onClick: () => onClose() },
-        className: 'otp-login-change-phone',
-        html: 'تغییر شماره تلفن یا ورود با رمز'
-      }
-    }
-    render(){
-      return (
-        <RVD
-          layout={{
-            className:'otp-login-form',
+            })
+        }
+        if (!others.length) { return false }
+        return {
+            className: 'p-h-12',
             column: [
-              this.label_layout(),
-              { size: 24 },
-              this.input_layout(),
-              { size: 16 },
-              this.submit_layout(),
-              { size: 16 },
-              this.remainingTime_layout(),
-              this.recode_layout(),
-              { size: 12 },
-              this.changePhone_layout()
+                {
+                    gap: 6,
+                    row: [
+                        { flex: 1, html: <div className='aio-login-splitter'></div>, align: 'v' },
+                        { html: 'یا ورود با', align: 'v', className: 'aio-login-or bold' },
+                        { flex: 1, html: <div className='aio-login-splitter'></div>, align: 'v' },
+                    ]
+                },
+                { size: 12 },
+                { grid: others, gridCols: 2, gridRow: { gap: 12 } }
             ]
-          }}
-        />
-      )
+        }
     }
-  }
-  class CodeError extends Component{
-    render(){
-      let {error,onClose} = this.props;
-      return (
-        <RVD
-          layout={{
-            className:'otp-login-form',
-            column: [
-              { html: error, className: 'otp-login-error', align: 'vh' },
-              { size: 24 },
-              { html: (<button className='otp-login-submit' onClick={() => onClose()}>تلاش مجدد</button>) }
-            ]
-          }}
-        />
-      )
+    render() {
+        let {className,style} = this.props;
+        return (
+            <RVD
+                layout={{
+                    className: 'aio-login' + (className?' ' + className:''),style,
+                    attrs: { onKeyDown: (e) => { if (e.keyCode === 13) { this.onSubmit() } } },
+                    column: [
+                        { 
+                            column: [
+                                this.title_layout(), 
+                                this.subtitle_layout()
+                            ] 
+                        },
+                        this.form_layout(),
+                        this.submit_layout(),
+                        {
+                            gap:12,align:'h',
+                            row:[
+                                this.recode_layout(),
+                                this.changeUserId_layout()
+                            ]
+                        },
+                        this.changeMode_layout()
+                    ]
+                }}
+            />
+        )
     }
-  }
+}
+function errorHandler(field, value = '', otpLength) {
+    return {
+        UserName() {
+            if (!value) { return 'نام کاربری را وارد کنید' }
+            return false
+        },
+        PhoneNumber() {
+            if (!value) { return 'شماره همراه خود را وارد کنید' }
+            if (value.indexOf('09') !== 0) { return 'شماره همراه باید با 09 شروع شود' }
+            if (value.length !== 11) { return 'شماره همراه باید 11 رقم باشد' }
+            return false
+        },
+        Email() {
+            let atSignIndex = value.indexOf('@');
+            if (!value) { return 'ایمیل خود را وارد کنید' }
+            if (atSignIndex < 1) { return 'ایمیل خود را به درستی وارد کنید' }
+            if (value.indexOf('.') === -1) { return 'ایمیل خود را به درستی وارد کنید' }
+            if (value.lastIndexOf('.') > value.length - 3) { return 'ایمیل خود را به درستی وارد کنید' }
+            return false
+        },
+        password() {
+            if (value.length < 6) { return 'رمز عبور باید شامل حداقل 6 کاراکتر باشد' }
+            return false
+        },
+        OTPCode() {
+            let res;
+            if (value.length !== otpLength) { res = `کد ورود باید شامل ${otpLength} کاراکتر باشد` }
+            else { res = false }
+            return res
+        }
+    }[field](value)
+}
 
+class SubmitButton extends Component {
+    state = { reload: false }
+    async onClick() {
+        let { onClick, loading } = this.props;
+        if (loading) { return; }
+        await onClick();
+    }
+    render() {
+        let { disabled, loading, text,outline } = this.props;
+        let { reload } = this.state;
+        if (loading && !reload) { setTimeout(() => this.setState({ reload: true }), 16 * 1000) }
+        let loadingText = reload ? 'بارگزاری مجدد' : 'در حال ارسال';
+        return (
+            <>
+                <button className={'aio-login-submit' + (outline?' aio-login-submit-outline':'')} disabled={disabled()} onClick={() => this.onClick()}>
+                    {loading ? (<><Icon path={mdiLoading} size={1} spin={0.2} style={{ margin: '0 6px' }} />{loadingText}</>) : text}
+                </button>
+                {
+                    loading &&
+                    <div
+                        style={{ position: 'fixed', width: '100%', height: '100%', left: 0, top: 0, zIndex: 100000000000000000000000000000000000000 }}
+                        onClick={() => { if (reload) { window.location.reload() } }}
+                    ></div>
+                }
+            </>
+        )
+    }
+}
 
-  class SubmitButton extends Component{
-    state = {loading:false}
-    async onClick(){
-      let {onClick} = this.props;
-      let {loading} = this.state;
-      if(loading){return;}
-      this.setState({loading:true})
-      await onClick();
-      this.setState({loading:false})
-    }
-    render(){
-      let {disabled} = this.props;
-      let {loading} = this.state;
-      return (
-        <>
-          <button 
-            className='otp-login-submit' 
-            disabled={disabled}
-            onClick={() => this.onClick()}
-          >{loading?(<><Icon path={mdiLoading} size={1} spin={0.2} style={{margin:'0 6px'}}/>در حال ارسال</>):'ورود'}</button>
-          {
-            loading &&
-            <div style={{position:'fixed',width:'100%',height:'100%',left:0,top:0,zIndex:100000000000000000000000000000000000000}}></div> 
-          }
-        </>
-        
-      )
-    }
-  }

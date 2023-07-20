@@ -7,7 +7,7 @@ import SplitNumber from './../../npm/aio-functions/split-number';
 import appContext from "../../app-context";
 import Icon from "@mdi/react";
 import { mdiCamera, mdiChevronLeft, mdiClose, mdiFilter, mdiMagnify, mdiMenu, mdiPlus, mdiPlusThick } from "@mdi/js";
-import vitrin_niazsanji_src from './../../images/vitrin-niazsanji.png';
+import vitrin_niazsanji_src from './../../images/vitrin-niazsanji.jpg';
 import vitrin_category_src from './../../images/vitrin-category.png';
 import vitrin_brand_src from './../../images/vitrin-brand.png';
 import VitrinContext from "../../vitrin-context";

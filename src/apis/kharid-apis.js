@@ -4,11 +4,8 @@ import nosrc from './../images/no-src.png';
 import foroosheVijeIcon from './../images/forooshe-vije-icon.png';
 import belexbillboard from './../images/belex-billboard.png';
 import belexIcon from './../images/belex-icon.png';
-import yaldaye_roshanayi from './../images/yaldaye-roshanayi.png';
-import yaldaye_batri from './../images/yaldaye-batri.png';
 import gheymat_haye_ghadim_icon from './../images/gheymat-haye-ghadim-icon.png';
 import tarh_aglami_icon from './../images/tarh_aglami_icon.png';
-import eydane_roshanayi from './../images/eydane-roshanayi.png';
 import staticBelexData from './belexdata';
 export default function kharidApis({ getState,helper }) {
   //let { baseUrl, userInfo } = getState()
@@ -400,10 +397,7 @@ export default function kharidApis({ getState,helper }) {
           }
         }
         let icon;
-        if (o.id === '10947') { icon = yaldaye_batri }
-        else if (o.id === '10945') { icon = yaldaye_roshanayi }
-        else if (o.id === '10676') { icon = eydane_roshanayi }//عیدانه روشنایی
-        else if (o.id === '10721') { icon = gheymat_haye_ghadim_icon }//عیدانه روشنایی
+        if (o.id === '10721') { icon = gheymat_haye_ghadim_icon }//عیدانه روشنایی
         else if (o.id === '10728') { icon = tarh_aglami_icon }
         let campaignId;
         try {
@@ -1096,7 +1090,7 @@ export default function kharidApis({ getState,helper }) {
         if (product.id === "12395" || product.relationships.default_variant === undefined || product.relationships.default_variant.data === undefined) {      
           continue;
         }
-        if(debug){debugger}
+
         const productDefaultVariantId = product.relationships.default_variant.data.id;
         const productDefaultVariant = spreeResult.included.find(x => x.type === "variant" && x.id === productDefaultVariantId);
         const productDefaultVariantSku = productDefaultVariant.attributes.sku;
@@ -1402,9 +1396,10 @@ export default function kharidApis({ getState,helper }) {
       // }
       let result = {
         cartId: 'بلکس',
-        name: 'لامپ 10 وات طلایی',
+        name: '10 وات طلایی',
         src: belexbillboard,
         icon: belexIcon,
+        maxCount:2,
         products
       }
       return {result}

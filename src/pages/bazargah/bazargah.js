@@ -17,7 +17,6 @@ import bazargahBlankSrc from './../../images/bazargah-no-order.png';
 import SplitNumber from '../../npm/aio-functions/split-number';
 import TimerGauge from '../../components/timer-gauge/timer-gauge';
 import InlineNumberKeyboard from '../../components/inline-number-keyboard/inline-number-keyboard';
-import bazargahCommingSoon from './../../images/bazargah-comming-soon.png';
 import $ from 'jquery';
 
 export default class Bazargah extends Component{
@@ -196,23 +195,6 @@ export default class Bazargah extends Component{
                 }
             }
         }
-    }
-    renderCommingSoon(){
-        return (
-            <RVD
-                layout={{
-                    className:'page-bg',style:{width:'100%'},
-                    column:[
-                        {html:'بازارگاه',className:'fs-24 bold',align:'vh',size:96},
-                        {html:<img src={bazargahCommingSoon} alt={''} width={300} height={240}/>,align:'vh'},
-                        {size:24},
-                        {html:'محلی برای اخذ و ارسال سفارش های مردمی',className:'fs-16 theme-medium-font-color',align:'vh'},
-                        {size:24},
-                        {html:'بزودی',className:'fs-18 theme-light-font-color',align:'vh'}
-                    ]
-                }}
-            />
-        )
     }
     render(){
         if(this.props.renderInHome){return this.renderInHome()}

@@ -1,6 +1,6 @@
 import React ,{Component} from 'react';
 import ACS from './../../npm/aio-content-slider/aio-content-slider';
-import Sookhte from './../../images/banner1111.png';
+import Sookhte from './../../images/banner1111.jpg';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import appContext from '../../app-context';
 import landingsrc from './../../images/haraj1.png';

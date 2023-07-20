@@ -736,3 +736,17 @@ button{
 		opacity: 0.2;
 	}
   }
+
+
+  .aio-login{
+	background:#fff;
+	border-radius: 12px;
+	margin:0 12px;
+	padding:12px;
+  }
+  .aio-login .aio-input{
+	background:#f6f7f9;
+	box-shadow:inset 0 0 3px 0px rgb(0 0 0 / 5%);
+	border:none;
+	min-height:40px;
+  }

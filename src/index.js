@@ -4,7 +4,6 @@ import Main from './pages/main';
 import Axios from 'axios';
 import Register from './components/register/register';
 import RVD from './interfaces/react-virtual-dom/react-virtual-dom';
-import Loading from './components/loading/index';
 import { Icon } from '@mdi/react';
 import haraj1 from './images/haraj1.png';
 import haraj2 from './images/haraj2.png';
@@ -13,149 +12,41 @@ import haraj4 from './images/haraj4.png';
 
 import { mdiAlert,mdiClose } from '@mdi/js';
 import logo from './images/logo5.png';
-import { OTPLogin } from './npm/aio-login/aio-login';
-import $ from 'jquery';
+import AIOLogin from './npm/aio-login/aio-login';
+import AIOStorage from './npm/aio-storage/aio-storage';
 import './App.css';
 import './theme.css';
 import EPSrc from './images/ep.jpg';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 
-
-
 class App extends Component {
   constructor(props) {
     super(props);
     let url = window.location.href;
-    if(url.indexOf('localhost') !== -1){this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";}
-    else if(url.indexOf('bazar') !== -1){this.apiBaseUrl = "https://apimy.burux.com/api/v1";}
-    else if(url.indexOf('bbeta') !== -1){this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1";}
-    else(alert('error'))
-    console.log(`base url is ${this.apiBaseUrl}`)
+    if (url.indexOf('localhost') !== -1) { this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1"; }
+    else if (url.indexOf('bazar') !== -1) { this.apiBaseUrl = "https://apimy.burux.com/api/v1"; }
+    else if (url.indexOf('bbeta') !== -1) { this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1"; }
+    else (alert('unknown domain'))
+    this.Storage = AIOStorage('bazarmiarzeuserinfo') 
     //this.apiBaseUrl = "https://apimy.burux.com/api/v1";
-    this.state = { 
-      isAutenticated: false, registered: false, pageError: false, userInfo: {}, landing: false ,
-      landing:true
-    }
-  }
-
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////// Fill By Backend Developer ///////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  async onInterNumber(number) {
-    let sendSmsResult;
-    try {
-      sendSmsResult = await Axios.get(`${this.apiBaseUrl}/Users/FirstStep?phoneNumber=${number}`);
-    }
-    catch {
-      this.setState({ pageError: { text: 'سرویس دهنده در دسترس نمی باشد', subtext: 'Users/FirstStep' } });
-      return;
-    }
-    if (sendSmsResult.data.isSuccess) {
-      let data = sendSmsResult.data.data;
-      this.userId = data.id;
-      this.setState({ registered: data.alreadyRegistered })
-      return true
-    }
-    else {
-      return sendSmsResult.data.message
-    }
-
-  }
-  async onInterCode(code) {
-    if (this.userId !== undefined) {
-      const smsValidationResult = await Axios.get(`${this.apiBaseUrl}/Users/SecondStep?userId=${this.userId}&code=${code}`);
-      if (smsValidationResult.data.isSuccess) {
-        let res = smsValidationResult.data.data;
-        let token = res.accessToken.access_token;
-        let userInfo = await this.getUserInfo(res)
-        this.setState({ isAutenticated: true, userInfo, token });
-      }
-      else { return smsValidationResult.data.message; }
-    }
-  }
-  async onInterPassword(number, password) {
-    //if error return error message
-    const loginResult = await Axios.get(`${this.apiBaseUrl}/Users/Login?phoneNumber=${number}&password=${password}`);
-    if (loginResult.data.isSuccess) {
-      const res = loginResult.data.data;
-      let userInfo = await this.getUserInfo(res);
-      const token = userInfo.accessToken.access_token;
-      this.setState({ isAutenticated: true, userInfo, token, registered: res.alreadyRegistered });
-    }
-    else
-      return loginResult.data.message;
+    this.state = { isAutenticated: false, registered: true, pageError: false, userInfo: {}, landing: false,landing:true }
   }
   async updatePassword(password) {
-    //در صورت موفقیت ریترن ترو
-    //در صورت خطا ریترن متن خطا
     const setPasswordResult = await Axios.get(`${this.apiBaseUrl}/Users/SetPassword?password=${password}`);
-    if (setPasswordResult.data.isSuccess)
-      return true;
-    else
-      return setPasswordResult.data.message;
-  }
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  logout() {
-    localStorage.removeItem('brxelctoken');
-    this.setState({ isAutenticated: false })
-  }
-  async interByStorage() {
-    let storage = localStorage.getItem('brxelctoken');
-    if (!storage || storage === null) { this.setState({}); return; }
-    storage = JSON.parse(storage);
-    Axios.defaults.headers.common['Authorization'] = 'Bearer ' + storage.token;
-    $('.loading').css({ display: 'flex' });
-    let success = true;
-      
-    let res = await Axios.get(`${this.apiBaseUrl}/Users/CheckExpireToken`).catch((error)=>{
-      success = false;
-      this.handleStatus(error.response.status,storage)
-    });
-    if(success){
-      this.handleStatus(res.status,storage);
-    }
-  }
-  handleStatus(status,storage){
-    if(status === 200){
-      this.setState({ isAutenticated: true, userInfo: storage.userInfo, token: storage.token, registered: true })
-    }
-    else if(status === 401){
-      localStorage.removeItem('brxelctoken')
-      window.location.reload()
-    }
-    else{
-      this.setState({ pageError: { text: 'سرویس دهنده در دسترس نیست', subtext: ''} })
-    }
-  }
-  async componentDidMount() {
-    this.mounted = true;
-    this.interByStorage();
-
+    if (setPasswordResult.data.isSuccess) { return true; }
+    else { return setPasswordResult.data.message; }
   }
   updateUserInfo(obj) {
-    let { token, userInfo } = this.state;
+    let { userInfo } = this.state;
     let newUserInfo = { ...userInfo, ...obj };
     this.setState({ userInfo: newUserInfo });
-    localStorage.setItem('brxelctoken', JSON.stringify({ token, userInfo: newUserInfo }));
+    this.Storage.save({name:'userInfo', value:newUserInfo});
   }
   async getUserInfo(userInfo = this.state.userInfo) {
     const b1Info = await fetch(`https://b1api.burux.com/api/BRXIntLayer/GetCalcData/${userInfo.cardCode}`, {
       mode: 'cors', headers: { 'Access-Control-Allow-Origin': '*' }
-    }).then((response) => {
-      return response.json();
-    }).then((data) => {
-      return data;
-    }).catch(function (error) {
-      console.log(error);
-      return null;
-    });
+    }).then((response) => {return response.json();}).then((data) => {return data;}).catch(function (error) {return null;});
     let { customer = {} } = b1Info;
     let ballance = customer.ballance;
     let visitorMobile;
@@ -169,30 +60,75 @@ class App extends Component {
       ...userInfo,
       cardCode: userInfo.cardCode,
       groupName: customer.groupName,
-      cardName: customer.cardName,
       itemPrices: b1Info.itemPrices,
-      slpphone: b1Info.slpphone,
       slpcode: customer.slpcode,
       slpname: customer.slpname,
       groupCode: customer.groupCode,
       ballance: -ballance,
-      slpphone: '09123534314',
       visitorMobile
     }
   }
-  header_layout() {
-    return {
-      html: <img src={logo} width={160} height={160} alt='' />, align: 'vh'
+  async checkToken(token) { // if success return true else return string
+    let response;
+    Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    let result;
+    try { 
+      response = await Axios.get(`${this.apiBaseUrl}/Users/CheckExpireToken`); 
+      result = response.status === 200;
+    }
+    catch (err) {
+      try {
+        if (err.response.status === 401) { result = false }
+        else { this.setState({ pageError: { text: 'سرویس دهنده در دسترس نیست', subtext: ''} }) }
+      }
+      catch { result = 'خطا در دریافت اطلاعات' }
+    }
+    if(result === true){
+      let userInfo = this.Storage.load({name:'userInfo'});
+      userInfo = await this.getUserInfo(userInfo);
+      this.setState({userInfo})
+    }
+    return result;
+  }
+  async onSubmit(model, mode) {
+    if (mode === 'OTPPhoneNumber') {
+      let sendSmsResult;
+      try { sendSmsResult = await Axios.get(`${this.apiBaseUrl}/Users/FirstStep?phoneNumber=${model.OTPPhoneNumber}`); }
+      catch { this.setState({ pageError: { text: 'سرویس دهنده در دسترس نمی باشد', subtext: 'Users/FirstStep' } }); return; }
+      if (sendSmsResult.data.isSuccess) {
+        let data = sendSmsResult.data.data;
+        this.userId = data.id;
+        this.setState({ registered: !!data.alreadyRegistered })
+        return { mode: 'OTPCode' }
+      }
+      else { return { mode: 'Error', error: sendSmsResult.data.message } }
+    }
+    else if (mode === 'OTPCode') {
+      if (this.userId === undefined) { return { mode: 'Error', error: 'خطا در دریافت یوزر آی دی' } }
+      const smsValidationResult = await Axios.get(`${this.apiBaseUrl}/Users/SecondStep?userId=${this.userId}&code=${model.OTPCode}`);
+      if (smsValidationResult.data.isSuccess) {
+        let res = smsValidationResult.data.data;
+        let token = res.accessToken.access_token;
+        let userInfo = await this.getUserInfo(res)
+        this.setState({ userInfo });
+        return { mode: 'Authenticated', token }
+      }
+      else { return { mode: 'Error', error: smsValidationResult.data.message } }
+    }
+    else if (mode === 'PhoneNumber') {
+      const loginResult = await Axios.get(`${this.apiBaseUrl}/Users/Login?phoneNumber=${model.PhoneNumber}&password=${model.password}`);
+      if (loginResult.data.isSuccess) {
+        const res = loginResult.data.data;
+        let userInfo = await this.getUserInfo(res);
+        const token = userInfo.accessToken.access_token;
+        this.setState({ userInfo, registered: res.alreadyRegistered });
+        return { mode: 'Authenticated', token }
+      }
+      else { return { mode: 'Error', error: loginResult.data.message } }
     }
   }
-  getNumberFromURL(){
-    let str = window.location.href;
-    var url = new URL(str);
-    return url.searchParams.get("pn");
-  }
   render() {
-    if (!this.mounted) { return <Loading /> }
-    let { isAutenticated, userInfo, token, registered, pageError,landing } = this.state;
+    let { isAutenticated, userInfo, token, registered, pageError,landing,logout } = this.state;
     if(landing){
       return <LandingTakhfif onClose={()=>this.setState({landing:false})}/>
     }
@@ -229,26 +165,23 @@ class App extends Component {
       if (!registered) {
         return (
           <Register
-            baseUrl={this.apiBaseUrl}
-            mode='register'
+            baseUrl={this.apiBaseUrl} mode='register'
             model={{ phoneNumber: userInfo.phoneNumber }}
             onClose={() => this.setState({ isAutenticated: false })}
             onSubmit={(userInfo) => this.setState({ userInfo, registered: true })}
           />
         )
       }
-      try{
-        localStorage.setItem('brxelctoken', JSON.stringify({ token, userInfo }));
+      try {
+        this.Storage.save({name:'userInfo',value:userInfo})
       }
-      catch(err){
+      catch (err) {
         alert(`${err.message}. محدوده حافظه کش کلاینت به حد غیر مجاز رسیده است. لطفا این موضوع را با مرکز پشتیبانی در میان بگذارید`)
       }
       return (
         <>
           <Main
-            logout={() => this.logout()}
-            token={token}
-            userInfo={userInfo}
+            logout={logout} token={token} userInfo={userInfo}
             updateUserInfo={this.updateUserInfo.bind(this)}
             getUserInfo={this.getUserInfo.bind(this)}
             updatePassword={this.updatePassword.bind(this)}
@@ -258,43 +191,33 @@ class App extends Component {
 
       )
     }
+    let urlPhoneNumber = new URL(window.location.href).searchParams.get("pn");
     return (
       <RVD
         layout={{
-          className: 'bg3B55A5 ofy-auto fullscreen',
+          className: 'bg3B55A5 ofy-auto fullscreen ',
           column: [
-            { size: 48 },
-            this.header_layout(),
-            { size: 24 },
+            { flex: 1 },
+            { html: <img src={logo} width={160} height={160} alt='' />, align: 'vh' },
+            { flex: 1 },
             {
+              align:'vh',className:'of-visible',
               html: (
-                <OTPLogin
-                  time={90}
-                  number={this.getNumberFromURL()}
-                  header={<img src={logo} alt='' width={160} height={160} />}
-                  onInterNumber={(number) => this.onInterNumber(number)}
-                  onInterCode={(code) => this.onInterCode(code)}
-                  onInterPassword={(number, password) => this.onInterPassword(number, password)}
+                <AIOLogin
+                  style={{maxWidth:360,boxShadow: 'rgba(0, 0, 0, 0.2) 0px 6px 15px 5px'}}
+                  time={90} methods={['OTPPhoneNumber', 'PhoneNumber']} otpLength={4} id='bazarmiarzelogin'
+                  model={{ OTPPhoneNumber: urlPhoneNumber, PhoneNumber: urlPhoneNumber }}
+                  onSubmit={this.onSubmit.bind(this)}
+                  checkToken={this.checkToken.bind(this)}
+                  COMPONENT={({ logout, token }) => this.setState({ isAutenticated: true, logout, token })}
                 />
               )
             },
-            {
-              align: 'vh',
-              html: (
-                <a style={{ color: '#fff', height: 24, margin: 0 }} href="tel:02175116" className='fs-14'>
-                  تماس با پشتیبانی
-                </a>
-              )
-            },
-            {
-              align: 'vh',
-              html: (
-                <a style={{ color: '#fff', height: 30, margin: 0 }} href="tel:02175116">
-                  021-75116
-                </a>
-              )
-            },
-            { flex: 1, style: { minHeight: 240 } }
+            {size:24},
+            { flex: 3, style: { minHeight: 200 },align:'vh',column:[
+              { align: 'vh', html: (<a style={{ color: '#fff', height: 24, margin: 0 }} href="tel:02175116" className='fs-14'>تماس با پشتیبانی</a>) },
+              { align: 'vh', html: (<a style={{ color: '#fff', height: 30, margin: 0 }} href="tel:02175116">021-75116</a>) },
+            ] }
           ]
         }}
       />
@@ -402,7 +325,9 @@ class LandingTakhfif extends Component{
                 this.label_layout('لامپ 10 وات بروکس فقط 20 هزارتومن!'),
                 this.description_layout(
                   `
-                  در صورت خرید از محصولاتی که کاهش قیمت داشتند روی هر سبد خریدتون 2 عدد کارتن (بله درست خوندید! دو عدد کارتن 100 عددی!) لامپ 10 وات رو میتونین با قیمت 20 هزارتومان خریداری کنید! یعنی ۴ میلیون ریال هدیه ما به شما!
+                  هدیه ما به شما در بازار می ارزه خرید لامپ ۱۰ وات با قیمت استثنایی!
+شما میتوانید حداکثر 2 کارتن لامپ 10 وات را با قیمت 20 هزار تومان خریداری کنید! یعنی ۴ میلیون ریال هدیه ما به شما!
+این فرصت بی نظیر را از دست ندهید!
                   `
                 ),
                 this.link_be_belex(),

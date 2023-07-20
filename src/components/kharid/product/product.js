@@ -746,13 +746,15 @@ class Belex extends Component {
         };
     }
     changePackQty(v){
+        let {belex} = this.context;
+        let {maxCount = 40} = belex;
         let {count} = this.state;
         let {packQty,qtyInPacks} = count;
         let {product} = this.props;
         packQty = packQty || 0;
         packQty += v;
         if(packQty < 0){packQty = 0}
-        if(packQty > 40){packQty = 40}
+        if(packQty > maxCount){packQty = maxCount}
         count.packQty = packQty;
         for(let i = 0; i < product.variants.length; i++){
             let variant = product.variants[i];
@@ -771,6 +773,8 @@ class Belex extends Component {
     packQty_layout(){
         let {count} = this.state;
         if(!count){return false}
+        let {belex} = this.context;
+        let {maxCount = 40} = belex;
         let {packQty} = count;
         return {
             align:'v',
@@ -783,7 +787,7 @@ class Belex extends Component {
                     row:[
                         {
                             size:40,html:<Icon path={mdiPlus} size={1}/>,align:'vh',onClick:()=>this.changePackQty(1),
-                            style:{background:'#3B55A5',height:40,color:'#fff',borderRadius:6}
+                            style:{background:'#3B55A5',height:40,color:'#fff',borderRadius:6,opacity:packQty >= maxCount?0.4:1}
                         },
                         {size:6},
                         {

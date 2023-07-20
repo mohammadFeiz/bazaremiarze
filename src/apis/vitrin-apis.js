@@ -38,9 +38,7 @@ export default function apis({ getState,helper }) {
             allProducts = pr.map((o)=>{return {id : o.id , name : o.name , price:o.FinalPrice , src:o.srcs[0] , inStock:true , code : o.defaultVariant?o.defaultVariant.code:o.code}  });
             return {mock:false,result:allProducts}
         },
-        async v_mahsoolate_entekhab_shode(cardCode){     
-            debugger          
-
+        async v_mahsoolate_entekhab_shode(cardCode){               
             let {baseUrl} = getState();
             let res = await Axios.get(`${baseUrl}/vitrin/GetAllVitrins`);       
             return {result:res.data.data}

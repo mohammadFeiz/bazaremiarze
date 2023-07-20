@@ -14,9 +14,10 @@ export default class BelexCard extends Component{
         openPopup('product',{product,variantId,cartId})
     }
     label_layout(){
+        const {belex} = this.context;
         return {
             row:[
-                {html:'10 وات طلایی',style:{color:'#FDB913'},className:'fs-12 bold',align:'v'},
+                {html:belex.name,style:{color:'#FDB913'},className:'fs-12 bold',align:'v'},
                 {size:3},
                 {flex:1,html:(<div style={{height:2,width:'1100%',background:'#FDB913'}}></div>),align:'v'}
             ]

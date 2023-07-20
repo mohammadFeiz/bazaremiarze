@@ -38,7 +38,7 @@ export default class Cart extends Component{
       this.setState({activeTabId,tabs})
     }
     tabs_layout(){
-      let {cart} = this.context;
+      let {cart,belex} = this.context;
       let {activeTabId,tabs} = this.state;
       return {
         html:(
@@ -48,7 +48,10 @@ export default class Cart extends Component{
             style={{marginBottom:12}}
             value={activeTabId} 
             optionAfter={(option)=><div className='tab-badge'>{Object.keys(cart[option].items).length}</div>}
-            optionText='option === "بلکس"?"لامپ 10 وات طلایی":option'
+            optionText={(option)=>{
+              if(option === 'بلکس'){return belex.name}
+              return option
+            }}
             optionValue='option'
             onChange={(activeTabId)=>this.setState({activeTabId})}
           />

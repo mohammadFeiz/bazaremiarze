@@ -290,8 +290,12 @@ export default class Home extends Component {
         }
     }
     promotion_layout(){
+        let {openPopup,belex} = this.context;
         return {
             className:'m-h-12',
+            onClick:()=>{
+                openPopup('category',{category:belex});
+            },
             html:(
                 <img src={promotionSrc} alt='' width='100%'/>
             )

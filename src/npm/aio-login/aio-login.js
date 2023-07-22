@@ -300,7 +300,7 @@ class LoginForm extends Component {
             let key = methods[i];
             if (mode === key) { continue }
             if(mode === 'OTPCode' && key === 'OTPPhoneNumber'){continue}
-            let title = {OTPPhoneNumber:'رمز یکبار مصرف',UserName:'نام کاربری',Email:'آدرس ایمیل',PhoneNumber:'شماره همراه'}[key];
+            let title = {OTPPhoneNumber:'رمز یکبار مصرف',UserName:'نام کاربری و رمز عبور',Email:'آدرس ایمیل و رمز عبور',PhoneNumber:'شماره همراه و رمز عبور'}[key];
             let icon = {OTPPhoneNumber: mdiAccount,PhoneNumber: mdiCellphone,UserName: mdiAccountBoxOutline,Email:mdiEmail}[key]
             others.push({
                 flex: 1,
@@ -326,7 +326,7 @@ class LoginForm extends Component {
                     ]
                 },
                 { size: 12 },
-                { grid: others, gridCols: 2, gridRow: { gap: 12 } }
+                { grid: others, gridCols: 1, gridRow: { gap: 12 } }
             ]
         }
     }

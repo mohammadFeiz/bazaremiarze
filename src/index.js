@@ -205,7 +205,7 @@ class App extends Component {
               html: (
                 <AIOLogin
                   style={{maxWidth:360,boxShadow: 'rgba(0, 0, 0, 0.2) 0px 6px 15px 5px'}}
-                  time={90} methods={['OTPPhoneNumber', 'PhoneNumber']} otpLength={4} id='bazarmiarzelogin'
+                  time={8} methods={['OTPPhoneNumber', 'PhoneNumber']} otpLength={4} id='bazarmiarzelogin'
                   model={{ OTPPhoneNumber: urlPhoneNumber, PhoneNumber: urlPhoneNumber }}
                   onSubmit={this.onSubmit.bind(this)}
                   checkToken={this.checkToken.bind(this)}

@@ -40,7 +40,7 @@ export default function apis({ getState,helper }) {
         },
         async v_mahsoolate_entekhab_shode(cardCode){               
             let {baseUrl} = getState();
-            let res = await Axios.get(`${baseUrl}/vitrin/GetAllVitrins${cardCode}`);       
+            let res = await Axios.get(`${baseUrl}/vitrin/GetVitrinProductsByCardCode${cardCode}`);       
             return {result:res.data.data}
         },
         async v_category_options(){           

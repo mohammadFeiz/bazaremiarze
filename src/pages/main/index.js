@@ -129,6 +129,16 @@ export default class Main extends Component {
       popup: {},
       peygiriyeSefaresheKharid_tab: undefined,
       buy_view: undefined,//temporary state
+      getCartIds:()=>{
+        let {campaigns,belex} = this.state;
+        let ids = ['خرید عادی'];
+        for(let i = 0; i < campaigns.length; i++){
+          let {cartId} = campaigns[i];
+          ids.push(cartId);
+        }
+        if(belex){ids.push('بلکس')}
+        return ids;
+      }
     };
     let log = true;
     let getState = () => {

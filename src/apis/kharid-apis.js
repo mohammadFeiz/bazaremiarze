@@ -960,6 +960,9 @@ export default function kharidApis({ getState,helper }) {
         SettleType, PaymentTime, DeliveryType, PayDueDate
       }
       let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
+      if(!res.data.isSuccess){
+        return {result:res.data.message}
+      }
       let registredOrder;
       try { registredOrder = res.data.data[0] }
       catch { return {result:false} }
@@ -972,6 +975,7 @@ export default function kharidApis({ getState,helper }) {
         }
       }
       let result = await kharidApis({api:'pardakhte_kharid',parameter,name:'پرداخت خرید'})
+      debugger
       return {result}
     },
     async sabte_belex({ address, SettleType, PaymentTime, DeliveryType, PayDueDate, amounts }) {
@@ -1142,32 +1146,20 @@ export default function kharidApis({ getState,helper }) {
       return {result:true}
     },
     async getCart() {
-      let {baseUrl} = getState();
+      let {baseUrl,getCartIds} = getState();
       let res = await Axios.get(`${baseUrl}/orderuidata`);
+      let cartIds = getCartIds();
       let result = '{}';
       try {result = res.data.data[0].jsonData || '{}';}
       catch {result = '{}'}
       let cart = JSON.parse(result)
       if (typeof cart !== 'object') {return {result:{}}}
       let keys = Object.keys(cart)
-      let { backOffice, campaigns } = getState();
-      let { activeManager } = backOffice;
       let newCart = {}
       for (let i = 0; i < keys.length; i++) {
-        let cartTab = cart[keys[i]];
-        if (!cartTab.items) { return {result:{}} }
-        if (activeManager[keys[i]] !== undefined && activeManager[keys[i]] === false) { continue }
-
-        if (activeManager.campaigns === false) {
-          let res = campaigns.find((o) => o.name === keys[i]);
-          if (res) {
-            if (activeManager[keys[i]] === false) { continue }
-          }
-        }
-        if (activeManager.noorvare3 === false) {
-          if (keys[i] === 'نورواره 3') {continue}
-        }
-        newCart[keys[i]] = cart[keys[i]]
+        let cartId = keys[i];
+        if(cartIds.indexOf(cartId) === -1){continue}
+        newCart[cartId] = cart[cartId]
       }
       return {result:newCart}
     },
@@ -1399,7 +1391,7 @@ export default function kharidApis({ getState,helper }) {
         name: '10 وات طلایی',
         src: belexbillboard,
         icon: belexIcon,
-        maxCount:2,
+        maxCount:1,
         products
       }
       return {result}

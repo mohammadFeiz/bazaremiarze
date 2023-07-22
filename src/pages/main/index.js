@@ -845,8 +845,7 @@ class Header extends Component {
           className='header-icon'
           style={{ background: "none", color: '#605E5C' }}
           text={<Icon path={mdiCart} size={0.7} />}
-          badge={length > 0 ? length : undefined}
-          badgeAttrs={{ className: "badge-1" }}
+          after={length > 0 ? <div className='badge-2'>{length}</div> : undefined}
           onClick={() => openPopup('cart')}
         />
       )

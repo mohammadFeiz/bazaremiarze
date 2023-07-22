@@ -666,6 +666,16 @@ button{
 	padding:0 6px;
 }
 
+.badge-2{
+	position: absolute;
+    background: #0094D4;
+    right: 0px;
+    top: 54%;
+    padding: 0 3px;
+    min-width: 12px;
+    color: #fff;
+    border-radius: 12px;
+}
 .button-3{
 	background:#fbad45;
 	color:#3b55a5;

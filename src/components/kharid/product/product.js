@@ -907,14 +907,16 @@ class Belex extends Component {
     }
     showCart_layout(){
         let { openPopup } = this.context;
+        let {count} = this.state;
+        if(!count){return false}
+        let {packQty} = count;
+        if(!packQty){return false}
         return {
-            className:'p-h-12 bgFFF',size:36,align:'v',
+            className:'p-h-24 bgFFF theme-link-font-color bold',size:36,align:'v',
             row:[
-                {html:'مشاهده',className:'theme-light-font-color fs-12 bold',align:'v'},
+                {html:'ادامه فرایند خرید',className:'fs-16',align:'v',onClick:()=>openPopup('cart')},
                 {size:4},
-                {html:'سبد خرید',className:'theme-link-font-color fs-12 bold',align:'v',attrs:{onClick:()=>openPopup('cart')}},
-                {size:4},
-                {html:<Icon path={mdiChevronLeft} size={0.8}/>,align:'vh',className:'theme-link-font-color'}
+                {html:<Icon path={mdiChevronLeft} size={0.8}/>,align:'vh'}
             ]
         }
     }
@@ -931,7 +933,7 @@ class Belex extends Component {
                 {
                     row: [
                         { flex: 1 },
-                        { html: SplitNumber(product.price * packQty), className: "theme-dark-font-color bold" },
+                        { html: SplitNumber(product.price * packQty), className: "theme-link-font-color bold" },
                         { size: 6 },
                         { html: "ریال", className: "theme-dark-font-color bold" },
                     ],

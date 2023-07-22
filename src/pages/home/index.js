@@ -10,6 +10,7 @@ import Card from '../../components/card/card';
 import Billboard from '../../components/billboard/billboard';
 import blankGuarantee from './../../images/blank-guarantee.png';
 import Bazargah from '../bazargah/bazargah';
+import promotionSrc from './../../images/belex-billboard.png';
 import './index.css';
 import Icon from '@mdi/react';
 import { mdiLoading, mdiPlusBox } from '@mdi/js';
@@ -288,6 +289,14 @@ export default class Home extends Component {
             ]
         }
     }
+    promotion_layout(){
+        return {
+            className:'m-h-12',
+            html:(
+                <img src={promotionSrc} alt='' width='100%'/>
+            )
+        }
+    }
     getContent() {
         let {testedChance} = this.state;
         return {
@@ -299,6 +308,8 @@ export default class Home extends Component {
                     column: [
                         this.billboard_layout(),
                         this.noorvare3Qr_layout(),
+                        { className: 'theme-vertical-gap'},
+                        this.promotion_layout(),
                         { className: 'theme-vertical-gap'},
                         this.cartAndWallet_layout(),
                         { className: 'theme-vertical-gap'},

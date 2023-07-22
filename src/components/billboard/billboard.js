@@ -28,15 +28,14 @@ export default class Billboard extends Component{
         }
     }
     billboard_layout(){
-        let {campaigns,openPopup,backOffice,forooshe_vije,belex,userInfo,nv3} = this.context,{renderIn} = this.props;
-        let {SetState} = this.context;
+        let {campaigns,openPopup,backOffice,forooshe_vije,belex,userInfo,nv3,rsa_actions} = this.context,{renderIn} = this.props;
         let items = []
         if(renderIn === 'buy'){
             items = items.concat(campaigns.map((o)=><img src={o.src} width='100%' alt='' onClick={async ()=>this.onClick(o)}/>))
             
         }
         items.push(<img src={landingsrc} alt="" width='100%' className='sookhte' onClick={()=>{
-            SetState({landing_takhfif:true})
+            rsa_actions.setNavId('kharid')
         }}/>)
         if(renderIn === 'home' && !!backOffice.activeManager.garanti && userInfo.slpcode){
             // items.push(<img src={HomeSlide2} alt="" width='100%'/>)
@@ -50,7 +49,7 @@ export default class Billboard extends Component{
                 openPopup('category',{category:forooshe_vije})
             }}/>)
         }
-        if(belex){
+        if(belex && renderIn === 'buy'){
             items.push(<img src={belex.src} alt="" width='100%' onClick={()=>{
                 debugger
                 openPopup('category',{category:belex})

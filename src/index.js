@@ -28,6 +28,7 @@ class App extends Component {
     else if (url.indexOf('bazar') !== -1) { this.apiBaseUrl = "https://apimy.burux.com/api/v1"; }
     else if (url.indexOf('bbeta') !== -1) { this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1"; }
     else (alert('unknown domain'))
+    this.apiBaseUrl = "https://apimy.burux.com/api/v1";
     this.Storage = AIOStorage('bazarmiarzeuserinfo') 
     //this.apiBaseUrl = "https://apimy.burux.com/api/v1";
     this.state = { isAutenticated: false, registered: true, pageError: false, userInfo: {}, landing: false,landing:true }

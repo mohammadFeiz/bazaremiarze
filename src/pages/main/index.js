@@ -28,7 +28,7 @@ import PriceList from "../../popups/price-list/price-list";
 
 //npm////////////////////////////////////////
 import { Icon } from '@mdi/react';
-import { mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList, mdiExitToApp, mdiCart, mdiBell, mdiPower, mdiMagnify, mdiPalette, mdiOpacity, mdiClose, mdiSecurity } from "@mdi/js";
+import { mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList, mdiExitToApp, mdiCart, mdiBell, mdiPower, mdiMagnify, mdiPalette, mdiOpacity, mdiClose, mdiSecurity, mdiCash } from "@mdi/js";
 import RSA from './../../npm/react-super-app/react-super-app';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import AIOService from './../../npm/aio-service/aio-service';
@@ -773,6 +773,7 @@ export default class Main extends Component {
             { text: 'پیگیری سفارش خرید', icon: () => <Icon path={mdiClipboardList} size={0.8} />, onClick: () => this.openPopup('peygiriye-sefareshe-kharid') },
             { text: 'درخواست گارانتی', icon: () => <Icon path={mdiShieldCheck} size={0.8} />, onClick: () => this.openPopup('sabte-garanti-jadid'), show: () => !!backOffice.activeManager.garanti && userInfo.slpcode },
             { text: 'پنل ادمین', icon: () => <Icon path={mdiSecurity} size={0.8} />, onClick: () => this.openPopup('admin-panel'), show: () => ['c39801', 'c39838', 'c39842', 'c39843', 'c63291', 'c202528'].indexOf(userInfo.cardCode) !== -1 },
+            { text: 'لیست فیمت', icon: () => <Icon path={mdiCash} size={0.8} />, onClick: () => this.openPopup('price list') },
             { text: 'خروج از حساب کاربری', icon: () => <Icon path={mdiExitToApp} size={0.8} />, className: 'colorFDB913', onClick: () => logout() }
           ]}
           navHeader={() => {

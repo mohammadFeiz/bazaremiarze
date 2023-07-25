@@ -74,7 +74,7 @@ export default class Buy extends Component {
   componentDidMount() {
     this.get_newOrders();
     this.getFamilies();
-    this.get_recommendeds();
+    //this.get_recommendeds();
     this.get_bestSellings();
     this.getCategories();
     this.context.SetState({buy_view:undefined})//reset temporary state
@@ -136,7 +136,11 @@ export default class Buy extends Component {
   }
   sliders(){
     let {openPopup} = this.context;
-    let sliders = [['newOrders','جدید ترین محصولات'],['bestSellings','پر فروش ترین محصولات'],['recommendeds','پیشنهاد سفارش']]
+    let sliders = [
+      ['newOrders','جدید ترین محصولات'],
+      ['bestSellings','پر فروش ترین محصولات'],
+      //['recommendeds','پیشنهاد سفارش']
+    ]
     return {
       className:'of-visible',
       column:sliders.map(([key,name])=>{

@@ -885,7 +885,7 @@ class JoziateSefaresheBazargah extends Component{
     }
     callDeliverer_layout(){
         if(!this.getVisibility('call')){return false}
-        let {sendStatus,deliverers,ecoDeliverer} = this.state;
+        let {sendStatus,deliverers = [],ecoDeliverer} = this.state;
         let deliverer;
         if(sendStatus.delivererType === 'eco'){
             if(!ecoDeliverer){return false}
@@ -894,6 +894,8 @@ class JoziateSefaresheBazargah extends Component{
         else{
             deliverer = deliverers.find((o)=>o.id === sendStatus.delivererId)
         }
+        if(!deliverer){return false}
+        debugger
         return {
             className:'bg-fff p-h-12',
             column:[

@@ -189,13 +189,14 @@ class LoginForm extends Component {
     }
     getInputs() {
         let { fields, mode, model, userId } = this.state;
+        let {model:InitialModel} = this.props;
         let {otpLength} = this.props;
         if (mode === 'Register') {
             return [...fields.map((o) => { return { input:{...o,label:undefined},label:o.label, field: 'value.register.' + o.field, validations: o.required ? [['required']] : undefined } })]
         }
         let inputs = [
             {
-                show:mode === 'UserName',field: 'value.UserName',label: 'نام کاربری', 
+                show:mode === 'UserName',field: 'value.UserName',label: 'نام کاربری', disabled:!!InitialModel.UsertName,
                 input:{
                     type: 'text',placeholder: 'نام کاربری',before: <Icon path={mdiAccount} size={0.8} />,
                     style:{direction:'ltr'}
@@ -203,7 +204,7 @@ class LoginForm extends Component {
                 validations: [['function', () => errorHandler('UserName', model.UserName)]]
             },
             {
-                show:mode === 'OTPPhoneNumber' || mode === 'PhoneNumber',field: `value.${mode}`,label: 'شماره همراه',
+                show:mode === 'OTPPhoneNumber' || mode === 'PhoneNumber',field: `value.${mode}`,label: 'شماره همراه',disabled:!!InitialModel.OTPPhoneNumber || !! InitialModel.PhoneNumber,
                 input:{
                     type: 'text',justNumber: true,before: <Icon path={mdiCellphone} size={0.8} />, 
                     placeholder: '09...',maxLength:11,style:{direction:'ltr'}
@@ -211,7 +212,7 @@ class LoginForm extends Component {
                 validations: [['function', () => errorHandler('PhoneNumber', model[mode])]]
             },
             {
-                show:mode === 'Email',field: 'value.Email',label: 'ایمیل', 
+                show:mode === 'Email',field: 'value.Email',label: 'ایمیل', disabled:!!InitialModel.Email, 
                 input:{type: 'text',before: <Icon path={mdiAccount} size={0.8} />,style:{direction:'ltr'}}, 
                 validations: [['function', () => errorHandler('Email', model.Email)]],
             },

@@ -190,30 +190,31 @@ class LoginForm extends Component {
     getInputs() {
         let { fields, mode, model, userId } = this.state;
         let {model:InitialModel} = this.props;
+        debugger;
         let {otpLength} = this.props;
         if (mode === 'Register') {
             return [...fields.map((o) => { return { input:{...o,label:undefined},label:o.label, field: 'value.register.' + o.field, validations: o.required ? [['required']] : undefined } })]
         }
         let inputs = [
             {
-                show:mode === 'UserName',field: 'value.UserName',label: 'نام کاربری', disabled:!!InitialModel.UsertName,
+                show:mode === 'UserName',field: 'value.UserName',label: 'نام کاربری',
                 input:{
-                    type: 'text',placeholder: 'نام کاربری',before: <Icon path={mdiAccount} size={0.8} />,
+                    type: 'text', disabled:!!InitialModel.UserName,placeholder: 'نام کاربری',before: <Icon path={mdiAccount} size={0.8} />,
                     style:{direction:'ltr'}
                 },
                 validations: [['function', () => errorHandler('UserName', model.UserName)]]
             },
             {
-                show:mode === 'OTPPhoneNumber' || mode === 'PhoneNumber',field: `value.${mode}`,label: 'شماره همراه',disabled:!!InitialModel.OTPPhoneNumber || !! InitialModel.PhoneNumber,
+                show:mode === 'OTPPhoneNumber' || mode === 'PhoneNumber',field: `value.${mode}`,label: 'شماره همراه',
                 input:{
-                    type: 'text',justNumber: true,before: <Icon path={mdiCellphone} size={0.8} />, 
+                    type: 'text',disabled:!!InitialModel.OTPPhoneNumber || !! InitialModel.PhoneNumber,justNumber: true,before: <Icon path={mdiCellphone} size={0.8} />, 
                     placeholder: '09...',maxLength:11,style:{direction:'ltr'}
                 },  
                 validations: [['function', () => errorHandler('PhoneNumber', model[mode])]]
             },
             {
-                show:mode === 'Email',field: 'value.Email',label: 'ایمیل', disabled:!!InitialModel.Email, 
-                input:{type: 'text',before: <Icon path={mdiAccount} size={0.8} />,style:{direction:'ltr'}}, 
+                show:mode === 'Email',field: 'value.Email',label: 'ایمیل', 
+                input:{type: 'text', disabled:!!InitialModel.Email,before: <Icon path={mdiAccount} size={0.8} />,style:{direction:'ltr'}}, 
                 validations: [['function', () => errorHandler('Email', model.Email)]],
             },
             {

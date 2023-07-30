@@ -190,7 +190,6 @@ class LoginForm extends Component {
     getInputs() {
         let { fields, mode, model, userId } = this.state;
         let {model:InitialModel} = this.props;
-        debugger;
         let {otpLength} = this.props;
         if (mode === 'Register') {
             return [...fields.map((o) => { return { input:{...o,label:undefined},label:o.label, field: 'value.register.' + o.field, validations: o.required ? [['required']] : undefined } })]

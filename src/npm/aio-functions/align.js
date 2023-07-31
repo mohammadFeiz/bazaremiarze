@@ -16,7 +16,7 @@ export default function Align(dom,target,config = {}){
         page = Array.isArray(page) && page.length === 0?undefined:page;
         let bodyWidth = window.innerWidth;
         let bodyHeight = window.innerHeight;
-        let pageLimit = page?$$.getLimit(page):{left:0,top:0,right:bodyWidth,bottom:bodyHeight};
+        let pageLimit = page?$$.getDomLimit(page):{left:0,top:0,right:bodyWidth,bottom:bodyHeight};
         if(pageLimit.left < 0){pageLimit.left = 0;}
         if(pageLimit.right > bodyWidth){pageLimit.right = bodyWidth;}
         if(pageLimit.top < 0){pageLimit.top = 0;}

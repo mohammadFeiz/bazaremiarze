@@ -601,7 +601,7 @@ export default class Main extends Component {
     if (backOffice.activeManager.garanti && userInfo.slpcode) { this.getGuaranteeItems(); }
     //if (backOffice.activeManager.campaigns) { await this.getCampaignsData(); }
     if (backOffice.activeManager.forooshe_vije) { this.get_forooshe_vije(); }
-    if (backOffice.activeManager.belex) { this.get_belex(); }
+    if (backOffice.activeManager.belex && false) { this.get_belex(); }
     if (backOffice.activeManager.bazargah) { this.getBazargahOrders(); }
     //let testedChance = await gardooneApis({type:"get_tested_chance"});
     let cart = await kharidApis({ api: 'getCart', loading: false, name: 'دریافت اطلاعات سبد خرید' });

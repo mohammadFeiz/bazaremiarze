@@ -1,54 +1,47 @@
 import React,{Component} from "react";
-import Form from './../../interfaces/aio-form-react/aio-form-react';
+import AIOInput from "../../npm/aio-input/aio-input";
 import appContext from "../../app-context";
 export default class PasswordPopup extends Component{
     static contextType = appContext;
-    state = {model:{password:'',passwordConfirm:''},changePassword:false}
+    state = {model:{password:'',passwordConfirm:''}}
     async updatePassword(){
-        let {updatePassword,rsa_actions} = this.context;
-        let {model,changePassword} = this.state;
-        let res = await updatePassword(model.password)
-        if(res === true){
-            model.password = '';
-            model.passwordConfirm = '';
-            changePassword = false
-            this.setState({model,changePassword});
-            rsa_actions.setConfirm({type:'success',text:'تغییر رمز عبور با موفقیت انجام شد'});
-            rsa_actions.removePopup('all');
-        }
-        else if(typeof res === 'string'){
-            rsa_actions.setConfirm({type:'error',text:'تغییر رمز عبور با خطا روبرو شد',subtext:res}); 
-        }
-        
+        let {apis} = this.context;
+        apis.request({
+            api:'backOffice.updatePassword',description:'تغییر رمز عبور',message:{success:true},
+            onSuccess:()=>{
+                debugger
+                let {rsa} = this.context;
+                let {model} = this.state;
+                model.password = '';
+                model.passwordConfirm = '';
+                this.setState({model});
+                rsa.removeModal('all');
+            }
+        })
     }
     render(){
-        let {model,changePassword} = this.state;
+        let {model} = this.state;
         return (
-            <Form
-                lang={'fa'}
+            <AIOInput
+                type='form' lang={'fa'}
                 style={{height:'100%'}}
-                model={model}
+                value={model}
                 onChange={(model)=>this.setState({model})}
-                onSubmit={changePassword?()=>this.updatePassword():undefined}
+                onSubmit={()=>this.updatePassword()}
                 submitText='ویرایش رمز عبور'
-                inputs={[
-                    {type:'html',html:()=><button className='button-2' onClick={()=>this.setState({changePassword:true})}>ویرایش رمز عبور</button>,show:!changePassword},
-                    {
-                        label:'رمز عبور',type:'password',field:'model.password',
-                        validations:[
-                            ['required'],
-                            ['length>',5],
-                        ],
-                        show:changePassword
-                    },
-                    {
-                        label:'تکرار رمز عبور',type:'password',field:'model.passwordConfirm',
-                        validations:[
-                            ['=','model.password',{message:'تکرار رمز عبور با رمز عبور مطابقت ندارد'}]
-                        ],
-                        show:changePassword
-                    }
-                ]}
+                inputs={{
+                    props:{gap:12},
+                    column:[
+                        {
+                            input:{type:'password'},label:'رمز عبور',field:'value.password',
+                            validations:[['required'],['length>',5]],
+                        },
+                        {
+                            input:{type:'password'},label:'تکرار رمز عبور',field:'value.passwordConfirm',
+                            validations:[['=',model.password,{message:'تکرار رمز عبور با رمز عبور مطابقت ندارد'}]],
+                        }
+                    ]
+                }}
             />
         )
     }

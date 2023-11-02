@@ -1,13 +1,15 @@
 import React,{Component} from 'react';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
-import ProductCard from './../product-card/product-card';
+import appContext from '../../../app-context';
 //props
 //1 - products [product,product,...]
 //2 - title(text) required
 //3 - showAll(function) optional
 //4 - onClick(function) optional 
 export default class CategorySlider extends Component{
+    static contextType = appContext;
     products_layout(){
+      let {Shop_Regular} = this.context;
       let {products} = this.props;
       let loading = false;
       if(!products){loading = true; products = [fakeProduct,fakeProduct,fakeProduct,fakeProduct,fakeProduct]}
@@ -16,12 +18,7 @@ export default class CategorySlider extends Component{
         row: products.map((product,i) =>{
             return {
               className:'of-visible',
-              html:(
-                <ProductCard 
-                    type='vertical' product={product} loading={loading} cartId='خرید عادی' renderIn='category slider'
-                    isFirst={i === 0} isLast={i === products.length - 1} 
-                />
-              )
+              html:(Shop_Regular.renderCard({type:'vertical',product,loading,renderIn:'category slider'}))
             }
         }),
       }

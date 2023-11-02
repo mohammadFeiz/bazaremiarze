@@ -1,7 +1,6 @@
 import React,{Component} from 'react';
 import appContext from './../../../app-context';
 import SearchBox from './../../../components/search-box/index';
-import ProductCard from './../product-card/product-card';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 export default class Search extends Component {
     static contextType = appContext;
@@ -16,14 +15,14 @@ export default class Search extends Component {
       };
     }
     async search(){
-      let {kharidApis} = this.context;
+      let {apis} = this.context;
       let {searchValue} = this.state;
       if(searchValue === ''){
         this.setState({result:[]})
         return 
       }
       this.setState({loading:true})
-      let res = await kharidApis({api:"getTaxonProducts", parameter:{Name:searchValue},loading:false});
+      let res = await apis.request({api:"kharid.getTaxonProducts", parameter:{Name:searchValue},loading:false});
       this.setState({loading:false})
       this.setState({ result: res });
     }
@@ -35,6 +34,7 @@ export default class Search extends Component {
       }, 2000);
     }
     result_layout(){
+      let {Shop_Regular} = this.context;
       let { result,loading,searchValue } = this.state;
       if(loading){
         return {html:'در حال جستجو...',size:60,align:'vh'}
@@ -47,7 +47,7 @@ export default class Search extends Component {
       return {
         flex: 1,className:'ofy-auto',
         column: result.map((o, i) => {
-          return {html:<ProductCard index={i} isFirst={i === 0} isLast={i === result.length - 1} cartId={'خرید عادی'} product={o} type='horizontal' renderIn='search'/>}
+          return {html:Shop_Regular.renderCard({index:i,product:o,type:'horizontal',renderIn:'search'})}
         }),
       }
     }

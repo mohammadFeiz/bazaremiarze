@@ -13,18 +13,18 @@ export default class PriceList extends Component{
         }
     }
     async componentDidMount(){
-        let {kharidApis} = this.context;
-        kharidApis({
-            api:'price_list',
-            name:'دریافت لیست قیمتها',
-            callback:(list)=>this.setState({list})
+        let {apis} = this.context;
+        apis.request({
+            api:'backOffice.price_list',
+            description:'دریافت لیست قیمتها',
+            onSuccess:(list)=>this.setState({list})
         })
     }
     download(url,fileName,id,date){
-        let {kharidApis} = this.context;
-        kharidApis({
-            api:'price_list_download',
-            name:'دانلود لیست قیمت',
+        let {apis} = this.context;
+        apis.request({
+            api:'backOffice.price_list_download',
+            description:'دانلود لیست قیمت',
             parameter:{url,fileName,id,date}
         })
     }

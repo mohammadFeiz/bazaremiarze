@@ -1,8 +1,7 @@
 import Axios from "axios";
-export default function apis({ getState,helper }) {
+export default function walletApis({baseUrl,helper}) {
   return {
-    async walletItems(gregorianDate) {
-      let { userInfo, baseUrl } = getState();
+    async walletItems(gregorianDate,{ userInfo }) {
       let res = await Axios.post(`${baseUrl}/BOne/UserTransaction`, {
         "requests": [
           {
@@ -29,7 +28,6 @@ export default function apis({ getState,helper }) {
       return {result};
     },
     async ettelaate_banki() {
-      let {baseUrl} = getState();
       const res = await Axios.get(`${baseUrl}/CreditCard`);
       if (!res.data.isSuccess) {return {result:res.data.message};}
       let result = res.data.data.map(x => {
@@ -38,7 +36,6 @@ export default function apis({ getState,helper }) {
       return {result}
     },
     async afzoozane_cart(parameter) {
-      let {baseUrl} = getState();
       let { name, number } = parameter;
 
       const res = await Axios.post(`${baseUrl}/CreditCard`, {
@@ -51,29 +48,25 @@ export default function apis({ getState,helper }) {
       return {result}
     },
     async hazfe_cart(parameter) {
-      let {baseUrl} = getState();
       let id = parameter;
 
       const res = await Axios.get(`${baseUrl}/CreditCard/DeleteCard?id=${id}`);
       let result = !res.data.isSuccess?res.data.message:true;
       return {result}
     },
-    async bardasht(parameter) {
-      let {baseUrl,getUserInfo} = getState();
+    async bardasht(parameter,{getUserInfo}) {
       let { amount, card } = parameter;
       let res = await Axios.post(`${baseUrl}/WithdrawRequest`, { "creditCardId": card, "amount": amount })
       getUserInfo()
       return {result:res.data.isSuccess}
     },
-    async variz({ amount }) {
-      let {baseUrl} = getState();
+    async variz({ amount },{ getUserInfo }) {
       let res = await Axios.post(`${baseUrl}/payment/request`, {
         "Price": amount,
         "CallbackUrl": baseUrl === 'https://retailerapp.bbeta.ir/api/v1' ? 'https://uiretailerapp.bbeta.ir/' : 'https://bazar.miarze.com/'
       });
 
       if (res.data.isSuccess) {
-        let { getUserInfo } = getState();
         getUserInfo()
 
         window.location.href = res.data.data;

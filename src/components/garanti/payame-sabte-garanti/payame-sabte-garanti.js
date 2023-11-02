@@ -46,7 +46,7 @@ export default class PayameSabteGaranti extends Component {
         return {html: (<button onClick={() => onClose()} className="button-2">بازگشت</button>)}
     }
     render() {
-        let {openPopup,rsa_actions} = this.context;
+        let {openPopup,rsa} = this.context;
         return (
             <RVD
                 layout={{
@@ -62,7 +62,7 @@ export default class PayameSabteGaranti extends Component {
                         this.subtext_layout(),
                         { size: 24 },
                         {html:'مشاهده در لیست درخواست های گارانتی',align:'v',className:'color006F9E fs-10 bold',attrs:{onClick:()=>{
-                            rsa_actions.removePopup();
+                            rsa.removeModal();
                             openPopup('joziate-darkhast-haye-garanti')
                         }}},
                         { flex: 1 },

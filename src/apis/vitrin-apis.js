@@ -2,20 +2,16 @@ import Axios from "axios";
 import nosrc from './../images/no-src.png';
 import vitrin_category_src from './../images/vitrin-category.png';
 import vitrin_brand_src from './../images/vitrin-brand.png';
-
-export default function apis({ getState,helper }) {
+export default function vitrinApis({baseUrl,helper}) {
     return {
         async v_getStarted(){
-            let {baseUrl} = getState();
             var res = await Axios.get(`${baseUrl}/vitrin/GetVitrinState`);
             if(res.data.isSuccess === true){
                 return {result:res.data.data}
             }
             return {result:res.data.message}
-            
         },
         async v_setStarted(state){
-            let {baseUrl} = getState();
             var res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrinMangement` , {IsVitrinStarted : state});
             if(res.data.isSuccess === true){
                 return {result:res.data.data}
@@ -23,44 +19,44 @@ export default function apis({ getState,helper }) {
             return {result:res.data.message}
         },
         async v_updateMyVitrin({id,state,product}){
-            let {baseUrl} = getState();
-            let res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrin` , {ProductId : id , state : state , B1Code : product.code});
+            let res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrin` , {ProductId : id , state : !state , B1Code : product.code});
             if(res.data.isSuccess === true){
                 return {result:true}
             }
-            return {result:false}
+            else {return res.data.message}
         },
-        async v_kolle_mahsoolat(){
-            let {kharidApis} = getState();
-            let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10056' }});
-            let pr = await kharidApis({api:'updateProductPrice',parameter:{ products, cartId: 'خرید عادی' }})
+        async v_kolle_mahsoolat({pageSize,pageNumber,searchValue},{apis}){
+            let products = await apis.request({api:'kharid.getSpreeProducts',loading:false,parameter:{ Taxons: '10673',pageSize,pageNumber,Name:searchValue, }});
             let allProducts;
-            allProducts = pr.map((o)=>{return {id : o.id , name : o.name , price:o.FinalPrice , src:o.srcs[0] , inStock:true , code : o.defaultVariant?o.defaultVariant.code:o.code}  });
-            return {mock:false,result:allProducts}
+            allProducts = products.map((o)=>{return {id : o.id , name : o.name , price:o.FinalPrice / 10 , src:o.srcs[0] , inStock:true , code : o.defaultVariant?o.defaultVariant.code:o.code}  });
+            return {result:allProducts}
         },
-        async v_mahsoolate_entekhab_shode(cardCode){               
-            let {baseUrl} = getState();
-            let res = await Axios.get(`${baseUrl}/vitrin/GetVitrinProductsByCardCode?cardCode=${cardCode}`);       
-            return {result:res.data.data}
+        async v_mahsoolate_entekhab_shode(cardCode){
+            let res = await Axios.get(`${baseUrl}/vitrin/GetVitrinProductsByCardCode?cardCode=${cardCode}`);
+            let ids = res.data.data;
+            return {result:ids}
         },
-        async v_category_options(){           
-            let {vitrinApis} = getState();
-            let categoryOptions = await vitrinApis({api:'v_miarze_categories'});
+        async v_getProductsByIds(ids,{apis}){
+            let products = await apis.request({api:'kharid.getSpreeProducts',parameter:{ ids }});
+            products = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, cartId: 'Regular' }});
+            products = products.map((o)=>{return {id : o.id , name : o.name , price:o.FinalPrice , src:o.srcs[0] , inStock:true , code : o.defaultVariant?o.defaultVariant.code:o.code}  });
+            return {result:products}
+        },
+        async v_category_options(parameter,{apis}){           
+            let categoryOptions = await apis.request({api:'vitrin.v_miarze_categories'});
             let names;
             names = categoryOptions.map((o)=>{return o.name});
             return {mock:false , result:names}
         },
-       async v_miarze_porforoosh(){
-            let {kharidApis} = getState();
-            let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10709' }});
-            let pr = await kharidApis({api:'updateProductPrice',parameter:{ products, cartId: 'خرید عادی' }})
+       async v_miarze_porforoosh(parameter,{apis}){
+            let products = await apis.request({api:'kharid.getSpreeProducts',parameter:{ Taxons: '10709' }});
+            let pr = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, cartId: 'Regular' }})
             let bestSellingProducts;
             bestSellingProducts = pr.map((o)=>{return {id : o.id ,brand:'رونیکس', name : o.name , price:o.FinalPrice , src:o.srcs[0]}  });
             return {mock:false,result:bestSellingProducts}
         },
-        async v_miarze_categories(){
-            let {kharidApis,baseUrl} = getState();
-            let res = await Axios.get(`${baseUrl}/Spree/GetAllCategoriesbyIds?ids=10709,10056`);         
+        async v_miarze_categories(parameter,{apis}){
+            let res = await Axios.get(`${baseUrl}/Spree/GetAllCategoriesbyIds?ids=10709,10673`);         
             let dataResult = res.data.data.data;
             let included = res.data.data.included;
             let categories = dataResult.map((o) => {
@@ -75,12 +71,24 @@ export default function apis({ getState,helper }) {
                 return { name: o.attributes.name, cartId: o.attributes.name, id: o.id, src: src };
             });
             for (let i = 0; i < categories.length; i++) {
-                categories[i].products = await kharidApis({api:'getCategoryItems',parameter:categories[i]});
+                categories[i].products = await apis.request({api:'kharid.getCategoryProducts',parameter:categories[i].id});
               }         
             return {mock:false , result:categories};
         },
         async v_miarze_brands(){
             return {mock:true}
+        },
+        async addSuggestion({suggestion_brand = '',suggestion_file = undefined,suggestion_name = ''},{userInfo}){
+            let formdata = new FormData();
+            formdata.append("Image", suggestion_file);
+            formdata.append("Brand", suggestion_brand);
+            formdata.append("Name", suggestion_name);
+            formdata.append("CardCode", userInfo.cardCode);
+            let response = await Axios.post(`${baseUrl}/ProductSuggestion/CreateProductSuggestion` , formdata);
+            let result;
+            if(response.data.isSuccess === true){result = true}
+            else {result = response.data.message}
+            return {result}
         }
     }
 }

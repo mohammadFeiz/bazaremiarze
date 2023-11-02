@@ -1,198 +1,180 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom/client';
-import Main from './pages/main';
+import Main from './pages/main/main';
 import Axios from 'axios';
 import Register from './components/register/register';
 import RVD from './interfaces/react-virtual-dom/react-virtual-dom';
-import { Icon } from '@mdi/react';
-import haraj1 from './images/haraj1.png';
-import haraj2 from './images/haraj2.png';
-import haraj3 from './images/haraj3.png';
-import haraj4 from './images/haraj4.png';
-
-import { mdiAlert,mdiClose } from '@mdi/js';
+import PageError from './components/page-error';
+import Landing from './components/landing';
 import logo from './images/logo5.png';
 import AIOLogin from './npm/aio-login/aio-login';
-import AIOStorage from './npm/aio-storage/aio-storage';
+import AIOService from './npm/aio-service/aio-service';
+import getApiFunctions from './apis/apis';
 import './App.css';
 import './theme.css';
-import EPSrc from './images/ep.jpg';
+import Splash from './components/spalsh/splash';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 
 class App extends Component {
   constructor(props) {
     super(props);
-    let url = window.location.href;
-    if (url.indexOf('localhost') !== -1) { this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1"; }
-    else if (url.indexOf('bazar') !== -1) { this.apiBaseUrl = "https://apimy.burux.com/api/v1"; }
-    else if (url.indexOf('bbeta') !== -1) { this.apiBaseUrl = "https://retailerapp.bbeta.ir/api/v1"; }
-    else (alert('unknown domain'))
-    this.apiBaseUrl = "https://apimy.burux.com/api/v1";
-    this.Storage = AIOStorage('bazarmiarzeuserinfo') 
-    //this.apiBaseUrl = "https://apimy.burux.com/api/v1";
-    this.state = { isAutenticated: false, registered: true, pageError: false, userInfo: {}, landing: false,landing:true }
+    let baseUrl = this.getBaseUrl();
+    this.state = {
+      apis: this.getApisInstance(baseUrl), Login: this.getLoginInstance(),registered:false,
+      baseUrl, isAutenticated: false, pageError: false, userInfo: {}, landing: false, splash: true, token: false
+    }
   }
-  async updatePassword(password) {
-    const setPasswordResult = await Axios.get(`${this.apiBaseUrl}/Users/SetPassword?password=${password}`);
-    if (setPasswordResult.data.isSuccess) { return true; }
-    else { return setPasswordResult.data.message; }
+  getBaseUrl() {
+    let url = window.location.href;
+    if (url.indexOf('bazar') !== -1) { return "https://apimy.burux.com/api/v1"; }
+    else if (url.indexOf('bbeta') !== -1) { return "https://retailerapp.bbeta.ir/api/v1"; }
+    else { return "https://retailerapp.bbeta.ir/api/v1"; }
+  }
+  getApisInstance(baseUrl) {
+    try{
+      return new AIOService({ getApiFunctions, baseUrl, id: 'bazaremiarzeapis' });
+    }
+    catch(err){
+      alert(err.message)
+    }
+  }
+  getLoginInstance() {
+    let userId;
+    try { userId = new URL(window.location.href).searchParams.get("pn").toString() }
+    catch { userId = undefined }
+    return new AIOLogin({
+      timer: 5, methods: ['OTPNumber', 'phoneNumber'], otpLength: 4, id: 'bazarmiarezelogin', userId,
+      onSubmit: this.onSubmit.bind(this), checkToken: this.checkToken.bind(this),
+      onAuth: async ({ token,userId }) => {
+        let { apis } = this.state;
+        let registered = await apis.request({api:'login.checkIsRegistered',parameter:userId});
+        apis.setToken(token);
+        this.setState({ token, isAutenticated: true,registered })
+      }
+    })
   }
   updateUserInfo(obj) {
-    let { userInfo } = this.state;
+    let { userInfo, Login } = this.state;
     let newUserInfo = { ...userInfo, ...obj };
     this.setState({ userInfo: newUserInfo });
-    this.Storage.save({name:'userInfo', value:newUserInfo});
+    Login.setUserInfo(newUserInfo)
   }
   async getUserInfo(userInfo = this.state.userInfo) {
-    const b1Info = await fetch(`https://b1api.burux.com/api/BRXIntLayer/GetCalcData/${userInfo.cardCode}`, {
-      mode: 'cors', headers: { 'Access-Control-Allow-Origin': '*' }
-    }).then((response) => {return response.json();}).then((data) => {return data;}).catch(function (error) {return null;});
-    let { customer = {} } = b1Info;
-    let ballance = customer.ballance;
-    let visitorMobile;
-    try { visitorMobile = b1Info.salePeople.mobile }
-    catch { visitorMobile = '' }
-    if (isNaN(ballance)) {
-      console.error(`b1Info.customer.ballance is ${ballance} but we set it on 0`)
-      ballance = 0;
-    }
-    return {
-      ...userInfo,
-      cardCode: userInfo.cardCode,
-      groupName: customer.groupName,
-      itemPrices: b1Info.itemPrices,
-      slpcode: customer.slpcode,
-      slpname: customer.slpname,
-      groupCode: customer.groupCode,
-      ballance: -ballance,
-      visitorMobile
-    }
+    return await this.state.apis.request({ api: 'login.getUserInfo', parameter: userInfo, description: 'دریافت اطلاعات کاربری' })
   }
-  async checkToken(token) { // if success return true else return string
-    let response;
-    Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    let result;
-    try { 
-      response = await Axios.get(`${this.apiBaseUrl}/Users/CheckExpireToken`); 
-      result = response.status === 200;
-    }
-    catch (err) {
-      try {
-        if (err.response.status === 401) { result = false }
-        else { this.setState({ pageError: { text: 'سرویس دهنده در دسترس نیست', subtext: ''} }) }
+  async checkToken(token) {
+    let { apis, Login } = this.state;
+    let res = await apis.request({
+      api: 'login.checkToken', parameter: token,
+      onCatch: () => 'خطای 10037.این کد خطا را به پشتیبانی اعلام کنید'
+    })
+    if (res === true) {
+      let userInfo = Login.getUserInfo();
+      if(typeof userInfo !== 'object' || !userInfo.cardCode || typeof userInfo.cardCode !== 'string'){
+        Login.removeToken();
+        return false;
       }
-      catch { result = 'خطا در دریافت اطلاعات' }
+      else {
+        let updatedUserInfo = await this.getUserInfo(userInfo);
+        this.setState({ userInfo: updatedUserInfo })
+        return true
+      }
+      
     }
-    if(result === true){
-      let userInfo = this.Storage.load({name:'userInfo'});
-      userInfo = await this.getUserInfo(userInfo);
-      this.setState({userInfo})
-    }
-    return result;
+    else if (res === false) { return false }
   }
   async onSubmit(model, mode) {
-    if (mode === 'OTPPhoneNumber') {
-      let sendSmsResult;
-      try { sendSmsResult = await Axios.get(`${this.apiBaseUrl}/Users/FirstStep?phoneNumber=${model.OTPPhoneNumber}`); }
-      catch { this.setState({ pageError: { text: 'سرویس دهنده در دسترس نمی باشد', subtext: 'Users/FirstStep' } }); return; }
-      if (sendSmsResult.data.isSuccess) {
-        let data = sendSmsResult.data.data;
-        this.userId = data.id;
-        this.setState({ registered: !!data.alreadyRegistered })
-        return { mode: 'OTPCode' }
+    let { apis, Login } = this.state;
+    let onCatch = (error) => {
+      try { return error.response.data.Message }
+      catch {
+        this.setState({ pageError: { text: 'سرویس دهنده در دسترس نمی باشد', subtext: 'Users/FirstStep' } })
+        return false;
       }
-      else { return { mode: 'Error', error: sendSmsResult.data.message } }
-    }
-    else if (mode === 'OTPCode') {
-      if (this.userId === undefined) { return { mode: 'Error', error: 'خطا در دریافت یوزر آی دی' } }
-      const smsValidationResult = await Axios.get(`${this.apiBaseUrl}/Users/SecondStep?userId=${this.userId}&code=${model.OTPCode}`);
-      if (smsValidationResult.data.isSuccess) {
-        let res = smsValidationResult.data.data;
-        let token = res.accessToken.access_token;
-        let userInfo = await this.getUserInfo(res)
-        this.setState({ userInfo });
-        return { mode: 'Authenticated', token }
+    };
+    if (mode === 'OTPNumber') {
+      let res = await apis.request({ api: 'login.OTPNumber', parameter: model.login.userId, onCatch })
+      if (res) {
+        let { id: userId } = res;
+        this.setState({ userId })
+        return { nextMode: 'OTPCode' }
       }
-      else { return { mode: 'Error', error: smsValidationResult.data.message } }
     }
-    else if (mode === 'PhoneNumber') {
-      const loginResult = await Axios.get(`${this.apiBaseUrl}/Users/Login?phoneNumber=${model.PhoneNumber}&password=${model.password}`);
-      if (loginResult.data.isSuccess) {
-        const res = loginResult.data.data;
+    else if (mode === 'OTPCode' || mode === 'phoneNumber') {
+      let userId = this.state.userId;
+      let phoneNumber = model.login.userId;
+      let password = model.login.password;
+      let res = await apis.request({ api: 'login.login', onCatch, parameter: { userId, phoneNumber, password, type: mode } })
+      if (res) {
+        let { accessToken } = res;
+        let token = accessToken.access_token;
         let userInfo = await this.getUserInfo(res);
-        const token = userInfo.accessToken.access_token;
-        this.setState({ userInfo, registered: res.alreadyRegistered });
-        return { mode: 'Authenticated', token }
+        Login.setUserInfo(userInfo);
+        this.setState({ userInfo });
+        return { nextMode: 'auth', token }
       }
-      else { return { mode: 'Error', error: loginResult.data.message } }
     }
   }
-  render() {
-    let { isAutenticated, userInfo, token, registered, pageError,landing,logout } = this.state;
-    if(landing){
-      return <LandingTakhfif onClose={()=>this.setState({landing:false})}/>
+  async componentDidMount() {
+    let { baseUrl, apis } = this.state;
+    try {
+      const response = await Axios.get(`${baseUrl}/BackOffice/GetLastCampaignManagement?type=backoffice`);
+      setTimeout(() => this.setState({ splash: false }), 3000)
+      let backOffice;
+      if (typeof response.data.data[0] === 'string') {
+        backOffice = JSON.parse(response.data.data[0]);
+      }
+      else {
+        let str = window.prompt('تنظیمات اولیه اپ انجام نشده است. اگر ادمین سیستم هستید فایل تنظیمات اولیه را وارد کنید و گر نه به ادمین سیستم اطلاع دهید')
+        if (typeof str === 'string') {
+          backOffice = JSON.parse(str)
+        }
+        else {
+          window.location.reload()
+        }
+      }
+      apis.handleCacheVersions(backOffice.versions || {});
+      let landing = false;
+      if (backOffice.landing && backOffice.active_landing) { landing = backOffice.landing }
+      this.setState({ backOffice, landing });
+      let loginType = new URL(window.location.href).searchParams.get("login");
+      if (loginType) {
+        Axios.get(`${baseUrl}/login?type=${loginType}`);
+      }
     }
-    if (pageError) {
-      return (
-        <>
-          <RVD
-            layout={{
-              className: 'page-error fullscreen',
-              row: [
-                { flex: 1 },
-                {
-                  className: 'page-error-image',
-                  column: [
-                    { flex: 3 },
-                    { html: <img src={EPSrc} width='100%' /> },
-                    { size: 24 },
-                    { html: <Icon path={mdiAlert} size={4} />, align: 'h' },
-                    { html: pageError.text, align: 'h' },
-                    { html: pageError.subtext, align: 'h' },
-                    { size: 36 },
-                    { html: 'بارگزاری مجدد', className: 'bm-reload', attrs: { onClick: () => window.location.reload() } },
-                    { flex: 2 }
-                  ]
-                },
-                { flex: 1 }
-              ]
-            }}
-          />
-        </>
-      )
+    catch (err) {
+      this.setState({ splash: false, pageError: { text: 'دریافت تنظیمات اولیه با خطا مواجه شد', subtext: err.message } })
     }
+
+  }
+  renderContent(){
+    let { isAutenticated, userInfo, registered, pageError, landing, backOffice, splash, apis, Login, baseUrl } = this.state;
+    if (splash) { return <Splash /> }
+    if (landing) { return <Landing onClose={() => this.setState({ landing: false })} items={landing} /> }
+    if (pageError) { return <PageError {...pageError} /> }
     if (isAutenticated) {
       if (!registered) {
         return (
           <Register
-            baseUrl={this.apiBaseUrl} mode='register'
+            baseUrl={baseUrl} mode='register' logout={Login.logout}
             model={{ phoneNumber: userInfo.phoneNumber }}
-            onClose={() => this.setState({ isAutenticated: false })}
-            onSubmit={(userInfo) => this.setState({ userInfo, registered: true })}
+            onClose={() => Login.logout()}
+            onSubmit={(userInfo) => {this.setState({ userInfo, registered: true });  window.location.reload()}}
           />
         )
       }
-      try {
-        this.Storage.save({name:'userInfo',value:userInfo})
-      }
-      catch (err) {
-        alert(`${err.message}. محدوده حافظه کش کلاینت به حد غیر مجاز رسیده است. لطفا این موضوع را با مرکز پشتیبانی در میان بگذارید`)
-      }
       return (
-        <>
-          <Main
-            logout={logout} token={token} userInfo={userInfo}
-            updateUserInfo={this.updateUserInfo.bind(this)}
-            getUserInfo={this.getUserInfo.bind(this)}
-            updatePassword={this.updatePassword.bind(this)}
-            baseUrl={this.apiBaseUrl}
-          />
-        </>
-
+        <Main
+          apis={apis} Login={Login}
+          userInfo={userInfo}
+          backOffice={backOffice}
+          updateUserInfo={this.updateUserInfo.bind(this)}
+          getUserInfo={this.getUserInfo.bind(this)}
+          baseUrl={baseUrl}
+        />
       )
     }
-    let urlPhoneNumber = new URL(window.location.href).searchParams.get("pn");
     return (
       <RVD
         layout={{
@@ -201,159 +183,30 @@ class App extends Component {
             { flex: 1 },
             { html: <img src={logo} width={160} height={160} alt='' />, align: 'vh' },
             { flex: 1 },
+            { align: 'vh', className: 'of-visible', html: Login.render()},
+            { size: 24 },
             {
-              align:'vh',className:'of-visible',
-              html: (
-                <AIOLogin
-                  style={{maxWidth:360,boxShadow: 'rgba(0, 0, 0, 0.2) 0px 6px 15px 5px'}}
-                  time={8} methods={['OTPPhoneNumber', 'PhoneNumber']} otpLength={4} id='bazarmiarzelogin'
-                  model={{ OTPPhoneNumber: urlPhoneNumber, PhoneNumber: urlPhoneNumber }}
-                  onSubmit={this.onSubmit.bind(this)}
-                  checkToken={this.checkToken.bind(this)}
-                  COMPONENT={({ logout, token }) => this.setState({ isAutenticated: true, logout, token })}
-                />
-              )
-            },
-            {size:24},
-            { flex: 3, style: { minHeight: 200 },align:'vh',column:[
-              { align: 'vh', html: (<a style={{ color: '#fff', height: 24, margin: 0 }} href="tel:02175116" className='fs-14'>تماس با پشتیبانی</a>) },
-              { align: 'vh', html: (<a style={{ color: '#fff', height: 30, margin: 0 }} href="tel:02175116">021-75116</a>) },
-            ] }
-          ]
-        }}
-      />
-    )
-  }
-}
-
-class LandingTakhfif extends Component{
-  close_layout(){
-    let {onClose} = this.props;
-    return {
-      size:48,
-      row:[
-        {flex:1},
-        {
-          align:'vh',
-          className:'p-h-12',
-          onClick:()=>onClose(),
-          html:<Icon path={mdiClose} size={1}/>
-        }
-      ]
-    }
-  }
-  header_layout(src){
-    return {
-      column:[
-        {
-          html:(
-            <img src={src} width='100%' alt=''/>
-          )
-        }
-      ]
-    }
-  }
-  billboard_layout(src){
-    return {
-      className:'p-12',
-      html:(
-        <img src={src} alt='' width='100%'/>
-      )
-    }
-  }
-  description_layout(text){
-    return {
-      style:{textAlign:'right'},
-      className:'m-b-12 p-h-12 fs-12',
-      html:text
-    }
-  }
-  label_layout(text){
-    return {
-      className:'theme-dark-font-color fs-16 bold p-h-12',
-      html:text
-    }
-  }
-  link_be_kharid(){
-    let {onClose} = this.props;
-    return {
-      className:'m-b-12 p-h-12',
-      html:(
-        <button 
-          onClick={()=>{
-            onClose()
-          }}
-          className='button-2'
-        >همین الان خرید کنید</button>
-      )
-    }
-  }
-  link_be_belex(){
-    let {onClose} = this.props;
-    return {
-      className:'m-b-12 p-h-12',
-      html:(
-        <button 
-          onClick={()=>{
-            onClose()
-          }}
-          className='button-2'
-        >خرید لامپ 10 وات</button>
-      )
-    }
-  }
-  render(){
-    return (
-      <RVD
-        layout={{
-          style:{background:'#fff',height:'100%'},
-          className:'fullscreen',
-          column:[
-            this.close_layout(),
-            {
-              className:'ofy-auto',flex:1,
-              column:[
-                this.header_layout(haraj1),
-                this.billboard_layout(haraj2),
-                this.billboard_layout(haraj3),
-                this.description_layout(
-                  `
-                  این روزها که شاهد گرونی های روزافزون و کاهش قدرت خرید هستیم، شرکت بروکس با در نظر گرفتن شرایط اقتصادی فعلی جامعه و نرخ تورم سعی در کمک به کسب و کار الکتریکی‌ها داره. برای همین طی مذاکرات و تصمیم گیری‌ها، در نظر گرفتیم تمامی محصولات روشنایی و الکتریکی خود را با 25 الی 30 درصد زیر قیمت به فروش برسونیم!
-                  `
-                ),
-                this.link_be_kharid(),
-                this.billboard_layout(haraj4),
-                this.label_layout('لامپ 10 وات بروکس فقط 20 هزارتومن!'),
-                this.description_layout(
-                  `
-                  هدیه ما به شما در بازار می ارزه خرید لامپ ۱۰ وات با قیمت استثنایی!
-شما میتوانید حداکثر 2 کارتن لامپ 10 وات را با قیمت 20 هزار تومان خریداری کنید! یعنی ۴ میلیون ریال هدیه ما به شما!
-این فرصت بی نظیر را از دست ندهید!
-                  `
-                ),
-                this.link_be_belex(),
-                
+              flex: 3, style: { minHeight: 200 }, align: 'vh', column: [
+                { align: 'vh', html: (<a style={{ color: '#fff', height: 24, margin: 0 }} href="tel:02175116" className='fs-14'>تماس با پشتیبانی</a>) },
+                { align: 'vh', html: (<a style={{ color: '#fff', height: 30, margin: 0 }} href="tel:02175116">021-75116</a>) },
               ]
-            }  
+            }
           ]
         }}
-      
       />
     )
   }
+  render() {
+    try{
+      return this.renderContent();
+    }
+    catch(err){
+      alert(err.message || err.Message);
+      return null
+    }
+  }
 }
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <App />
-);
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://cra.link/PWA
+root.render(<App />);
 serviceWorkerRegistration.unregister();
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();

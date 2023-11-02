@@ -3,104 +3,86 @@ import ACS from './../../npm/aio-content-slider/aio-content-slider';
 import Sookhte from './../../images/banner1111.jpg';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import appContext from '../../app-context';
-import landingsrc from './../../images/haraj1.png';
 export default class Billboard extends Component{
     static contextType = appContext;
-    async onClick(campaign){
-        let {kharidApis,openPopup,belex} = this.context;
-        if(campaign.cartId === 'forooshe_vije' || campaign.cartId === 'belex'){
-            openPopup('category',{category:campaign})
-        }
-        else if(campaign.cartId === 'نورواره 3'){
-            openPopup('category',{category:{...campaign}})
-        }
-        else if(campaign.cartId === 'بلکس'){
-            openPopup('category',{category:belex})
-        }
-        
-        else{
-            kharidApis({
-                api:'getCampaignProducts',parameter:campaign,
-                //cacheName:'campaign' + campaign.cartId,cache:24 * 60 * 60 * 1000,
-                name:'دریافت محصولات کمپین',
-                callback:(products)=>openPopup('category',{category:{...campaign,products}})
-            });
-        }
+    getCampaignIcon(campaign){
+        //در صورت تعریف یک کمپین باید آیکونش رو اینجا ریترن کنیم
     }
-    billboard_layout(){
-        let {campaigns,openPopup,backOffice,forooshe_vije,belex,userInfo,nv3,rsa_actions} = this.context,{renderIn} = this.props;
-        let items = []
+    getItems(){
+        let {openPopup,backOffice,userInfo,Shop_Bundle,spreeCampaignIds = [],getShopById,homeBillboards,getLinkToFunction} = this.context;
+        let {renderIn} = this.props;
+        let items = [];
         if(renderIn === 'buy'){
-            items = items.concat(campaigns.map((o)=><img src={o.src} width='100%' alt='' onClick={async ()=>this.onClick(o)}/>))
-            
+            for(let i = 0; i < spreeCampaignIds.length; i++){
+                let spreeCampaignId = spreeCampaignIds[i]
+                let Shop = getShopById(spreeCampaignId);
+                let {billboard,icon,name,id} = Shop;
+                items.push({name,billboard,icon,onClick:()=>Shop.openCategory()})
+            }
         }
-        items.push(<img src={landingsrc} alt="" width='100%' className='sookhte' onClick={()=>{
-            rsa_actions.setNavId('kharid')
-        }}/>)
-        if(renderIn === 'home' && !!backOffice.activeManager.garanti && userInfo.slpcode){
-            // items.push(<img src={HomeSlide2} alt="" width='100%'/>)
-            items.push(<img src={Sookhte} alt="" width='100%' className='sookhte' onClick={()=>{
-                openPopup('sabte-garanti-jadid')
-            }}/>)
+        else if(renderIn === 'home'){
+            for(let i = 0; i < homeBillboards.length; i++){
+                let {linkTo,url} = homeBillboards[i];
+                let onClick = linkTo?getLinkToFunction(linkTo):undefined;
+                items.push({billboard:url,onClick})    
+            }
         }
         
-        if(forooshe_vije && renderIn === 'buy'){
-            items.push(<img src={forooshe_vije.src} alt="" width='100%' className='forooshe-vije-billboard' onClick={()=>{
-                openPopup('category',{category:forooshe_vije})
-            }}/>)
+        if(renderIn === 'home' && !!backOffice.activeManager.garanti && userInfo.slpcode){
+            items.push({
+               billboard:Sookhte,
+               onClick:()=>openPopup('sabteGarantiJadid')
+            })
         }
-        if(belex && renderIn === 'buy'){
-            items.push(<img src={belex.src} alt="" width='100%' onClick={()=>{
-                debugger
-                openPopup('category',{category:belex})
-            }}/>)
+        if(Shop_Bundle.active && renderIn === 'buy'){
+            items.push({
+                name:Shop_Bundle.name,icon:Shop_Bundle.icon,billboard:Shop_Bundle.billboard,
+                onClick:()=>Shop_Bundle.openCategory()
+            })
         }
-        if(nv3 && renderIn === 'buy'){
-            items.push(<img src={nv3.src} alt="" width='100%' onClick={()=>{
-                openPopup('category',{category:{...nv3}})
-            }}/>)
-        }
-        return {html:<ACS items={items}/>}
+        return items
     }
-    campaigns_layout(){
-        let {campaigns,forooshe_vije,belex,nv3,eydane} = this.context,{renderIn} = this.props;
+    billboards_layout(items){
+        return {html:<ACS items={items.map(({billboard,onClick},i)=>{
+            return (<img src={billboard} alt="" width='100%' onClick={onClick}/>)
+        })}/>}
+    }
+    icons_layout(items){
+        let {renderIn} = this.props;
         if(renderIn !== 'buy'){return false}
-        let list = [...campaigns];
-        if(forooshe_vije){
-            list.push(forooshe_vije)
-        }
-        if(belex){
-            list.push(belex)
-        }
-        if(nv3){
-            list.push(nv3)
-        }
-        if(eydane){
-            list.push(eydane)
-        }
+        items = items.filter((o)=>!!o.icon);
+        if(!items.length){return false}
         return {
             column:[
-                {show:!!list.length,html:'جشنواره ها',className:'fs-14 bold theme-dark-font-color p-h-24',size:36,align:'v'},
-                {row:list.map((campaign)=>this.campaign_layout(campaign))},
+                {html:'جشنواره ها',className:'fs-14 bold theme-dark-font-color p-h-24',size:36,align:'v'},
+                {
+                    row:items.map(({name,icon,onClick})=>{
+                        return {
+                            flex:1,align:'h',onClick,
+                            column:[
+                                {html:<img src={icon} width={54} height={54} alt='' style={{borderRadius:16}}/>},
+                                {size:3},
+                                {html:name,className:'fs-12 bold theme-dark-font-color'}
+                            ]
+                        }
+                    })
+                },
                 {size:12}
             ]
         }
     }
-    campaign_layout(campaign){
-        let {name,icon} = campaign;
-        return {
-            flex:1,align:'h',
-            attrs:{onClick:async ()=>this.onClick(campaign)},
-            column:[
-                {html:<img src={icon} width={54} height={54} alt='' style={{borderRadius:16}}/>},
-                {size:3},
-                {html:name,className:'fs-12 bold theme-dark-font-color'}
-            ]
-        }
-    }
     render(){
+        let items = this.getItems()
         return (
-            <RVD layout={{style:{width:'100%',maxWidth:600},column:[this.billboard_layout(),this.campaigns_layout()]}}/>
+            <RVD 
+                layout={{
+                    style:{width:'100%',maxWidth:600},
+                    column:[
+                        this.billboards_layout(items),
+                        this.icons_layout(items)
+                    ]
+                }}
+            />
         )
     }
 }

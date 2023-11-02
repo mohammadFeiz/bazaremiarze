@@ -4,7 +4,7 @@ import ChanceMachin from './../../components/chance-machin/index';
 import { Icon } from '@mdi/react';
 import appContext from '../../app-context';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
-import AIOButton from './../../interfaces/aio-button/aio-button';
+import AIOInput from '../../npm/aio-input/aio-input';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
 import './index.css';
 export default class Awards extends Component {
@@ -28,12 +28,12 @@ export default class Awards extends Component {
 
   }
   async getUserAwards(){
-    let {gardooneApis} = this.context;
-    return await gardooneApis({api:'get_user_awards'});
+    let {apis} = this.context;
+    return await apis.request({api:'gardoone.get_user_awards'});
   }
   async componentDidMount(){
-    let {gardooneApis} = this.context;
-    let awards = await gardooneApis({api:'get_all_awards'});
+    let {apis} = this.context;
+    let awards = await apis.request({api:'gardoone.get_all_awards'});
     let userAwards = await this.getUserAwards();
     this.mounted = true;
     this.setState({userAwards,awards:awards.map((o)=>{
@@ -41,10 +41,10 @@ export default class Awards extends Component {
     })})
   }
   async getChanceResult(result,index){
-    let {gardooneApis} = this.context;
+    let {apis} = this.context;
     this.setState({chanceResult:result?'winner':'looser',chanceIndex:index});
     let {awards} = this.state;
-    let res = await gardooneApis({api:'save_catched_chance',parameter:{award:awards[index],result}});
+    let res = await apis.request({api:'gardoone.save_catched_chance',parameter:{award:awards[index],result}});
     if(res){
       let userAwards = await this.getUserAwards();
       this.setState({userAwards})
@@ -251,10 +251,10 @@ class UserAwards extends Component{
               row:[
                 {html:'مرتب سازی بر اساس : '},
                 {flex:1,html:(
-                  <AIOButton
+                  <AIOInput
                     style={{fontFamily:'inherit',width:'100%',border:'1px solid #ddd',height:24}} 
                     rtl={true}
-                    popupWidth='fit'
+                    popover={{fitHorizontal:true}}
                     type='select'
                     value='2'
                     options={[

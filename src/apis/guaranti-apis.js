@@ -1,8 +1,7 @@
 import Axios from "axios";
-export default function apis({getState,helper}) {
+export default function guarantiApis({baseUrl,helper}) {
   return {
-    async garantiItems() {
-      let {baseUrl,userInfo} = getState();
+    async garantiItems(undefined,{userInfo}) {
       let res = await Axios.get(`${baseUrl}/Guarantee/Requests?slpCode=${userInfo.slpcode}&page=${1}&perPage=${20}`);
       if(res.status === 401){return {result:false}}
       if (res.data === null || !res.data || !res.data.isSuccess || !res.data.data) {return {result:[]}}
@@ -28,7 +27,6 @@ export default function apis({getState,helper}) {
       return {result}
     },
     async kalahaye_ghabele_garanti() {
-      let {baseUrl} = getState();
       let res = await Axios.get(`${baseUrl}/Guarantee/GetItems`);
       if (!res || !res.data || !res.data.isSuccess || !res.data.data) {
         console.error('Guarantee/GetItems data error')
@@ -49,8 +47,7 @@ export default function apis({getState,helper}) {
       });
       return {result}
     },
-    async sabte_kalahaye_garanti(items) {
-      let {baseUrl,userInfo} = getState();
+    async sabte_kalahaye_garanti(items,{userInfo}) {
       let res = await Axios.post(`${baseUrl}/Guarantee/Equivalent`, { SlpCode: userInfo.slpcode,
          Detail: items.map(x=>{
           return {
@@ -75,7 +72,6 @@ export default function apis({getState,helper}) {
       return {result:!!res.data && !!res.data.isSuccess};
     },
     async daryafte_tasavire_kalahaye_garanti(itemCodes) {
-      let {baseUrl} = getState();
       let res = await Axios.get(`${baseUrl}/Guarantee/GetGuaranteesImages?ids=${itemCodes.toString()}`); // itemCodes => itemCode of products, seprtaed by comma
       let result;
       try{

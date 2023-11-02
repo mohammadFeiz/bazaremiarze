@@ -7,7 +7,7 @@ import appContext from '../../app-context';
 import SplitNumber from './../../npm/aio-functions/split-number';
 import {Icon} from '@mdi/react';
 import {mdiAccountCircle} from '@mdi/js';
-import AIOButton from '../../interfaces/aio-button/aio-button';
+import AIOInput from '../../npm/aio-input/aio-input';
 import Popup from '../../components/popup/popup';
 import Register from '../../components/register/register';
 import Card from '../../components/card/card';
@@ -34,14 +34,14 @@ export default class Profile extends Component{
                     icon:getSvg(14,{className:'theme-medium-font-color'}),
                     show:()=>!!this.context.backOffice.activeManager.garanti && !!this.context.userInfo.slpcode,
                     onClick:async ()=>{
-                        let {SetState,guarantiApis,openPopup} = this.context;
-                        let guaranteeItems = await guarantiApis({api:'garantiItems',name:'دریافت لیست کالاهای گارانتی کاربر'});
+                        let {SetState,apis,openPopup} = this.context;
+                        let guaranteeItems = await apis.request({api:'guaranti.garantiItems',description:'دریافت لیست کالاهای گارانتی کاربر'});
                         SetState({guaranteeItems});
                         openPopup('joziate-darkhast-haye-garanti'); 
                     }
                 },
                 //{after:getSvg('chevronLeft'),text:'قوانین و مقررات',icon:getSvg(16),onClick:()=>{}},
-                {after:getSvg('chevronLeft'),text:'خروج از حساب کاربری',icon:getSvg(17),onClick:()=>this.context.logout(),style:{color:'#A4262C'}},
+                {after:getSvg('chevronLeft'),text:'خروج از حساب کاربری',icon:getSvg(17),onClick:()=>this.context.Login.logout(),style:{color:'#A4262C'}},
             ]
         }
     }
@@ -50,7 +50,7 @@ export default class Profile extends Component{
         return {className:'m-h-12 of-visible',html:<Card type='card4' items={parts}/>}
     }
     getContent(){
-        let {guaranteeItems = [],userInfo,openPopup,backOffice,kharidApis,SetState} = this.context;
+        let {guaranteeItems = [],userInfo,openPopup,backOffice,apis,SetState} = this.context;
         let slpname,slpcode;
         try{
             slpname = userInfo.slpname || 'تعیین نشده';
@@ -72,7 +72,7 @@ export default class Profile extends Component{
                     egg:{
                         count:6,
                         callback:()=>{
-                            kharidApis({api:'setCart',parameter:{},loading:false,name:'ثبت سبد خرید'});
+                            apis.request({api:'kharid.setCart',parameter:{},loading:false,description:'ثبت سبد خرید'});
                             SetState({cart:{}})
                         }
                     },
@@ -137,10 +137,10 @@ export default class Profile extends Component{
                                     type='card3'
                                     rows={[[['کالا های گارانتی شده',guaranteeItems.length + ' عدد']]]}
                                     footer={
-                                        <AIOButton 
+                                        <AIOInput 
                                             type='button' caret={false} position='bottom' text='درخواست گارانتی جدید'
                                             style={{background:'none',color:'inherit',fontWeight:'inherit',fontSize:'inherit'}}
-                                            onClick={()=>openPopup('sabte-garanti-jadid')}
+                                            onClick={()=>openPopup('sabteGarantiJadid')}
                                         />        
                                     }
                                 />
@@ -154,8 +154,8 @@ export default class Profile extends Component{
                     size:120,html:footerSvg(),align:'vh',
                     egg:{
                         callback:async ()=>{
-                            let {kharidApis} = this.context;
-                            let res = await kharidApis({api:'changeVersion',name:'تغییر ورژن اپلیکیشن'})
+                            let {apis} = this.context;
+                            let res = await apis.request({api:'kharid.changeVersion',description:'تغییر ورژن اپلیکیشن'})
                             if(res){
                                 alert('تغییر ورژن با موفقیت انجام شد')
                             }
@@ -165,7 +165,7 @@ export default class Profile extends Component{
                 },
                 {
                     html:(
-                        <AIOButton position='bottom' className='theme-medium-font-color fs-14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
+                        <AIOInput position='bottom' className='theme-medium-font-color fs-14 bold' style={{width:90}} type='button' text='نسخه 3.0.1' popOver={()=>{
                             return (
                                 <div style={{background:'#fff'}}>
                                     <div style={{height:60,display:'flex',alignItems:'center'}} className='theme-dark-font-color fs-16 bold p-h-24'>موارد اضافه شده به این نسخه</div>

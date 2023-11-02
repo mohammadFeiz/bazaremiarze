@@ -3,7 +3,7 @@ import GarantiCard from '../garanti-card/garanti-card'
 import RVD from '../../../interfaces/react-virtual-dom/react-virtual-dom'
 import appContext from '../../../app-context'
 import SearchBox from '../../search-box';
-import AIOButton from '../../../interfaces/aio-button/aio-button'
+import AIOInput from '../../../npm/aio-input/aio-input';
 import {Icon} from '@mdi/react';
 import noItemSrc from './../../../images/not-found.png';
 import {mdiSort,mdiArrowDown,mdiArrowUp} from '@mdi/js'
@@ -112,7 +112,7 @@ export default class JoziateDarkhastHayeGaranti extends Component{
                                 {
                                     align:'vh',className:'of-visible',
                                     html:(
-                                        <AIOButton
+                                        <AIOInput
                                             text={sortValue === false?<Icon path={mdiSort} size={0.8}/>:undefined}
                                             before={sortValue === false?undefined:<Icon path={mdiSort} size={0.8}/>}
                                             type={'select'} caret={false}

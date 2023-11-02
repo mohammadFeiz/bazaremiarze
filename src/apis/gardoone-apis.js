@@ -1,7 +1,6 @@
 import Axios from "axios";
 import AIODate from './../npm/aio-date/aio-date';
-export default function apis({getState,helper}) {
-  let {baseUrl} = getState()
+export default function gardooneApis({baseUrl,helper}) {
   return {
     async get_all_awards() {
       let res = await Axios.get(`${baseUrl}/Awards`);

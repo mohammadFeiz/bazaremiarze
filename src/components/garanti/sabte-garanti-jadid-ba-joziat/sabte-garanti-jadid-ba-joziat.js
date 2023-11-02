@@ -3,7 +3,7 @@ import RVD from "./../../../interfaces/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
 import Table from "./../../../interfaces/aio-table/aio-table";
 import ProductCount from "./../../../components/kharid/product-count/product-count";
-import AIOButton from "../../../interfaces/aio-button/aio-button";
+import AIOInput from "../../../npm/aio-input/aio-input";
 import {Icon} from '@mdi/react';
 import {mdiChevronLeft,mdiClose} from '@mdi/js';
 export default class SabteGarantiJadidBaJoziat extends Component {
@@ -24,12 +24,12 @@ export default class SabteGarantiJadidBaJoziat extends Component {
         };
     }
     async onSubmit() {
-        let { guarantiApis, openPopup,SetState,rsa_actions } = this.context;
+        let { apis, openPopup,SetState,rsa } = this.context;
         let { items } = this.state;
-        let res = await guarantiApis({ api: "sabte_kalahaye_garanti", parameter: items,name:'ثبت کالاهای گارانتی' });
+        let res = await apis.request({ api: "guaranti.sabte_kalahaye_garanti", parameter: items,description:'ثبت کالاهای گارانتی' });
         if (res) {
-            let guaranteeItems = await guarantiApis({ api: "garantiItems",name:'دریافت لیست کالاهای گارانتی کاربر' });
-            rsa_actions.removePopup('all');
+            let guaranteeItems = await apis.request({ api: "guaranti.garantiItems",description:'دریافت لیست کالاهای گارانتی کاربر' });
+            rsa.removeModal('all');
             SetState({guaranteeItems})
             openPopup('payame-sabte-garanti',{
                 text: "درخواست گارانتی شما با موفقیت ثبت شد",
@@ -83,7 +83,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                                 }
                             })
                             return (
-                                <AIOButton
+                                <AIOInput
                                     type='select' caret={false}
                                     style={{background:'none'}}
                                     text={this.getColor(row.lightColor)}
@@ -103,7 +103,7 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                     rtl={true}
                     toolbar={()=>{
                         return (
-                            <AIOButton type='select' text="افزودن کالا" className='button-4' optionText='option.onvan' optionValue='option.code'
+                            <AIOInput type='select' text="افزودن کالا" className='button-4' optionText='option.onvan' optionValue='option.code'
                                 popupAttrs={{ style: { maxHeight: 400, bottom: 0, top: 'unset', position: 'fixed', left: 0, width: '100%' }}}
                                 options={guaranteeExistItems}
                                 

@@ -8,18 +8,18 @@ import { mdiChevronLeft } from "@mdi/js";
 export default class SabteGarantiJadid extends Component {
     static contextType = appContext;
     async continueWithoutSubmit(){
-        let { openPopup, guarantiApis,rsa_actions } = this.context;
-        let res = await guarantiApis({ api: "sabte_kalahaye_garanti",name:'ثبت کالاهای گارانتی'});
+        let { openPopup, apis,rsa } = this.context;
+        let res = await apis.request({ api: "guaranti.sabte_kalahaye_garanti",description:'ثبت کالاهای گارانتی'});
         if (!res) { alert("error"); return; }
-        rsa_actions.removePopup();
+        rsa.removeModal();
         openPopup('payame-sabte-garanti',{
             text: "درخواست گارانتی شما با موفقیت اعلام شد",
             subtext: "درخواست گارانتی شما در ویزیت بعدی بررسی خواهد شد",
         })
     }
     continueWithSubmit(){
-        let { openPopup,rsa_actions } = this.context;
-        rsa_actions.removePopup();
+        let { openPopup,rsa } = this.context;
+        rsa.removeModal();
         openPopup('sabte-garanti-jadid-ba-joziat')
     }
     image_layout(){

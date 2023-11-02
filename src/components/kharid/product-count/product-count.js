@@ -1,9 +1,7 @@
-import React,{Component, createRef} from 'react';
+import React,{Component} from 'react';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import {Icon} from '@mdi/react';
 import { mdiPlus,mdiMinus, mdiTrashCanOutline } from '@mdi/js';
-import AIOButton from './../../../npm/aio-button/aio-button';
-import InlineNumberKeyboard from '../../inline-number-keyboard/inline-number-keyboard';
 import appContext from '../../../app-context';
 import $ from 'jquery';
 import './index.css';
@@ -51,19 +49,19 @@ export default class ProductCount extends Component{
         // clearInterval(this.interval) 
       }
       openPopup(){
-        let {openPopup,rsa_actions} = this.context;
+        let {openPopup,rsa} = this.context;
         let {value} = this.state;
         let config = {
             onChange:(value)=>{
                 this.change(value);
-                rsa_actions.removePopup()
+                rsa.removeModal()
             },
             onRemove:()=>{
                 this.change(0)
-                rsa_actions.removePopup()
+                rsa.removeModal()
             },
             onClose:()=>{
-                rsa_actions.removePopup()
+                rsa.removeModal()
             },
             value,
         }

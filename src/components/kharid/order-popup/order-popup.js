@@ -57,20 +57,18 @@ export default class OrderPopup extends Component {
       await this.getDetails()  
     }
     async getDetails(){
-      let {kharidApis} = this.context;
+      let {apis} = this.context;
       let {order} = this.state;
       if(order.details){return}
-      let newOrder = await kharidApis({
-        api:'mahsoolate_sefareshe_kharid',parameter:order,loading:false,name:'دریافت محصولات سفارش خرید'
-        //cacheName:'order-popup-' + order.mainDocNum,
-        //cache:10000000
+      let newOrder = await apis.request({
+        api:'kharid.mahsoolate_sefareshe_kharid',parameter:order,loading:false,description:'دریافت محصولات سفارش خرید'
       })
       this.setState({order:newOrder})
     }
     async pardakht(){
-      let {kharidApis} = this.context;
+      let {apis} = this.context;
       let {order} = this.props;
-      let res = await kharidApis({api:'pardakhte_kharid',parameter:{order},name:'پرداخت خرید عادی'})
+      let res = await apis.request({api:'kharid.pardakhte_kharid',parameter:{order},description:'پرداخت خرید عادی'})
     }
     splitter_layout(){
       return {

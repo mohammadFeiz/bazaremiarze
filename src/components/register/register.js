@@ -1,12 +1,12 @@
 import React,{Component,createRef} from 'react';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import storeSvg from '../../utils/svgs/store-svg';
-import Form from './../../interfaces/aio-form-react/aio-form-react';
+import AIOInput from '../../npm/aio-input/aio-input';
 import Axios from 'axios';
-import Map from './../map/map';
+import AIOMap from './../../npm/aio-map/aio-map';
 import getSvg from '../../utils/getSvg';
 import {Icon} from '@mdi/react';
-import {mdiInformation,mdiLoading,mdiCrosshairsGps} from '@mdi/js';
+import {mdiLoading} from '@mdi/js';
 import allCities from './cities';
 import provinces from './provinces';
 import './index.css';
@@ -27,31 +27,26 @@ export default class Register extends Component{
         longitude = isNaN(parseFloat(longitude))?51.338097:parseFloat(longitude);
         this.cities = allCities.filter(({province})=>province === userProvince)
         this.state = {
+            errors:[],
             prevProvince:userProvince,
             model:{latitude,cardCode,longitude,firstName,lastName,phoneNumber,storeName,address,userProvince,userCity,landline,password,re_password:password},
-            showMap:false,
             loading:false,
         }
     }
     onClose(){
         let {onClose,mode} = this.props;
-        $(this.dom.current).animate({
-            height: '0%',
-            width: '0%',
-            left:'50%',
-            top:'100%',
-            opacity:0
-        }, 300,()=>{
+        $(this.dom.current).animate({height: '0%',width: '0%',left:'50%',top:'100%',opacity:0}, 300,()=>{
             if(mode === 'edit'){onClose()}
         });
     }
     header_layout(){
-        let {mode} = this.props;
+        let {mode,logout} = this.props;
         return {
             className:'theme-box-shadow of-visible',size:60,style:{marginBottom:12,background:'#fff'},
             row:[
                 {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>this.onClose()}},
-                {flex:1,html:mode === 'edit'?'ویرایش اطلاعات کاربری':'ثبت نام',className:'fs-16 theme-medium-font-color',align:'v'}
+                {flex:1,html:mode === 'edit'?'ویرایش اطلاعات کاربری':'ثبت نام',className:'fs-16 theme-medium-font-color',align:'v'},
+                {show:!!logout,html:'خروج از حساب',align:'v',onClick:()=>logout(),className:'fs-12 theme-link-font-color bold p-h-12'}
             ]
         }
     }
@@ -67,7 +62,7 @@ export default class Register extends Component{
         return {html:'بیش از 8000 فروشگاه در سطح کشور عضو این خانواده هستند',align:'vh',className:'fs-14 theme-medium-font-color'}
     }
     async onSubmit(){
-        if($('.aio-form-error').length){alert('موارد ضروری را پر کنید'); return;}
+        if($('.aio-input-form-error').length){alert('موارد ضروری را پر کنید'); return;}
         let {model} = this.state;
         let {mode,baseUrl} = this.props;
         let url = {
@@ -81,7 +76,7 @@ export default class Register extends Component{
             res = await Axios.post(url, model);
         }
         catch(err){
-            alert(err.message)
+            alert(err.response.data.message)
         }
         this.setState({loading:false})
         let result = false;
@@ -92,7 +87,12 @@ export default class Register extends Component{
             onSubmit(res.data.data);
             this.onClose();
         }
-        else{alert('خطا در برقراری ارتباط')}
+        else{
+            res = res || {};
+            res.data = res.data || {}; 
+            let {message,Message} = res.data;
+            alert(message || Message)
+        }
     }
     change(model){
         this.setState({model})
@@ -103,64 +103,73 @@ export default class Register extends Component{
         return {
             className:'of-visible',
             html:(
-                <Form
-                    lang={'fa'}
-                    model={model}
+                <AIOInput
+                    type='form' lang={'fa'} value={model}
                     style={{margin:12,borderRadius:12}}
-                    theme={{
-                        inlineLabel:false,
-                        bodyStyle:{background:'none',padding:12},
-                    }}
-                    classNames={{
-                        label:'fs-14 theme-dark-font-color bold',
-                        input:'theme-input',
-                    }}
                     className='theme-box-shadow theme-card-bg'
-                    onChange={(model)=>this.change(model)}
-                    inputs={[
-                        {label:'کد مشتری',type:'text',field:'model.cardCode',disabled:true,show:mode === 'edit'},
-                        {
-                            label:'نام',type:'text',field:'model.firstName',rowKey:'1',validations:[['required']],
-                            //disabled:mode === 'edit'
-                        },
-                        {type:'html',html:()=>'',rowKey:'1',rowWidth:12},
-                        {
-                            label:'نام خانوادگی',type:'text',field:'model.lastName',rowKey:'1',validations:[['required']],
-                            //disabled:mode === 'edit'
-                        },
-                        {label:'رمز عبور',type:'password',field:'model.password',validations:[['required'],['length>',5]],show:mode === 'register'},
-                        {
-                            label:'تکرار رمز عبور',type:'password',field:'model.re_password',
-                            validations:[['=','model.password',{message:'تکرار رمز عبور با رمز عبور مطابقت ندارد'}]],
-                            show:mode === 'register'
-                        },
-                        {label:'تلفن همراه',type:'text',field:'model.phoneNumber',rowKey:'3',disabled:true},
-                        {type:'html',html:()=>'',rowKey:'3',rowWidth:12},
-                        {label:'تلفن ثابت',type:'text',field:'model.landline',rowKey:'3'},
-                        {label:'نام فروشگاه',type:'text',field:'model.storeName',validations:[['required']]},
-                        {label:'ثبت موقعیت جغرافیایی',type:'html',html:()=>{
-                            let {showMap,model} = this.state;
-                            if(showMap){return ''}
-                            return (
-                                <Map
-                                    changeView={false}
-                                    onClick={()=>this.setState({showMap:true})}
-                                    latitude={model.latitude}
-                                    longitude={model.longitude}
-                                    style={{width:'100%',height:'120px'}}
-                                />
-                            )
-                        }},
-                        {label:'آدرس',type:'textarea',field:'model.address',validations:[['required']]},
-                        {type:'html',html:()=><div style={{color:'red'}}>تنظیم موقعیت جغرافیایی الزامیست</div>,show:model.latitude === 35.699739 && model.longitude === 35.699739},
-                        {label:'استان',type:'select',field:'model.userProvince',rowKey:'2',options:provinces,optionText:'option',optionValue:'option',validations:[['required']]},
-                        {type:'html',html:()=>'',rowKey:'2',rowWidth:12},
-                        {label:'شهر',type:'select',field:'model.userCity',options:this.cities,optionValue:'option.text',rowKey:'2',validations:[['required']]},
-                        // {label:'شماره شبا',type:'text',field:'model.sheba'},
-                        // {label:'شماره کارت بانکی',type:'number',field:'model.cardBankNumber'},
-                        // {label:'نام دارنده کارت بانکی',type:'text',field:'model.cardBankName'},
-                        
-                    ]}
+                    onChange={(model,errors)=>{this.change(model); this.setState({errors})}}
+                    getErrors={(errors)=>{
+                        this.setState({errors})
+                    }}
+                    inputs={{
+                        props:{gap:12},
+                        column:[
+                            {input:{type:'text',disabled:true},label:'کد مشتری',field:'value.cardCode',show:mode === 'edit'},
+                            {
+                                row:[
+                                    {input:{type:'text',inputAttrs:{autoComplete:'off'}},label:'نام',field:'value.firstName',validations:[['required']]},
+                                    {input:{type:'text',inputAttrs:{autoComplete:'off'}},label:'نام خانوادگی',field:'value.lastName',validations:[['required']]}
+                                ]
+                            },
+                            {input:{type:'password',inputAttrs:{autoComplete:'off'}},label:'رمز عبور',field:'value.password',validations:[['required'],['length>',5]],show:mode === 'register'},
+                            {
+                                input:{type:'password',inputAttrs:{autoComplete:'off'}},label:'تکرار رمز عبور',field:'value.re_password',
+                                validations:[['required'],['=','value.password',{message:'تکرار رمز عبور با رمز عبور مطابقت ندارد'}]],
+                                show:mode === 'register'
+                            },
+                            {
+                                row:[
+                                    {input:{type:'text',disabled:true},label:'تلفن همراه',field:'value.phoneNumber'},
+                                    {input:{type:'text'},label:'تلفن ثابت',field:'value.landline'},
+                                ]
+                            },
+                            {input:{type:'text'},label:'نام فروشگاه',field:'value.storeName',validations:[['required']]},
+                            {html:'ثبت موقعیت جغرافیایی'},
+                            {
+                                html:()=>{
+                                let {showMap,model} = this.state;
+                                if(showMap){return ''}
+                                return (
+                                    <AIOMap
+                                        apiKeys={{
+                                            map:'web.68bf1e9b8be541f5b14686078d1e48d2',
+                                            service:'service.30c940d0eff7403f9e8347160e384cc9'
+                                        }}
+                                        latitude={model.latitude}
+                                        longitude={model.longitude}
+                                        popup={true}
+                                        search={true}
+                                        onChangeAddress={(address)=>{
+                                            this.setState({model:{...this.state.model,address}})
+                                        }}
+                                        onChange={(latitude,longitude,address)=>{
+                                            this.setState({model:{...this.state.model,latitude,longitude}})
+                                        }}
+                                        style={{width:'100%',height:'120px'}}
+                                    />
+                                )
+                            }},
+                            {input:{type:'textarea'},label:'آدرس',field:'value.address',validations:[['required']]},
+                            {html:()=><div style={{color:'red'}}>تنظیم موقعیت جغرافیایی الزامیست</div>,show:model.latitude === 35.699739 && model.longitude === 35.699739},
+                            {
+                                row:[
+                                    {input:{type:'select',options:provinces,optionText:'option',optionValue:'option',popover:{fitHorizontal:true}},label:'استان',field:'value.userProvince',validations:[['required']]},
+                                    {input:{type:'select',options:this.cities,optionValue:'option.text',popover:{fitHorizontal:true}},label:'شهر',field:'value.userCity',validations:[['required']]}
+                                ]
+                            }
+                            
+                        ]
+                    }}
                 />
             )
         }
@@ -194,7 +203,7 @@ export default class Register extends Component{
         this.change(model)
     }
     render(){
-        let {showMap,model,prevProvince,loading} = this.state;
+        let {errors,model,prevProvince,loading} = this.state;
         let {mode} = this.props;
         if(prevProvince !== model.userProvince){
             setTimeout(()=>{
@@ -220,7 +229,7 @@ export default class Register extends Component{
                                     {size:6},
                                     this.subtext_layout(),
                                     this.form_layout(),
-                                    {size:300}       
+                                    {size:410}       
                                 ]
                             },
                             {
@@ -228,6 +237,7 @@ export default class Register extends Component{
                                 
                                 html:(
                                     <button 
+                                        disabled={!!errors.length}
                                         onClick={()=>this.onSubmit()} 
                                         className='button-2'
                                     >
@@ -241,60 +251,8 @@ export default class Register extends Component{
                         ]
                     }}
                 />
-                {showMap && <ShowMap latitude={model.latitude} longitude={model.longitude} onClose={()=>this.setState({showMap:false})} onChange={(latitude,longitude)=>{
-                    let {model} = this.state;
-                    model.latitude = latitude;
-                    model.longitude = longitude;
-                    this.changeAddress(latitude,longitude)
-                    this.setState({model,showMap:false})
-                }}/>}
                 {loading && <div style={{zIndex:1000000000,position:'fixed',left:0,top:0,width:'100%',height:'100%'}}></div>}
             </>
         )
     }
 }
-
-
-class ShowMap extends Component{
-    header_layout(){
-        let {onClose} = this.props;
-        return {
-            className:'theme-box-shadow of-visible',size:60,style:{background:'#fff'},
-            row:[
-                {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>onClose()}},
-                {flex:1,html:'انتخاب موقعیت فروشگاه',className:'fs-16 theme-medium-font-color',align:'v'}
-            ]
-        }
-    }
-    map_layout(){
-        let {onChange,latitude,longitude} = this.props;
-        return {
-            flex:1,
-            html:(
-                <>
-                    <Map
-                        latitude={latitude} longitude={longitude} style={{width:'100%',height:'100%',position:'absolute'}}
-                        onChange={(latitude,longitude)=>onChange(latitude,longitude)}
-                        search={true}
-                    />
-                    
-                </>
-            )
-        }
-    }
-    render(){
-        return (
-            <>
-                <RVD
-                    rtl={true}
-                    layout={{
-                        style:{position:'fixed',left:0,top:0,width:'100%',height:'100%',zIndex:100},
-                        column:[this.header_layout(),this.map_layout()]
-                    }}
-                />
-                
-            </>
-        )
-    }
-}
-

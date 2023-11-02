@@ -24,7 +24,7 @@ export default class ReactVirtualDom extends Component {
     let {childsProps = ()=>{return {}}} = parent;
     let Props = (typeof childsProps === 'function'?childsProps(obj,index):childsProps) || {};
     let props = {...Props,...obj}
-    let {swapId,size,flex,onClick,html,style,longTouch} = props; 
+    let {swapId,size,flex,onClick,html,content,style,longTouch} = props; 
     let attrs = obj.attrs || Props.attrs || {};
     let pointer =  !!onClick || !!attrs.onClick;
     let childs = [];
@@ -95,14 +95,15 @@ export default class ReactVirtualDom extends Component {
       )
       attrs.onClick = undefined
     }
-    return {childs,html,attrs,gapAttrs}
+    return {childs,html,content,attrs,gapAttrs}
   }
   getLayout(obj,index,parent,isRoot){
     if(typeof obj === 'object' && typeof parent === 'object'){obj.props = {...parent.props,...obj.props}}
     let {getLayout} = this.props;
     if(!obj || obj === null || (typeof obj.show === 'function'?obj.show():obj.show) === false){return ''}
     if(getLayout){obj = getLayout(obj,parent)}
-    let {childs,html,attrs,gapAttrs} = this.getProps(obj,index,parent,isRoot)
+    let {childs,html,content,attrs,gapAttrs} = this.getProps(obj,index,parent,isRoot)
+    if(content){return content}
     return (
       <Fragment key={index}>
         <div {...attrs}>

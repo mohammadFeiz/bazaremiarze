@@ -1,0 +1,6 @@
+category structure
+<CategoryView/> => billboard description ProductCard products
+
+<billboard/> getItems campaigns openPopup(....)
+add cartItem props to <BundlePage/>
+

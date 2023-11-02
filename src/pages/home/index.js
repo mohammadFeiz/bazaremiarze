@@ -4,16 +4,15 @@ import getSvg from './../../utils/getSvg';
 import appContext from '../../app-context';
 import SplitNumber from '../../npm/aio-functions/split-number';
 import GarantiCard from '../../components/garanti/garanti-card/garanti-card';
-import AIOButton from './../../interfaces/aio-button/aio-button';
+import AIOInput from '../../npm/aio-input/aio-input';
 import Awards from './../awards/index';
 import Card from '../../components/card/card';
 import Billboard from '../../components/billboard/billboard';
 import blankGuarantee from './../../images/blank-guarantee.png';
 import Bazargah from '../bazargah/bazargah';
-import promotionSrc from './../../images/belex-billboard.png';
 import './index.css';
 import Icon from '@mdi/react';
-import { mdiLoading, mdiPlusBox } from '@mdi/js';
+import { mdiPlusBox } from '@mdi/js';
 
 export default class Home extends Component {
     static contextType = appContext;
@@ -33,8 +32,8 @@ export default class Home extends Component {
         },1000)
     }
     async getPreOrders() {
-        let {kharidApis} = this.context;
-        let preOrders = await kharidApis({api:"preOrders",loading:false,name:'دریافت لیست پیش سفارشات'});
+        let {apis} = this.context;
+        let preOrders = await apis.request({api:"kharid.preOrders",loading:false,description:'دریافت لیست پیش سفارشات'});
         this.setState({ preOrders });
     }
     
@@ -127,7 +126,7 @@ export default class Home extends Component {
                         {
                             align:'v',
                             html:(
-                                <AIOButton
+                                <AIOInput
                                     text='ثبت درخواست جدید'
                                     caret={false}
                                     className='theme-link-font-color bold'
@@ -135,7 +134,7 @@ export default class Home extends Component {
                                     before={<Icon path={mdiPlusBox} size={0.8}/>}
                                     type='button'
                                     position='bottom'
-                                    onClick={()=>openPopup('sabte-garanti-jadid')}
+                                    onClick={()=>openPopup('sabteGarantiJadid')}
                                 />
                             )
                         }
@@ -210,95 +209,25 @@ export default class Home extends Component {
     }
     bazargah_layout(){
         return {className:'of-visible theme-gap-h',html:<Bazargah renderInHome={true}/>}
-    }
-    noorvare3Qr_layout(){
-        let {userInfo,backOffice} = this.context;
-        if(!backOffice.activeManager.noorvare3){
-            return false
-        }
-        let {showQr} = this.state;
-        let qr = userInfo.norvareh3QR
-        if(!qr){return false}
-        try{
-            qr= JSON.parse(qr).imageUrl
-        }
-        catch{
-            qr = '';
-        }
-        return {
-            className:'theme-gap-h',
-            column:[
-                {className:'theme-vertical-gap'},
-                {
-                    className:'theme-card-bg theme-border-radius theme-box-shadow',
-                    column:[
-                        {
-                            html:showQr?'بارکد نورواره شما':'نمایش بارکد نورواره',
-                            className:'fs-14 theme-dark-font-color bold p-h-24',align:'v',size:36,
-                            onClick:()=>{
-                                this.setState({showQr:!showQr})
-                            }
-                        },
-                        {
-                            show:!!showQr && !!qr,html:<img src={qr} alt='در حال بارگذاری' width='180'/>,align:'vh'
-                        },
-                        {
-                            size:60,show:!!showQr && !!!qr,html:<Icon path={mdiLoading} size={1.5} spin={0.4}/>,align:'vh'
-                        }
-                    ]
-                },
-                {className:'theme-vertical-gap'},
-                
-            ]
-        }
-    }
-    priceList_layout(){
-        let {openPopup,backOffice} = this.context;
-        if(!backOffice.activeManager.priceList){
-            return false
-        }
-        return {
-            onClick:()=>openPopup('price list'),
-            className:'theme-gap-h theme-border-radius p-12',
-            style:{background:'#2BBA8F'},
-            row:[
-                {html:getSvg('price list')},
-                {
-                    flex:1,
-                    column:[
-                        {flex:1},
-                        {html:'از آخرین قیمت همه تولید کنندگان مطلع شو!',className:'fs-20 t-a-right',style:{color:'#fff',width:'100%'}},
-                        {size:12},
-                        {
-                            row:[
-                                {flex:1},
-                                {
-                                    style:{background:'#eee'},
-                                    className:'p-3 br-6 p-r-12',
-                                    row:[
-                                        {html:'برای مشاهده ضربه بزنید',align:'v',className:'fs-14'},
-                                        {size:6},
-                                        {html:getSvg('tap'),align:'vh'}
-                                    ]
-                                }
-                            ]
-                        },
-                        {flex:1}
-                    ]
-                }
-            ]
-        }
-    }
+    }   
     promotion_layout(){
-        let {openPopup,belex} = this.context;
+        let {backOffice,getLinkToFunction} = this.context;
+        let {homeContent = []} = backOffice;
+        if(!homeContent.length){return false}
         return {
-            className:'m-h-12',
-            onClick:()=>{
-                openPopup('category',{category:belex});
-            },
-            html:(
-                <img src={promotionSrc} alt='' width='100%'/>
-            )
+            gap:12,className:'theme-card-bg m-b-12 p-12 theme-box-shadow',
+            column:homeContent.map((o)=>{
+                let {type,text,url,linkTo} = o;
+                if(type === 'label'){return {className:'m-h-12 fs-14 bold',html:text}}
+                if(type === 'description'){return {className:'m-h-12 m-b-12 fs-12',style:{textAlign:'right'},html:text}}
+                if(type === 'image'){
+                    return {
+                        className:'m-h-12 m-b-12',onClick:linkTo?getLinkToFunction(linkTo):undefined,
+                        html:(<img src={url} alt='' width='100%'/>)
+                    }
+                }
+                return false
+            })
         }
     }
     getContent() {
@@ -311,15 +240,11 @@ export default class Home extends Component {
                     flex:1,className:'ofy-auto',
                     column: [
                         this.billboard_layout(),
-                        this.noorvare3Qr_layout(),
                         { className: 'theme-vertical-gap'},
-                        // this.promotion_layout(),
-                        // { className: 'theme-vertical-gap'},
+                        this.promotion_layout(),
                         this.cartAndWallet_layout(),
                         { className: 'theme-vertical-gap'},
                         this.preOrders_layout(),
-                        { className: 'theme-vertical-gap'},
-                        this.priceList_layout(),
                         { className: 'theme-vertical-gap'},
                         // { className: 'theme-vertical-gap'},
                         this.bazargah_layout(),
@@ -370,7 +295,7 @@ export default class Home extends Component {
                     showAwards &&
                     <Awards onClose={()=>this.setState({showAwards:false})}/>
                 }
-                <AIOButton 
+                <AIOInput
                     text={getSvg(showCallPopup?'phoneClose':'phone')}
                     style={{padding:0,background:'none'}}
                     caret={false}
@@ -446,25 +371,3 @@ class Call extends Component{
         )
     }
 }
-class Help extends Component{
-    render(){
-        return (
-            <RVD
-                layout={{
-                    className:'p-h-12',
-                    column:[
-                        {size:60,html:'راهنما',className:'fs-18 bold',align:'vh'},
-                        {size:48,html:'درحال بررسی',className:'theme-dark-font-color fs-16 bold',align:'v'},
-                        {html:'سفارش هایی هستند که شما ثبت کرده اید و ویزیتور شما درحال بررسی کالاهای سفارش شما هست.',className:'theme-medium-font-color fs-14'},
-                        {size:12},
-                        {size:48,html:'در انتظار تایید',className:'theme-dark-font-color fs-16 bold',align:'v'},
-                        {html:'سفارش هایی هستند که بعد از بررسی ویزیتور برای تایید و پرداخت به سمت شما برگشته است. سفارش هایی که ویزیتور مستقیما برای شما ثبت میکند نیز در این قسمت نمایش داده میشود',className:'theme-medium-font-color fs-14'},
-                        {size:24}
-                    ]
-                }}
-            />
-        )
-    }
-}
-
-

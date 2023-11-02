@@ -1,0 +1,16 @@
+.bazargah-code{
+    width: 110px;
+    height: 32px;
+    background:#fff;
+    border: 1px solid;
+    font-family:inherit;
+    font-size:24px;
+    border-radius:4px;
+    font-weight:bold;
+}
+.bazargah-code input{
+    font-size:24px;
+    letter-spacing: 16px;
+    text-align: center;
+    
+}

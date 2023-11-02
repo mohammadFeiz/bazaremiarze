@@ -2,8 +2,6 @@ import React, { Component } from "react";
 import RVD from "./../../interfaces/react-virtual-dom/react-virtual-dom";
 import appContext from "../../app-context";
 import CategorySlider from "./../../components/kharid/category-slider/category-slider";
-import AIOButton from "../../interfaces/aio-button/aio-button";
-import FamilyCard from './../../components/family-card/family-card';
 import "./index.css";
 import Billboard from "../../components/billboard/billboard";
 
@@ -20,9 +18,9 @@ export default class Buy extends Component {
         { text: "دسته بندی کالاها", value: "2"},
       ],
       activeTabId: "1",
-      activeCartTabId:'regular',
-      families: [],
+      activeCartTabId:'Regular',
       categories: [],
+      sliders:[]
     };
   }
   changeView(o){
@@ -40,122 +38,74 @@ export default class Buy extends Component {
     }
     
   }
-  async getCategories() {
-    let {kharidApis} = this.context;
-    let categories = await kharidApis({api:"getCategories",cache:24 * 60 * 60 * 1000,name:'دریافت لیست دسته بندی ها'});
-    this.setState({ categories });
-  }
-  async getFamilies() {
-    let {kharidApis} = this.context;
-    let families = await kharidApis({api:'families',cache:24 * 60 * 60 * 1000,name:'دریافت لیست خانواده های محصولات'});
-    this.setState({ families });
-  }
-  async get_recommendeds(all) {
-    let {kharidApis} = this.context;
-    let recommendeds = await kharidApis({api:'recommendeds',cache:24 * 60 * 60 * 1000,cacheName:'rec-6' + (all?'all':''),parameter:all?undefined:6,name:'دریافت لیست پیشنهاد سفارش'});
-    if(all){return recommendeds}
-    else{this.setState({ recommendeds });}
-    
-  }
-  async get_newOrders(all) {
-    let {kharidApis} = this.context;
-    let newOrders = await kharidApis({api:"jadid_tarin_mahsoolat",cache:24 * 60 * 60 * 1000,cacheName:'neworder-6' + (all?'all':''),parameter:all?undefined:6,name:'دریافت جدید ترین محصولات'});
-    if(all){return newOrders}
-    else{this.setState({ newOrders });}
-  }
-  async get_bestSellings(all) {
-    let {kharidApis} = this.context;
-    let bestSellings = await kharidApis({api:'bestSellings',cache:24 * 60 * 60 * 1000,cacheName:'best-6' + (all?'all':''),parameter:all?undefined:6,name:'دریافت لیست پر فروش ترین محصولات'});
-    if(all){return bestSellings}
-    else{this.setState({ bestSellings });}
-    
-  }
-  //dont set async for parallel data fetching
-  componentDidMount() {
-    this.get_newOrders();
-    this.getFamilies();
-    //this.get_recommendeds();
-    this.get_bestSellings();
-    this.getCategories();
-    this.context.SetState({buy_view:undefined})//reset temporary state
+  async componentDidMount() {
+    let {spreeCategories,Shop_Regular} = this.context;
+    let {slider_type = []} = spreeCategories;
+    let sliders = [];
+    for(let i = 0; i < slider_type.length; i++){
+      let o = slider_type[i];
+      let {id,name} = o;
+      let products = await Shop_Regular.getCategoryProducts(id,6);
+      sliders.push({products,name,id})
+    }
+    this.setState({sliders})
   }
   tabs(){
     let {view,tabs,activeTabId} = this.state;
     return {
       flex: 1,style:{overflow:'hidden'},show:view.type === 'main',
       column: [
-        {html:<AIOButton type='tabs' options={tabs} value={activeTabId} onChange={(activeTabId)=>this.setState({activeTabId})} optionStyle={{flex:1}}/>},
-        {size:12},
-        this['tab' + activeTabId]()
+        {
+          flex: 1,className: "ofy-auto",
+          column: [
+            this.billboard_layout(),
+            {size:24},
+            this.categories_layout(),
+            this.sliders_layout()
+          ]
+        }
       ],
     }
   }
-  tab1(){
+  categories_layout(){
+    let {Shop_Regular,backOffice} = this.context;
+    let {spreeCategories = []} = backOffice;
+    let categories = spreeCategories.filter(({showType})=>showType === 'icon');
     return {
-      flex: 1,className: "ofy-auto",
-      column: [
-        this.billboard_layout(),
-        //this.families(),
-        this.sliders()
+      column:[
+        {html:'دسته بندی ها',align:'v',className:'p-h-24 fs-14 bold',size:36},
+        {
+          gridCols:3,gridRow:{align:'vh',gap:12},gap:12,
+          grid:categories.concat(new Array(categories.length % 3).fill(false)).map((o)=>{
+            if(o === false){return {flex:1}}
+            let {name,icon,id} = o;
+            return {
+              flex:1,align:'vh',style:{maxWidth:220},
+              onClick:()=>Shop_Regular.openCategory(id),
+              column:[
+                {html:<img src={icon} width='100%' alt=''/>,align:'vh'},
+                {size:6},
+                {html:name,className:'fs-14 bold',align:'vh'}
+              ]
+            }
+          })
+        }
       ]
     }
-  }
-  tab2(){
-    let {openPopup} = this.context;
-    let {categories = []} = this.state;
-    return {
-      flex: 1,className:'p-12 ofy-auto',gap: 24,
-      column:categories.map((o)=>{
-        return {
-          attrs:{onClick:()=>openPopup('category',{name:o.name,category:{products:o.products,name:o.name}})},
-          column:[
-            {size:200,html:<img src={o.src} alt='' height='100%'/>,align:'vh'},
-            {size:36,align:'vh',html:o.name,className:'theme-dark-font-color fs-16 bold'}
-          ] 
-        }
-      })
-    };
   }
   billboard_layout(){
     return {html:<Billboard renderIn='buy'/>}
   }
-  families(){
-    let {families} = this.state;
-    return {
-      className: "box gap-no-color",style: { padding: 12 },show: families.length !== 0,
-      column: [
-        {html: "محبوب ترین خانواده ها",className: "fs-14 theme-dark-font-color bold",size: 36,align: "v"},
-        {
-          gap: 16,className:'ofx-auto',
-          row: families.map((o) => {
-            return {html:<FamilyCard title={o.name} src={o.src} id={o.id}/>}
-          }),
-        },
-      ],
-    }
-  }
-  sliders(){
-    let {openPopup} = this.context;
-    let sliders = [
-      ['newOrders','جدید ترین محصولات'],
-      ['bestSellings','پر فروش ترین محصولات'],
-      //['recommendeds','پیشنهاد سفارش']
-    ]
+  sliders_layout(){
+    let {Shop_Regular,spreeCategories} = this.context;
+    let {slider_type} = spreeCategories;
+    let {sliders} = this.state;
     return {
       className:'of-visible',
-      column:sliders.map(([key,name])=>{
+      column:sliders.map(({name,id,products})=>{
         return {
-          className:'of-visible',
-          style:{marginBottom:12},
-          html:()=>(
-            <CategorySlider 
-              title={name} products={this.state[key]} 
-              showAll={async ()=>{
-                let products = await this['get_' + key](true)
-                openPopup('category',{name,category:{products,name}})
-              }}
-            />
-          )
+          className:'of-visible',style:{marginBottom:12},
+          html:()=><CategorySlider title={name} products={products} showAll={()=>Shop_Regular.openCategory(id)}/>
         }
       })
     }

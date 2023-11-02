@@ -2,11 +2,9 @@ import React,{Component,createRef} from "react";
 import RVD from "./../../interfaces/react-virtual-dom/react-virtual-dom";
 import getSvg from "../../utils/getSvg";
 import SplitNumber from "../../npm/aio-functions/split-number";
-import GAH from './../../npm/aio-datepicker/aio-datepicker';
 import appContext from "../../app-context";
-import Form from "./../../interfaces/aio-form-react/aio-form-react";
 import noItemSrc from './../../images/not-found.png';
-import AIOButton from './../../interfaces/aio-button/aio-button';
+import AIOInput from "../../npm/aio-input/aio-input";
 import {Icon} from '@mdi/react';
 import {mdiCog} from '@mdi/js';
 import './index.css';
@@ -34,11 +32,11 @@ export default class Wallet extends Component{
         )
     }
     async componentDidMount(){
-        let {walletApis,showMessage} = this.context;
+        let {apis,showMessage} = this.context;
         let {fromDate}=this.state;
-        let items = await walletApis({api:'walletItems',parameter:fromDate,loading:false,name:'دریافت جزییات کیف پول'});
+        let items = await apis.request({api:'wallet.walletItems',parameter:fromDate,loading:false,description:'دریافت جزییات کیف پول'});
         let cards = []; 
-        let res = await walletApis({api:'ettelaate_banki'})
+        let res = await apis.request({api:'wallet.ettelaate_banki'})
         if(typeof res === 'string'){showMessage(res);}
         else{cards = res;}
         this.setState({items,cards})
@@ -100,9 +98,8 @@ export default class Wallet extends Component{
         let {cards} = this.state;
         let {userInfo} = this.context;
         return (
-            <AIOButton
+            <AIOInput
                 type='button' caret={false}
-                position='bottom'
                 style={{background:'none',padding:0}}
                 text={
                     <RVD
@@ -118,9 +115,11 @@ export default class Wallet extends Component{
                         }}
                     />
                 }
-                popOver={disabled?undefined:({toggle})=>{
+                popoverSide='bottom'
+                backdropAttrs={{style:{background:'rgba(0,0,0,0.8)'}}}
+                popOver={disabled?undefined:()=>{
                     if(type === 'bardasht'){
-                        if(userInfo.ballance > 0){return <BardashtPopup onClose={()=>toggle()} cards={cards} mojoodi={userInfo.ballance}/>}
+                        if(userInfo.ballance > 0){return <BardashtPopup cards={cards} mojoodi={userInfo.ballance}/>}
                     }
                     if(type === 'variz'){return <VarizPopup/>}
                 }}
@@ -139,7 +138,7 @@ export default class Wallet extends Component{
         }
     }
     filter_layout(){
-        let {walletApis}=this.context;
+        let {apis}=this.context;
         let {fromDate,toDate,items = []} = this.state;
         //if(!items.length){return false}
         let style = {borderRadius:24,width:100,height:24,border:'1px solid #605E5C'}
@@ -153,39 +152,25 @@ export default class Wallet extends Component{
                 {size:6},
                 {
                     html:(
-                        <GAH
-                            value={fromDate || false}
+                        <AIOInput
+                            type='datepicker' value={fromDate || false}
                             style={{...style,...fromStyle}}
                             calendarType='jalali'
                             onChange={async ({gregorian,dateString})=>{
                                 this.setState({fromDate:dateString});
-                                let items = await walletApis({api:'walletItems',parameter:`${gregorian[0]}/${gregorian[1]}/${gregorian[2]}`,name:'دریافت جزییات کیف پول'});
+                                let items = await apis.request({api:'wallet.walletItems',parameter:`${gregorian[0]}/${gregorian[1]}/${gregorian[2]}`,description:'دریافت جزییات کیف پول'});
                                 this.setState({items});
                             }}
                             theme={['#0d436e','#fff']}
                             onClear={async ()=>{
                                 this.setState({fromDate:''});
-                                let items = await walletApis({api:'walletItems',parameter:'',name:'دریافت جزییات کیف پول'});
+                                let items = await apis.request({api:'wallet.walletItems',parameter:'',description:'دریافت جزییات کیف پول'});
                                 this.setState({items});
                             }}
                         />
                     ),align:'v'
                 },
                 {flex:1},
-                // {html:'تا تاریخ : ',className:'fs-12 theme-dark-font-color',align:'v'},
-                // {size:6},
-                // {
-                //     html:(
-                //         <GAH
-                //             value={toDate}
-                //             style={{...style,...toStyle}}
-                //             calendarType='jalali'
-                //             onChange={(obj)=>this.setState({toDate:obj.dateString})}
-                //             onClear={()=>this.setState({toDate:false})}
-                //         />
-                //     ),align:'v'
-                // },
-                // {flex:1}
             ]
         }
     }
@@ -275,10 +260,10 @@ class BardashtPopup extends Component{
         this.state = {model:{amount:'',card:false},mojoodi:props.mojoodi}
     }
     async onSubmit(){
-        let {walletApis,showMessage} = this.context;
+        let {apis,showMessage} = this.context;
         let {onClose} = this.props;
         let {model} = this.state;
-        let res = await walletApis({api:'bardasht',parameter:model})
+        let res = await apis.request({api:'wallet.bardasht',parameter:model})
         if(typeof res === 'string'){showMessage(res); onClose()}
         else if(res === true){
             onClose()
@@ -288,35 +273,32 @@ class BardashtPopup extends Component{
         let {model,mojoodi} = this.state;
         let {cards} = this.props;
         return (
-            <Form
-                rtl={true} lang={'fa'}
-                affixAttrs={{style:{height:36,background:'#fff',color:'#333'}}}
-                model={model}
-                data={{cards}}
-                footerAttrs={{style:{background:'#fff'}}}
-                rowStyle={{marginBottom:12}}
-                bodyStyle={{background:'#fff',padding:12,paddingBottom:36}}
+            <AIOInput
+                type='form' rtl={true} lang={'fa'}
+                value={model}
                 onChange={(model)=>this.setState({model})}
-                header={{title:'برداشت از کیف پول',style:{background:'#fff'}}}
-                inputs={[
-                    {type:'html',html:()=><span className="fs-12 bold" style={{height:36}}>مبلغ انتخابی حداکثر تا # ساعت به حساب شما واریز میشود</span>},
-                    {type:'select',options:cards,optionValue:'option.id',optionSubtext:'option.name',optionText:'option.number',field:'model.card',label:'انتخاب کارت'},
-                    {type:'number',field:'model.amount',affix:'ریال',label:'مبلغ برداشت',validations:[['required'],['<=',mojoodi]]},
-                    {
-                        type:'html',
-                        html:()=>(
-                            <RVD 
-                                layout={{
-                                    style:{height:48,flex:'none'},gap:6,
-                                    row:[
-                                        {html:'موجودی:',className:'fs-14 theme-medium-font-color bold',align:'v'},
-                                        {html:`${SplitNumber(mojoodi)} ریال`,className:'fs-14 color3B55A5 bold',align:'v'},
-                                    ]
-                                }}
-                            />
-                        )
-                    }
-                ]}
+                title='برداشت از کیف پول'
+                inputs={{
+                    props:{gap:12},
+                    column:[
+                        {html:()=><span className="fs-12 bold" style={{height:36}}>مبلغ انتخابی حداکثر تا # ساعت به حساب شما واریز میشود</span>},
+                        {input:{type:'select',options:cards,optionValue:'option.id',optionSubtext:'option.name',optionText:'option.number'},field:'value.card',label:'انتخاب کارت'},
+                        {input:{type:'number',after:'ریال'},field:'value.amount',label:'مبلغ برداشت',validations:[['required'],['<=',mojoodi]]},
+                        {
+                            html:()=>(
+                                <RVD 
+                                    layout={{
+                                        style:{height:48,flex:'none'},gap:6,
+                                        row:[
+                                            {html:'موجودی:',className:'fs-14 theme-medium-font-color bold',align:'v'},
+                                            {html:`${SplitNumber(mojoodi)} ریال`,className:'fs-14 color3B55A5 bold',align:'v'},
+                                        ]
+                                    }}
+                                />
+                            )
+                        }
+                    ]
+                }}
                 onSubmit={()=>this.onSubmit()}
                 submitText='برداشت'
             />
@@ -331,10 +313,10 @@ class VarizPopup extends Component{
         this.state = {model:{amount:''}}
     }
     async onSubmit(){
-        let {walletApis,showMessage} = this.context;
+        let {apis,showMessage} = this.context;
         let {onClose} = this.props;
         let {model} = this.state;
-        let res = await walletApis({api:'variz',parameter:model})
+        let res = await apis.request({api:'wallet.variz',parameter:model})
         if(typeof res === 'string'){showMessage(res); onClose()}
         else if(res === true){
             onClose()
@@ -343,19 +325,17 @@ class VarizPopup extends Component{
     render(){
         let {model} = this.state;
         return (
-            <Form
-                rtl={true} lang='fa'
-                affixAttrs={{style:{height:36,background:'#fff',color:'#333'}}}
+            <AIOInput
+                type='form' rtl={true} lang='fa'
                 model={model}
-                footerAttrs={{style:{background:'#fff'}}}
                 style={{flex:'none'}}
-                rowStyle={{marginBottom:0}}
-                bodyStyle={{background:'#fff'}}
                 onChange={(model)=>this.setState({model})}
-                header={{title:'افزایش موجودی کیف پول',style:{background:'#fff'}}}
-                inputs={[
-                    {type:'number',field:'model.amount',affix:'ریال',label:'مبلغ افزایش موجودی',validations:[['required'],['>=',10000]]}
-                ]}
+                title='افزایش موجودی کیف پول'
+                inputs={{
+                    column:[
+                        {input:{type:'number',after:'ریال'},field:'value.amount',label:'مبلغ افزایش موجودی',validations:[['required'],['>=',10000]]}
+                    ]
+                }}
                 onSubmit={()=>this.onSubmit()}
                 submitText='پرداخت'
             />

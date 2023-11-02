@@ -63,8 +63,15 @@ export default function StorageClass(key){
       this.saveStorage()
     },
     saveStorage(){
-      localStorage.setItem('storageClass' + key,JSON.stringify(this.model));
-      localStorage.setItem('storageClassTime' + key,JSON.stringify(this.time));
+      //ترای کش برای هندل کردن اینکه حافظه پر شده است یا خیر
+      try{
+        localStorage.setItem('storageClass' + key,JSON.stringify(this.model));
+        localStorage.setItem('storageClassTime' + key,JSON.stringify(this.time));
+      }
+      catch(err){
+        alert(`${err.message}. cache overflow`)
+      }
+      
     },
     addTime(name){
       this.time[name] = new Date().getTime();
@@ -135,8 +142,7 @@ export default function StorageClass(key){
       this.time = {};
       this.saveStorage()
     },
-    download({file,name}) {
-      name = this.getNameByPropmt(name,'Inter file name');
+    download({file,name = window.prompt('Please Inter File Name')}) {
       if(!name || name === null){return}
       let text = JSON.stringify(file)
       var element = document.createElement('a');

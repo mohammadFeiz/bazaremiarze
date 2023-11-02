@@ -2,165 +2,28 @@ import Axios from "axios";
 import nosrcImage from './../images/no-src.png';
 import nosrc from './../images/no-src.png';
 import foroosheVijeIcon from './../images/forooshe-vije-icon.png';
-import belexbillboard from './../images/belex-billboard.png';
-import belexIcon from './../images/belex-icon.png';
-import gheymat_haye_ghadim_icon from './../images/gheymat-haye-ghadim-icon.png';
-import tarh_aglami_icon from './../images/tarh_aglami_icon.png';
-import staticBelexData from './belexdata';
-export default function kharidApis({ getState,helper }) {
-  //let { baseUrl, userInfo } = getState()
+import staticBundleData from './bundledata';
+import AIOStorage from './../npm/aio-storage/aio-storage';
+
+export default function kharidApis({baseUrl,helper}) {
   return {
-    async price_list_download({url,fileName,id,date}){
-        let {baseUrl} = getState();
-        await Axios({
-          url: `${baseUrl}/BackOffice/DownloadPdf/${id}`, //your url
-          method: 'GET',
-          responseType: 'blob', // important
-      }).then((response) => {
-          // create file link in browser's memory
-          const href = URL.createObjectURL(response.data);
-      
-          // create "a" HTML element with href to file & click
-          const link = document.createElement('a');
-          link.href = href;
-          let name = date.split(' ');
-          name = name[0].split('/').concat(name[1].split(':')).join('_') + '_' + fileName
-          link.setAttribute('download', name); //or any other extension
-          document.body.appendChild(link);
-          link.click();
-      
-          // clean up "a" element & remove ObjectURL
-          document.body.removeChild(link);
-          URL.revokeObjectURL(href);
-      });
-      // let response = await Axios.get(`${baseUrl}/BackOffice/Download2/${id}`);
-      // const urll = window.URL.createObjectURL(
-      //   new Blob([response.data]),
-      // );
-      // //const url = window.URL.createObjectURL(new Blob([response.data]));
-      // const link = document.createElement('a');
-      // link.href = urll;
-      // link.setAttribute('download', 'file.pdf');
-      // document.body.appendChild(link);
-      // link.click();
-      // const url = window.URL.createObjectURL(
-      //   new Blob([blob]),
-      // );
-      // const link = document.createElement('a');
-      // link.href = url;
-      // link.setAttribute(
-      //   'download',
-      //   `${res.data.data.url}`,
-      // );
-
-      // // Append to html link element page
-      // document.body.appendChild(link);
-
-      // // Start download
-      // link.click();
-
-      // // Clean up and remove the link
-      // link.parentNode.removeChild(link);
-      // const downloadFile = (
-      //   filePath = res.data.data.url,
-      //   fileName = 'Example-PDF-file.pdf',
-      // ) => {
-        // fetch(`${res.data.data.downloadUrl}`, {
-        //   method: 'GET',
-        //   headers: {
-        //     'Content-Type': 'application/pdf',
-        //   },
-        // })
-        //   .then(response => response.blob())
-        //   .then(blob => {
-        //     const url = window.URL.createObjectURL(new Blob([blob]));
-    
-        //     const link = document.createElement('a');
-        //     link.href = url;
-        //     link.download = fileName;
-    
-        //     document.body.appendChild(link);
-    
-        //     link.click();
-    
-        //     link.parentNode.removeChild(link);
-        //   });
-        
-      return {result:true}
-    },
-    async price_list(){
-  
-      let {baseUrl} = getState();
-      let res = await Axios.get(`${baseUrl}/BackOffice/GetAllPriceList`);
-      let pdfs;
-      pdfs = res.data.data.map((o) => {return{id : o.id , brand : o.brand , date : helper.getDateAndTime(o.modifiedDate).dateAndTime , fileName : o.name , url : o.downloadUrl}})
-      return {result:pdfs}
-    },
-    async priceList_add({brandText,file}){
-      
-      let {baseUrl} = getState();
-      let formdata = new FormData();
-      formdata.append("File" , file.file);
-      formdata.append("Brand" , brandText);     
-      let res = await Axios.post(`${baseUrl}/BackOffice/AddPriceList` , formdata)
-      let result = {
-        brand : res.data.data.brand , 
-        id : res.data.data.id ,
-        date : res.data.data.modifiedDate , 
-        fileName : res.data.data.name ,
-        url : res.data.data.downloadUrl
-      }
-      return {result:result}
-    },
-    async priceList_remove(id){
-      let {baseUrl} = getState();
-      let res = await Axios.get(`${baseUrl}/BackOffice/DeletePriceList/${id}`)
-      if(res.data.isSuccess === true){
-        return {result:true}
-    }
-    return {result:false}
-    },
-    async get_backoffice() {
-      let { baseUrl,backOffice } = getState()
-      //const response = await Axios.get(`${baseUrl}/BackOffice/GetLastCampaignManagement`);
-      let result = '{"activeManager":{"garanti":false,"belex":true,"forooshe_vije":false,"campaigns":true,"bazargah":true,"wallet":false,"noorvare3":false,"eydane":false,"vitrin":false,"priceList":false},"bazargah":{"forsate_ersale_sefareshe_bazargah":960,"forsate_akhze_sefareshe_bazargah":1440},"colors":{"آفتابی":"#ffd100","مهتابی":"#66b6ff","یخی":"#f9ffd6","سبز":"green","قرمز":"red","آبی":"blue","نارنجی":"orange"},"PayDueDate_options":[{"value":1,"text":"نقد","percent":12,"_id":"row0.32762204850586363"},{"value":2,"text":"چک 15 روزه","_id":"row0.06402261977048362"},{"value":3,"text":"چک 30 روزه","_id":"row0.8395057419933811"},{"value":4,"text":"چک 45 روزه","_id":"row0.9300208280904723"},{"value":6,"text":"چک 60 روزه","_id":"row0.44996610833351025"},{"value":7,"text":"چک 70 روزه","_id":"row0.4527157464767808"},{"value":8,"text":"چک 3 ماهه","_id":"row0.8597199752754001"},{"value":9,"text":"چک 3 و نیم ماهه","_id":"row0.09020360973310093"},{"value":10,"text":"چک 4 ماهه","_id":"row0.6958000031856508","percent":0},{"value":11,"text":"چک 4 و نیم ماهه","_id":"row0.7522838588876786"},{"value":12,"text":"چک 5 ماهه","_id":"row0.708988282382327"},{"value":13,"text":"چک 5 و نیم ماهه","_id":"row0.3481230940875528"},{"value":14,"text":"چک 6 ماهه","_id":"row0.9398759733978301","percent":0},{"value":15,"text":"25% نقد و 75% چک دو ماهه","percent":7.5,"_id":"row0.3259733891891827"},{"value":16,"text":"50% نقد و 50% چک سه ماهه","percent":7.5,"_id":"row0.698353775395461"},{"value":17,"text":"20% نقد و 80% چک سه ماهه","percent":4.8,"_id":"row0.9872695342791011"},{"value":18,"text":"30% نقد و 70% چک چهار ماهه","percent":3.6,"_id":"row0.16754631913242557"},{"value":19,"text":"50% نقد و 50% چک پنج ماهه","percent":4.5,"_id":"row0.9922378251117543"},{"value":20,"text":"50% نقد و 50% چک یک ماهه","percent":10.5,"_id":"row0.8993259905206279"},{"value":21,"text":"10% نقد 90% چک دو ماهه","percent":9.3,"_id":"row0.16833784576973043"},{"value":22,"text":"10% نقد 90% چک دو ماهه","percent":6.6,"_id":"row0.8962408491977867"},{"value":23,"text":"10% نقد 90% چک چهار ماهه","percent":3.9,"_id":"row0.8568419316755116"},{"value":24,"text":"50% نقد 50% چک یک ماهه","percent":1.2,"_id":"row0.5033459360468848"},{"value":25,"text":"30% نقد الباقی چک دو ماهه","percent":7.8,"_id":"row0.19544022229600255"},{"value":26,"text":"40% نقد الباقی چک سه ماهه","percent":6.6,"_id":"row0.3756656437051291"},{"value":27,"text":"50% نقد الباقی چک چهار ماهه","percent":6,"_id":"row0.942532615463685"},{"value":28,"text":"20% نقد الباقی چک دو ماهه","percent":7.2,"_id":"row0.34109506299142733"}],"PaymentTime_options":[{"value":5,"text":"اینترنتی","_id":"row0.35867779986152004"},{"value":1,"text":"واریز قبل ارسال","_id":"row0.10702779757639269"},{"value":2,"text":"واریز پای بار","_id":"row0.8794235743510337"}],"SettleType_options":[{"value":1,"text":"نقد","_id":"row0.3309278232165842"},{"value":2,"text":"چک","_id":"row0.974687164933258"},{"value":8,"text":"دستگاه پوز","_id":"row0.6772425176698402"},{"value":16,"text":"آنلاین","_id":"row0.3698033143038606"}],"DeliveryType_options":[{"value":11,"text":"ماشین توزیع بروکس","_id":"row0.4849963738422869"},{"value":12,"text":"ماشین اجاره ای","_id":"row0.6243497775662299"},{"value":13,"text":"باربری","_id":"row0.9429071036283148"},{"value":14,"text":"پخش گرم","_id":"row0.8195128140443952"},{"value":15,"text":"ارسال توسط ویزیتور","_id":"row0.21861733094298375"}],"activeCampaignIds":[10728],"tarhHa":{"فروش ویژه":{"defaultShipping":{"PayDueDate":1,"SettleType":16,"DeliveryType":11,"PayDueDateOptions":[1,17,18,19,20],"SettleTypeOptions":[8,16],"DeliveryTypeOptions":[11,12,13,15],"active":false,"id":""}},"بلکس":{"defaultShipping":{"PayDueDate":1,"SettleType":1,"DeliveryType":11,"PayDueDateOptions":[1],"SettleTypeOptions":[16,1],"DeliveryTypeOptions":[11,12,13,15],"active":true,"id":"","PaymentTimeOptions":[5,1],"PaymentTime":1}},"خرید عادی":{"defaultShipping":{"PayDueDate":1,"PaymentTime":1,"DeliveryType":11,"PayDueDateOptions":[1,15,16,17,18,19,21,22,23,24],"PaymentTimeOptions":[1,2,5],"DeliveryTypeOptions":[11,12,13,15],"active":false,"id":"","SettleTypeOptions":[1,8,16]}},"نورواره 3":{"defaultShipping":{"PayDueDate":1,"PaymentTime":1,"DeliveryType":11,"PayDueDateOptions":[1,15,16,17,18,19,21,22,23,24],"PaymentTimeOptions":[1,2],"DeliveryTypeOptions":[11,12,13,15],"active":false,"id":""}},"طرح شب یلدای روشنایی":{"defaultShipping":{"PayDueDate":1,"PaymentTime":1,"DeliveryType":11,"PayDueDateOptions":[1,15,16],"PaymentTimeOptions":[1,2],"DeliveryTypeOptions":[11,12,13,15],"active":false,"id":"10676"}},"طرح شب یلدای باطری":{"defaultShipping":{"PayDueDate":1,"PaymentTime":1,"DeliveryType":11,"PayDueDateOptions":[1,15,16],"PaymentTimeOptions":[1,2],"DeliveryTypeOptions":[11,12,13,15],"active":false,"id":"10677"}}," آخرین فروش با قیمت 1401":{"defaultShipping":{"PayDueDate":1,"PaymentTime":5,"DeliveryType":11,"SettleType":16,"PayDueDateOptions":[1,15,16],"SettleTypeOptions":[16],"PaymentTimeOptions":[5],"DeliveryTypeOptions":[11,12,13,15],"active":false,"id":"10721"}},"طرح اقلامی همایش":{"defaultShipping":{"PayDueDate":1,"PaymentTime":1,"DeliveryType":11,"PayDueDateOptions":[1,2,17,25,26,27,28],"SettleTypeOptions":[1,2],"DeliveryTypeOptions":[11,12,13,15],"id":10728,"active":false,"SettleType":1}},"شهاب":{"defaultShipping":{"active":true,"SettleType":1,"PayDueDate":1,"DeliveryType":13,"PaymentTime":5,"id":"10721"}}}}'
-      //let result = typeof response.data.data.jsonData === 'string'?JSON.parse(response.data.data.jsonData):backOffice;
-      return { result:JSON.parse(result) };
-    },
-    async set_backoffice(JsonData) {
-      let { baseUrl } = getState()
-      const response = await Axios.post(`${baseUrl}/BackOffice/UpdateCampaignManagement`,{JsonData:JSON.stringify(JsonData)});
-      let result;
-      if(!!response.data.isSuccess){
-        result = true
-      }
-      else {
-        result = response.data.message;
-      }
-      return { result };
-    },
     async eydane_registered() {
-      let { baseUrl } = getState()
       const result = await Axios.get(`${baseUrl}/Users/GetEydaneStatus`);
       return { result: result.data.isSuccess && result.data.data };
     },
-    async updateProductPrice({ products, campaign, campaignId, cartId }) {
+    async updateProductPrice({ products, CampaignId, PriceListNum, cartId,cartName },{fixPrice}) {
       if (!products) { return {result:false} }
       if (!products.length) { return {result:[]} }
-      let { fixPrice } = getState();
-      let config = products.map(({ defaultVariant }) => {return { ItemCode: defaultVariant.code , itemCode : defaultVariant.code , ItemQty: 1 , itemQty : 1 };})
-      let fixed = fixPrice(config, campaignId)
-      if (!fixed[0].B1Dscnt) {fixed = fixPrice(config, campaignId, true);}
-      let res = products.map((o, i) => {return { ...o, ...fixed[i], cartId }})
+      let items = products.map(({ defaultVariant }) => {return { ItemCode: defaultVariant.code , itemCode : defaultVariant.code , ItemQty: 1 , itemQty : 1 };})
+      let fixed = fixPrice({items,CampaignId, PriceListNum})
+      let res = products.map((o, i) => {return { ...o, ...fixed[i], cartId,cartName }})
       return {result:res};
     },
     async taide_noorvare(name) {
-      let { baseUrl } = getState()
       let result = Axios.get(`${baseUrl}/Users/Norvareh3Agreement`);
       return { result }
     },
-    async tarikhche_sefareshate_kharid() {
-      let { baseUrl, userInfo } = getState()
+    async tarikhche_sefareshate_kharid(undefined,{userInfo}) {
       let res = await Axios.post(`${baseUrl}/BOne/GetOrders`, {
         "FieldName": "cardcode",
         "FieldValue": userInfo.cardCode,
@@ -257,8 +120,7 @@ export default function kharidApis({ getState,helper }) {
       }
       return { result: tabs };
     },
-    async mahsoolate_sefareshe_kharid(order) {
-      let { userInfo, backOffice, baseUrl } = getState()
+    async mahsoolate_sefareshe_kharid(order,{userInfo}) {
       const docTypeDictionary = {
         Customer: 2,
         Quotation: 23,
@@ -372,18 +234,8 @@ export default function kharidApis({ getState,helper }) {
       }
       return { result: { ...order, details } }
     },
-    // async userInfo() {
-    //   let {userInfo} = getState();
-    //   let res = await Axios.post(`${baseUrl}/BOne/GetCustomer`, { "DocCode": userInfo.cardCode });
-    //   if(res.status===401){return false;}
-    //   try { res = res.data.data.customer }
-    //   catch { res = {} }
-    //   return res
-    // },
-    async getCampaigns() {
-      let { baseUrl,backOffice } = getState();
-      let {tarhHa} = backOffice;
-      let ids = Object.keys(tarhHa).filter((name)=>tarhHa[name].defaultShipping.active === true && tarhHa[name].defaultShipping.id.toString() !== '10721' && !!tarhHa[name].defaultShipping.id).map((name)=>tarhHa[name].defaultShipping.id)
+    async getCampaigns(ids) {
+      if(!ids){return {result:[]}}
       if(!ids.length){return {result:[]}}
       let res = await Axios.get(`${baseUrl}/Spree/GetAllCampaigns?ids=${ids.toString()}`);
       let dataResult = res.data.data.data;
@@ -397,162 +249,30 @@ export default function kharidApis({ getState,helper }) {
             src = "https://spree.burux.com" + taxonImage.attributes.original_url;
           }
         }
-        let icon;
-        if (o.id === '10721') { icon = gheymat_haye_ghadim_icon }//عیدانه روشنایی
-        else if (o.id === '10728') { icon = tarh_aglami_icon }
-        let campaignId;
-        try {
-          campaignId = JSON.parse(o.attributes.meta_description)
-        }
-        catch {
-          campaignId = undefined;
-        }
-        return { cartId: o.attributes.name, name: o.attributes.name, id: o.id, src: src, campaignId, icon };
+        let obj;
+        try {obj = JSON.parse(o.attributes.meta_description)}
+        catch {obj = {};}
+        return { cartId: o.attributes.name, name: o.attributes.name, id: o.id, src: src, CampaignId:obj.CampaignId,PriceListNum:obj.PriceListNum };
       });
 
       return { result: campaigns };
     },
-    async updateCampaignPrice({campaignId, item}) {
-      if (campaignId === '10931') {
-        let price = {
-          '9190': 3650000,
-          '9195': 2605000,
-          '9191': 3650000,
-          '9192': 3650000,
-          '9194': 3650000,
-          '3582': 1385000,
-          '9193': 2605000,
-        }[item.ItemCode]
-        item.Price = price;
-        item.FinalPrice = price;
-        item.price = price;
-        item.PymntDscnt = 0;
-      }
-      if (campaignId === '10930') {
-        let price = {
-          '7702': 699840,
-          '7572': 589077,
-          '7562': 550080,
-          '7732': 1903125,
-          '7722': 1450029,
-          '7712': 1100064,
-          '8922': 1450029,
-          '3182': 6343779,
-          '4622': 209470,
-          '4610': 170750,
-          '8932': 1803510,
-          '9191': 4687500,
-          '9192': 4687500,
-          '9193': 3125000,
-          '9194': 4687500,
-          'x1110': 1119400,
-          'NNSR0013': 593800,
-          'x1120': 1545000,
-          '9195': 3125000,
-          '9190': 4687500,
-          'x1130': 2499600,
-          '6240': 500000,
-          'x1140': 3466500,
-          '8912': 833400,
-          'NNSR0012': 539800,
-          '6250': 802100,
-        }[item.ItemCode]
-        item.Price = price;
-        item.FinalPrice = price;
-        item.price = price;
-        item.PymntDscnt = 0;
-      }
-      return {result:item}
-    },
-    async getCampaignProducts(campaign) {
-      let {kharidApis} = getState();
-      let { id, campaignId, name } = campaign;
-      let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: id }});
-      const finalRes = await kharidApis({api:'updateProductPrice',parameter:{ products, campaignId, cartId: name }});
-      let result = [];
-      for(let i = 0; i < finalRes.length; i++){
-        let o = finalRes[i];
-        let res = await kharidApis({
-          api:'updateCampaignPrice',
-          parameter:{campaignId:id, item:{ ...o, campaign }},
-        });
-        result.push(res)
-      }
+    async getCampaignProducts({id,CampaignId,PriceListNum,name},{apis}) {
+      let products = await apis.request({api:'kharid.getSpreeProducts',parameter:{ Taxons: id }});
+      let result = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, CampaignId,PriceListNum, cartId: id,cartName:name }});
       return { result };
     },
-    async noorvare3_details() {
-      let { baseUrl } = getState();
-      let res = await Axios.get(`${baseUrl}/Visit/GiftOnPurchaseByCardCode`)
-      let result;
-      if (res.data.isSuccess) {
-        result = res.data.data.map((o) => {
-          return { lamp: o.giftQty, amount: o.minimumPurchase }
-        })
-      }
-      else {
-        result = 'خطا'
-      }
+    async getCategoryProducts({id,count},{apis,Shop_Regular}) {
+      let {cartId,name} = Shop_Regular;
+      let products = await apis.request({api:'kharid.getSpreeProducts',parameter:{ Taxons: id.toString(),pageSize:count }});
+      let result = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, cartId,cartName:name }})
       return {result}
     },
-    async pardakhte_noorvare3({ address, SettleType, PaymentTime, DeliveryType, PayDueDate, total, cartId }) {
-      let {baseUrl} = getState();
-      let freeLamps;
-      if (total < 105000000) {freeLamps = 0;}
-      else if (total < 205000000) {freeLamps = 50;}
-      else if (total < 405000000) {freeLamps = 100;}
-      else {freeLamps = 200}
-      let { userInfo, cart } = getState();
-      let cartTab = cart[cartId];
-      let { getCartItems } = cartTab;
-      let cartItems = getCartItems();
-      let marketingLines = cartItems.map(({ variantId, count, product }) => {
-        let variant = product.variants.find((o) => o.id === variantId)
-        return { ItemCode: variant.code, ItemQty: count };
-      });
-      marketingLines.push({ ItemCode: "2372F", ItemQty: freeLamps });
-      let body = {
-        "marketdoc": {
-          "CardCode": userInfo.cardCode,
-          "CardGroupCode": userInfo.groupCode,
-          "MarketingLines": marketingLines,
-          "DeliverAddress": address,
-          "marketingdetails": {
-            "Campaign": 20 // Noorvareh3 value
-          }
-        },
-        SettleType, PaymentTime, DeliveryType, PayDueDate
-      }
-      let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
-      try {return {result:res.data.data[0].docNum}}
-      catch {
-        console.log('nv3 error', res)
-        return {result:false}
-      }
-    },
-    async jadid_tarin_mahsoolat(count) {
-      let {kharidApis} = getState();
-      let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10715',count }});
-      let result = await kharidApis({api:'updateProductPrice',parameter:{ products, cartId: 'خرید عادی' }})
-      return {result}
-    },
-    async recommendeds(count) {
-      let {kharidApis} = getState();
-      let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10714',count }});
-      let result = await kharidApis({api:'updateProductPrice',parameter:{ products, cartId: 'خرید عادی' }})
-      return {result}
-    },
-    async bestSellings(count) {
-      let {kharidApis} = getState();
-      let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: '10735',count }});
-      let result = await kharidApis({api:'updateProductPrice',parameter:{ products, cartId: 'خرید عادی' }})
-      return {result}
-    },
-    async preOrders() {
-      let { userInfo,baseUrl } = getState();
+    async preOrders(undefined,{ userInfo }) {
       let preOrders = { waitOfVisitor: 0, waitOfPey: 0 };
       let res = await Axios.post(`${baseUrl}/Visit/PreOrderStat`, { CardCode: userInfo.cardCode });
       if (!res || !res.data || !res.data.data) {
-        console.error('kharidApis.preOrders Error!!!');
+        console.error('apis.kharid.preOrders Error!!!');
         return {result:preOrders};
       }
       let result = res.data.data;
@@ -563,7 +283,6 @@ export default function kharidApis({ getState,helper }) {
       return {result:preOrders};
     },
     async search(searchValue) {
-      let { baseUrl } = getState();
       let res = await Axios.post(`${baseUrl}/Spree/Products`, { Name: searchValue, PerPage: 250, Include: "images" });
       res = res.data.data.data;
       let included = res.data.data.included;
@@ -578,47 +297,14 @@ export default function kharidApis({ getState,helper }) {
       });
       return {result}
     },
-    async getCategories() {
-      let { baseUrl,kharidApis } = getState();
-      let res = await Axios.get(`${baseUrl}/Spree/GetAllCategoriesbyIds?ids=10709,10711,10714,10713,10732,10734`);
+    async getCategories(ids) {
+      //10709,10711,10713,10714,10715,10732
+      let res = await Axios.get(`${baseUrl}/Spree/GetAllCategoriesbyIds?ids=${ids.toString()}`);
       let dataResult = res.data.data.data;
-      let included = res.data.data.included;
       let categories = dataResult.map((o) => {
-        let src = nosrc;
-        const imgData = o.relationships.image.data;
-        // const imgIds = imgData.map((x) => x.id);
-        if (imgData !== undefined && imgData != null) {
-          const taxonImage = included.find(x => x.type === "taxon_image" && x.id === imgData.id)
-          if (taxonImage !== undefined && taxonImage != null) {
-            src = "https://spree.burux.com" + taxonImage.attributes.original_url;
-          }
-        }
-
-        return { name: o.attributes.name, cartId: o.attributes.name, id: o.id, src: src };
+        return { name: o.attributes.name,id: o.id};
       });
-      for (let i = 0; i < categories.length; i++) {
-        categories[i].products = await kharidApis({api:'getCategoryItems',parameter:categories[i]});
-      }
       return {result:categories};
-    },
-    async getCategoryItems(category) {
-      let {kharidApis} = getState();
-      let products = await kharidApis({api:'getProductsByTaxonId',parameter:{ Taxons: category.id.toString() }});
-      let result = await kharidApis({api:'updateProductPrice',parameter:{ products, cartId: 'خرید عادی' }})
-      return {result}
-    },
-    async families() {
-      let result = [
-        { src: undefined, name: "جنرال", id: "1" },
-        { src: undefined, name: "جاینت", id: "2" },
-        { src: undefined, name: "پنلی توکار", id: "3" },
-      ]
-      return {result}
-    },
-    async familyProducts({ id }) {
-      let {kharidApis} = getState(); 
-      let result = await kharidApis({api:'getTaxonProducts',parameter:{ Taxons: '10180' }})
-      return {result} 
     },
     async getVariantOptionValues({optionValues, optionTypes}) {
       let result = {};
@@ -637,8 +323,7 @@ export default function kharidApis({ getState,helper }) {
       }
       return {result};
     },
-    async getProductVariant({include_variant, include_srcs, b1Result, optionTypes, defaultVariantId, product}) {
-      let {kharidApis} = getState();
+    async getProductVariant({include_variant, include_srcs, b1Result, optionTypes, defaultVariantId, product},{apis}) {
       let { id, attributes, relationships } = include_variant;
       let srcs = relationships.images.data.map(({ id }) => include_srcs[id.toString()].attributes.original_url)
       const b1_item = b1Result.find((i) => i.itemCode === attributes.sku);
@@ -651,7 +336,7 @@ export default function kharidApis({ getState,helper }) {
       try { inStock = !!b1_item.canSell } catch { inStock = 0 }
       try { dropShipping = b1_item.qtyRelation === 4 } catch { dropShipping = 0 }
       try { discountPrice = Math.round(b1_item.price * discountPercent / 100) } catch { discountPrice = 0 }
-      let optionValues = await kharidApis({api:'getVariantOptionValues',parameter:{optionValues:relationships.option_values.data, optionTypes}})
+      let optionValues = await apis.request({api:'kharid.getVariantOptionValues',parameter:{optionValues:relationships.option_values.data, optionTypes}})
       let code = '';
       if (b1_item && b1_item.itemCode) { code = b1_item.itemCode }
       else {
@@ -682,8 +367,7 @@ export default function kharidApis({ getState,helper }) {
       }
       return {result:sorted}
     },
-    async getMappedAllProducts({ spreeResult, b1Result, loadType }) {
-      let {kharidApis} = getState()
+    async getMappedAllProducts({ spreeResult, b1Result, loadType },{apis}) {
       if (loadType === 0) {
 
         const included = spreeResult.included;
@@ -722,7 +406,7 @@ export default function kharidApis({ getState,helper }) {
       }
 
       let products = spreeResult.data;
-      let { include_optionTypes, include_variants, include_details, include_srcs, meta_optionTypes } = await kharidApis({api:'sortIncluded',parameter:spreeResult});
+      let { include_optionTypes, include_variants, include_details, include_srcs, meta_optionTypes } = await apis.request({api:'kharid.sortIncluded',parameter:spreeResult});
       var finalResult = [];
       for (let product of products) {
         let { relationships } = product;
@@ -776,8 +460,8 @@ export default function kharidApis({ getState,helper }) {
         for (let i = 0; i < relationships.variants.data.length; i++) {
           let { id } = relationships.variants.data[i];
           id = id.toString();
-          let variant = await kharidApis({
-            api:'getProductVariant',
+          let variant = await apis.request({
+            api:'kharid.getProductVariant',
             parameter:{include_variant:include_variants[id],include_srcs,b1Result,optionTypes,defaultVariantId,product}
           })
           if (variant === false) { continue }
@@ -792,8 +476,8 @@ export default function kharidApis({ getState,helper }) {
           discountPercent = defaultVariant.discountPercent;
         }
         else {
-          // console.error(`product width id = ${product.id} has not default variant`)
-          // console.log('spree item is', product);
+          console.error(`product width id = ${product.id} has not default variant`)
+          console.log('spree item is', product);
           continue;
         }
         finalResult.push({
@@ -803,53 +487,13 @@ export default function kharidApis({ getState,helper }) {
       }
       return {result:finalResult};
     },
-    async shippingPayment(obj) {
-      let {kharidApis} = getState()
-      let { cartId, PayDueDate, SettleType } = obj;
-      let result;
-      if (cartId === 'بلکس') {
-        if (SettleType === 16) {result = await kharidApis({api:'pardakhte_belex',parameter:obj,name:'پرداخت بلکس'})}
-        else {result = await kharidApis({api:'sabte_belex',parameter:obj,name:'ثبت بلکس'});}
-      }
-      else if (cartId === 'فروش ویژه') {
-        if (PayDueDate === 16) {result = await kharidApis({api:'pardakhte_foroosheVije',parameter:obj,name:'پرداخت فروش ویژه'})}
-        else {result = await kharidApis({api:'sabte_foroosheVije',parameter:obj,name:'ثبت فروش ویژه'});}
-      }
-      else if (cartId === 'نورواره 3') {result = await kharidApis({api:'pardakhte_noorvare3',parameter:obj,name:'پرداخت نورواره 3'});}
-      else {result = await kharidApis({api:'sendToVisitor',parameter:obj,name:'ثبت خرید'})}
+    async payment(obj,{getShopById}) {
+      let { cartId } = obj;
+      let result = getShopById(cartId).payment(obj);
       return {result}
     },
-    async sendToVisitor({ address, SettleType, PaymentTime, DeliveryType, PayDueDate, cartId }) {
-      let { userInfo, cart,baseUrl } = getState();
-      let cartItems = cart[cartId].getCartItems();
-      let body = {
-        "marketdoc": {
-          "CardCode": userInfo.cardCode,
-          "CardGroupCode": userInfo.groupCode,
-          "MarketingLines": cartItems.map(({ product, variantId, count }) => {
-            let variant = product.variants.find((v) => v.id === variantId)
-            return { ItemCode: variant.code, ItemQty: count }
-          }),
-          "DeliverAddress": address,
-          "marketingdetails": {}
-        },
-        SettleType, PaymentTime, DeliveryType, PayDueDate
-      }
-      let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
-      if(res.data.isSuccess){
-        try { return {result:{orderNumber:res.data.data[0].docNum}}}
-        catch { 
-          console.log('5567',res)
-          return {result:'خطا در محاسبه result:res.data.data[0].docNum برای مشاهده ریسپانس خروجی 5567 در کنسول را بررسی کنید'} 
-        }
-      }
-      else {
-        return {result:res.data.message}
-      }
-    },
-    async getProductFullDetail({ id, code, product }) {
+    async getProductFullDetail({ id, code, product },{userInfo,fixPrice,apis}) {
       //پروداکت رو همینجوری برای اینکه یک چیزی ریترن بشه فرستادم تو از کد و آی دی آبجکت کامل پروداکت رو بساز و ریترن کن
-      let {baseUrl,userInfo,fixPrice,kharidApis} = getState();
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
         {Ids: id,PerPage: 250,Include: "variants,option_types,product_properties,images"}
       );
@@ -863,7 +507,7 @@ export default function kharidApis({ getState,helper }) {
       let details = [];
       let optionTypes = [];
       const defaultVariantId = product.defaultVariant.code;
-      let response = await kharidApis({api:'sortIncluded',parameter:res.data.data});
+      let response = await apis.request({api:'kharid.sortIncluded',parameter:res.data.data});
       let { include_optionTypes, include_details, meta_optionTypes } = response;
       for (let i = 0; i < relationships.option_types.data.length; i++) {
         let { id } = relationships.option_types.data[i];
@@ -888,19 +532,19 @@ export default function kharidApis({ getState,helper }) {
         let varId = variant.id.toString();
         let varSku = variant.attributes.sku;
         if (!varSku) { continue }
-        let optionValues = await kharidApis({api:'getVariantOptionValues',parameter:{optionValues:variant.relationships.option_values.data, optionTypes}})
+        let optionValues = await apis.request({api:'kharid.getVariantOptionValues',parameter:{optionValues:variant.relationships.option_values.data, optionTypes}})
         const variantImagesId = variant.relationships.images.data.map(x => x.id);
         const variantImages = included.filter(x => x.type === "image" && variantImagesId.includes(x.id));
         const srcs = variantImages.map(x => {
           return "https://spree.burux.com" + x.attributes.original_url;
         });
-        let price = fixPrice([{ ItemCode: varSku, itemCode : varSku ,ItemQty: 1 , itemQty : 1}])[0];
+        let price = fixPrice({items:[{ ItemCode: varSku, itemCode : varSku ,ItemQty: 1 , itemQty : 1}]})[0];
         if (product.campaign) {
-          price = await kharidApis({api:'updateCampaignPrice',parameter:{campaignId:product.campaign.id, item:price}})
+          price = await apis.request({api:'kharid.updateCampaignPrice',parameter:{campaignId:product.campaign.id, item:price}})
         }
         if (price === undefined) continue;
         let sss = userInfo.itemPrices.find(x => x.itemCode === varSku || x.mainSku === varSku);
-        if (!sss) { debugger; }
+        if (!sss) { sss = {} }
         let { canSell, qtyRelation } = sss;
         variants.push({
           id: varId,
@@ -926,100 +570,7 @@ export default function kharidApis({ getState,helper }) {
       product.optionTypes = optionTypes;
       return {result:product};
     },
-    async pardakhte_foroosheVije() {
-
-    },
-    async sabte_foroosheVije() {
-
-    },
-    async pardakhte_belex({ address, SettleType, PaymentTime, DeliveryType, PayDueDate, amounts }) {
-      let { paymentAmount } = amounts;
-      let { userInfo, cart,baseUrl,kharidApis } = getState();
-      let cartItems = cart['بلکس'].getCartItems()
-      let arr = [];
-      for (let j = 0; j < cartItems.length; j++) {
-        let cartItem = cartItems[j];
-        const items = cartItem.count.qtyInPacks;
-        let packQty = cartItem.count.packQty;
-        for (const key in items) {
-          for (let i = 0; i < items[key].length; i++) {
-            arr.push({ ...items[key][i], variantId: cartItem.variantId, packQty: packQty });
-          }
-        }
-      }
-      let body = {
-        "marketdoc": {
-          "DocType": 17,
-          "CardCode": userInfo.cardCode,
-          "CardGroupCode": userInfo.groupCode,
-          "MarketingLines": arr.map((o) => {
-            return { ItemCode: o.optionValueId, ItemQty: o.count, Price: o.unitPrice, BasePackCode: o.variantId, BasePackQty: o.packQty }
-          }),
-          "DeliverAddress": address,
-          "marketingdetails": { Campaign: 44 }
-        },
-        SettleType, PaymentTime, DeliveryType, PayDueDate
-      }
-      let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
-      if(!res.data.isSuccess){
-        return {result:res.data.message}
-      }
-      let registredOrder;
-      try { registredOrder = res.data.data[0] }
-      catch { return {result:false} }
-      let parameter = {
-        order: {
-          total: paymentAmount,
-          mainDocisDraft: registredOrder.isDraft,
-          mainDocNum: registredOrder.docNum,
-          code: registredOrder.docEntry
-        }
-      }
-      let result = await kharidApis({api:'pardakhte_kharid',parameter,name:'پرداخت خرید'})
-      debugger
-      return {result}
-    },
-    async sabte_belex({ address, SettleType, PaymentTime, DeliveryType, PayDueDate, amounts }) {
-      let { userInfo, cart,baseUrl } = getState();
-      let cartItems = cart['بلکس'].getCartItems()
-      let arr = [];
-      for (let j = 0; j < cartItems.length; j++) {
-        let cartItem = cartItems[j];
-        const items = cartItem.count.qtyInPacks;
-        let packQty = cartItem.count.packQty;
-        for (const key in items) {
-          for (let i = 0; i < items[key].length; i++) {
-            arr.push({ ...items[key][i], variantId: cartItem.variantId, packQty: packQty });
-          }
-        }
-      }
-      let body = {
-        "marketdoc": {
-          "DocType": 17,
-          "CardCode": userInfo.cardCode,
-          "CardGroupCode": userInfo.groupCode,
-          "MarketingLines": arr.map((o) => {
-            return { ItemCode: o.optionValueId, ItemQty: o.count, Price: o.unitPrice, BasePackCode: o.variantId, BasePackQty: o.packQty }
-          }),
-          "DeliverAddress": address,
-          "marketingdetails": { Campaign: 44 }
-        },
-        SettleType, PaymentTime, DeliveryType, PayDueDate
-      }
-      let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
-      if(res.data.isSuccess){
-        try { return {result:{orderNumber:res.data.data[0].docNum}}}
-        catch { 
-          console.log('5568',res)
-          return {result:'خطا در محاسبه result:res.data.data[0].docNum برای مشاهده ریسپانس خروجی 5568 در کنسول را بررسی کنید'} 
-        }
-      }
-      else {
-        return {result:res.data.message}
-      }
-    },
-    async getTaxonProducts({ loadType, Taxons, Name }) {
-      let { userInfo,baseUrl } = getState();
+    async getTaxonProducts({ loadType, Taxons, Name },{ userInfo,apis }) {
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
         {
           CardCode: userInfo.cardCode,Taxons,PerPage: 250,Skame: Name,
@@ -1040,52 +591,70 @@ export default function kharidApis({ getState,helper }) {
           "canSell": i.canSell
         };
       });
-      let result = await kharidApis({api:'getMappedAllProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data, loadType }})
+      let result = await apis.request({api:'kharid.getMappedAllProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data, loadType }})
       return {result};
     },
-    async getProductsByTaxonId({ Taxons,count = 250 }) {
-      let { userInfo,baseUrl,kharidApis } = getState();
-      let res = await Axios.post(`${baseUrl}/Spree/Products`,
-        {
-          CardCode: userInfo.cardCode,
-          Taxons,
-          PerPage: count,
-          ProductFields: "id,name,type,sku,slug,default_variant,images",
-          VariantFields: "id,sku,type,images",
-          Include: "default_variant,images"
-        }
-      );
-      
+    async getSpreeProducts({ Taxons,pageSize = 250,pageNumber,ids,Name },{ userInfo,apis }) {
+      let body = {
+        CardCode: userInfo.cardCode,
+        Taxons,
+        Name,
+        ids,
+        PerPage: pageSize,
+        Page:pageNumber,
+        ProductFields: "id,name,type,sku,slug,default_variant,images,price",
+        VariantFields: "id,sku,type,images",
+        Include: "default_variant,images"
+      }
+      let res = await Axios.post(`${baseUrl}/Spree/Products`,body);
       if(!res.data.isSuccess){return {result:res.data.message}}
       const spreeData = res.data.data;
-      if(!userInfo.itemPrices){
-        helper.showAlert({type:'error',text:`userInfo.itemPrices is not valid`})
-        return {result:[]}
+      
+      let b1Data;
+      if(Taxons !== '10673'){
+        if(!userInfo.itemPrices){
+          helper.showAlert({type:'error',text:`userInfo.itemPrices is not valid`})
+          return {result:[]}
+        }
+        b1Data = userInfo.itemPrices.map((i) => {
+          return {
+            "itemCode": i.itemCode,
+            "price": 0,
+            "finalPrice": 0,
+            "b1Dscnt": 0,
+            "cmpgnDscnt": 0,
+            "pymntDscnt": 0,
+            "mainSku": i.mainSku,
+            "canSell": i.canSell,
+            //"onHand": {
+            //   "whsCode": "01",
+            //   "qty": 269.3,
+            //   "qtyLevel": 300,
+            //   "qtyLevRel": "Less"
+            //}
+          };
+        });
       }
-      const b1Data = userInfo.itemPrices.map((i) => {
-        return {
-          "itemCode": i.itemCode,
-          "price": 0,
-          "finalPrice": 0,
-          "b1Dscnt": 0,
-          "cmpgnDscnt": 0,
-          "pymntDscnt": 0,
-          "mainSku": i.mainSku,
-          "canSell": i.canSell
-          //   "onHand": {
-          //   "whsCode": "01",
-          //   "qty": 269.3,
-          //   "qtyLevel": 300,
-          //   "qtyLevRel": "Less"
-          // }
-        };
-      });
-      let result = await kharidApis({api:'getModifiedProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data,debug:Taxons === '10056' }})
+      
+      let result = await apis.request({api:'kharid.getModifiedProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data,Taxons }})
       if(!Array.isArray(result)){result = []}
       return {result}
     },
-    async getModifiedProducts({ spreeResult, b1Result,debug }) {
+    async getModifiedProducts({ spreeResult, b1Result,Taxons }) {
+      let images = spreeResult.included.filter(({type})=>type === 'image')
+      function getImagesDic(){
+        let baseImageUrl = Taxons === '10673'?"https://shopback.miarze.com":"https://spree.burux.com"
+        let images_dic = {};
+        for(let i = 0; i < images.length; i++){let {attributes,id} = images[i]; images_dic[id.toString()] = baseImageUrl + attributes.styles[9].url;}
+        return images_dic
+      }
+      let images_dic = getImagesDic()
+      function getImages(product){
+        return product.relationships.images.data.map(({id}) => images_dic[id.toString()])
+      }
       let allProducts = [];
+      let variants = spreeResult.included.filter(({type})=>type === 'variant')
+        
       for (const product of spreeResult.data) {
         // 11291 ,
         //11909 ,
@@ -1093,68 +662,96 @@ export default function kharidApis({ getState,helper }) {
         // 12314 ,
         // 12395
         if (product.id === "12395" || product.relationships.default_variant === undefined || product.relationships.default_variant.data === undefined) {      
+          console.error(`
+            if (product.id === "12395" || product.relationships.default_variant === undefined || product.relationships.default_variant.data === undefined) {      
+              continue;
+            }
+          `)
           continue;
         }
-
-        const productDefaultVariantId = product.relationships.default_variant.data.id;
-        const productDefaultVariant = spreeResult.included.find(x => x.type === "variant" && x.id === productDefaultVariantId);
-        const productDefaultVariantSku = productDefaultVariant.attributes.sku;
-        const defaultVariantImagesId = product.relationships.images.data.map(x => x.id);
-        const defaultVariantImages = spreeResult.included.filter(x => x.type === "image" && defaultVariantImagesId.includes(x.id));
-
-        if (productDefaultVariantSku && productDefaultVariantId) {
-          const itemFromB1 = b1Result.find(x => x.itemCode === productDefaultVariantSku || x.mainSku === productDefaultVariantSku);
-          const srcs = defaultVariantImages.map((x) => {
-            return "https://spree.burux.com" + x.attributes.styles[9].url;
+        let iimages = getImages(product);
+        let {relationships} = product;
+        let defalutVariantId = relationships.default_variant.data.id;
+        const defaultVariant = variants.find(({id}) => id === defalutVariantId);
+        const sku = defaultVariant.attributes.sku;
+        if(!sku){
+          console.error(`missing sku in default variant of product`);
+          console.error(`product is : `,product);
+          console.error(`default variant is : `,defaultVariant);
+          console.error(`defaultVariant.attributes.sku is : `,sku);
+          continue
+        }
+        let defaultVariantProps = {
+          "id": defalutVariantId,
+          "discountPrice": 0,
+          "price": 0,
+          inStock:Infinity,
+          "dropShipping": true,
+          "srcs": [],
+          "code": sku,
+          "discountPercent": 0,
+          "isDefault": true
+        };
+        let productProps = {}
+        if(Taxons === '10673'){
+          let price = product.attributes.price;
+          productProps = {
+            inStock:defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs:iimages,
+            name: product.attributes.name, defaultVariant: defaultVariantProps,
+            Price: price,FinalPrice:price, discountPrice: 0, discountPercent: 0, id: product.id
+          }
+        }
+        else{
+          const itemFromB1 = b1Result.find((x) => {
+            if(x.itemCode === sku){return true}
+            if(x.mainSku === sku){return true}
+            return false
           });
-
-          if (itemFromB1 !== undefined && itemFromB1) {
-            const defVariantFinalResult = {
-              "id": productDefaultVariantId,
-              "discountPrice": 0,
-              "price": 0,
-              "inStock": !!itemFromB1 && !!itemFromB1.canSell,
-              "dropShipping": itemFromB1.qtyRelation === 4,
-              "srcs": [],
-              "code": productDefaultVariantSku,
-              "discountPercent": 0,
-              "isDefault": true
-            };
-            let aaa = {
-              inStock: !!itemFromB1 && !!itemFromB1.canSell, details: [], optionTypes: [], variants: [defVariantFinalResult], srcs,
-              name: product.attributes.name, defaultVariant: defVariantFinalResult,
-              price: 0, discountPrice: 0, discountPercent: 0, id: product.id
-            }
-            allProducts.push(
-              aaa
-            );
-          }
-        }
-        else {
-          if(!productDefaultVariantSku){
-            console.error(`missing sku in default variant of product`);
+          if(!itemFromB1){
+            console.error(`spree item with sku = ${sku} is not match with any item in B1`);
             console.error(`product is : `,product);
-            console.error(`default variant is : `,productDefaultVariant);
-            console.error(`defaultVariant.attributes.sku is : `,productDefaultVariantSku);
+            console.error(`default variant is : `,defaultVariant);
+            continue
+          }
+          defaultVariantProps.inStock = !!itemFromB1 && !!itemFromB1.canSell;
+          defaultVariantProps.dropShipping = itemFromB1.qtyRelation === 4;
+          productProps = {
+            inStock:defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs:iimages,
+            name: product.attributes.name, defaultVariant: defaultVariantProps,
+            price: 0, discountPrice: 0, discountPercent: 0, id: product.id
           }
         }
+        
+        allProducts.push(productProps);
       }
-      
-      
       return {result:allProducts};
     },
-    async setBackOffice(backOffice) {
-      return {result:true}
-    },
-    async getCart() {
-      let {baseUrl,getCartIds} = getState();
-      let res = await Axios.get(`${baseUrl}/orderuidata`);
+    // async getCart() {
+    //   let {getCartIds} = getState();
+    //   let res = await Axios.get(`${baseUrl}/orderuidata`);
+    //   let cartIds = getCartIds();
+    //   let result = '{}';
+    //   try {result = res.data.data[0].jsonData || '{}';}
+    //   catch {result = '{}'}
+    //   let cart = JSON.parse(result)
+    //   if (typeof cart !== 'object') {return {result:{}}}
+    //   let keys = Object.keys(cart)
+    //   let newCart = {}
+    //   for (let i = 0; i < keys.length; i++) {
+    //     let cartId = keys[i];
+    //     if(cartIds.indexOf(cartId) === -1){continue}
+    //     newCart[cartId] = cart[cartId]
+    //   }
+    //   return {result:newCart}
+    // },
+    // async setCart(cart) {
+    //   let result = await Axios.post(`${baseUrl}/orderuidata/updatejson`, { JsonData: JSON.stringify(cart) });
+    //   return {result}
+    // },
+    async getCart(undefined,{userInfo,getCartIds}) {
+      let cartStorage = AIOStorage('bazaremiarzeapis');
+      let cart = cartStorage.load({name:'cart.' + userInfo.cardCode,def:{}});
       let cartIds = getCartIds();
-      let result = '{}';
-      try {result = res.data.data[0].jsonData || '{}';}
-      catch {result = '{}'}
-      let cart = JSON.parse(result)
-      if (typeof cart !== 'object') {return {result:{}}}
       let keys = Object.keys(cart)
       let newCart = {}
       for (let i = 0; i < keys.length; i++) {
@@ -1164,23 +761,20 @@ export default function kharidApis({ getState,helper }) {
       }
       return {result:newCart}
     },
-    async setCart(cart) {
-      let {baseUrl} = getState()
-      let result = await Axios.post(`${baseUrl}/orderuidata/updatejson`, { JsonData: JSON.stringify(cart) });
-      return {result}
+    async setCart(cart,{userInfo}) {
+      let cartStorage = AIOStorage('bazaremiarzeapis');
+      cartStorage.save({name:'cart.' + userInfo.cardCode,value:cart});
+      return {result:true}
     },
-    async dargah({ amount, url }) {
+    async dargah({ amount, url },{ getUserInfo }) {
       //AIOServiceShowAlert({type:'success',text:'text',subtext:'test'})
-      let {baseUrl} = getState();
       let res = await Axios.get(`${baseUrl}/payment/request?price=${amount}&cbu=${url}`);
       if (res.data.isSuccess) {
-        let { getUserInfo } = getState();
         getUserInfo()
         window.location.href = res.data.data;
       }
     },
     async pardakhte_kharid({ order }) {
-      let {baseUrl} = getState();
       let res = await Axios.post(`${baseUrl}/payment/request`, {
         "Price": Math.round(order.total),
         "IsDraft": order.mainDocisDraft,
@@ -1192,31 +786,16 @@ export default function kharidApis({ getState,helper }) {
         window.location.href = res.data.data;
       }
     },
-    async belexData(){
-      // let {baseUrl} = getState();
-      // let response = await Axios.get(`${baseUrl}/BackOffice/GetBelexData`);
-      // let result = response.data.data.taxons;
-      let result = staticBelexData;
+    async bundleData(){
+      return {result:staticBundleData}
+      let response = await Axios.get(`${baseUrl}/BackOffice/GetBelexData`);
+      let result = response.data.data.taxons;
       return {result}
     },
-    async daryafte_ettelaate_belex() {
-      // let res = await Axios.get(`https://spreeapi.bpilot.ir/api/Spreegw/GetItemsDataRaw?campaign=8`);
-      // //if(res.data.isvalid !=undefined && !res.data.isvalid) debugger;
-      // // else{
-      // //   localStorage.setItem("TESTTT",JSON.stringify(res.data));
-      // // }
-
-      // //let allData=JSON.parse(localStorage.getItem("TESTTT"));
-      // let allData = [];
-      // //allData = res;
-      // allData=res.data[0];
-      // //allData = allData.Array[0].data;
-      // allData=allData.taxons;
-      let {kharidApis} = getState();
-      let belexdata = await kharidApis({
-        api:'belexData',name:'دریافت دیتای بلکس',def:[]
+    async daryafte_ettelaate_bundle(undefined,{apis}) {
+      let allData = await apis.request({
+        api:'kharid.bundleData',description:'دریافت دیتای باندل',def:[]
       })
-      let allData = belexdata;
       var items = [];
       for (const i1 of allData.filter(x => x.taxonid !== 159)) {
         if (i1.items) items.push(i1.items.filter(x => x.itemcodes != null));
@@ -1282,7 +861,6 @@ export default function kharidApis({ getState,helper }) {
           }
         }
       }
-
       let products = [];
       for (const item of items) {
 
@@ -1300,7 +878,7 @@ export default function kharidApis({ getState,helper }) {
             // };
 
             products.push({
-              cartId: 'بلکس',
+              cartId: 'Bundle',
               name: subItem.itemname,
               code: subItem.itemcode,
               price: subItem.price,
@@ -1316,7 +894,6 @@ export default function kharidApis({ getState,helper }) {
           }
         }
       }
-
       for (const item of cableItems) {
 
         if (item.length) {
@@ -1324,7 +901,7 @@ export default function kharidApis({ getState,helper }) {
           for (const subItem of item) {
 
             products.push({
-              cartId: 'بلکس',
+              cartId: 'Bundle',
               name: subItem.itemname,
               code: subItem.itemcode,
               price: subItem.price,
@@ -1340,126 +917,10 @@ export default function kharidApis({ getState,helper }) {
           }
         }
       }
-
-      // for (const tarh of allData) {
-      //   let t={masterName:tarh.taxonname,details:[]}
-
-      //   for (const iterator of tarh.taxons) {
-      //     let tt={name:iterator.taxonname,taxons:[]};
-      //     for (const tax of iterator.taxons) {
-      //       if(!tax.items || tax.items==null) return {};
-      //       tt.taxons.push({taxonname: tax.taxonname,
-      //         taxonId:tax.taxonid,
-      //         taxonItems:tax.items.map(x=>{
-      //           if(!x.itemcodes || x.itemcodes==null) return {};
-      //           return {
-      //             itemCode:x.itemcode,
-      //             itemId:x.itemid,
-      //             itemName:x.itemname,
-      //             itemPrice:x.price,
-      //             itemImage:x.imageurl,
-      //             itemCodes:x.itemcodes.map(xx=>{
-      //               if(!xx.Variants || xx.Variants==null) return {};
-      //               return {
-      //                 name:xx.Name,
-      //                 qty:xx.Qty,
-      //                 step:xx.Step,
-      //                 price:xx.Price,
-      //                 variants:xx.Variants.map(xxx=>{
-      //                   return {
-      //                     code:xxx.Code,
-      //                     name:xxx.Name,
-      //                     step:xxx.Step,
-      //                     priceCoef:xxx.PriceCoef,
-      //                     qtyCoef:xxx.QtyCoef
-      //                   };
-      //                 })
-      //               };
-      //             })
-      //           }
-      //         })
-      //       });
-
-      //     }
-
-      //     t.details.push(tt);
-      //   }
-
-      //   products.push(t);
-      // }
-      let result = {
-        cartId: 'بلکس',
-        name: '10 وات طلایی',
-        src: belexbillboard,
-        icon: belexIcon,
-        maxCount:1,
-        products
-      }
-      return {result}
-    },
-    async daryafte_ettelaate_forooshe_vije() {
-      let { userInfo } = getState();
-      let res = await Axios.get(`https://spreeapi.bpilot.ir/api/Spreegw/GetItemsDataRaw?cardCode=${userInfo.cardCode}`);
-      const allData = res.data;
-      let products = [];
-      for (const t1 of allData) {
-        const taxondepth0 = t1.taxons; // بسته یلدا
-
-        for (const t1 of taxondepth0) {
-          const taxondepth1 = t1.taxons; //سایر
-
-          for (const t2 of taxondepth1) {
-            const taxondepth2 = t2.taxons; // چسب
-
-            for (const t3 of taxondepth2) {
-              const taxondepth3Items = t3.items;
-              if (!Array.isArray(taxondepth3Items)) continue;
-              let variants = [];
-              let optionValues = [];
-              let src;
-              for (const t3Item of taxondepth3Items) {
-                if (!src) { src = t3Item.imageurl; }
-
-                variants.push({
-                  name: t3Item.itemname,
-                  totalQty: t3Item.itemcodes[0].Qty,
-                  finalPrice: t3Item.price,
-                  id: t3Item.itemid,
-                  unitPrice: t3Item.itemcodes[0].Price
-                });
-
-                optionValues = t3Item.itemcodes[0].Variants.map(x => {
-                  return { name: x.Name, id: x.Code, step: x.Step };
-                });
-              }
-
-
-              products.push({
-                cartId: 'فروش ویژه',
-                name: t3.taxonname,
-                code: t3.taxonid,
-                details: [['توان', '144'], ['وزن', '3 کیلوگرم']],
-                // optionValues:[{name:'آفتابی',id:'1'},{name:'مهتابی',id:'2'},{name:'انبه ای',id:'3'},{name:'پوست پیازی',id:'4'}],
-                optionValues,
-                // variants:{cartonQty:(itemTotalQty/itemQytInCarton),qtyInCarton:itemQytInCarton,discountPercent:0,finalPrice:t3Item.price,id:t3Item.itemid},
-                variants,
-                src: src || nosrc
-              });
-            }
-          }
-        }
-      }
-      let result = {
-        cartId: 'فروش ویژه',
-        name: 'فروش ویژه',
-        src: '',
-        icon: foroosheVijeIcon,
-        products: products
-      }
+      let result = products
       return {result}
     },
     async getVersion() {
-      let {baseUrl} = getState();
       // let res = await Axios.get(`${baseUrl}/Update/NewVersion`);
       let res = await Axios.get(`${baseUrl}/Update/GetLastVersion`);
       let result;
@@ -1468,13 +929,10 @@ export default function kharidApis({ getState,helper }) {
       return {result}
     },
     async changeVersion() {
-      let {baseUrl} = getState();
       let res = await Axios.get(`${baseUrl}/Update/NewVersion`);
       return {result:res.data.isSuccess}
     },
-    async kharide_eydane() {
-      let { userInfo,baseUrl } = getState();
-
+    async kharide_eydane(undefined,{ userInfo }) {
       // let body = {
       //   "marketdoc":{
       //     "CardCode":userInfo.cardCode,

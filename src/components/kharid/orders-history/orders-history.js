@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import RVD from "./../../../interfaces/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
-import AIOButton from './../../../interfaces/aio-button/aio-button';
+import AIOInput from "../../../npm/aio-input/aio-input";
 import SplitNumber from "../../../npm/aio-functions/split-number";
 export default class OrdersHistory extends Component {
     static contextType = appContext;
@@ -9,12 +9,9 @@ export default class OrdersHistory extends Component {
       super(props);
       this.state = {activeTab:'در حال بررسی',tabs:fakeData,loading:true};
     }
-    updateCache(tabs){
-      
-    }
     async componentDidMount() {
-      let {kharidApis} = this.context;
-      let tabs = await kharidApis({api:"tarikhche_sefareshate_kharid",name:'تاریخچه سفارشات خرید'});
+      let {apis} = this.context;
+      let tabs = await apis.request({api:"kharid.tarikhche_sefareshate_kharid",description:'تاریخچه سفارشات خرید'});
       let {activeTab = tabs[0]?.text} = this.props;
       try{this.setState({tabs,activeTab,loading:false});}
       catch{return}
@@ -24,7 +21,7 @@ export default class OrdersHistory extends Component {
       if(loading){return false}
       return {
         html:(
-          <AIOButton 
+          <AIOInput style={{fontSize:12}}
             type='tabs' options={tabs} optionValue='option.text' value={activeTab} 
             optionAfter={(option)=><div className='tab-badge'>{option.orders.length}</div>}
             onChange={(activeTab)=>{
@@ -45,7 +42,7 @@ export default class OrdersHistory extends Component {
       }
       let column = orders.map((o,i)=>this.order_layout(o,i))
       column.push({size:300})
-      return {flex: 1,gap: 12,gapAttrs:{className:'theme-vertical-gap'},className:'ofy-auto',column}
+      return {flex: 1,gap: 12,gapAttrs:{className:'theme-vertical-gap'},className:'ofy-auto h-100',column}
     }
     order_layout(order,index){
       let {openPopup} = this.context;
@@ -65,7 +62,7 @@ export default class OrdersHistory extends Component {
     }
     render() {
       return (
-          <RVD layout={{className: "theme-popup-bg",column: [this.tabs_layout(),{size:12},this.orders_layout()]}}/>
+          <RVD layout={{className: "theme-popup-bg h-100",column: [this.tabs_layout(),{size:12},this.orders_layout()]}}/>
       );
     }
   }

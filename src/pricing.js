@@ -1,5 +1,7 @@
-﻿///***Version 1.1.5****///
-//Edited: 2023-6-18
+﻿///***Version 1.1.10****///
+//Edited: 2023-10-01
+
+"use strict";
 
 export default class Pricing {
     "use strict";
@@ -658,6 +660,8 @@ export default class Pricing {
                 break;
         }
 
+        /// اضافه شده برای تغییر تخفیف ماهانه از 3 به 4.5
+        MD.marketingdetails.DocumentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent * 1.5;
         return MD;
     }
 
@@ -999,7 +1003,7 @@ export default class Pricing {
         let camrule = null;
 
         if (MD.marketingdetails.Campaign != null && (MD.marketingdetails?.Campaign ?? null) != null
-            && MD.marketingdetails.Campaign!=-1) {
+            && MD.marketingdetails.Campaign != -1) {
             for (let item of campaignRules) {
                 if (item.campaignId == MD.marketingdetails.Campaign) {
                     camrule = item;
@@ -1020,11 +1024,8 @@ export default class Pricing {
                 return DocAfterCa;
             }
         }
-        else {
-            DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
-            return DocAfterB1;
-        }
-
+        DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
+        return DocAfterB1;
         //    let DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes);
         //    let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, false);
         //    return DocAfterCa;
@@ -1052,8 +1053,8 @@ export default class Pricing {
 
         // ساخت لیست قواعد مربوط به مشتری یا گروه مشتری
         for (let itemrules of campaignRules) {
-            if ((itemrules.campaignId === (MD.marketingdetails.Campaign))
-                && (itemrules.camType === "B")
+            if ((itemrules.campaignId == (MD.marketingdetails.Campaign))
+                && (itemrules.camType == "B")
                 && (!itemrules.camCardCode || (itemrules.camCardCode.indexOf("," + MD.CardCode + ",")) > -1)
                 && (!itemrules.camCardGroupCode || (itemrules.camCardGroupCode.indexOf("," + MD.CardGroupCode + ",")) > -1)
                 && (!itemrules.camValidFrom || MD.DocTime >= itemrules.camValidFrom)
@@ -1078,7 +1079,6 @@ export default class Pricing {
         let PrssdLine = [];
         let br = {};
         // فعلا فقط پیاده سازی تعدادی انجام شده است. پیاده سازی مبلغی باید بعدا اضافه شود.
-//debugger;
         if (shortrules.length > 0) {
             let isReq = false;
             let linenum = 0;
@@ -1159,7 +1159,7 @@ export default class Pricing {
                             results.MarketingLines[itemb1].CampaignDetails.Status = 0;
                             results.MarketingLines[itemb1].CampaignDetails.Information += "مقدار تقاضا شده این خط کمتر از مقدار مجاز (" + item.lineMinReqQty ?? 0 + ") است. این خط حذف می شود.";
                             results.MarketingLines[itemb1].CampaignDetails.RequestedQty = results.MarketingLines[itemb1].ItemQty;
-                           // results.MarketingLines[itemb1].ItemQty = 0;
+                            // results.MarketingLines[itemb1].ItemQty = 0;
                             //debugger;
                             if (!KeepOthers ?? false) this.ZerolineMarketing(results.MarketingLines[itemb1]);
                         }
@@ -1244,7 +1244,7 @@ export default class Pricing {
                     return results;
                 }
             }
-//debugger;
+            //debugger;
             // قاعده تعداد خطوط فاکتور
             let rownum = bri.filter(x => x.isExist).length;
             if (rownum > shortrules[0].camMaxRow || rownum < shortrules[0].camMinRow) {
@@ -1359,7 +1359,15 @@ export default class Pricing {
         if (CurrentDoc) {
             doctocalc = CurrentDoc;
         }
+        if (ItemCodes == null) {
+            if (CurrentDoc.MarketingLines != null && CurrentDoc.MarketingLines.length > 0) {
+                ItemCodes = [];
+                for (var LineItem = 0; LineItem < CurrentDoc.MarketingLines.length; LineItem++) {
+                    ItemCodes.push(CurrentDoc.MarketingLines[LineItem].ItemCode);
+                }
 
+            }
+        }
         if (!doctocalc.marketingdetails)
             doctocalc.marketingdetails = {};
         if (!doctocalc.MarketingLines)
@@ -1397,21 +1405,28 @@ export default class Pricing {
 
         //ساختن اقلام سند برای محاسبه
         let onhand = null;
+        let NumInsale = 1;
+        let SaleMeasureUnit = "";
 
         for (let item of ItemCodes) {
             onhand = null;
             for (let item1 of Items) {
                 if (item1.itemCode == item && item1.inventory && item1.inventory.length >= 1) {
+                    SaleMeasureUnit = item1.saleMeasureUnit ?? "";
+                    NumInsale = item1.numInSale ?? 1;
                     for (let iteminv of item1.inventory) {
                         if (iteminv.whsCode == doctocalc.WhsCode && iteminv.qtyLevRel) {
                             onhand = iteminv;
                         }
                     }
+                    break;
                 }
             }
             result.push({
                 ItemCode: item,
                 OnHand: onhand,
+                SalesMeasureUnit: SaleMeasureUnit,
+                NumInSale: NumInsale,
             });
             if (!doctocalc.MarketingLines.indexOf(x => x.ItemCode == item) > -1) {
                 doctocalc.MarketingLines.push({

@@ -1,7 +1,6 @@
 import React,{Component} from "react";
 import appContext from "../../../app-context";
-import AIOButton from "../../../interfaces/aio-button/aio-button";
-import Form from './../../../interfaces/aio-form-react/aio-form-react';
+import AIOInput from "../../../npm/aio-input/aio-input";
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
 import CreaditCard,{ getCardDetail } from "./../credit-card/credit-card";
 import './index.css';
@@ -10,8 +9,8 @@ export default class TanzimateKifePool extends Component{
     static contextType = appContext;
     async removeCard(id){
         let {cards,onChange} = this.props;
-        let {walletApis,showMessage} = this.context;
-        let res = await walletApis({api:'hazfe_cart',parameter:id})
+        let {apis,showMessage} = this.context;
+        let res = await apis.request({api:'wallet.hazfe_cart',parameter:id})
         if(typeof res === 'string'){showMessage(res)}
         else if(res === true){
             onChange(cards.filter((o)=>o.id !== id))
@@ -28,7 +27,7 @@ export default class TanzimateKifePool extends Component{
                         {flex:1,html:'کارت ها',align:'v'},
                         {
                             html:(
-                                <AIOButton
+                                <AIOInput
                                     type='button' style={{background:'none'}} caret={false}
                                     className='color3B55A5 fs-12 bold'
                                     text='افزودن کارت جدید'
@@ -76,10 +75,10 @@ class AddCard extends Component{
         this.state = {model:{name:'',number:'62198610'}}
     }
     async onSubmit(){
-        let {walletApis,showMessage} = this.context;
+        let {apis,showMessage} = this.context;
         let {onClose,onAdd} = this.props;
         let {model} = this.state;
-        let res = await walletApis({api:'afzoozane_cart',parameter:model})
+        let res = await apis.request({api:'wallet.afzoozane_cart',parameter:model})
         if(typeof res === 'string'){showMessage(res); onClose()}
         if(res === true){
             onAdd(model);
@@ -91,22 +90,21 @@ class AddCard extends Component{
         let {className} = getCardDetail(model.number || '')
         let cls = 'affix-logo card-logo' + (className?' ' + className:'')
         return (
-            <Form
-                rtl={true} lang={'fa'}
-                model={model}
-                footerAttrs={{style:{background:'#fff'}}}
-                theme={{
-                    rowStyle:{marginBottom:12},
-                    bodyStyle:{background:'#fff',padding:12,paddingBottom:36}
-                
-                }}
+            <AIOInput
+                type='form' rtl={true} lang={'fa'}
+                value={model}
                 onChange={(model)=>this.setState({model})}
-                header={{title:'افزودن کارت',style:{background:'#fff'}}}
-                inputs={[
-                    {type:'text',field:'model.number',label:'شماره کارت',validations:[['required']],rowKey:'1'},
-                    {type:'html',html:()=><div className={cls}></div>,rowKey:'1',rowWidth:60,show:!!className},
-                    {type:'text',field:'model.name',label:'نام دارنده کارت',validations:[['required']]}
-                ]}
+                title='افزودن کارت'
+                inputs={{
+                    column:[
+                        {
+                            row:[
+                                {input:{type:'text'},field:'value.number',label:'شماره کارت',validations:[['required']]},
+                                {input:{type:'text'},field:'value.name',label:'نام دارنده کارت',validations:[['required']]}
+                            ]
+                        }
+                    ]
+                }}
                 onSubmit={()=>this.onSubmit()}
                 submitText='افزودن'
             />

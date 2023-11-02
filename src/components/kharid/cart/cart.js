@@ -1,9 +1,8 @@
 import React,{Component} from 'react';
 import appContext from './../../../app-context';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
-import AIOButton from '../../../interfaces/aio-button/aio-button';
+import AIOInput from '../../../npm/aio-input/aio-input';
 import noItemSrc from './../../../images/not-found.png';
-import NV3Report from '../nv3-report';
 import SplitNumber from '../../../npm/aio-functions/split-number';
 export default class Cart extends Component{
     static contextType = appContext;
@@ -38,20 +37,17 @@ export default class Cart extends Component{
       this.setState({activeTabId,tabs})
     }
     tabs_layout(){
-      let {cart,belex} = this.context;
+      let {cart,getShopById} = this.context;
       let {activeTabId,tabs} = this.state;
       return {
         html:(
-          <AIOButton 
+          <AIOInput
             type='tabs' 
             options={tabs}  
-            style={{marginBottom:12}}
+            style={{marginBottom:12,fontSize:12}}
             value={activeTabId} 
             optionAfter={(option)=><div className='tab-badge'>{Object.keys(cart[option].items).length}</div>}
-            optionText={(option)=>{
-              if(option === 'بلکس'){return belex.name}
-              return option
-            }}
+            optionText={(option)=>getShopById(option).name}
             optionValue='option'
             onChange={(activeTabId)=>this.setState({activeTabId})}
           />
@@ -71,20 +67,17 @@ export default class Cart extends Component{
     }
     products_layout(){
       let {activeTabId} = this.state;
+      let {getShopById} = this.context;
       if(!activeTabId){return this.empty_layout()}
-      let {cart} = this.context;
-      let tab = cart[activeTabId];
-      let {getProductCards} = tab;
-      let productCards = getProductCards('cart');
+      let productCards = getShopById(activeTabId).getCartProducts('cart');
       if(!productCards.length){return this.empty_layout()}
-      return {flex: 1,className:'ofy-auto',gap:12,column:getProductCards('cart').map((card) => {return {html:card}})}
+      return {flex: 1,className:'ofy-auto',gap:12,column:productCards.map((card) => {return {html:card}})}
     }
     payment_layout(){
-      let {cart} = this.context;
       let {activeTabId} = this.state;
       if(!activeTabId){return false}
-      let cartTab = cart[activeTabId];
-      let {total,paymentAmount} = cartTab.getAmounts();
+      let {getShopById} = this.context;
+      let {paymentAmount} = getShopById(activeTabId).getAmounts();
       let {continued} = this.state;
       return {
         size: 72,className: "bgFFF p-h-12 theme-box-shadow",
@@ -108,55 +101,18 @@ export default class Cart extends Component{
         ],
       }
     }
-    nv3Report_layout(){
-      let {activeTabId} = this.state;
-      if(!activeTabId){return false}
-      if(activeTabId !== 'نورواره 3'){return false}
-      let {cart} = this.context;
-      let cartTab = cart[activeTabId];
-      let {total} = cartTab.getAmounts()
-      
-      return {
-          html:<NV3Report amount={total}/>
-      }
-    }
     continue(){
-      let {openPopup,cart} = this.context;
       let {activeTabId} = this.state;
       if(!activeTabId){return false}
-      if(activeTabId === 'بلکس'){
-        let items = cart[activeTabId].items;
-        for(let prop in items){
-          let {count,product,variantId} = items[prop];
-          let total = 0;
-          for(let x in count.qtyInPacks){
-              for(let i = 0; i < count.qtyInPacks[x].length; i++){
-                  let o = count.qtyInPacks[x][i];
-                  total += o.count;
-              }
-          }
-          let v = product.variants[0];
-          let qty = v.qty;
-          let delta = qty - total;
-          if(delta){
-            let a = count.qtyInPacks[v.id];
-            let b = a.find(({optionValueName})=>optionValueName === 'مهتابی')
-            if(!b)
-            {
-              b = a[0];
-            }
-            b.count = b.count + delta
-          }
-        }
-      }
-      openPopup('shipping',activeTabId)
+      let {getShopById} = this.context;
+      getShopById(activeTabId).edameye_farayande_kharid()
     }
     render(){
         return (
             <RVD 
               layout={{
                 flex: 1,className:'theme-popup-bg',
-                column: [this.tabs_layout(),this.products_layout(),this.nv3Report_layout(),this.payment_layout()]
+                column: [this.tabs_layout(),this.products_layout(),this.payment_layout()]
               }}
             />
         )

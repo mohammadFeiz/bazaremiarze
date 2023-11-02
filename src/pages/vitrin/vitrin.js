@@ -1,88 +1,152 @@
-import React, { Component, createContext } from "react";
+import React, { Component } from "react";
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
-import AIOButton from "../../npm/aio-button/aio-button";
+import AIOInput from "../../npm/aio-input/aio-input";
 import AIOPopup from "../../npm/aio-popup/aio-popup";
 import image_src from './../../images/vitrin-landing.png';
+import vitlan1 from './../../images/vitrin-landing-1.png';
+import vitlan2 from './../../images/vitrin-landing-2.png';
 import SplitNumber from './../../npm/aio-functions/split-number';
 import appContext from "../../app-context";
 import Icon from "@mdi/react";
+import vbsrc from './../../images/vitrin-bazargah.png';
 import { mdiCamera, mdiChevronLeft, mdiClose, mdiFilter, mdiMagnify, mdiMenu, mdiPlus, mdiPlusThick } from "@mdi/js";
 import vitrin_niazsanji_src from './../../images/vitrin-niazsanji.jpg';
-import vitrin_category_src from './../../images/vitrin-category.png';
-import vitrin_brand_src from './../../images/vitrin-brand.png';
 import VitrinContext from "../../vitrin-context";
+function getMockProducts(){
+    return [
+        {
+            "id":"12","name":"لامپ ال ای دی شمعی 7 وات پایه E14","price":257840,
+            "src":"https://spree.burux.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBcFVuIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--8e8c3ef2ccc7b1cbcb2c858cef9b74eca67ba175/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJY0c1bkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--b54640fc934b31523223fa056467172e00fd1c25/shami-bulb-min.png",
+            "inStock":true,"code":"1372"
+        },
+        {
+            "id":"23","name":"پنل پلی کربنات توکار 15 وات","price":789360,
+            "src":"https://spree.burux.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBa29wIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--5cae8db597719fa2654c09137d2a4607a05b3f5d/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--03d1c64501de397ba57f169f884db45bff2afcea/Panel-15w-min.jpg",
+            "inStock":true,"code":"7562"
+        },
+        {
+            "id":"24","name":"پنل پلی کربنات توکار 18 وات","price":934560,
+            "src":"https://spree.burux.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBanNwIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--f367f06211b913bdba0d88cb3c95f50ac7d5b975/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--03d1c64501de397ba57f169f884db45bff2afcea/Panel-18w-min.jpg",
+            "inStock":true,"code":"7572"
+        },
+        {
+            "id":"26","name":"پنل پلی کربنات توکار 22 وات","price":1504800,
+            "src":"https://spree.burux.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaXdwIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--b66a924e87d2600ef35c185982c036fd814e829c/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--03d1c64501de397ba57f169f884db45bff2afcea/Panel-22w-min.jpg",
+            "inStock":true,"code":"7580"
+        },
+        {
+            "id":"26","name":"پنل پلی کربنات توکار 22 وات","price":1504800,
+            "src":"https://spree.burux.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaXdwIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--b66a924e87d2600ef35c185982c036fd814e829c/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--03d1c64501de397ba57f169f884db45bff2afcea/Panel-22w-min.jpg",
+            "inStock":true,"code":"7580"
+        },
+        {
+            "id":"26","name":"پنل پلی کربنات توکار 22 وات","price":1504800,
+            "src":"https://spree.burux.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaXdwIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--b66a924e87d2600ef35c185982c036fd814e829c/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--03d1c64501de397ba57f169f884db45bff2afcea/Panel-22w-min.jpg",
+            "inStock":true,"code":"7580"
+        },
+        {
+            "id":"26","name":"پنل پلی کربنات توکار 22 وات","price":1504800,
+            "src":"https://spree.burux.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaXdwIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--b66a924e87d2600ef35c185982c036fd814e829c/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--03d1c64501de397ba57f169f884db45bff2afcea/Panel-22w-min.jpg",
+            "inStock":true,"code":"7580"
+        },
+        {
+            "id":"26","name":"پنل پلی کربنات توکار 22 وات","price":1504800,
+            "src":"https://spree.burux.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaXdwIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--b66a924e87d2600ef35c185982c036fd814e829c/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--03d1c64501de397ba57f169f884db45bff2afcea/Panel-22w-min.jpg",
+            "inStock":true,"code":"7580"
+        },
+        {
+            "id":"26","name":"پنل پلی کربنات توکار 22 وات","price":1504800,
+            "src":"https://spree.burux.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaXdwIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--b66a924e87d2600ef35c185982c036fd814e829c/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--03d1c64501de397ba57f169f884db45bff2afcea/Panel-22w-min.jpg",
+            "inStock":true,"code":"7580"
+        },
+        {
+            "id":"26","name":"پنل پلی کربنات توکار 22 وات","price":1504800,
+            "src":"https://spree.burux.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaXdwIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--b66a924e87d2600ef35c185982c036fd814e829c/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--03d1c64501de397ba57f169f884db45bff2afcea/Panel-22w-min.jpg",
+            "inStock":true,"code":"7580"
+        }
+    ]
+}
 export default class Vitrin extends Component {
     static contextType = appContext
-    state = {
-        step: 0,
-        products: [],
-        selectedProducts: [],
-        lastUpdate: 'چند لحظه پیش',
-        categoryOptions: [],
-        miarze_porforoosh: [],
-        miarze_categories: [],
-        miarze_brands: [],
-        started: undefined,
-        page: 2,
-        popup:{}
+    constructor(props){
+        super(props);
+        this.popup = new AIOPopup();
+        this.state = {
+            step: 0,
+            selectedProducts: {},
+            selectedProducts_loading:true,
+            lastUpdate: 'چند لحظه پیش',
+            miarze_porforoosh: [],
+            //miarze_categories: [],
+            miarze_brands: [],
+            started: undefined,
+            page: 2,
+            popup:{}
+        }
     }
-    updateSelectedProducts(id) {
-        let { vitrinApis } = this.context;
-        let { selectedProducts,products } = this.state;
-        let state = selectedProducts.indexOf(id) === -1;
-        vitrinApis({
-            api: 'v_updateMyVitrin',
-            parameter: { id, state,product:products.find((o)=>o.id === id) },
-            callback: () => {
+    updateSelectedProducts(id,product) {
+        let { apis } = this.context;
+        let { selectedProducts } = this.state;
+        let state = !!selectedProducts[id];
+        apis.request({
+            api: 'vitrin.v_updateMyVitrin',
+            parameter: { id, state,product },
+            onSuccess: () => {
                 let { selectedProducts } = this.state;
                 let newSelectedProducts;
-                if (state) { newSelectedProducts = selectedProducts.concat(id) }
-                else { newSelectedProducts = selectedProducts.filter((o) => o !== id) }
+                if (!state) { newSelectedProducts = {...selectedProducts,[id]:product} }
+                else { 
+                    newSelectedProducts = {}
+                    for(let prop in selectedProducts){
+                        if(prop !== id){newSelectedProducts[prop] = selectedProducts[prop]}
+                    } 
+                }
                 this.setState({ selectedProducts: newSelectedProducts })
             }
         })
     }
     async componentDidMount() {
-        let { vitrinApis,userInfo } = this.context;
-        let started = await vitrinApis({
-            api: 'v_getStarted',
-            name: 'دریافت وضعیت ویترین'
+        let { apis,userInfo,addAnaliticsHistory } = this.context;
+        addAnaliticsHistory({url:'Vitrin',title:'Vitrin'})
+        let started = await apis.request({
+            api: 'vitrin.v_getStarted',
+            description: 'دریافت وضعیت ویترین'
         })
-        let products = await vitrinApis({
-            api: 'v_kolle_mahsoolat',
-            cache: 24 * 60 * 60 * 1000,
-            name: 'دریافت لیست محصولات قابل انتخاب ویترین'
-        })
-        let selectedProducts = await vitrinApis({
-            api: 'v_mahsoolate_entekhab_shode',
-            name: 'دریافت لیست محصولات انتخاب شده ی ویترین',
-            parameter:userInfo.cardCode
+        apis.request({
+            api: 'vitrin.v_mahsoolate_entekhab_shode',description: 'دریافت آی دی های محصولات انتخاب شده ی ویترین',loading:false,
+            parameter:userInfo.cardCode,
+            onSuccess:async (selectedProductsIds)=>{
+                let selectedProductsList = selectedProductsIds.length?await apis.request({
+                    api: 'vitrin.v_getProductsByIds',description: 'دریافت لیست محصولات انتخاب شده ی ویترین',loading:false,
+                    parameter:selectedProductsIds.toString()
+                }):[];
+                let selectedProducts = {};
+                for(let i = 0; i < selectedProductsList.length; i++){
+                    let p = selectedProductsList[i];
+                    selectedProducts[p.id] = p
+                }
+                this.setState({selectedProducts,selectedProducts_loading:false})
+            }
         });
-        let categoryOptions = await vitrinApis({
-            api: 'v_category_options',
-            cache: 24 * 60 * 60 * 1000,
-            name: 'دریافت لیست دسته بندی های محصولات ویترین'
-        });
-        await vitrinApis({
-            api: 'v_miarze_categories',
-            cache: 24 * 60 * 60 * 1000,
-            name: 'دریافت لیست دسته بندی های می ارزه',
-            callback: (miarze_categories) => this.setState({ miarze_categories })
-        });
-        await vitrinApis({
-            api: 'v_miarze_porforoosh',
-            cache: 24 * 60 * 60 * 1000,
-            name: 'دریافت لیست پرفروش های می ارزه',
-            callback: (miarze_porforoosh) => this.setState({ miarze_porforoosh })
-        });
-        await vitrinApis({
-            api: 'v_miarze_brands',
-            cache: 24 * 60 * 60 * 1000,
-            name: 'دریافت برند های می ارزه',
-            callback: (miarze_brands) => this.setState({ miarze_brands })
-        });
-
-        this.setState({ products, selectedProducts, categoryOptions, started })
+        
+        
+        
+        // await apis.request({
+        //     api: 'vitrin.v_miarze_categories',description: 'دریافت لیست دسته بندی های می ارزه',
+        //     cache: {time:24 * 60 * 60 * 1000,name:'vitrin.v_miarze_categories'},
+        //     onSuccess: (miarze_categories) => this.setState({ miarze_categories })
+        // });
+        // await apis.request({
+        //     api: 'vitrin.v_miarze_porforoosh',description: 'دریافت لیست پرفروش های می ارزه',
+        //     cache: {time:24 * 60 * 60 * 1000,name:'vitrin.v_miarze_porforoosh'},
+        //     onSuccess: (miarze_porforoosh) => this.setState({ miarze_porforoosh })
+        // });
+        // await apis.request({
+        //     api: 'vitrin.v_miarze_brands',description: 'دریافت برند های می ارزه',
+        //     cache: {time:24 * 60 * 60 * 1000,name:'vitrin.v_miarze_brands'},
+        //     onSuccess: (miarze_brands) => this.setState({ miarze_brands })
+        // });
+        this.setState({ started })
     }
     changeStep() {
         let { step } = this.state;
@@ -90,54 +154,39 @@ export default class Vitrin extends Component {
     }
     openPopup(name, parameter) {
         let { popup } = this.state;
-        let { addPopup,removePopup } = popup;
+        let { addModal,removeModal } = this.popup;
         if (name === 1) {
-            addPopup({
-                id: 'vitrin1',
-                type: 'fullscreen',
-                title: 'بروزرسانی ویترین من',
-                body: () => {
-                    return (
-                        <VitrinPage1 isWizard={false}/>
-                    )
-                }
+            addModal({
+                id: name,position: 'fullscreen',header:{title: 'بروزرسانی ویترین من'},
+                body: {render:() => <VitrinPage1 isWizard={false}/>}
             })
         }
         else if (name === 2) {
-            addPopup({
-                type: 'fullscreen',
-                title: 'ویترین من',
-                body: () => {
-                    return <VitrinPage2 />
-                }
-            })
+            addModal({id:name,position: 'fullscreen',header:{title: 'ویترین من'},body: {render:() => <VitrinPage2 />}})
         }
         else if (name === 'search'){
-            addPopup({
-                type: 'fullscreen', title: 'افزودن محصول به ویترین من',
-                body: () => (
+            addModal({
+                id:name,
+                position: 'fullscreen', 
+                header:{title: 'افزودن محصول به ویترین من'},
+                body: {render:() => (
                     <SearchProducts 
-                        onClose={() => removePopup()} 
+                        onClose={() => removeModal()} 
                         isFirstTime={parameter}
                         onNext={()=>{
-                            removePopup();
+                            removeModal();
                             this.setState({page:2,started:true})
                         }}
                     />
-                )
+                )}
             })
         }
     }
     start(){
-        let {vitrinApis} = this.context;
-        vitrinApis({
-            api:'v_setStarted',
-            parameter:true,
-            name:'شروع ویترین',
-            callback:()=>{
-                this.openPopup('search',true)
-                //this.setState({page:1,started:true})
-            }
+        let {apis} = this.context;
+        apis.request({
+            api:'vitrin.v_setStarted',parameter:true,description:'شروع ویترین',
+            onSuccess:()=>this.setState({started:true},()=>this.openPopup('search',true))
         })
     }
     landing_layout() {
@@ -147,24 +196,33 @@ export default class Vitrin extends Component {
             <RVD
                 layout={{
                     className: 'page-bg ofy-auto',
-                    style:{background:'#EFF0FF'},
+                    style:{background:'#fff'},
                     column: [
-                        { flex: 1 },
-                        { html: (<img src={image_src} alt='' width='144' height='144' />), align: 'vh' },
-                        { flex: 1 },
-                        { html: 'محصولات خودت رو بفروش!', className: 'theme-dark-font-color fs-24 bold', align: 'h' },
+                        { html: (<img src={image_src} alt='' width='240' height='259' />), align: 'vh' },
+                        { size: 12 },
+                        { html: 'زودتر از سفارشات با خبر شو!', className: 'theme-dark-font-color fs-24 bold', align: 'h' },
+                        {size:8},
                         {
                             html: 'همین الان ویترین خودت رو بچین تا هیچ سفارشی رو از دست ندی!',
                             className: 'theme-medium-font-color fs-16 p-h-24', align: 'h'
                         },
-                        { flex: 1 },
+                        {size:36},
+                        
                         {
                             show: started === false,
                             align: 'vh',
                             className:'p-h-24',
-                            html: (<button style={{ width: '100%', borderRadius: 24,height:42 }} className="button-2" onClick={() => this.start()}>شروع کن</button>)
+                            html: (<button style={{ width: '100%', borderRadius: 24,height:48 }} className="button-2" onClick={() => this.start()}>شروع کن</button>)
                         },
-                        { flex: 2 },
+                        {
+                            html:<img src={vitlan2} width='100%' alt=''/>
+                        },
+                        {size:24},
+                        {
+                            html:<img src={vitlan1} width='100%' alt=''/>
+                        },
+                        {size:24},
+                        
 
                     ]
                 }}
@@ -172,12 +230,14 @@ export default class Vitrin extends Component {
         )
     }
     SetState(obj) { this.setState(obj) }
+    
     getContext() {
+        let {apis} = this.context;
         return {
-            ...this.state,
+            ...this.state,apis,
             SetState: this.SetState.bind(this),
             openPopup:this.openPopup.bind(this),
-            removePopup:(id,animate)=>this.state.popup.removePopup(id,animate),
+            removeModal:(id)=>this.popup.removeModal(id),
             updateSelectedProducts: this.updateSelectedProducts.bind(this)
         }
     }
@@ -196,7 +256,7 @@ export default class Vitrin extends Component {
     }
     getContent() {
         let { started, page } = this.state;
-        if (started !== true) { return this.landing_layout() }
+        if (started !== true) { return  }
         if (page === 1) { 
             return (
                 <VitrinPage1 isWizard={true}/>
@@ -205,19 +265,16 @@ export default class Vitrin extends Component {
         if (page === 2) { return <VitrinPage2 /> }
     }
     render() {
+        let { started, page } = this.state;
         return (
             <VitrinContext.Provider value={this.getContext()}>
-                {this.getContent()}
-                <AIOPopup
-                    getActions={({addPopup,removePopup})=>{
-                        this.setState({popup:{addPopup,removePopup}})
-                    }}
-                />
+                {started !== true && this.landing_layout()}
+                {started === true && <VitrinPage1/>}
+                {this.popup.render()}
             </VitrinContext.Provider>
         )
     }
 }
-
 class VitrinPage1 extends Component {
     static contextType = VitrinContext;
     constructor(props) {
@@ -226,56 +283,62 @@ class VitrinPage1 extends Component {
             searchValue: '',
         }
     }
-    box_layout() {
+    count_layout() {
+        let { selectedProducts } = this.context;
         return {
-            html: (
-                <Box
-                    texts={[
-                        { className: 'fs-16 bold', html: 'محصولات مورد نظرتان را به ویترین اضافه کنید' },
-                        { className: 'fs-12 theme-medium-font-color', html: 'بر روی + محصول مورد نظر ضربه بزنید' },
-                    ]}
-                />
-            )
+            align: 'vh',className:'p-12',
+            column: [
+                {
+                    className: 'w-144 h-144 br-6', style: { border: '1px solid #eee' },
+                    column: [
+                        { flex: 1 },
+                        { html: getSvg('svg1'), align: 'vh' },
+                        { size: 6 },
+                        { html: `${Object.keys(selectedProducts).length} کالا`, align: 'vh', className: 'bold fs-14 theme-dark-font-color', size: 24 },
+                        { html: 'در ویترین شما', className: 'theme-medium-font-color fs-10', align: 'h' },
+                        { flex: 1 }
+                    ]
+                }
+            ]
+        }
+    }
+    bazargah_billboard_layout(){
+        return {
+            html:<img src={vbsrc} width='100%' alt=''/>,align:'vh',className:'m-h-12'
         }
     }
     toolbar_layout() {
         let {openPopup} = this.context;
         return {
-            className: 'br-6 p-h-12 m-b-12 of-visible', size: 36, style: { background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid #ddd', boxShadow: '0 0 3px 0 rgba(0,0,0,0.1)' },
+            className: 'br-6 p-12 m-b-12 of-visible', style: { background: '#fff' },
             row: [
-                { flex: 1, className: 'fs-14 bold', html: 'محصولات ویترین من', align: 'v' },
-                {
-                    row: [
-                        { html: <Icon path={mdiPlusThick} size={0.8} />, align: 'vh', className: 'theme-link-font-color' },
-                        { html: 'افزودن محصول', className: 'theme-link-font-color bold', align: 'v' }
-                    ],
-                    onClick: () => openPopup('search')
-                }
+                { html: getSvg('svg2'), style: { background: '#3b55a5', padding: 3, width: 36, height: 36, borderRadius: '100%' }, align: 'vh' },
+                {size:12},
+                { flex: 1, className: 'fs-14 bold', html: 'ویترین من', align: 'v' },
+                {html:(<button onClick={()=>openPopup('search')} className='button-2'>افزودن محصول</button>)}
             ]
         }
     }
+    
     products_layout() {
-        let { products, selectedProducts } = this.context;
-        let products_dic = {};
-        for (let i = 0; i < products.length; i++) {
-            let o = products[i];
-            products_dic[o.id] = o;
-        }
-        let items = selectedProducts.map((id) => {
-            return products_dic[id];
-        });
-        if (selectedProducts.length % 2 !== 0) { items.push({}) }
+        let { selectedProducts,selectedProducts_loading } = this.context;
+        let items = Object.keys(selectedProducts).map((id) => selectedProducts[id]);
+        if(selectedProducts_loading){items = getMockProducts()}
+        console.log(JSON.stringify(items))
+        if (items.length % 2 !== 0) { items.push({}) }
         return {
-            grid: items.map(({ name, src, price, id }) => {
+            grid: items.map((o) => {
+                let { name, src, price, id } = o;
                 let props = { name, src, price, id, selected: true };
                 return {
                     flex: 1,
                     html: (
                         <ProductCard
+                            loading={!!selectedProducts_loading}
                             {...props}
                             onSelect={(id) => {
                                 let { updateSelectedProducts } = this.context;
-                                updateSelectedProducts(id)
+                                updateSelectedProducts(id,o)
                             }}
                         />
                     )
@@ -288,41 +351,67 @@ class VitrinPage1 extends Component {
         let {SetState} = this.context;
         SetState({page:2})
     }
-    footer_layout() {
-        let { isWizard } = this.props;
-        if(!isWizard){return false}
-        return { className: 'p-6', html: (<button className="button-2" onClick={() => this.next()}>بعدی</button>) }
-    }
     render() {
         return (
             <RVD
                 layout={{
-                    className: 'theme-popup-bg',
+                    className: 'theme-popup-bg ofy-auto',flex:1,
                     column: [
-                        this.box_layout(),
+                        this.count_layout(),
+                        this.bazargah_billboard_layout(),
                         this.toolbar_layout(),
-                        {
-                            flex: 1, className: 'ofy-auto',
-                            column: [
-                                this.products_layout(),
-                            ]
-                        },
-                        this.footer_layout()
+                        this.products_layout(),    
+                        {size:24},
                     ]
                 }}
             />
         )
     }
 }
-
 class SearchProducts extends Component {
     static contextType = VitrinContext;
     constructor(props) {
         super(props);
         this.state = {
             searchValue: '',
-            selectedCategories: [],
+            products: undefined,
+            pageNumber:1,
+            pageSize:10,
+        
         }
+    }
+    addSuggestion(){
+        let {apis} = this.context;
+        let {suggestion_brand,suggestion_file,suggestion_name} = this.state
+        apis.request({
+            api:'vitrin.addSuggestion',
+            description:'پیشنهاد افزودن محصول به ویترین',
+            parameter:{suggestion_brand,suggestion_file,suggestion_name},
+            message:{success:true},
+            onSuccess:()=>{
+                this.setState({suggestion_brand:'',suggestion_file:undefined,suggestion_image:undefined,suggestion_name:''})
+            }
+        })
+    }
+    async updateProducts(){
+        let { apis } = this.context;
+        let {pageNumber,pageSize,searchValue} = this.state;
+        this.setState({products:undefined})
+        let products = await apis.request({
+            api: 'vitrin.v_kolle_mahsoolat',description: 'دریافت لیست محصولات قابل انتخاب ویترین',loading:false,
+            //cache: {time:24 * 60 * 60 * 1000,name:'vitrin.v_kolle_mahsoolat'},
+            parameter:{pageSize,pageNumber,searchValue}
+        })
+        this.setState({products})
+    }
+    componentDidMount(){
+        this.updateProducts()
+    }
+    changePageNumber(dir){
+        let {pageNumber,products} = this.state;
+        if(dir === -1 && pageNumber === 1){return}
+        if(dir === 1 && !products.length){return}
+        this.setState({pageNumber:pageNumber + dir},()=>this.updateProducts())
     }
     box_layout(){
         let {isFirstTime} = this.props;
@@ -339,11 +428,13 @@ class SearchProducts extends Component {
             )
         }
     }
+    changeSearch(value){
+        this.setState({searchValue:value,pageNumber:1},()=>this.updateProducts())
+    }
     toolbar_layout() {
-        let { searchValue } = this.state;
         return {
-            className: 'm-h-12 br-6',
-            style: { border: '1px solid #ddd' },
+            className: 'm-12 br-6',
+            style: { border: '1px solid #ddd',background:'#fff' },
             row: [
                 {
                     html: <Icon path={mdiMagnify} size={1} />, align: 'vh', size: 48, style: { color: '#bbb' }
@@ -351,9 +442,9 @@ class SearchProducts extends Component {
                 {
                     flex: 1,
                     html: (
-                        <input
-                            type='text' value={searchValue}
-                            onChange={(e) => this.setState({ searchValue: e.target.value })} placeholder="جستجو"
+                        <AIOInput
+                            type='text' onChange={(value)=>this.changeSearch(value)}
+                            placeholder="جستجو"
                             className='w-100 br-6 h-36 p-h-12' style={{ border: 'none' }}
                         />
                     )
@@ -361,109 +452,153 @@ class SearchProducts extends Component {
             ]
         }
     }
-    category_layout() {
-        let { selectedCategories } = this.state;
-        let { categoryOptions } = this.context;
-        return {
-            className: 'p-h-12',
-            html: (
-                <AIOButton
-                    type='multiselect' caret={false}
-                    optionText='option'
-                    optionValue='option'
-                    popupWidth='fit'
-                    optionTagAttrs={{ style: { background: '#2BBA8F' } }}
-                    style={{ background: '#2BBA8F15', border: '1px solid #2BBA8F' }}
-                    className='fs-12 br-6 h-36'
-                    text='دسته بندی محصولات'
-                    before={<Icon path={mdiMenu} size={1} style={{ color: '#2BBA8F' }} />}
-                    options={categoryOptions}
-                    value={selectedCategories}
-                    onChange={(selectedCategories) => this.setState({ selectedCategories })}
-                />
-            )
-        }
-    }
-    isMatchSearch(name) {
-        let { searchValue } = this.state;
-        if (!searchValue) { return true }
-        if (name.indexOf(searchValue) !== -1) { return true }
-        return false
-    }
-    isMatchCategories(categories) {
-        let { selectedCategories } = this.state;
-        if (!selectedCategories.length) { return true }
-        for (let i = 0; i < selectedCategories.length; i++) {
-            let sc = selectedCategories[i];
-            if (categories.indexOf(sc) !== -1) { return true }
-        }
-        return false
-    }
-    isSelected(id){
-        return this.selectedProducts.indexOf(id) !== -1
-    }
-    getFilteredProducts() {
-        let { products } = this.context;
-        return products.filter(({ categories = [], name, id }) => {
-            let isMatchSearch = this.isMatchSearch(name);
-            let isMatchCategories = this.isMatchCategories(categories);
-            let isSelected = this.isSelected(id);
-            return isMatchCategories && isMatchSearch && !isSelected;
-        })
-    }
     products_layout() {
-        let items = [...this.getFilteredProducts()];
-        if (items.length % 2 !== 0) {
-            items.push({})
+        let {products} = this.state;
+        let Products;
+        if(!products){
+            Products = getMockProducts()
         }
+        else {
+            Products = products;
+            if (Products.length % 2 !== 0) {
+                Products.push({})
+            }
+        }
+        
         return {
-            flex: 1, className: 'ofy-auto',
-            grid: items.map((o) => {
-                let { selectedProducts, SetState } = this.context;
+            className: 'ofy-auto',
+            grid: Products.map((o) => {
+                let { selectedProducts } = this.context;
                 let { name, src, price, id } = o;
-                let selected = selectedProducts.indexOf(id) !== -1;
+                let selected = !!selectedProducts[id];
                 let props = {
                     name, src, price, selected, id,
                     onSelect: (id) => {
                         let { updateSelectedProducts } = this.context;
-                        updateSelectedProducts(id);
+                        updateSelectedProducts(id,o);
                     }
                 };
                 return {
                     flex: 1,
-                    html: <ProductCard {...props} />
+                    html: <ProductCard {...props} loading={!products}/>
                 }
             }),
             gridCols: 2
         }
     }
-    footer_layout() {
-        let { onClose,isFirstTime,onNext } = this.props;
-        let html; 
-        if(isFirstTime){
-            html = <button className="button-2" onClick={() => onNext()}>بعدی</button>
+    paging_layout(){
+        let {pageNumber} = this.context;
+        let {products} = this.state;
+        if(!products){return false}
+        return {
+            size:36,className:'fs-12 bold',
+            row:[
+                {flex:1},
+                {html:'صفحه ی قبل',align:'vh',onClick:()=>this.changePageNumber(-1)},
+                {
+                    size:48,html:pageNumber,align:'vh',
+                },
+                {html:'صفحه ی بعد',align:'vh',onClick:()=>this.changePageNumber(1)},
+                {flex:1}
+            ]
         }
-        else {
-            html = <button className="button-2" onClick={() => onClose()}>بازگشت</button>
+    }
+    add_layout() {
+        let {isFirstTime} = this.props;
+        if(isFirstTime){return false}
+        let { suggestion_name = '',suggestion_brand = '',suggestion_image } = this.state;
+        return {
+            className: 'p-24',
+            style: { background: '#eee' },
+            column: [
+                { html: 'درخواست افزودن محصول', className: 'fs-18 bold theme-dark-font-color' },
+                { size: 12 },
+                {
+                    html: 'ما به سرعت در حال اضافه کردن محصولات جدید به می ارزه هستیم. نام محصول پیشنهادی خود را برای ما بفرستید تا ما در اولویت قرار دهیم.',
+                    className: 'fs-12 theme-medium-font-color t-a-right'
+                },
+                { size: 24 },
+                {html:'نام محصول',className:'p-h-12 bold fs-12',align:'v',size:24},
+                {
+                    html: (
+                        <input
+                            type='text' value={suggestion_name} placeholder="نام کامل محصول"
+                            style={{ width: '100%', height: 36, background: '#f8f8f8', border: 'none', padding: '0 12px' }}
+                            onChange={(e) => this.setState({ suggestion_name: e.target.value })}
+                        />
+                    )
+                },
+                {size:24},
+                {html:'برند محصول',className:'p-h-12 bold fs-12',align:'v',size:24},
+                {
+                    html: (
+                        <input
+                            type='text' value={suggestion_brand} placeholder="برند محصول"
+                            style={{ width: '100%', height: 36, background: '#f8f8f8', border: 'none', padding: '0 12px' }}
+                            onChange={(e) => this.setState({ suggestion_brand: e.target.value })}
+                        />
+                    )
+                },
+                { size: 24 },
+                {
+                    html: (
+                        <AIOInput
+                            style={{width: '100%',height: 'fit-content',display: 'flex',flexDirection: 'column',color: '#888'}}
+                            before={suggestion_image?undefined:<Icon path={mdiCamera} size={1} />} type='file'
+                            onChange={(files)=>{
+                                var fr = new FileReader();
+                                fr.onload = () => {
+                                    this.setState({suggestion_image:fr.result,suggestion_file:files[0].file})
+                                }
+                                fr.readAsDataURL(files[0].file);
+                            }}
+                            text={suggestion_image?(
+                                <img src={suggestion_image} alt='' width='100%'/>
+                            ):'افزودن تصویر محصول'}
+                        />
+                    )
+                },
+                { size: 12 },
+                {
+                    html: (
+                        <button className='button-2' onClick={()=>this.addSuggestion()}>ثبت</button>
+                    )
+                }
+            ]
         }
-        return {className: 'p-6',html}
+    }
+    first_submit_layout(){
+        let {isFirstTime} = this.props;
+        if(!isFirstTime){return false}
+        let {removeModal} = this.context;
+        return {
+            className: 'm-12',
+            html:<button onClick={()=>removeModal()} className='button-2'>تایید و ورود به ویترین من</button>,align:'vh'
+            
+        }
     }
     render() {
-        let {selectedProducts} = this.context;
-        if(!this.selectedProducts){this.selectedProducts = [...selectedProducts]}
         return (
             <RVD
                 layout={{
                     className: 'theme-popup-bg',
                     column: [
                         this.box_layout(),
-                        { size: 12 },
-                        this.toolbar_layout(),
-                        { size: 12 },
-                        this.category_layout(),
-                        { size: 12 },
-                        this.products_layout(),
-                        this.footer_layout()
+                        {
+                            flex:1,
+                            column:[
+                                this.toolbar_layout(),
+                                {
+                                    flex:1,className:'ofy-auto',
+                                    column:[
+                                        this.products_layout(),
+                                        this.paging_layout(),
+                                        this.add_layout()
+                                    ]
+                                },
+                                this.first_submit_layout()
+                            ]
+                        }
                     ]
                 }}
             />
@@ -491,7 +626,7 @@ class VitrinPage2 extends Component {
                         { flex: 1 },
                         { html: getSvg('svg1'), align: 'vh' },
                         { size: 6 },
-                        { html: `${selectedProducts.length} کالا`, align: 'vh', className: 'bold fs-14 theme-dark-font-color', size: 24 },
+                        { html: `${Object.keys(selectedProducts).length} کالا`, align: 'vh', className: 'bold fs-14 theme-dark-font-color', size: 24 },
                         { html: 'در ویترین شما', className: 'theme-medium-font-color fs-10', align: 'h' },
                         { flex: 1 }
                     ]
@@ -535,11 +670,8 @@ class VitrinPage2 extends Component {
         if(myVitrinType === 'slider'){
             return this.mahsoolate_vitrine_man_layout_h()
         }
-        let { selectedProducts, products } = this.context;
-        let items = selectedProducts.map((o) => {
-            let product = products.find((x) => x.id === o);
-            return product;
-        });
+        let { selectedProducts } = this.context;
+        let items = Object.keys(selectedProducts).map((id) => selectedProducts[id]);
         if (items.length > myVitrinLength) {
             items = items.slice(0, myVitrinLength)
         }
@@ -566,12 +698,9 @@ class VitrinPage2 extends Component {
         }
     }
     mahsoolate_vitrine_man_layout_h() {
-        let { selectedProducts, products,openPopup } = this.context;
+        let { selectedProducts, openPopup } = this.context;
         let { myVitrinLength } = this.state;
-        let items = selectedProducts.map((o) => {
-            let product = products.find((x) => x.id === o);
-            return product;
-        });
+        let items = Object.keys(selectedProducts).map((id) => selectedProducts[id]);
         if (items.length > myVitrinLength) {
             items = items.slice(0, myVitrinLength)
         }
@@ -582,12 +711,7 @@ class VitrinPage2 extends Component {
                     row: [
                         { html: getSvg('svg2'), style: { background: '#3b55a5', padding: 3, width: 36, height: 36, borderRadius: '100%' }, align: 'vh' },
                         { size: 12 },
-                        { html: 'محصولات ویترین من', align: 'v', className: 'bold fs-14',flex:1 },
-                        {
-                            className:'theme-link-font-color bold fs-14',align:'v',
-                            html:'نمایش همه',
-                            onClick:()=>openPopup(1)
-                        }
+                        { html: 'محصولات ویترین من', align: 'v', className: 'bold fs-14',flex:1 }
                     ]
                 },
                 {
@@ -597,11 +721,6 @@ class VitrinPage2 extends Component {
                     })
                 }
             ]
-        }
-    }
-    miarze_layout() {
-        return {
-            html: <Miarze />
         }
     }
     render() {
@@ -621,259 +740,6 @@ class VitrinPage2 extends Component {
                         // { size: 24 },
                         this.mahsoolate_vitrine_man_layout(),
                         { size: 12 },
-                        //this.miarze_layout()
-                    ]
-                }}
-            />
-        )
-    }
-}
-
-class Miarze extends Component {
-    static contextType = VitrinContext;
-    constructor(props) {
-        super(props);
-        this.state = {
-            searchValue: '',
-            addValue: '',
-        }
-    }
-    header_layout() {
-        return {
-            className: 'm-h-12',
-            row: [
-                { html: getSvg('miarze') },
-                { size: 12 },
-                {
-                    flex: 1,
-                    column: [
-                        { flex: 1 },
-                        { html: 'محصولات می ارزه', style: { color: '#006C50' }, className: 'fs-20 bold' },
-                        { size: 6 },
-                        { html: 'محصولاتی که در می ارزه برای فروش وجود دارد', className: 'fs-14 t-a-right' },
-                        { flex: 1 }
-                    ]
-                }
-            ]
-        }
-    }
-    changeSearch(searchValue) {
-        this.setStateL({ searchValue })
-    }
-    search_layout() {
-        let { searchValue } = this.state;
-        return {
-            size: 36,
-            style: { background: '#fff' },
-            className: 'm-h-12 br-6',
-            row: [
-                { size: 36, html: <Icon path={mdiMagnify} size={1} />, align: 'vh' },
-                {
-                    flex: 1,
-                    html: (
-                        <input
-                            placeholder="جستجو در میان محصولات می ارزه"
-                            style={{ width: '100%', background: '#fff', border: 'none' }}
-                            type='text' value={searchValue}
-                            onChange={(e) => this.changeSearch(e.target.value)}
-                        />
-                    )
-                }
-            ]
-        }
-    }
-    porForoosh_layout() {
-        let { miarze_porforoosh } = this.context;
-        return {
-            column: [
-                {
-                    size: 36, className: 'm-h-12', align: 'v',
-                    row: [
-                        { html: 'پرفروش ترین کالاها', className: 'fs-14 bold theme-dark-font-color' },
-                        { flex: 1 },
-                        { html: 'مشاهده همه', className: 'fs-14 theme-link-font-color bold' }
-                    ]
-                },
-                {
-                    className: 'ofx-auto',
-                    row: [
-                        { size: 12 },
-                        {
-                            gap: 12,
-                            row: miarze_porforoosh.map((o) => {
-                                return this.card_layout(o)
-                            })
-                        },
-                        { size: 12 }
-                    ]
-                }
-            ]
-        }
-    }
-    card_layout({ src, name, price }) {
-        return {
-            style: { background: '#fff', height: 240, width: 180 },
-            className: 'p-12 br-6',
-            column: [
-                { size: 90, html: <img src={src} height='100%' alt='' /> },
-                { html: name, className: 'fs-16 bold theme-dark-font-color t-a-right' },
-                { flex: 1 },
-                {
-                    row: [
-                        { flex: 1 },
-                        { html: SplitNumber(price), align: 'v', className: 'fs-16 theme-dark-font-color bold' },
-                        { size: 3 },
-                        { html: 'تومان', className: 'fs-10 theme-light-font-color', align: 'v' }
-                    ]
-                },
-                { size: 6 },
-                {
-                    html: (
-                        <AIOButton
-                            type='button'
-                            style={{ width: '100%', borderRadius: 24, border: '1px solid', color: '#3B55A5', background: 'none' }}
-                            text='افزودن به ویترین'
-                            before={<Icon path={mdiPlus} size={.8} />}
-                        />
-                    )
-                }
-            ]
-        }
-    }
-    categories_layout() {
-        let { miarze_categories } = this.context;
-        return {
-            column: [
-                { html: 'دسته بندی کالاها', size: 36, align: 'v', className: 'theme-dark-font-color fs-16 bold p-h-12' },
-                {
-                    row: [
-                        { size: 12 },
-                        {
-                            flex: 1,
-                            gap: 12, className: 'ofx-auto',
-                            row: miarze_categories.map(({ src, name }) => {
-                                return {
-                                    column: [
-                                        { html: <img src={src} height='110' width='110' alt='' /> },
-                                        { size: 12 },
-                                        { html: name, className: 'theme-dark-font-color fs-12 bold', align: 'h' }
-                                    ]
-                                }
-                            })
-                        },
-                        { size: 12 }
-                    ]
-                }
-            ]
-        }
-    }
-    brands_layout() {
-        let { miarze_brands } = this.context;
-        return {
-            column: [
-                { html: 'برند های موجود', size: 36, align: 'v', className: 'theme-dark-font-color fs-16 bold p-h-12' },
-                {
-                    row: [
-                        { size: 12 },
-                        {
-                            flex: 1,
-                            gap: 12, className: 'ofx-auto',
-                            row: miarze_brands.map(({ src, name }) => {
-                                return {
-                                    column: [
-                                        { html: <img src={src} height='100%' alt='' /> },
-                                        { size: 12 },
-                                        { html: name, className: 'theme-dark-font-color fs-12 bold', align: 'h' }
-                                    ]
-                                }
-                            })
-                        },
-                        { size: 12 }
-                    ]
-                }
-            ]
-        }
-    }
-    seeAll_layout() {
-        return {
-            className: 'p-12',
-            html: (
-                <button style={{ background: '#2BBA8F', color: '#fff', border: 'none' }} className='fs-12 bold w-100 h-36 br-6'>
-                    مشاهده همه محصولات می ارزه
-                </button>
-            )
-        }
-    }
-    add_layout() {
-        let { addValue } = this.state;
-        return {
-            className: 'p-12',
-            style: { background: '#fff' },
-            column: [
-                { html: 'درخواست افزودن محصول', className: 'fs-18 bold theme-dark-font-color' },
-                { size: 12 },
-                {
-                    html: 'ما به سرعت در حال اضافه کردن محصولات جدید به می ارزه هستیم. نام محصول پیشنهادی خود را برای ما بفرستید تا ما در اولویت قرار دهیم.',
-                    className: 'fs-12 theme-medium-font-color t-a-right'
-                },
-                { size: 12 },
-                {
-                    html: (
-                        <input
-                            type='text' value={addValue} placeholder="نام کامل محصول"
-                            style={{ width: '100%', height: 36, background: '#f8f8f8', border: 'none', padding: '0 12px' }}
-                            onChange={(e) => this.setState({ addValue: e.target.value })}
-                        />
-                    )
-                },
-                { size: 12 },
-                {
-                    html: (
-                        <AIOButton
-                            style={{
-                                width: '100%',
-                                height: 100,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                color: '#888'
-                            }}
-                            before={<Icon path={mdiCamera} size={1} />}
-                            type='file'
-                            text='افزودن تصویر محصول'
-                        />
-                    )
-                },
-                { size: 12 },
-                {
-                    html: (
-                        <button className='button-2'>ثبت</button>
-                    )
-                }
-            ]
-        }
-    }
-    render() {
-        return (
-            <RVD
-                layout={{
-                    style: { background: '#E7F1EB' },
-                    className: 'br-12',
-                    column: [
-                        { size: 24 },
-                        this.header_layout(),
-                        { size: 12 },
-                        this.search_layout(),
-                        { size: 24 },
-                        this.porForoosh_layout(),
-                        { size: 36 },
-                        this.categories_layout(),
-                        { size: 24 },
-                        // this.brands_layout(),
-                        // { size: 24 },
-                        this.seeAll_layout(),
-                        { size: 12 },
-                        this.add_layout()
-
                     ]
                 }}
             />
@@ -908,11 +774,11 @@ class ProductCard extends Component {
         }
     }
     plus_layout() {
-        let { price, selected, onSelect, id } = this.props;
+        let { price, selected, onSelect, id,loading } = this.props;
         if (!price || !onSelect) { return false }
         return {
             html: <Icon path={selected ? mdiClose : mdiPlus} size={1} />,
-            style: { border: '2px solid', color: selected ? '#605e5c' : '#3b55a5' },
+            style: { border: loading?undefined:'2px solid', color: selected ? 'orange' : '#3B55A5' },
             className: 'br-100 p-8',
             align: 'vh',
             onClick: () => onSelect(id)
@@ -923,8 +789,10 @@ class ProductCard extends Component {
         return { html: id }
     }
     render() {
+        let {loading} = this.props;
         return (
             <RVD
+                loading={loading}
                 layout={{
                     style: { height: 260, borderBottom: '1px solid #ddd', borderLeft: '1px solid #ddd' },
                     column: [
@@ -1005,7 +873,7 @@ function getSvg(type) {
             return (
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g clipPath="url(#clip0_5801_30867)">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M29.5918 5.43556C29.3946 5.27459 29.1467 5.18515 28.8891 5.18515H11.1113L10.9582 5.19574C10.7061 5.2308 10.472 5.35172 10.2967 5.54058L5.48356 10.7288L5.42553 10.7965L5.32884 10.9379C5.2187 11.1294 5.17476 11.3387 5.18672 11.5421L5.18701 14.3211L5.19688 14.6585C5.27541 15.9984 5.81856 17.2134 6.66754 18.1448L6.6687 33.7037L6.67884 33.8544C6.75242 34.3968 7.2173 34.8148 7.77981 34.8148H23.0885C22.7446 34.1227 22.494 33.3759 22.3533 32.5911H19.9937L19.9942 22.5941L19.984 22.4433C19.9105 21.9009 19.4456 21.4829 18.8831 21.4829H12.2224L12.0716 21.4931C11.5293 21.5667 11.1113 22.0315 11.1113 22.5941L11.1107 32.5911H8.89056L8.88869 19.6456C9.50412 19.8741 10.1699 19.9989 10.8649 19.9989C12.7372 19.9989 14.3979 19.0927 15.4312 17.6949C16.4654 19.0927 18.1261 19.9989 19.9984 19.9989C21.8603 19.9989 23.5129 19.1028 24.5483 17.7182L24.566 17.6919C25.6002 19.0914 27.2618 19.9989 29.1355 19.9989C29.8293 19.9989 30.4941 19.8745 31.1087 19.6467L31.1086 22.7958C31.8836 22.8466 32.6297 23.0033 33.3325 23.2516L33.3328 18.1448C34.2526 17.1358 34.8134 15.7939 34.8134 14.3211L34.8156 11.4781C34.8156 11.2543 34.7476 11.0263 34.5969 10.8254L34.5514 10.7677L29.7036 5.54058L29.5918 5.43556ZM28.8961 22.943V22.5941L28.8859 22.4433C28.8123 21.9009 28.3475 21.4829 27.785 21.4829H22.5977L22.4469 21.4931C21.9046 21.5667 21.4865 22.0315 21.4865 22.5941V27.7822L21.4967 27.933C21.5669 28.4506 21.9936 28.855 22.5214 28.8908C22.7741 27.9743 23.1794 27.121 23.7083 26.3602V23.7052H26.6728V23.7357C27.3623 23.372 28.1091 23.102 28.8961 22.943ZM13.3335 23.7052H17.7706V32.5911H13.3335V23.7052ZM7.40908 12.5955H14.3202L14.3206 14.3211L14.3126 14.5577C14.191 16.3558 12.6939 17.7767 10.8649 17.7767L10.6283 17.7687L10.3608 17.7402C9.74385 17.65 9.17983 17.3969 8.71387 17.0258L8.65151 16.9749L8.50892 16.8491L8.29889 16.6357L8.10811 16.4051L8.02769 16.2944L7.87519 16.0552C7.81992 15.9601 7.76906 15.8621 7.72288 15.7616L7.66262 15.6223L7.58209 15.4033L7.50894 15.1485L7.46043 14.917L7.41838 14.5744L7.40924 14.3211L7.40908 12.5955ZM16.5424 12.5955H23.4535L23.4541 14.3211L23.4461 14.5577C23.3245 16.3558 21.8274 17.7767 19.9984 17.7767L19.7618 17.7687L19.5295 17.7452C17.8428 17.5163 16.5428 16.0705 16.5428 14.3211L16.5424 12.5955ZM25.6787 12.5955H32.5898L32.5911 14.3211L32.5821 14.573L32.5554 14.82L32.5134 15.0534L32.4567 15.2787L32.4126 15.4203L32.3263 15.6501L32.2332 15.8545L32.0798 16.1311C32.0114 16.242 31.937 16.3488 31.8569 16.4509L31.6404 16.7016L31.4688 16.8701L31.3358 16.9858C30.7382 17.4798 29.9715 17.7767 29.1355 17.7767L28.8989 17.7687L28.6666 17.7452C26.9799 17.5163 25.6798 16.0705 25.6798 14.3211L25.6787 12.5955ZM11.5957 7.40589H15.647L14.7344 10.3733H8.84315L11.5957 7.40589ZM17.9715 7.40589H22.0278L22.9404 10.3733H17.0589L17.9715 7.40589ZM24.3522 7.40589H28.4032L31.1557 10.3733H25.2648L24.3522 7.40589Z" fill="#EFF0FF" />
+                        <path fillRule="evenodd" clipRule="evenodd" d="M29.5918 5.43556C29.3946 5.27459 29.1467 5.18515 28.8891 5.18515H11.1113L10.9582 5.19574C10.7061 5.2308 10.472 5.35172 10.2967 5.54058L5.48356 10.7288L5.42553 10.7965L5.32884 10.9379C5.2187 11.1294 5.17476 11.3387 5.18672 11.5421L5.18701 14.3211L5.19688 14.6585C5.27541 15.9984 5.81856 17.2134 6.66754 18.1448L6.6687 33.7037L6.67884 33.8544C6.75242 34.3968 7.2173 34.8148 7.77981 34.8148H23.0885C22.7446 34.1227 22.494 33.3759 22.3533 32.5911H19.9937L19.9942 22.5941L19.984 22.4433C19.9105 21.9009 19.4456 21.4829 18.8831 21.4829H12.2224L12.0716 21.4931C11.5293 21.5667 11.1113 22.0315 11.1113 22.5941L11.1107 32.5911H8.89056L8.88869 19.6456C9.50412 19.8741 10.1699 19.9989 10.8649 19.9989C12.7372 19.9989 14.3979 19.0927 15.4312 17.6949C16.4654 19.0927 18.1261 19.9989 19.9984 19.9989C21.8603 19.9989 23.5129 19.1028 24.5483 17.7182L24.566 17.6919C25.6002 19.0914 27.2618 19.9989 29.1355 19.9989C29.8293 19.9989 30.4941 19.8745 31.1087 19.6467L31.1086 22.7958C31.8836 22.8466 32.6297 23.0033 33.3325 23.2516L33.3328 18.1448C34.2526 17.1358 34.8134 15.7939 34.8134 14.3211L34.8156 11.4781C34.8156 11.2543 34.7476 11.0263 34.5969 10.8254L34.5514 10.7677L29.7036 5.54058L29.5918 5.43556ZM28.8961 22.943V22.5941L28.8859 22.4433C28.8123 21.9009 28.3475 21.4829 27.785 21.4829H22.5977L22.4469 21.4931C21.9046 21.5667 21.4865 22.0315 21.4865 22.5941V27.7822L21.4967 27.933C21.5669 28.4506 21.9936 28.855 22.5214 28.8908C22.7741 27.9743 23.1794 27.121 23.7083 26.3602V23.7052H26.6728V23.7357C27.3623 23.372 28.1091 23.102 28.8961 22.943ZM13.3335 23.7052H17.7706V32.5911H13.3335V23.7052ZM7.40908 12.5955H14.3202L14.3206 14.3211L14.3126 14.5577C14.191 16.3558 12.6939 17.7767 10.8649 17.7767L10.6283 17.7687L10.3608 17.7402C9.74385 17.65 9.17983 17.3969 8.71387 17.0258L8.65151 16.9749L8.50892 16.8491L8.29889 16.6357L8.10811 16.4051L8.02769 16.2944L7.87519 16.0552C7.81992 15.9601 7.76906 15.8621 7.72288 15.7616L7.66262 15.6223L7.58209 15.4033L7.50894 15.1485L7.46043 14.917L7.41838 14.5744L7.40924 14.3211L7.40908 12.5955ZM16.5424 12.5955H23.4535L23.4541 14.3211L23.4461 14.5577C23.3245 16.3558 21.8274 17.7767 19.9984 17.7767L19.7618 17.7687L19.5295 17.7452C17.8428 17.5163 16.5428 16.0705 16.5428 14.3211L16.5424 12.5955ZM25.6787 12.5955H32.5898L32.5911 14.3211L32.5821 14.573L32.5554 14.82L32.5134 15.0534L32.4567 15.2787L32.4126 15.4203L32.3263 15.6501L32.2332 15.8545L32.0798 16.1311C32.0114 16.242 31.937 16.3488 31.8569 16.4509L31.6404 16.7016L31.4688 16.8701L31.3358 16.9858C30.7382 17.4798 29.9715 17.7767 29.1355 17.7767L28.8989 17.7687L28.6666 17.7452C26.9799 17.5163 25.6798 16.0705 25.6798 14.3211L25.6787 12.5955ZM11.5957 7.40589H15.647L14.7344 10.3733H8.84315L11.5957 7.40589ZM17.9715 7.40589H22.0278L22.9404 10.3733H17.0589L17.9715 7.40589ZM24.3522 7.40589H28.4032L31.1557 10.3733H25.2648L24.3522 7.40589Z" fill="#EFF0FF" />
                         <g clipPath="url(#clip1_5801_30867)">
                             <path d="M31.2221 39.1852C27.1311 39.1852 23.8147 35.8688 23.8147 31.7778C23.8147 27.6868 27.1311 24.3704 31.2221 24.3704C35.3131 24.3704 38.6295 27.6868 38.6295 31.7778C38.6295 35.8688 35.3131 39.1852 31.2221 39.1852ZM33.6447 30.8518H32.7036C32.3968 30.8518 32.148 31.1006 32.148 31.4074C32.148 31.7142 32.3968 31.963 32.7036 31.963H34.7406C35.0474 31.963 35.2962 31.7142 35.2962 31.4074V29C35.2962 28.6932 35.0474 28.4444 34.7406 28.4444C34.4338 28.4444 34.1851 28.6932 34.1851 29V29.5552C33.5094 28.6558 32.434 28.0741 31.2222 28.0741C30.0838 28.0741 29.071 28.5632 28.3874 29.3856C28.1913 29.6216 28.2236 29.9719 28.4596 30.168C28.6956 30.3641 29.0459 30.3318 29.242 30.0958C29.7134 29.5286 30.4125 29.1852 31.2222 29.1852C32.3276 29.1852 33.272 29.8773 33.6447 30.8518ZM28.2591 34.5555V34C28.9347 34.8994 30.0101 35.4815 31.2222 35.4815C32.3519 35.4815 33.3733 34.9748 34.0528 34.1756C34.2515 33.9418 34.2231 33.5912 33.9894 33.3925C33.7556 33.1937 33.405 33.2221 33.2063 33.4559C32.7308 34.0151 32.0152 34.3704 31.2222 34.3704C30.1885 34.3704 29.2951 33.7651 28.8789 32.8889H29.7406C30.0474 32.8889 30.2962 32.6401 30.2962 32.3333C30.2962 32.0265 30.0474 31.7778 29.7406 31.7778H27.7036C27.3968 31.7778 27.148 32.0265 27.148 32.3333V34.5555C27.148 34.8624 27.3968 35.1111 27.7036 35.1111C28.0104 35.1111 28.2591 34.8624 28.2591 34.5555Z" fill="#FBAD45" />
                         </g>

@@ -2,22 +2,19 @@ import React,{Component} from 'react';
 import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
 import bazargahNoItemSrc from './../../images/bazargah-no-items.png';
 import appContext from '../../app-context';
-import bulbSrc from './../../images/10w-bulb.png';
 import getSvg from '../../utils/getSvg';
-import AIOButton from './../../npm/aio-button/aio-button';
-import AIOButtonInterface from './../../interfaces/aio-button/aio-button';
+import AIOInput from '../../npm/aio-input/aio-input';
 import AIOContentSlider from './../../npm/aio-content-slider/aio-content-slider';
 import {Icon} from '@mdi/react';
-import Form from './../../interfaces/aio-form-react/aio-form-react';
-import {mdiBackspace, mdiCheck, mdiChevronDoubleRight, mdiChevronRight, mdiBikeFast, mdiMagnify, mdiDeleteOutline} from '@mdi/js';
+import {mdiCheck, mdiChevronRight, mdiDeleteOutline} from '@mdi/js';
 import Slider from './../../npm/aio-slider/aio-slider';
 import Map from '../../components/map/map';
 import bazargahBlankSrc from './../../images/bazargah-no-order.png';
-//import functions from '../../../functions';
 import SplitNumber from '../../npm/aio-functions/split-number';
 import TimerGauge from '../../components/timer-gauge/timer-gauge';
 import InlineNumberKeyboard from '../../components/inline-number-keyboard/inline-number-keyboard';
 import $ from 'jquery';
+import './bazargah.css';
 
 export default class Bazargah extends Component{
     static contextType = appContext;
@@ -29,19 +26,26 @@ export default class Bazargah extends Component{
         }
     }
     openDetails(o){
-        let {rsa_actions} = this.context;
-        rsa_actions.addPopup({
-            type:'fullscreen',header:false,
-            body:()=><JoziateSefaresheBazargah order={o} onClose={(openOrder)=>{
-                rsa_actions.removePopup()
-                if(openOrder){
-                    let {bazargahOrders} = this.context;
-                    let {wait_to_send = []} = bazargahOrders;
-                    let order = wait_to_send.find((x)=>x.orderId === o.orderId);
-                    if(order){this.openDetails(order)}
-                }
-                
-            }}/>
+        let {rsa} = this.context;
+        rsa.addModal({
+            position:'fullscreen',
+            id:'bazargah-details',
+            body:{
+                render:()=>(
+                    <JoziateSefaresheBazargah 
+                        order={o} 
+                        onClose={(openOrder)=>{
+                            rsa.removeModal()
+                            if(openOrder){
+                                let {bazargahOrders} = this.context;
+                                let {wait_to_send = []} = bazargahOrders;
+                                let order = wait_to_send.find((x)=>x.orderId === o.orderId);
+                                if(order){this.openDetails(order)}
+                            }    
+                        }
+                    }/>
+                )
+            }
         })
     }
     wait_to_get_layout(){
@@ -111,8 +115,8 @@ export default class Bazargah extends Component{
         let {activeTabId} = this.state;
         return {
             html:(
-                <AIOButton 
-                    type='tabs' 
+                <AIOInput 
+                    type='tabs' style={{fontSize:12}}
                     options={[
                         {text:'اطراف من',value:0,badge:bazargahOrders.wait_to_get?.length},
                         {text:'اخذ شده',value:1,badge:bazargahOrders.wait_to_send?.length}
@@ -126,9 +130,8 @@ export default class Bazargah extends Component{
         }
     }
     renderInHome(){
-        let {bazargahOrders,SetState,rsa_actions = {},backOffice} = this.context;
+        let {bazargahOrders,SetState,rsa,backOffice} = this.context;
         if(!backOffice.activeManager.bazargah || !bazargahOrders.wait_to_get){return false}
-        let {setNavId} = rsa_actions;
         return (
             <RVD
                 layout={{
@@ -141,7 +144,7 @@ export default class Bazargah extends Component{
                                 {html: "بازارگاه",className: "fs-14 theme-dark-font-color bold p-h-12",align: "v"},
                                 {html:<div className='my-burux-badge bg3B55A5'>{bazargahOrders.wait_to_get.length}</div>,align:'vh'},
                                 {flex:1},
-                                {html:'مشاهده همه',align:'v',className:'color3B55A5 fs-12 bold',show:!!bazargahOrders.wait_to_get.length,attrs:{onClick:()=>setNavId('bazargah')}}
+                                {html:'مشاهده همه',align:'v',className:'color3B55A5 fs-12 bold',show:!!bazargahOrders.wait_to_get.length,attrs:{onClick:()=>rsa.setNavId('bazargah')}}
                             ]
                         },
                         {
@@ -183,18 +186,9 @@ export default class Bazargah extends Component{
         )
     }
     bazargahPower_layout(){
-        let {backOffice} = this.context;
-        if(backOffice.activeManager.bazargah){return false}
-        return {
-            html:getSvg('bazargahPower'),
-            attrs:{
-                onClick:async ()=>{
-                    let {bazargahApis,setBackOffice,backOffice} = this.context;
-                    let res = await bazargahApis({api:'bazargahActivity',parameter:true,name:'تشخیص فعال بودن بازارگاه'})
-                    setBackOffice({...backOffice,activeManager:{...backOffice.activeManager,bazargah:res}})
-                }
-            }
-        }
+        let {bazargahPower,bazargahPowerStoragte} = this.context;
+        if(bazargahPower){return false}
+        return {html:getSvg('bazargahPower'),onClick:()=>bazargahPowerStoragte('set')}
     }
     render(){
         if(this.props.renderInHome){return this.renderInHome()}
@@ -229,22 +223,22 @@ class JoziateSefaresheBazargah extends Component{
         let sendStep = sendStatus.isFinal?3:0;
         this.state = {
             sendStep,sendStatus,deliverers:[],
-            code0:'',code1:'',code2:'',
+            code:'',
             deliveredCode
             
         }
     }
     async get_deliverers(){
-        let {bazargahApis} = this.context;
-        let deliverers = await bazargahApis({api:'get_deliverers'});
+        let {apis} = this.context;
+        let deliverers = await apis.request({api:'bazargah.get_deliverers'});
         this.setState({deliverers})
     }
     async get_ecoDeliverer(){
         let {sendStatus} = this.state;
         let {order} = this.props;
         if(!sendStatus.isFinal || sendStatus.delivererType !== 'eco'){return}
-        let {bazargahApis} = this.context;
-        let ecoDeliverer = await bazargahApis({api:'get_ecoDeliverer',parameter:order});
+        let {apis} = this.context;
+        let ecoDeliverer = await apis.request({api:'bazargah.get_ecoDeliverer',parameter:order});
         if(!ecoDeliverer){
             setTimeout(()=>this.get_ecoDeliverer(),10000)
         }
@@ -255,13 +249,13 @@ class JoziateSefaresheBazargah extends Component{
         await this.get_ecoDeliverer()
     }
     async changeSendStatus(key,value){
-        let {bazargahApis} = this.context;
+        let {apis} = this.context;
         let {order} = this.props;
         let {orderId} = order;
         let {sendStatus} = this.state;
         sendStatus = JSON.parse(JSON.stringify(sendStatus));
         sendStatus[key] = value;
-        let res = await bazargahApis({api:'taghire_vaziate_ersale_sefaresh',parameter:{orderId,sendStatus}})
+        let res = await apis.request({api:'bazargah.taghire_vaziate_ersale_sefaresh',parameter:{orderId,sendStatus}})
         // if(!res){
         //     alert('تغییرات موفقیت آمیز نبود')
         //     return false
@@ -286,13 +280,13 @@ class JoziateSefaresheBazargah extends Component{
         if(key === 'submit'){return type === 'wait_to_get' || sendStep < 3}
     }
     async onSubmit(){
-        let {bazargahApis,getBazargahOrders} = this.context;
+        let {apis,getBazargahOrders} = this.context;
         let {order} = this.props;
         let {type,orderId} = order;
         if(type === 'wait_to_get'){
-            bazargahApis({
-                api:'akhze_sefaresh',parameter:{orderId},name:'اخذ سفارش',successMessage:true,
-                callback:async ()=>{
+            apis.request({
+                api:'bazargah.akhze_sefaresh',parameter:{orderId},description:'اخذ سفارش',message:{success:true},
+                onSuccess:async ()=>{
                     await getBazargahOrders();
                     this.props.onClose(order)
                 }
@@ -300,17 +294,6 @@ class JoziateSefaresheBazargah extends Component{
         }
         if(type === 'wait_to_send'){
             let {sendStep} = this.state;
-            if(sendStep === 2){
-                let statusRes = await this.changeSendStatus('isFinal',true);
-                let {sendStatus,ecoDeliverer} = this.state;
-                if(sendStatus.delivererType === 'eco' && !ecoDeliverer){
-                    let res = await bazargahApis({api:'ecoRequest',parameter:order})        
-                    if(res && statusRes){
-                        setTimeout(()=>this.get_ecoDeliverer(),10000)
-                    }
-                        
-                }
-            }
             this.setState({sendStep:sendStep + 1})
         }
         
@@ -596,7 +579,7 @@ class JoziateSefaresheBazargah extends Component{
         }
     }
     deliverer_layout(){
-        let {bazargahApis} = this.context;
+        let {apis} = this.context;
         if(!this.getVisibility('deliverer')){return false}
         let {deliverers,sendStatus} = this.state;
         return {
@@ -606,8 +589,8 @@ class JoziateSefaresheBazargah extends Component{
                 {size:36,html:'نحوه ارسال',align:'v',className:'m-h-12'},
                 {
                     html:(
-                        <AIOButton
-                            type={'radio'}
+                        <AIOInput
+                            type='radio'
                             style={{width:'100%'}}
                             options={[{text:'شخصی',value:'shakhsi'}]}
                             optionStyle='{width:"100%",borderBottom:"1px solid #ddd"}'
@@ -625,12 +608,12 @@ class JoziateSefaresheBazargah extends Component{
                         {flex:1,html:'انتخاب پیک',align:'v'},
                         {
                             html:(
-                                <AIOButton
+                                <AIOInput
                                     type='button'
                                     style={{background:'none'}}
                                     className='color3B55A5 bold fs-14'
                                     text='افزودن پیک جدید'
-                                    position='bottom'
+                                    popupSide='bottom'
                                     popOver={(obj)=>{
                                         return (
                                             <AddDeliverer 
@@ -652,7 +635,7 @@ class JoziateSefaresheBazargah extends Component{
                 {
                     show:sendStatus.delivererType === 'shakhsi',
                     html:()=>(
-                        <AIOButton
+                        <AIOInput
                             type={'radio'}
                             options={deliverers}
                             optionText='option.fullName'
@@ -661,12 +644,10 @@ class JoziateSefaresheBazargah extends Component{
                             optionSubtext='option.phoneNumber'
                             optionClassName='fs-14 theme-medium-font-color'
                             optionAfter={(a,b)=><Icon path={mdiDeleteOutline} size={1} onClick={async ()=>{
-                                bazargahApis({
-                                    api:'remove_deliverer',
-                                    parameter:a.id,
-                                    name:'حذف پیک',
-                                    successMessage:true,
-                                    callback:()=>{
+                                apis.request({
+                                    api:'bazargah.remove_deliverer',parameter:a.id,description:'حذف پیک',
+                                    message:{success:true},
+                                    onSuccess:()=>{
                                         let {deliverers,sendStatus} = this.state;
                                         if(sendStatus.delivererId === a.id){
                                             this.changeSendStatus('delivererId',deliverers[0]?deliverers[0].id:false)
@@ -769,10 +750,9 @@ class JoziateSefaresheBazargah extends Component{
     }
     code_layout(){
         if(!this.getVisibility('code')){return false}
-        let {rsa_actions} = this.context;
-        let {setNavId} = rsa_actions;
-        let {deliveredCode = '1234',code0,code1,code2} = this.state;
-        let disabled = code0 === '' || code1 === '' || code2 === '';
+        let {rsa} = this.context;
+        let {deliveredCode = '1234',code} = this.state;
+        let disabled = code.length !== 3;
         return {
             className:'bg-fff p-h-12',
             column:[
@@ -803,49 +783,13 @@ class JoziateSefaresheBazargah extends Component{
                         {
                             align:'vh',className:'bold fs-24',
                             html:(
-                                <AIOButton 
-                                    openRelatedTo='.rsa-container'
-                                    style={{
-                                        width: 90,textAlign: 'center',height: 32,background:'#fff',border: '1px solid',
-                                        fontFamily:'inherit',fontSize:24,borderRadius:4,fontWeight:'bold',letterSpacing:14
-                                    }} 
-                                    fixPopupPosition={(obj)=>{
-                                        let left = $('.rsa').offset().left;
-                                        obj.left = obj.left - left;
-                                        return obj
-                                    }}
-                                    type='button' caret={false}
-                                    text={`${isNaN(code0)?'':code0}${isNaN(code1)?'':code1}${isNaN(code2)?'':code2}`}
-                                    popOver={(obj)=>(
-                                        <InlineNumberKeyboard 
-                                            onClick={(v)=>{
-                                                let {code0,code1,code2} = this.state;
-                                                if(v === 'backspace'){
-                                                    if(code2 !== ''){
-                                                        code2 = '';
-                                                    }
-                                                    else if(code1 !== ''){
-                                                        code1 = '';
-                                                    }
-                                                    else if(code0 !== ''){
-                                                        code0 = '';
-                                                    }
-                                                }
-                                                else{
-                                                    if(code0 === ''){
-                                                        code0 = v;
-                                                    }
-                                                    else if(code1 === ''){
-                                                        code1 = v;
-                                                    }
-                                                    else if(code2 === ''){
-                                                        code2 = v;
-                                                    }
-                                                }
-                                                this.setState({code0,code1,code2})  
-                                            }}
-                                        />
-                                    )}
+                                <AIOInput
+                                    type='text'
+                                    className='bazargah-code'
+                                    maxLength={3}
+                                    justNumber={true}
+                                    value={code}
+                                    onChange={(code)=>this.setState({code})}
                                 />
                             )
                         },
@@ -860,18 +804,18 @@ class JoziateSefaresheBazargah extends Component{
                             className='button-2 m-h-12' disabled={disabled} style={{height:36}}
                             onClick={async ()=>{
                                 if(disabled){return}
-                                let {bazargahApis,showMessage,SetState} = this.context;
+                                let {apis,showMessage,SetState} = this.context;
                                 let {order} = this.props;
                                 let {orderId} = order;
-                                bazargahApis({
-                                    api:'taide_code_tahvil',
-                                    parameter:{deliveredCode,orderId,dynamicCode:`${code0}${code1}${code2}`},
-                                    name:'تحویل سفارش',
-                                    successMessage:true,
-                                    callback:()=>{
+                                apis.request({
+                                    api:'bazargah.taide_code_tahvil',
+                                    parameter:{deliveredCode,orderId,dynamicCode:code},
+                                    description:'تحویل سفارش',
+                                    message:{success:true},
+                                    onSuccess:()=>{
                                         let {bazargahOrders} = this.context;
                                         bazargahOrders.wait_to_send = bazargahOrders.wait_to_send.filter((o)=>o.orderId !== orderId);
-                                        rsa_actions.removePopup('all')
+                                        rsa.removeModal('all')
                                         SetState({bazargahOrders})
                                     }
                                 })
@@ -895,7 +839,6 @@ class JoziateSefaresheBazargah extends Component{
             deliverer = deliverers.find((o)=>o.id === sendStatus.delivererId)
         }
         if(!deliverer){return false}
-        debugger
         return {
             className:'bg-fff p-h-12',
             column:[
@@ -980,18 +923,18 @@ class AddDeliverer extends Component{
         let {model} = this.state;
         let {onSuccess} = this.props;
         return (
-            <Form
-                lang='fa'
+            <AIOInput
+                lang='fa' type='form'
                 header={{title:'افزودن پیک جدید',className:'bold'}}
                 onChange={(model)=>this.setState({model})}
                 onSubmit={async ()=>{
-                    let {bazargahApis,showMessage} = this.context;
+                    let {apis,showMessage} = this.context;
                     let {deliverers} = this.props;
                     if(deliverers.filter(({phoneNumber})=>phoneNumber === model.mobile).length){
                         showMessage('افزودن پیک با خطا مواجه شد. این شماره تکراری است');
                         return
                     }
-                    let res = await bazargahApis({api:'add_deliverer',parameter:model});
+                    let res = await apis.request({api:'bazargah.add_deliverer',parameter:model});
                     if(res){
                         showMessage('افزودن پیک با موفقیت انجام شد')
                         onSuccess(res)
@@ -1001,11 +944,13 @@ class AddDeliverer extends Component{
                     else {showMessage('افزودن پیک با خطا مواجه شد')}
                 }}
                 submitText='افزودن پیک'
-                model={model}
-                inputs={[
-                    {type:'text',label:'نام',field:'model.name',validations:[['required']]},
-                    {type:'text',label:'موبایل',field:'model.mobile',validations:[['required'],['length',11]]}, 
-                ]}
+                value={model}
+                inputs={{
+                    column:[
+                        {input:{type:'text'},label:'نام',field:'value.name',validations:[['required']]},
+                        {input:{type:'text'},label:'موبایل',field:'value.mobile',validations:[['required'],['length',11]]}, 
+                    ]
+                }}
             />
         )
     }

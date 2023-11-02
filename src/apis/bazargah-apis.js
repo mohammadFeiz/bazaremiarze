@@ -1,25 +1,22 @@
 import Axios from "axios";
 import nosrcImage from './../images/no-src.png';
 import AIODate from './../npm/aio-date/aio-date';
-export default function apis({ getState, helper }) {
+export default function bazargahApis({baseUrl,helper}) {
     return {
-        async getBazargahTotalTime(type) {
-            let { backOffice } = getState();
+        async getBazargahTotalTime(type,{backOffice}) {
             let forsat = { 'wait_to_get': 'forsate_akhze_sefareshe_bazargah', 'wait_to_send': 'forsate_ersale_sefareshe_bazargah' }[type];
             let result = backOffice.bazargah[forsat];
             return { result }
         },
-        async isOrderTimePassed({ order, type }) {
-            let { bazargahApis } = getState();
-            let totalTime = await bazargahApis({ api: 'getBazargahTotalTime', parameter: type })
+        async isOrderTimePassed({ order, type },{apis}) {
+            let totalTime = await apis.request({ api: 'bazargah.getBazargahTotalTime', parameter: type })
             let { miliseconds, type: timetype } = AIODate().getDelta({ date: order.orderDate });
             let result = timetype === 'passed' && miliseconds > totalTime * 60 * 1000;
             return { result }
         },
-        async daryafte_sefareshate_bazargah({ type }) {
+        async daryafte_sefareshate_bazargah({ type },{apis}) {
             //return {mock:true}
-            let { baseUrl, bazargahApis } = getState()
-            let totalTime = await bazargahApis({ api: 'getBazargahTotalTime', parameter: type });
+            let totalTime = await apis.request({ api: 'bazargah.getBazargahTotalTime', parameter: type });
             let res = await Axios.get(`${baseUrl}/OS/GetWithDistance?time=${totalTime}&distance=100&status=${{ 'wait_to_get': '1', 'wait_to_send': '2' }[type]}`); // 1 for pending
             let data = [];
             try { data = res.data.data || []; }
@@ -27,17 +24,16 @@ export default function apis({ getState, helper }) {
             let result = [];
             for (let i = 0; i < data.length; i++) {
                 let order = data[i];
-                let item = await bazargahApis({ api: 'bazargahItem', parameter: { order, type } });
+                let item = await apis.request({ api: 'bazargah.bazargahItem', parameter: { order, type } });
                 if (item === false) { continue }
                 result.push(item);
             }
             return { result}
         },
-        async bazargahItem({ order, type }) {
-            let { bazargahApis } = getState();
-            let passed = await bazargahApis({ api: 'isOrderTimePassed', parameter: { order, type } })
+        async bazargahItem({ order, type },{apis}) {
+            let passed = await apis.request({ api: 'bazargah.isOrderTimePassed', parameter: { order, type } })
             if (passed) { return { result: false } }
-            let totalTime = await bazargahApis({ api: 'getBazargahTotalTime', parameter: type });
+            let totalTime = await apis.request({ api: 'bazargah.getBazargahTotalTime', parameter: type });
             let bulbSrc = nosrcImage;
             let distance = 0;
             let orderItems = [];
@@ -94,17 +90,14 @@ export default function apis({ getState, helper }) {
             return { result }
         },
         async bazargahActivity(active) {
-            let { baseUrl } = getState()
             let res = await Axios.get(`${baseUrl}/Users/ActivateBazargah?isBazargahActive=${active}`);
             return { result: res.data.data.isBazargahActive };
         },
         async taghire_vaziate_ersale_sefaresh({ orderId, sendStatus }) {
-            let { baseUrl } = getState()
             let result = await Axios.get(`${baseUrl}/OS/OrderItemStatus?orderId=${orderId}&data=${JSON.stringify(sendStatus)}`);
             return { result: result.data.isSuccess };
         },
         async get_deliverers() {
-            let { baseUrl } = getState()
             let result = await Axios.get(`${baseUrl}/Deliverer`);
             if (!result.data.isSuccess) { return { result: [] } };
             return { result: result.data.data };
@@ -123,7 +116,6 @@ export default function apis({ getState, helper }) {
             return { result: true }
         },
         async add_deliverer({ mobile, name }) {
-            let { baseUrl } = getState();
             let result = await Axios.post(`${baseUrl}/Deliverer`, {
                 phoneNumber: mobile,
                 fullName: name
@@ -133,21 +125,18 @@ export default function apis({ getState, helper }) {
             }
         },
         async remove_deliverer(id) {
-            //let { baseUrl } = getState();
             return {
                 result:true,//در صورت موفقیت
                 //result:'Message' // در صورت خطا
             }
         },
         async taide_code_tahvil({ dynamicCode, deliveredCode, orderId }) {
-            let { baseUrl } = getState();
             let result = await Axios.get(`${baseUrl}/OS/DeliveredCodeValidation?code=${deliveredCode + dynamicCode}&id=${orderId}`);
             if (!result.data.isSuccess) { result = result.data.message || 'خطا' }
             else { result = result.data.data }
             return { result }
         },
-        async akhze_sefaresh({ orderId }) {
-            let { userInfo, baseUrl } = getState();
+        async akhze_sefaresh({ orderId },{userInfo}) {
             let res = await Axios.post(`${baseUrl}/OS/AddNewOrder`, {
                 cardCode: userInfo.cardCode,
                 orderId
@@ -159,7 +148,7 @@ export default function apis({ getState, helper }) {
 }
 
 
-export function bazargahMock({ getState }) {
+export function bazargahMock() {
     return {
         async daryafte_sefareshate_bazargah({ type }) {
             if(type === 'wait_to_get'){

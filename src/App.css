@@ -75,7 +75,6 @@ body{
 	font-family: inherit;
   }
   .rsa{
-	max-width:770px;
 	background:#fff;
 	position:relative;
   }
@@ -85,10 +84,13 @@ body{
   .rsa-navigation-item svg path{
 	fill:#fff !important;
   }
+  .rsa-sidemenu-backdrop{
+	backdrop-filter: blur(4px);
+  }
   .rsa-sidemenu {
     box-shadow: -7px 0px 20px 0px rgb(0 0 0 / 15%);
     border-left: 1px solid #a4a4a542;
-	background:rgba(59, 85, 165, 0.8);
+	background:rgba(59, 85, 165, 1);
 }
 .rsa-sidemenu-item{
 	color:#fff;
@@ -101,7 +103,9 @@ body{
 	border-radius: 28px;
     width: 42px;
     height: 42px;
-    
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 .header-icon svg{
 	width: 34px !important;
@@ -375,7 +379,7 @@ button{
 	background: #A19F9D;
 	border:2px solid #A19F9D;
 	opacity:0.6;
-	
+	cursor:not-allowed;
 }
 
 .loading{
@@ -666,16 +670,6 @@ button{
 	padding:0 6px;
 }
 
-.badge-2{
-	position: absolute;
-    background: #0094D4;
-    right: 0px;
-    top: 54%;
-    padding: 0 3px;
-    min-width: 12px;
-    color: #fff;
-    border-radius: 12px;
-}
 .button-3{
 	background:#fbad45;
 	color:#3b55a5;
@@ -753,6 +747,8 @@ button{
 	border-radius: 12px;
 	margin:0 12px;
 	padding:12px;
+	max-width:360px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0px 6px 15px 5px;
   }
   .aio-login .aio-input{
 	background:#f6f7f9;
@@ -760,3 +756,16 @@ button{
 	border:none;
 	min-height:40px;
   }
+  .badge-2{
+	position: absolute;
+    background: #0094D4;
+    right: 0px;
+    top: 54%;
+    height: 16px;
+    min-width: 16px;
+    display: flex;
+    color: #fff;
+    border-radius: 12px;
+    align-items: center;
+    justify-content: center;
+}

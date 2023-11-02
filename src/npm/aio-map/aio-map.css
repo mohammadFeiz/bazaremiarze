@@ -1,0 +1,119 @@
+@import url('https://static.neshan.org/sdk/leaflet/1.4.0/leaflet.css');
+.leaflet-control{
+    display: none;
+}
+.aio-map{
+    position: relative;
+    overflow:hidden;
+}
+.aio-map-footer{
+    width:100%;
+    z-index:10;
+    position: absolute;
+    background:#fff;
+    bottom:0;
+    width:100%;
+    border:1px solid #ddd;
+    overflow:visible !important;
+    border-radius:4px;
+    padding:12px;
+    display:flex;
+    border-radius:16px 16px 0 0;
+    align-items: center;
+    justify-content: center;
+}
+.aio-map-address{
+    width:100%;
+    font-size:12px;
+    align-items: center;
+    text-align: right;
+    font-weight: bold;
+    flex:1;
+}
+.aio-map-submit-button{
+    border:none;
+    background:dodgerblue;
+    color:#fff;
+    width:100%;
+    height:30px;
+    padding:0 16px;
+    border-radius:4px;
+}
+.leaflet-marker-icon{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    border:none;
+    background:none;
+}
+.aio-map-marker-text{
+    position:absolute;
+    top:calc(100% + 16px);
+    width:fit-content;
+    font-size:14px;
+    white-space: nowrap;
+}
+
+.aio-map-header{
+    position: absolute;
+    padding:12px;
+    width: 100%;
+    left: 0; 
+    top: 0;
+    z-index: 1000;
+    background:#fff;
+    box-shadow:0 0 12px 0 rgba(0,0,0,0.4)
+}
+.aio-map-header-open{
+    height:100%;
+}
+.aio-map-title{
+    font-size:14px;
+    flex:1;
+    font-weight: bold;
+}
+.aio-map-close{
+    width:36px;
+}
+.aio-map-search{
+    border:1px solid #ddd;
+    margin-top:12px;
+    border-radius:4px;   
+    color:#666;
+}
+.aio-map-search-results{
+    background: rgba(255,255,255,1);
+    padding:12px 0;
+    overflow-y:auto;
+    margin-top:3px;
+    border-radius:4px;
+    flex:1;
+}
+.aio-map-search-result{
+    padding: 6px 12px;
+    font-size:12px;
+    justify-content: center;
+    border-bottom:1px solid #eee;
+}
+.aio-map-search-result-subtext{
+    font-size:90%;
+    color:navy;
+}
+.aio-map-search-input{
+    width: 100%;
+    height: 36px;
+    box-sizing: border-box;
+    border-radius: 0 4px 4px 0;
+    font-family: inherit;
+    outline: none;
+    border: none;
+    color:inherit;
+}
+.aio-map-search-icon{
+    background:#fff;
+    border-radius:4px 0 0 4px;
+    width:36px;
+}
+.aio-map-current-point{
+    width:36px;
+}

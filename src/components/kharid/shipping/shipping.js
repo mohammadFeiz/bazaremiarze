@@ -1,8 +1,7 @@
 import React,{Component} from 'react';
 import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
-import AIOButton from './../../../interfaces/aio-button/aio-button';
+import AIOInput from '../../../npm/aio-input/aio-input';
 import appContext from './../../../app-context';
-import NV3Report from '../nv3-report';
 
 export default class Shipping extends Component{
     static contextType = appContext;
@@ -10,7 +9,6 @@ export default class Shipping extends Component{
       super(props);
       this.state = {}
     }
-    
     details_layout(list){
       return {
         className:'box p-12 m-h-12',
@@ -29,15 +27,14 @@ export default class Shipping extends Component{
     async componentDidMount(){
       let {userInfo,backOffice} = this.context;
       let {cartId} = this.props;
-      let {defaultShipping} = backOffice.tarhHa[cartId];
+      let defaultShipping = backOffice[cartId]
       let {PayDueDate,PaymentTime,DeliveryType,SettleType,
-        PayDueDateOptions = [],PaymentTimeOptions = [],SettleTypeOptions = [],DeliveryTypeOptions = []
+        PayDueDates = [],PaymentTimes = [],SettleTypes = [],DeliveryTypes = []
       } = defaultShipping;
-      debugger;
-      let PayDueDate_options = backOffice.PayDueDate_options.filter(({value})=>PayDueDateOptions.indexOf(value) !== -1);
-      let PaymentTime_options = backOffice.PaymentTime_options.filter(({value})=>PaymentTimeOptions.indexOf(value) !== -1);
-      let SettleType_options = backOffice.SettleType_options.filter(({value})=>SettleTypeOptions.indexOf(value) !== -1);
-      let DeliveryType_options = backOffice.DeliveryType_options.filter(({value})=>DeliveryTypeOptions.indexOf(value) !== -1)
+      let PayDueDate_options = backOffice.PayDueDate_options.filter(({value})=>PayDueDates.indexOf(value) !== -1);
+      let PaymentTime_options = backOffice.PaymentTime_options.filter(({value})=>PaymentTimes.indexOf(value) !== -1);
+      let SettleType_options = backOffice.SettleType_options.filter(({value})=>SettleTypes.indexOf(value) !== -1);
+      let DeliveryType_options = backOffice.DeliveryType_options.filter(({value})=>DeliveryTypes.indexOf(value) !== -1)
       this.mounted = true;
       this.setState({
         PayDueDate,PaymentTime,DeliveryType,SettleType,
@@ -64,8 +61,6 @@ export default class Shipping extends Component{
     }
 
     options_layout(key,title,cond = true){
-      //if(key === 'SettleType'){debugger;}
-      if(key === 'PaymentTime'){debugger}
       let options = this.state[key + '_options']
       let value = this.state[key];
       if(!cond || value === undefined){return false}
@@ -75,7 +70,7 @@ export default class Shipping extends Component{
           {size:36,align:'v',className:'theme-medium-font-color fs-12 bold',html:title},
           {
             html:(
-              <AIOButton
+              <AIOInput
                 key={key}
                 className='shipping-options fs-14'
                 type='radio'
@@ -107,9 +102,9 @@ export default class Shipping extends Component{
       }
     }
     products_layout(){
-      let {cart} = this.context;
       let {cartId} = this.props;
-      let cards = cart[cartId].getProductCards('shipping',{...this.state});
+      let {getShopById} = this.context;
+      let cards = getShopById(cartId).getCartProducts('shipping',{...this.state});
       return {
         column:[
           {size:36,align:'v',className:'theme-medium-font-color fs-14 bold p-h-12',html:'محصولات'},
@@ -122,24 +117,14 @@ export default class Shipping extends Component{
       try{return +value.toFixed(0)}
       catch{return 0}
     }
-    nv3Report_layout(){
-      let {cart} = this.context;
-      let {cartId} = this.props;
-      if(cartId !== 'نورواره 3'){return false}
-      let amount = cart[cartId].getAmounts().total;
-      return {
-        html:<NV3Report amount={amount} renderIn='shipping'/>
-      }
-    }
     amount_layout(){
-      let {cart,userInfo,openPopup,removeCart} = this.context;
-      let {address} = this.state;
       let {cartId} = this.props;
+      let {getShopById} = this.context;
+      let Shop = getShopById(cartId);
+      let {address} = this.state;
       let {PayDueDate,SettleType,DeliveryType,PaymentTime} = this.state;
-      let cartTab = cart[cartId]
-      let {getFactorItems,paymentButtonText} = cartTab;
+      let {getFactorItems,getPaymentButtonText} = Shop;
       let factorItems = getFactorItems({PayDueDate,SettleType,DeliveryType,PaymentTime,address})
-      let qr = cartId === 'نورواره 3'?userInfo.norvareh3QR:undefined
       return {
         className:'p-h-12 bg-fff theme-box-shadow',
         style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
@@ -152,33 +137,17 @@ export default class Shipping extends Component{
               <button 
                 className="button-2" 
                 onClick={async ()=>{
-                  let {kharidApis,rsa_actions,cart} = this.context;
+                  let {apis} = this.context;
                   let {PayDueDate,SettleType,DeliveryType,PaymentTime,address} = this.state;
                   let {cartId} = this.props;
-                  let cartTab = cart[cartId];
-                  let {getAmounts} = cartTab;
-                  let res = await kharidApis({
-                    api:"shippingPayment",
-                    name:()=>'پرداخت' + cartId,
-                    parameter:{
-                      address,
-                      SettleType,
-                      PaymentTime,
-                      DeliveryType,
-                      PayDueDate,
-                      cartId,
-                      amounts:getAmounts({PayDueDate,SettleType,DeliveryType,PaymentTime,address})
-                    },
+                  await apis.request({
+                    api:"kharid.payment",description:'عملیات ثبت و پرداخت',
+                    parameter:{address,SettleType,PaymentTime,DeliveryType,PayDueDate,cartId}
                   })
 
-                  if(typeof res === 'object'){
-                    let {orderNumber} = res;
-                    rsa_actions.removePopup('all');
-                    removeCart(cartId)
-                    openPopup('sefareshe-ersal-shode-baraye-vizitor',{orderNumber,qr})
-                  }
+                  
                 }}
-              >{paymentButtonText({PayDueDate,SettleType,DeliveryType,PaymentTime,address})}</button>
+              >{getPaymentButtonText({PayDueDate,SettleType,DeliveryType,PaymentTime,address})}</button>
             )
           },
           {size:12}
@@ -214,9 +183,7 @@ export default class Shipping extends Component{
                   {size:12},
                   this.options_layout('SettleType','نحوه پرداخت'),
                   {size:12},
-                  this.products_layout(),
-                  {size:12},
-                  this.nv3Report_layout()
+                  this.products_layout()
                 ],
               },
               this.amount_layout(),

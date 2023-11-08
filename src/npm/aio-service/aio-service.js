@@ -1,7 +1,7 @@
 import Axios from "axios";
-import AIODate from "./../../npm/aio-date/aio-date";
-import AIOStorage from './../../npm/aio-storage/aio-storage';
-import AIOPopup from "../aio-popup/aio-popup";
+import AIODate from "aio-date";
+import AIOStorage from 'aio-storage';
+import AIOPopup from "aio-popup";
 import './index.css';
 import $ from "jquery";
 export let helper = {
@@ -203,7 +203,14 @@ export default class AIOservice{
         }
         return result
     }
-    catch(err){console.log(err); return onCatch(err,service)}
+    catch(err){
+      let catchResult;
+      try{catchResult = onCatch(err,service)}
+      catch(err){catchResult = err.message || err.Message;}
+      if(catchResult === undefined){catchResult = err.message || err.Message}
+      console.log(err); 
+      return catchResult
+    }
   }
   fetchData = async (service) => {
     let cacheResult = this.getFromCache(service); if(cacheResult !== undefined){return cacheResult}

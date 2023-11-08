@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
+import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import bazargahNoItemSrc from './../../images/bazargah-no-items.png';
 import appContext from '../../app-context';
 import getSvg from '../../utils/getSvg';
@@ -7,13 +7,9 @@ import AIOInput from '../../npm/aio-input/aio-input';
 import AIOContentSlider from './../../npm/aio-content-slider/aio-content-slider';
 import {Icon} from '@mdi/react';
 import {mdiCheck, mdiChevronRight, mdiDeleteOutline} from '@mdi/js';
-import Slider from './../../npm/aio-slider/aio-slider';
-import Map from '../../components/map/map';
 import bazargahBlankSrc from './../../images/bazargah-no-order.png';
 import SplitNumber from '../../npm/aio-functions/split-number';
 import TimerGauge from '../../components/timer-gauge/timer-gauge';
-import InlineNumberKeyboard from '../../components/inline-number-keyboard/inline-number-keyboard';
-import $ from 'jquery';
 import './bazargah.css';
 
 export default class Bazargah extends Component{
@@ -556,16 +552,7 @@ class JoziateSefaresheBazargah extends Component{
         return {
             className:'bgFFF',
             column:[
-                {
-                    html:(
-                        <Map
-                            latitude={latitude}
-                            longitude={longitude}
-                            changeView={false}
-                            style={{width:'100%',height:120}}
-                        />
-                    )
-                },
+                {html:(<AIOInput type='map' lat={latitude} lng={longitude} mapConfig={{draggable:false}} style={{width:'100%',height:120}}/>)},
                 {size:6},
                 {
                     column:[
@@ -715,7 +702,8 @@ class JoziateSefaresheBazargah extends Component{
                 {size:60,html:this.getSvg(sendStep),align:'vh'},
                 {
                     html:(
-                        <Slider
+                        <AIOInput
+                            type='slider'
                             attrs={{className:'m-h-36'}}
                             start={1}
                             direction='left'
@@ -741,7 +729,7 @@ class JoziateSefaresheBazargah extends Component{
                                     }
                                 }
                             }}
-                            points={[sendStep]}
+                            value={sendStep}
                         />
                     )
                 }

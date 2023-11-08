@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
+import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 export default class Card extends Component {
     render() {
         let { type } = this.props;

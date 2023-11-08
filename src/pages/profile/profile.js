@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import RVD from '../../interfaces/react-virtual-dom/react-virtual-dom';
+import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
 import headerSvg from '../../images/header-svg';
 import footerSvg from '../../images/footer-svg';
 import getSvg from '../../utils/getSvg';

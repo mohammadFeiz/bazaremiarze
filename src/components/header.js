@@ -23,8 +23,12 @@ export default class Header extends Component {
             type="button"
             className='header-icon'
             style={{ background: "none", color: '#605E5C' }}
-            text={<Icon path={mdiCart} size={0.7} />}
-            after={length > 0 ? <div className='badge-2'>{length}</div> : undefined}
+            text={
+              <>
+                <Icon path={mdiCart} size={0.8} />
+                {length > 0 ? <div className='badge-2'>{length}</div> : undefined}
+              </>
+            }
             onClick={() => openPopup('cart')}
           />
         )

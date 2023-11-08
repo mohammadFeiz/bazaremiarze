@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
+import RVD from './../../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from '../../../npm/aio-input/aio-input';
 import appContext from './../../../app-context';
 
@@ -75,10 +75,10 @@ export default class Shipping extends Component{
                 className='shipping-options fs-14'
                 type='radio'
                 optionAfter={(option)=>{
-                  if(option.percent){return `${option.percent}% تخفیف`}
+                  if(option.percent){return <div style={{whiteSpace:'nowrap'}}>{`${option.percent}% تخفیف`}</div>}
                 }}
                 options={options}
-                optionClassName='"w-100 h-36"'
+                optionAttrs={{style:{height:36,width:'100%'}}}
                 value={value}
                 onChange={(newValue)=>{
                   this.setState({[key]:newValue})

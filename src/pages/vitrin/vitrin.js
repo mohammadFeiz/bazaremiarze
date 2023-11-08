@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
+import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from "../../npm/aio-input/aio-input";
 import AIOPopup from "../../npm/aio-popup/aio-popup";
 import image_src from './../../images/vitrin-landing.png';

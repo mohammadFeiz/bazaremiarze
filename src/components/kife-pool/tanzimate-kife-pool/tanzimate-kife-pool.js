@@ -1,7 +1,7 @@
 import React,{Component} from "react";
 import appContext from "../../../app-context";
 import AIOInput from "../../../npm/aio-input/aio-input";
-import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
+import RVD from './../../../npm/react-virtual-dom/react-virtual-dom';
 import CreaditCard,{ getCardDetail } from "./../credit-card/credit-card";
 import './index.css';
 

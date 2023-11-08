@@ -18,7 +18,6 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
         },
         async login({ userId, phoneNumber, password, type }) {
             let url;
-            debugger
             if (type === 'OTPCode') { url = `${baseUrl}/Users/SecondStep?userId=${userId}&code=${password}` }
             else { url = `${baseUrl}/Users/Login?phoneNumber=${phoneNumber}&password=${password}`; }
             const response = await Axios.get(url);

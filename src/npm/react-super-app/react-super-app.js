@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import AIOStorage from './../../npm/aio-storage/aio-storage';
+import AIOStorage from 'aio-storage';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOPopup from '../aio-popup/aio-popup';
+import RVD from 'react-virtual-dom';
+import AIOPopup from './../../npm/aio-popup/aio-popup';
 import './react-super-app.css';
 export default class RSA {
   constructor(props = {}) {
@@ -252,7 +252,7 @@ class SideMenu extends Component {
         let { icon = () => <div style={{ width: 12 }}></div>, text, id, className, onClick = () => { }, show = () => true } = o;
         let Show = show();
         return {
-          show: !!Show, size: 36, className: 'rsa-sidemenu-item' + (className ? ' ' + className : ''), onClick: () => { onClick(o); },
+          show: !!Show, size: 36, className: 'rsa-sidemenu-item' + (className ? ' ' + className : ''), onClick: () => { onClick(o); onClose() },
           row: [
             { size: 48, html: icon(), align: 'vh' },
             { html: text, align: 'v' }

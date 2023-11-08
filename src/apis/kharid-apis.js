@@ -3,7 +3,7 @@ import nosrcImage from './../images/no-src.png';
 import nosrc from './../images/no-src.png';
 import foroosheVijeIcon from './../images/forooshe-vije-icon.png';
 import staticBundleData from './bundledata';
-import AIOStorage from './../npm/aio-storage/aio-storage';
+import AIOStorage from 'aio-storage';
 
 export default function kharidApis({baseUrl,helper}) {
   return {

@@ -1,6 +1,6 @@
 import React,{Component,createRef} from 'react';
 import GarantiCard from '../garanti-card/garanti-card'
-import RVD from '../../../interfaces/react-virtual-dom/react-virtual-dom'
+import RVD from '../../../npm/react-virtual-dom/react-virtual-dom'
 import appContext from '../../../app-context'
 import SearchBox from '../../search-box';
 import AIOInput from '../../../npm/aio-input/aio-input';

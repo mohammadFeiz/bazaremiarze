@@ -3,10 +3,9 @@ import ReactDOM from 'react-dom/client';
 import Main from './pages/main/main';
 import Axios from 'axios';
 import Register from './components/register/register';
-import RVD from './interfaces/react-virtual-dom/react-virtual-dom';
+import AIOInput from './npm/aio-input/aio-input';
 import PageError from './components/page-error';
 import Landing from './components/landing';
-import logo from './images/logo5.png';
 import AIOLogin from './npm/aio-login/aio-login';
 import AIOService from './npm/aio-service/aio-service';
 import getApiFunctions from './apis/apis';
@@ -15,7 +14,10 @@ import './theme.css';
 import Splash from './components/spalsh/splash';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
-
+AIOInput.defaults.mapApiKeys = {
+  map:'web.68bf1e9b8be541f5b14686078d1e48d2',
+  service:'service.30c940d0eff7403f9e8347160e384cc9'
+}
 class App extends Component {
   constructor(props) {
     super(props);
@@ -31,27 +33,15 @@ class App extends Component {
     else if (url.indexOf('bbeta') !== -1) { return "https://retailerapp.bbeta.ir/api/v1"; }
     else { return "https://retailerapp.bbeta.ir/api/v1"; }
   }
-  getApisInstance(baseUrl) {
-    try{
-      return new AIOService({ getApiFunctions, baseUrl, id: 'bazaremiarzeapis' });
-    }
-    catch(err){
-      alert(err.message)
-    }
-  }
+  getApisInstance(baseUrl) {return new AIOService({ getApiFunctions, baseUrl, id: 'bazaremiarzeapis' });}
   getLoginInstance() {
     let userId;
     try { userId = new URL(window.location.href).searchParams.get("pn").toString() }
     catch { userId = undefined }
     return new AIOLogin({
-      timer: 5, methods: ['OTPNumber', 'phoneNumber'], otpLength: 4, id: 'bazarmiarezelogin', userId,
-      onSubmit: this.onSubmit.bind(this), checkToken: this.checkToken.bind(this),
-      onAuth: async ({ token,userId }) => {
-        let { apis } = this.state;
-        let registered = await apis.request({api:'login.checkIsRegistered',parameter:userId});
-        apis.setToken(token);
-        this.setState({ token, isAutenticated: true,registered })
-      }
+      timer: 5, modes: ['OTPNumber', 'phoneNumber'], otpLength: 4, id: 'bazarmiarezelogin', userId,
+      onSubmit: this.onLoginSubmit.bind(this), checkToken: this.checkToken.bind(this),
+      onAuth: this.onAuth.bind(this)
     })
   }
   updateUserInfo(obj) {
@@ -61,18 +51,22 @@ class App extends Component {
     Login.setUserInfo(newUserInfo)
   }
   async getUserInfo(userInfo = this.state.userInfo) {
-    return await this.state.apis.request({ api: 'login.getUserInfo', parameter: userInfo, description: 'دریافت اطلاعات کاربری' })
+    return await this.state.apis.request({ api: 'login.getUserInfo', parameter: userInfo, description: 'دریافت اطلاعات کاربری',loading:false })
+  }
+  onRegister(userInfo){
+    let { Login } = this.state;
+    Login.setUserInfo(userInfo)
+    window.location.reload()
   }
   async checkToken(token) {
     let { apis, Login } = this.state;
     let res = await apis.request({
-      api: 'login.checkToken', parameter: token,
+      api: 'login.checkToken', parameter: token,loading:false,
       onCatch: () => 'خطای 10037.این کد خطا را به پشتیبانی اعلام کنید'
     })
     if (res === true) {
       let userInfo = Login.getUserInfo();
       if(typeof userInfo !== 'object' || !userInfo.cardCode || typeof userInfo.cardCode !== 'string'){
-        Login.removeToken();
         return false;
       }
       else {
@@ -84,7 +78,13 @@ class App extends Component {
     }
     else if (res === false) { return false }
   }
-  async onSubmit(model, mode) {
+  async onAuth({ token,userId }){
+    let { apis } = this.state;
+    let registered = await apis.request({api:'login.checkIsRegistered',parameter:userId,loading:false});
+    apis.setToken(token);
+    this.setState({ token, isAutenticated: true,registered })
+  }
+  async onLoginSubmit(model, mode) {
     let { apis, Login } = this.state;
     let onCatch = (error) => {
       try { return error.response.data.Message }
@@ -94,7 +94,7 @@ class App extends Component {
       }
     };
     if (mode === 'OTPNumber') {
-      let res = await apis.request({ api: 'login.OTPNumber', parameter: model.login.userId, onCatch })
+      let res = await apis.request({ api: 'login.OTPNumber', parameter: model.login.userId, onCatch,loading:false })
       if (res) {
         let { id: userId } = res;
         this.setState({ userId })
@@ -105,7 +105,7 @@ class App extends Component {
       let userId = this.state.userId;
       let phoneNumber = model.login.userId;
       let password = model.login.password;
-      let res = await apis.request({ api: 'login.login', onCatch, parameter: { userId, phoneNumber, password, type: mode } })
+      let res = await apis.request({ api: 'login.login', onCatch, parameter: { userId, phoneNumber, password, type: mode },loading:false })
       if (res) {
         let { accessToken } = res;
         let token = accessToken.access_token;
@@ -120,7 +120,6 @@ class App extends Component {
     let { baseUrl, apis } = this.state;
     try {
       const response = await Axios.get(`${baseUrl}/BackOffice/GetLastCampaignManagement?type=backoffice`);
-      setTimeout(() => this.setState({ splash: false }), 3000)
       let backOffice;
       if (typeof response.data.data[0] === 'string') {
         backOffice = JSON.parse(response.data.data[0]);
@@ -144,11 +143,11 @@ class App extends Component {
       }
     }
     catch (err) {
-      this.setState({ splash: false, pageError: { text: 'دریافت تنظیمات اولیه با خطا مواجه شد', subtext: err.message } })
+      this.setState({ pageError: { text: 'دریافت تنظیمات اولیه با خطا مواجه شد', subtext: err.message } })
     }
-
+    this.setState({ splash: false })  
   }
-  renderContent(){
+  render() {
     let { isAutenticated, userInfo, registered, pageError, landing, backOffice, splash, apis, Login, baseUrl } = this.state;
     if (splash) { return <Splash /> }
     if (landing) { return <Landing onClose={() => this.setState({ landing: false })} items={landing} /> }
@@ -160,7 +159,7 @@ class App extends Component {
             baseUrl={baseUrl} mode='register' logout={Login.logout}
             model={{ phoneNumber: userInfo.phoneNumber }}
             onClose={() => Login.logout()}
-            onSubmit={(userInfo) => {this.setState({ userInfo, registered: true });  window.location.reload()}}
+            onSubmit={(userInfo)=>this.onRegister(userInfo)}
           />
         )
       }
@@ -175,35 +174,8 @@ class App extends Component {
         />
       )
     }
-    return (
-      <RVD
-        layout={{
-          className: 'bg3B55A5 ofy-auto fullscreen ',
-          column: [
-            { flex: 1 },
-            { html: <img src={logo} width={160} height={160} alt='' />, align: 'vh' },
-            { flex: 1 },
-            { align: 'vh', className: 'of-visible', html: Login.render()},
-            { size: 24 },
-            {
-              flex: 3, style: { minHeight: 200 }, align: 'vh', column: [
-                { align: 'vh', html: (<a style={{ color: '#fff', height: 24, margin: 0 }} href="tel:02175116" className='fs-14'>تماس با پشتیبانی</a>) },
-                { align: 'vh', html: (<a style={{ color: '#fff', height: 30, margin: 0 }} href="tel:02175116">021-75116</a>) },
-              ]
-            }
-          ]
-        }}
-      />
-    )
-  }
-  render() {
-    try{
-      return this.renderContent();
-    }
-    catch(err){
-      alert(err.message || err.Message);
-      return null
-    }
+    //اسپلش یک پلیس هولدر هست که میتونه یک تابع برای رندر محتوی بگیره و ما اینجا براش رندر کامپوننت لاگین رو می فرستیم
+    return <Splash content={()=>Login.render()}/>
   }
 }
 const root = ReactDOM.createRoot(document.getElementById('root'));

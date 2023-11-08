@@ -4,7 +4,7 @@ import { Icon } from '@mdi/react';
 import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeft, mdiArrowLeftBold, mdiDisc, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave } from '@mdi/js';
 import appContext from "./app-context";
 import AIOInput from './npm/aio-input/aio-input';
-import AIOStorage from './npm/aio-storage/aio-storage';
+import AIOStorage from 'aio-storage';
 import AIOPopup from './npm/aio-popup/aio-popup';
 import backofficebackup from "./back-office-backup";
 import './back-office-panel.css';
@@ -635,7 +635,7 @@ class FormSetting extends Component {
               ]
             },
             {
-              show: true,inlineLabel: 'فعالسازی', field: 'value.active',
+              show: true,label: 'فعالسازی', field: 'value.active',
               input:{
                 type: 'radio', optionStyle: { width: 'fit-content' },
                 options: [{ text: 'فعال', value: true }, { text: 'غیر فعال', value: false }] ,
@@ -643,7 +643,7 @@ class FormSetting extends Component {
             },
             {
               show: ['Regular', 'Bundle'].indexOf(type) !== -1,
-              input:{type: 'text'}, inlineLabel: 'نام', field: 'value.name',
+              input:{type: 'text'}, label: 'نام', field: 'value.name',
             },
             {
               show: ['spreeCategories'].indexOf(type) !== -1,label: 'نمایش به صورت', field: 'value.showType',
@@ -654,27 +654,27 @@ class FormSetting extends Component {
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1, 
-              input:{type: 'text'}, inlineLabel: 'B1Id', field: 'value.B1Id'
+              input:{type: 'text'}, label: 'B1Id', field: 'value.B1Id'
             },
             {
               show: ['Bundle'].indexOf(type) !== -1,
-              input:{type: 'number'}, inlineLabel: 'سقف تعداد بسته', field: 'value.maxCart'
+              input:{type: 'number'}, label: 'سقف تعداد بسته', field: 'value.maxCart'
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
-              input:{type: 'select',options: SettleType_options,popover:{fitHorizontal:true}}, inlineLabel: 'پیشفرض نحوه پرداخت', field: 'value.SettleType',
+              input:{type: 'select',options: SettleType_options,popover:{fitHorizontal:true}}, label: 'پیشفرض نحوه پرداخت', field: 'value.SettleType',
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
-              input:{type: 'select',options: PayDueDate_options,popover:{fitHorizontal:true}}, inlineLabel: 'پیشفرض نوع پرداخت چکی', field: 'value.PayDueDate'
+              input:{type: 'select',options: PayDueDate_options,popover:{fitHorizontal:true}}, label: 'پیشفرض نوع پرداخت چکی', field: 'value.PayDueDate'
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
-              input:{type: 'select',options: DeliveryType_options,popover:{fitHorizontal:true}}, inlineLabel: 'پیشفرض نحوه ارسال', field: 'value.DeliveryType',
+              input:{type: 'select',options: DeliveryType_options,popover:{fitHorizontal:true}}, label: 'پیشفرض نحوه ارسال', field: 'value.DeliveryType',
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
-              input:{type: 'select',options: PaymentTime_options,popover:{fitHorizontal:true}}, inlineLabel: 'پیشفرض زمان پرداخت', field: 'value.PaymentTime',
+              input:{type: 'select',options: PaymentTime_options,popover:{fitHorizontal:true}}, label: 'پیشفرض زمان پرداخت', field: 'value.PaymentTime',
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,

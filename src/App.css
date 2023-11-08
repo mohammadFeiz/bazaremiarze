@@ -744,6 +744,8 @@ button{
 
   .aio-login{
 	background:#fff;
+	color:#333;
+	height:fit-content;
 	border-radius: 12px;
 	margin:0 12px;
 	padding:12px;

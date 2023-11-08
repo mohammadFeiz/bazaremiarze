@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
+import RVD from './../../../npm/react-virtual-dom/react-virtual-dom';
 import appContext from '../../../app-context';
 //props
 //1 - products [product,product,...]

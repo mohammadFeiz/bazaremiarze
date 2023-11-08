@@ -6,8 +6,10 @@ export default class PasswordPopup extends Component{
     state = {model:{password:'',passwordConfirm:''}}
     async updatePassword(){
         let {apis} = this.context;
+        let {model} = this.state;
         apis.request({
             api:'backOffice.updatePassword',description:'تغییر رمز عبور',message:{success:true},
+            parameter:model.password,
             onSuccess:()=>{
                 debugger
                 let {rsa} = this.context;

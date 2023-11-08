@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import RVD from "./../../../interfaces/react-virtual-dom/react-virtual-dom";
+import RVD from "./../../../npm/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
-import Table from "./../../../interfaces/aio-table/aio-table";
 import ProductCount from "./../../../components/kharid/product-count/product-count";
 import AIOInput from "../../../npm/aio-input/aio-input";
 import {Icon} from '@mdi/react';
@@ -54,13 +53,11 @@ export default class SabteGarantiJadidBaJoziat extends Component {
         return {
             flex: 1,
             html: (
-                <Table
+                <AIOInput
+                    type='table'
                     className='m-12'
                     style={{padding:0}}
-                    headerHeight={36}
-                    rowHeight={60}
-                    columnGap={1}
-                    templates={{
+                    getValue={{
                         count:(row) => {
                             return (
                                 <ProductCount value={row.tedad} onChange={(value) => {
@@ -98,15 +95,15 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                             )
                         }
                     }}
-                    paging={false} columns={tableColumns} 
-                    model={items} 
+                    columns={tableColumns} 
+                    value={items} 
                     rtl={true}
                     toolbar={()=>{
                         return (
                             <AIOInput type='select' text="افزودن کالا" className='button-4' optionText='option.onvan' optionValue='option.code'
-                                popupAttrs={{ style: { maxHeight: 400, bottom: 0, top: 'unset', position: 'fixed', left: 0, width: '100%' }}}
+                                popover={{position:'center'}}
                                 options={guaranteeExistItems}
-                                
+                                rtl={true}
                                 onChange={(value, obj) => {
                                     let { items } = this.state;
                                     items.push({ 

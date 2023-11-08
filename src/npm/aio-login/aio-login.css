@@ -4,6 +4,23 @@
     font-family:IRANSans-Light;
     direction:rtl;
     width:100%;
+    min-height:fit-content;
+}
+.aio-login-reload{
+    width:100%;
+    height:60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin:24px;
+}
+.aio-login-reload button{
+    font-size:14px;
+    background:dodgerblue;
+    color:#fff;
+    border:none;
+    padding:12px 36px;
+    border-radius:6px;
 }
 .aio-login .aio-form{
     background: none;

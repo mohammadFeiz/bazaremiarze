@@ -1,25 +1,30 @@
 import React,{Component} from 'react';
-import RVD from './../../interfaces/react-virtual-dom/react-virtual-dom';
+import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import dotsloading from './../../images/simple_loading.gif';
 import Logo5 from './../../images/logo5.png';
 
 export default class Splash extends Component{
+    getContent(){
+      let {content} = this.props;
+      if(content){return content()}
+    }
     render(){
       return (
         <RVD
           layout={{
-            style:{position:'fixed',width:'100%',height:'100%',left:0,top:0},
-            className:'bg3B55A5',
+            style:{color:'#fff'},
+            className:'bg3B55A5 fullscreen ofy-auto',
             column:[
-              {size:128},
-              {html:<img src={Logo5} alt='' width={160} height={160}/>,align:'vh'},
-              {flex:1},
+              {html:<img src={Logo5} alt='' width={160} height={160}/>,align:'vh',className:'p-36'},
+              {align: 'h', html:this.getContent()},
               {
-                align:'vh',html:<img src={dotsloading} height='40px' alt=''/>
-              },
-              {size:24},
-              {html:'چند لحظه صبر کنید',className:'color-fff fs-14',align:'vh'},
-              {size:48}
+                align:'vh',flex:1,style:{minHeight:60},
+                column:[
+                  {flex:1},
+                  { align: 'vh', html: (<a style={{ color: '#fff', height: 24, margin: 0 }} href="tel:02175116" className='fs-14'>تماس با پشتیبانی</a>) },
+                  { align: 'vh', html: (<a style={{ color: '#fff', height: 30, margin: 0 }} href="tel:02175116">021-75116</a>) }
+                ]
+              }
             ]
           }}
         />

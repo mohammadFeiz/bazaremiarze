@@ -21,13 +21,14 @@ import OrderPopup from "../../components/kharid/order-popup/order-popup";
 import PasswordPopup from "../../components/password-popup/password-popup";
 import CountPopup from "../../components/kharid/product-count/count-popup";
 import PriceList from "../../popups/price-list/price-list";
+import Register from "../../components/register/register";
 
 //npm////////////////////////////////////////
 import { Icon } from '@mdi/react';
 import { mdiCart,mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList, mdiExitToApp, mdiOpacity, mdiCash, mdiSecurity } from "@mdi/js";
 import RSA from '../../npm/react-super-app/react-super-app';
-import RVD from '../../interfaces/react-virtual-dom/react-virtual-dom';
-import AIOStorage from '../../npm/aio-storage/aio-storage';
+import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
+import AIOStorage from 'aio-storage';
 import getSvg from "../../utils/getSvg";
 import Logo5 from './../../images/logo5.png';
 import Logo1 from './../../images/logo1.png';
@@ -271,7 +272,7 @@ export default class Main extends Component {
     let res = await apis.request({ api: "guaranti.garantiItems", loading: false, description: 'دریافت لیست کالاهای گارانتی کاربر' });
     if (res === false) {Login.logout(); return;}
     //this.getGuaranteeImages(items);
-    let guaranteeExistItems = await apis.request({ api: "guaranti.kalahaye_ghabele_garanti", loading: false, description: 'کالاهای قابل گارانتی' });
+    let guaranteeExistItems = await apis.request({ api: "guaranti.kalahaye_ghabele_garanti", loading: false, description: 'کالاهای قابل گارانتی',def:[] });
     this.setState({
       guaranteeItems: res,
       guaranteeExistItems
@@ -410,6 +411,17 @@ export default class Main extends Component {
     //let testedChance = await apis.request({api:"gardoone.get_tested_chance"});
     let cart = await apis.request({ api: 'kharid.getCart', loading: false, description: 'دریافت اطلاعات سبد خرید' });
     this.mounted = true;
+    setTimeout(()=>{
+      try{
+        let {userInfo} = this.props;
+        let {latitude,longitude,userProvince,userCity} = userInfo;
+        if(!userProvince || !userCity || !latitude || !longitude || Math.abs(latitude - 35.699739) < 0.0002 || Math.abs(longitude - 51.338097) < 0.0002){
+          this.openPopup('profile')
+        }
+      }
+      catch{}
+      
+    },1000)
     this.setState({
       cart,
       fixPrice,
@@ -421,7 +433,28 @@ export default class Main extends Component {
     let { rsa, backOffice } = this.state;
     let { userInfo } = this.props;
     let { addModal, removeModal, setNavId } = rsa;
-    if (type === 'priceList') {
+    if(type === 'profile'){
+      let {userInfo,updateUserInfo,baseUrl} = this.props;
+      addModal({
+        position: 'fullscreen', id: type,
+        body: {
+          render:() => {
+            return (
+              <Register baseUrl={baseUrl} mode='edit' locationMode={true} model={{...userInfo}} 
+                  onSubmit={(userInfo)=>{
+                      updateUserInfo(userInfo)
+                  }}
+                  onClose={()=>{
+                    rsa.removeModal()
+                  }}
+              />
+            )
+          }
+        }, 
+        header:{title: 'ثبت موقعیت جغرافیایی',backbutton:true}
+      })
+    }
+    else if (type === 'priceList') {
       addModal({
         position: 'fullscreen', id: type,
         body: {render:() => <PriceList />}, header:{title: 'لیست قیمت تولیدکنندگان',backbutton:true}
@@ -499,7 +532,7 @@ export default class Main extends Component {
   }
   getProfileName(userInfo) {
     //let str = userInfo.cardName;
-    let str = `${userInfo.firstName} ${userInfo.lastName}`;
+    let str = `${userInfo.firstName} ${typeof userInfo.lastName === 'string'?userInfo.lastName:'' }`;
     if (!str) { return 'پروفایل' }
     if (str.length <= 12) { return str }
     return <marquee behavior='scroll' scrollamount={3} direction='right'>{str}</marquee>

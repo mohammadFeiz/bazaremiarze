@@ -1,7 +1,7 @@
 import React,{Component} from 'react';
 import appContext from './../../../app-context';
 import SearchBox from './../../../components/search-box/index';
-import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
+import RVD from './../../../npm/react-virtual-dom/react-virtual-dom';
 export default class Search extends Component {
     static contextType = appContext;
     constructor(props) {

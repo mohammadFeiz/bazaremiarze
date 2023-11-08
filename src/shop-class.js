@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from "react";
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
-import Header from "./components/header";
 import CategoryView from "./components/kharid/category-view/category-view";
 import { Icon } from '@mdi/react';
 import { mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiDelete, mdiPlus, mdiMinus } from "@mdi/js";
@@ -12,7 +11,6 @@ import CartButton from './components/kharid/cart-button';
 import getSvg from "./utils/getSvg";
 import AIOInput from "./npm/aio-input/aio-input";
 import $ from 'jquery';
-import Slider from './npm/aio-slider/aio-slider';
 import bundleBoxSrc from './images/bundle-box.jpg';
 
 export default class ShopClass {
@@ -1346,7 +1344,8 @@ class ForoosheVijeSlider extends Component {
                                 {
                                     flex: 1,
                                     html: (
-                                        <Slider
+                                        <AIOInput
+                                            type='slider'
                                             attrs={{ style: { padding: '0 30px' } }}
                                             scaleStep={[max]}
                                             scaleStyle={(value) => { if (value === max) { return { background: '#2BBA8F' } } }}
@@ -1356,7 +1355,7 @@ class ForoosheVijeSlider extends Component {
                                             end={totalQty}
                                             max={max}
                                             step={step}
-                                            points={[count]}
+                                            value={count}
                                             lineStyle={{ height: 4 }}
                                             showValue={true}
                                             fillStyle={(index) => {
@@ -1367,16 +1366,11 @@ class ForoosheVijeSlider extends Component {
                                                 display: 'flex', alignItems: 'center', fontSize: 12
                                             }}
                                             pointStyle={{ background: '#2BBA8F', width: 16, height: 16, zIndex: 1000 }}
-                                            onChange={(points, drag) => {
-                                                this.setState({ count: points[0] });
-                                                if (!drag) { onChange(points[0]) }
-                                            }}
+                                            onChange={(count) => {this.setState({ count}); onChange(count)}}
+                                            after={<div style={{ padding: '0 3px', color: '#666', width: 24, borderRadius: 6, fontSize: 10 }}>{percent + '%'}</div>}
                                         />
                                     ),
                                     align: 'v'
-                                },
-                                {
-                                    html: <div style={{ padding: '0 3px', color: '#666', width: 24, borderRadius: 6, fontSize: 10 }}>{percent + '%'}</div>, align: 'vh'
                                 },
                                 // {
                                 //     html:<div style={{background:'#2BBA8F',padding:'0 3px',color:'#fff',width:36,borderRadius:6}}>{count}</div>,align:'vh'

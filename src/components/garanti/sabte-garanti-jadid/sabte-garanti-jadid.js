@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import RVD from "./../../../interfaces/react-virtual-dom/react-virtual-dom";
+import RVD from "./../../../npm/react-virtual-dom/react-virtual-dom";
 import garantiImage from './../../../images/garanti-image.png';
 import appContext from "./../../../app-context";
 import './index.css';

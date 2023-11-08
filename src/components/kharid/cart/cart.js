@@ -1,6 +1,6 @@
 import React,{Component} from 'react';
 import appContext from './../../../app-context';
-import RVD from './../../../interfaces/react-virtual-dom/react-virtual-dom';
+import RVD from './../../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from '../../../npm/aio-input/aio-input';
 import noItemSrc from './../../../images/not-found.png';
 import SplitNumber from '../../../npm/aio-functions/split-number';

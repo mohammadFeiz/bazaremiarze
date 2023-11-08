@@ -34,7 +34,6 @@ import Logo5 from './../../images/logo5.png';
 import Logo1 from './../../images/logo1.png';
 import Pricing from "../../pricing";
 import appContext from "../../app-context";
-import dateCalculator from "../../utils/date-calculator";
 import Search from "../../components/kharid/search/search";
 import SabteGarantiJadidBaJoziat from "../../components/garanti/sabte-garanti-jadid-ba-joziat/sabte-garanti-jadid-ba-joziat";
 import PayameSabteGaranti from "../../components/garanti/payame-sabte-garanti/payame-sabte-garanti";
@@ -68,7 +67,6 @@ export default class Main extends Component {
     else {
       images = JSON.parse(images);
     }
-    this.dateCalculator = dateCalculator();
     let { baseUrl } = this.props;
     let homeBillboards = props.backOffice.homeContent || [];
     homeBillboards = homeBillboards.filter((o)=>o.type === 'billboard');

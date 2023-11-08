@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import RVD from './../../../npm/react-virtual-dom/react-virtual-dom';
-import dateCalculator from './../../../utils/date-calculator';
+import AIODate from './../../../npm/aio-date/aio-date';
 import getSvg from './../../../utils/getSvg';
 import appContext from '../../../app-context';
 export default class PayameSabteGaranti extends Component {
     static contextType = appContext;
     constructor(props) {
         super(props);
-        this.today = dateCalculator().getToday('jalali', 'minute')
+        this.today = AIODate().getToday({calendarType:'jalali'})
     }
     header_layout(){
         let {onClose} = this.props;

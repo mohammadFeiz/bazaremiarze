@@ -1,7 +1,6 @@
 import React,{Component} from 'react';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
 import headerSvg from '../../images/header-svg';
-import footerSvg from '../../images/footer-svg';
 import getSvg from '../../utils/getSvg';
 import appContext from '../../app-context';
 import SplitNumber from './../../npm/aio-functions/split-number';
@@ -151,7 +150,7 @@ export default class Profile extends Component{
                 {size:16},
                 this.parts_layout(),
                 {
-                    size:120,html:footerSvg(),align:'vh',
+                    size:120,html:'',align:'vh',
                     egg:{
                         callback:async ()=>{
                             let {apis} = this.context;

@@ -449,7 +449,7 @@ export default class Main extends Component {
             )
           }
         }, 
-        header:{title: 'ثبت موقعیت جغرافیایی',backbutton:true}
+        header:false
       })
     }
     else if (type === 'priceList') {

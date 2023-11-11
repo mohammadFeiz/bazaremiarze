@@ -24,6 +24,7 @@ export default class Register extends Component{
         if(!phoneNumber || phoneNumber === null){phoneNumber = model.userName;}
         latitude = isNaN(parseFloat(latitude))?35.699739:parseFloat(latitude);
         longitude = isNaN(parseFloat(longitude))?51.338097:parseFloat(longitude);
+        if(lastName === null){lastName = ''}
         this.cities = allCities.filter(({province})=>province === userProvince)
         this.state = {
             errors:[],
@@ -32,10 +33,12 @@ export default class Register extends Component{
             loading:false,
         }
     }
-    onClose(){
+    onClose(closeButton){
         let {onClose,mode,locationMode} = this.props;
         if(locationMode){
-            onClose()
+            if(closeButton){alert('لطفا موقعیت خود را ثبت کنید')}
+            else{onClose()}
+            
         }
         else{
             $(this.dom.current).animate({height: '0%',width: '0%',left:'50%',top:'100%',opacity:0}, 300,()=>{
@@ -45,12 +48,18 @@ export default class Register extends Component{
         
     }
     header_layout(){
-        let {mode,logout} = this.props;
+        let {mode,logout,locationMode} = this.props;
+        let title;
+        if(mode === 'edit'){
+            if(locationMode){title = 'ثبت موقعیت جغرافیایی'}
+            else {title = 'ویرایش اطلاعات کاربری'}
+        }
+        else {title = 'ثبت نام'}
         return {
             className:'theme-box-shadow of-visible',size:60,style:{marginBottom:12,background:'#fff'},
             row:[
-                {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>this.onClose()}},
-                {flex:1,html:mode === 'edit'?'ویرایش اطلاعات کاربری':'ثبت نام',className:'fs-16 theme-medium-font-color',align:'v'},
+                {size:60,html:getSvg("chevronLeft", { flip: true }),align:'vh',attrs:{onClick:()=>this.onClose(true)}},
+                {flex:1,html:title,className:'fs-16 theme-medium-font-color',align:'v'},
                 {show:!!logout,html:'خروج از حساب',align:'v',onClick:()=>logout(),className:'fs-12 theme-link-font-color bold p-h-12'}
             ]
         }
@@ -164,10 +173,10 @@ export default class Register extends Component{
                                     {input:{type:'text',inputAttrs:{autoComplete:'off'}},label:'نام خانوادگی',field:'value.lastName',validations:[['required']]}
                                 ]
                             },
-                            {input:{type:'password',inputAttrs:{autoComplete:'off'}},label:'رمز عبور',field:'value.password',validations:[['required'],['length>',5]],show:!locationMode && mode === 'register'},
+                            {input:{type:'password',inputAttrs:{autoComplete:'off'}},label:'رمز عبور',field:'value.password',validations:[['length>',5]],show:!locationMode && mode === 'register'},
                             {
                                 input:{type:'password',inputAttrs:{autoComplete:'off'}},label:'تکرار رمز عبور',field:'value.re_password',
-                                validations:[['required'],['=','value.password',{message:'تکرار رمز عبور با رمز عبور مطابقت ندارد'}]],
+                                validations:[['=','value.password',{message:'تکرار رمز عبور با رمز عبور مطابقت ندارد'}]],
                                 show:!locationMode && mode === 'register'
                             },
                             {

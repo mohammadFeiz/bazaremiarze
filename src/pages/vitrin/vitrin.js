@@ -511,7 +511,7 @@ class SearchProducts extends Component {
         let { suggestion } = this.state;
         let form = (
             <AIOInput
-                type='form'
+                type='form' lang='fa'
                 value={suggestion}
                 onChange={(suggestion)=>this.setState({suggestion})}
                 footerAttrs={{className:'vitrin-suggestion-footer'}}
@@ -527,13 +527,13 @@ class SearchProducts extends Component {
                             className: 'fs-12 theme-medium-font-color t-a-right'
                         },
                         { size: 24 },
-                        {input:{type:'text',placeholder:'نام کامل محصول'},label:'نام محصول',field:'value.name'},
+                        {input:{type:'text',placeholder:'نام کامل محصول'},label:'نام محصول',field:'value.name',validations:[['required']]},
                         {input:{type:'text',placeholder:'برند محصول'},label:'برند محصول',field:'value.brand'},
                         {
                             input:{
                                 type:'image',placeholder:<Icon path={mdiCamera} size={1} />,width:'100%'
                             },
-                            label:'افزودن تصویر محصول',field:'value.image'
+                            label:'تصویر محصول',field:'value.image',validations:[['required']]
                         },
                     ]
                 }}
@@ -771,17 +771,22 @@ class ProductCard extends Component {
     }
     price_layout() {
         let { price } = this.props;
-        if (!price) { return false }
+        price = isNaN(price)?0:price;
+        if(price < 500){price = 0}
         return {
             row: [
-                { html: SplitNumber(price), className: 'theme-dark-font-color fs-18 bold', align: 'v' },
+                { show:!price,html: 'در حال تامین', className: 'fs-12 bold',style:{color:'red'}, align: 'v' },
+                { show:!!price,html: ()=>SplitNumber(price), className: 'theme-dark-font-color fs-18 bold', align: 'v' },
                 { size: 3 },
-                { html: 'تومان', className: 'theme-light-font-color fs-10', align: 'v' }
+                { show:!!price,html: 'تومان', className: 'theme-light-font-color fs-10', align: 'v' }
             ]
         }
     }
     plus_layout() {
         let { price, selected, onSelect, id,loading } = this.props;
+        price = isNaN(price)?0:price;
+        if(price < 500){price = 0}
+        
         if (!price || !onSelect) { return false }
         return {
             html: <Icon path={selected ? mdiClose : mdiPlus} size={1} />,
@@ -796,7 +801,8 @@ class ProductCard extends Component {
         return { html: id }
     }
     render() {
-        let {loading} = this.props;
+        let {loading,name} = this.props;
+        if(!name){return null}
         return (
             <RVD
                 loading={loading}

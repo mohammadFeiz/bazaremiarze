@@ -79,7 +79,7 @@ class App extends Component {
     else if (res === false) { return false }
   }
   async onAuth({ token,userId }){
-    let { apis } = this.state;
+    let { apis,Login } = this.state;
     let registered = await apis.request({api:'login.checkIsRegistered',parameter:userId,loading:false});
     apis.setToken(token);
     this.setState({ token, isAutenticated: true,registered })
@@ -158,7 +158,7 @@ class App extends Component {
           <Register
             baseUrl={baseUrl} mode='register' logout={Login.logout}
             model={{ phoneNumber: userInfo.phoneNumber }}
-            onClose={() => Login.logout()}
+            onClose={() => {Login.logout(); window.location.reload()}}
             onSubmit={(userInfo)=>this.onRegister(userInfo)}
           />
         )

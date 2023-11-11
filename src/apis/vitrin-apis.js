@@ -78,11 +78,12 @@ export default function vitrinApis({baseUrl,helper}) {
         async v_miarze_brands(){
             return {mock:true}
         },
-        async addSuggestion({suggestion_brand = '',suggestion_file = undefined,suggestion_name = ''},{userInfo}){
+        async addSuggestion(suggestion,{userInfo}){
+            let {brand,image,name} = suggestion;
             let formdata = new FormData();
-            formdata.append("Image", suggestion_file);
-            formdata.append("Brand", suggestion_brand);
-            formdata.append("Name", suggestion_name);
+            formdata.append("Image", image.file);
+            formdata.append("Brand", brand);
+            formdata.append("Name", name);
             formdata.append("CardCode", userInfo.cardCode);
             let response = await Axios.post(`${baseUrl}/ProductSuggestion/CreateProductSuggestion` , formdata);
             let result;

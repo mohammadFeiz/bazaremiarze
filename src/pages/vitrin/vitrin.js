@@ -12,6 +12,7 @@ import vbsrc from './../../images/vitrin-bazargah.png';
 import { mdiCamera, mdiChevronLeft, mdiClose, mdiFilter, mdiMagnify, mdiMenu, mdiPlus, mdiPlusThick } from "@mdi/js";
 import vitrin_niazsanji_src from './../../images/vitrin-niazsanji.jpg';
 import VitrinContext from "../../vitrin-context";
+import './vitrin.css';
 function getMockProducts(){
     return [
         {
@@ -118,7 +119,8 @@ export default class Vitrin extends Component {
             onSuccess:async (selectedProductsIds)=>{
                 let selectedProductsList = selectedProductsIds.length?await apis.request({
                     api: 'vitrin.v_getProductsByIds',description: 'دریافت لیست محصولات انتخاب شده ی ویترین',loading:false,
-                    parameter:selectedProductsIds.toString()
+                    parameter:selectedProductsIds.toString(),
+            
                 }):[];
                 let selectedProducts = {};
                 for(let i = 0; i < selectedProductsList.length; i++){
@@ -377,20 +379,20 @@ class SearchProducts extends Component {
             products: undefined,
             pageNumber:1,
             pageSize:10,
+            suggestion:{
+                name:'',
+                file:undefined,
+                brand:''
+            }
         
         }
     }
     addSuggestion(){
         let {apis} = this.context;
-        let {suggestion_brand,suggestion_file,suggestion_name} = this.state
+        let {suggestion} = this.state
         apis.request({
-            api:'vitrin.addSuggestion',
-            description:'پیشنهاد افزودن محصول به ویترین',
-            parameter:{suggestion_brand,suggestion_file,suggestion_name},
-            message:{success:true},
-            onSuccess:()=>{
-                this.setState({suggestion_brand:'',suggestion_file:undefined,suggestion_image:undefined,suggestion_name:''})
-            }
+            api:'vitrin.addSuggestion',description:'پیشنهاد افزودن محصول به ویترین',parameter:suggestion,message:{success:true},
+            onSuccess:()=>this.setState({suggestion:{name:'',file:undefined,brand:''}})
         })
     }
     async updateProducts(){
@@ -506,66 +508,71 @@ class SearchProducts extends Component {
     add_layout() {
         let {isFirstTime} = this.props;
         if(isFirstTime){return false}
-        let { suggestion_name = '',suggestion_brand = '',suggestion_image } = this.state;
+        let { suggestion } = this.state;
+        let form = (
+            <AIOInput
+                type='form'
+                value={suggestion}
+                onChange={(suggestion)=>this.setState({suggestion})}
+                footerAttrs={{className:'vitrin-suggestion-footer'}}
+                onSubmit={()=>this.addSuggestion()}
+                submitText='ثبت'
+                inputStyle={{border:'none'}}
+                inputs={{
+                    column:[
+                        { html: 'درخواست افزودن محصول', className: 'fs-18 bold theme-dark-font-color' },
+                        { size: 12 },
+                        {
+                            html: 'ما به سرعت در حال اضافه کردن محصولات جدید به می ارزه هستیم. نام محصول پیشنهادی خود را برای ما بفرستید تا ما در اولویت قرار دهیم.',
+                            className: 'fs-12 theme-medium-font-color t-a-right'
+                        },
+                        { size: 24 },
+                        {input:{type:'text',placeholder:'نام کامل محصول'},label:'نام محصول',field:'value.name'},
+                        {input:{type:'text',placeholder:'برند محصول'},label:'برند محصول',field:'value.brand'},
+                        {
+                            input:{
+                                type:'image',placeholder:<Icon path={mdiCamera} size={1} />,width:'100%'
+                            },
+                            label:'افزودن تصویر محصول',field:'value.image'
+                        },
+                    ]
+                }}
+            />
+        )
         return {
-            className: 'p-24',
-            style: { background: '#eee' },
-            column: [
-                { html: 'درخواست افزودن محصول', className: 'fs-18 bold theme-dark-font-color' },
-                { size: 12 },
-                {
-                    html: 'ما به سرعت در حال اضافه کردن محصولات جدید به می ارزه هستیم. نام محصول پیشنهادی خود را برای ما بفرستید تا ما در اولویت قرار دهیم.',
-                    className: 'fs-12 theme-medium-font-color t-a-right'
-                },
-                { size: 24 },
-                {html:'نام محصول',className:'p-h-12 bold fs-12',align:'v',size:24},
-                {
-                    html: (
-                        <input
-                            type='text' value={suggestion_name} placeholder="نام کامل محصول"
-                            style={{ width: '100%', height: 36, background: '#f8f8f8', border: 'none', padding: '0 12px' }}
-                            onChange={(e) => this.setState({ suggestion_name: e.target.value })}
-                        />
-                    )
-                },
-                {size:24},
-                {html:'برند محصول',className:'p-h-12 bold fs-12',align:'v',size:24},
-                {
-                    html: (
-                        <input
-                            type='text' value={suggestion_brand} placeholder="برند محصول"
-                            style={{ width: '100%', height: 36, background: '#f8f8f8', border: 'none', padding: '0 12px' }}
-                            onChange={(e) => this.setState({ suggestion_brand: e.target.value })}
-                        />
-                    )
-                },
-                { size: 24 },
-                {
-                    html: (
-                        <AIOInput
-                            style={{width: '100%',height: 'fit-content',display: 'flex',flexDirection: 'column',color: '#888'}}
-                            before={suggestion_image?undefined:<Icon path={mdiCamera} size={1} />} type='file'
-                            onChange={(files)=>{
-                                var fr = new FileReader();
-                                fr.onload = () => {
-                                    this.setState({suggestion_image:fr.result,suggestion_file:files[0].file})
-                                }
-                                fr.readAsDataURL(files[0].file);
-                            }}
-                            text={suggestion_image?(
-                                <img src={suggestion_image} alt='' width='100%'/>
-                            ):'افزودن تصویر محصول'}
-                        />
-                    )
-                },
-                { size: 12 },
-                {
-                    html: (
-                        <button className='button-2' onClick={()=>this.addSuggestion()}>ثبت</button>
-                    )
-                }
-            ]
+            className:'p-24',
+            style:{background:'#eee'},
+            html:form
+
         }
+        // return {
+        //     column: [
+        //         {
+        //             html: (
+        //                 <AIOInput
+        //                     style={{width: '100%',height: 'fit-content',display: 'flex',flexDirection: 'column',color: '#888'}}
+        //                     before={suggestion_image?undefined:<Icon path={mdiCamera} size={1} />} type='file'
+        //                     onChange={(files)=>{
+        //                         var fr = new FileReader();
+        //                         fr.onload = () => {
+        //                             this.setState({suggestion_image:fr.result,suggestion_file:files[0].file})
+        //                         }
+        //                         fr.readAsDataURL(files[0].file);
+        //                     }}
+        //                     text={suggestion_image?(
+        //                         <img src={suggestion_image} alt='' width='100%'/>
+        //                     ):'افزودن تصویر محصول'}
+        //                 />
+        //             )
+        //         },
+        //         { size: 12 },
+        //         {
+        //             html: (
+        //                 <button className='button-2' onClick={()=>this.addSuggestion()}>ثبت</button>
+        //             )
+        //         }
+        //     ]
+        // }
     }
     first_submit_layout(){
         let {isFirstTime} = this.props;

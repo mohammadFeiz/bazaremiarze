@@ -10,7 +10,7 @@ export function getMainProperties(props,getProp,types){
     let disabled = p('disabled');
     let className = p('className');
     let style = p('style');
-    let onClick = p('onClick');
+    let onClick = p('onClick',undefined,true);
     let attrs = {...p('attrs',{})};
     let justify = {...p('justify')};
     if(className){attrs.className = className}
@@ -19,7 +19,7 @@ export function getMainProperties(props,getProp,types){
     let properties = {
         props:{...props},
         value,type,rtl,loading,disabled:loading || disabled,attrs,justify,
-        onChange: p('onChange'),
+        onChange: p('onChange',undefined,true),
         justify: p('justify'),
         text: p('text'),
         before: p('before'),after: p('after'),subtext: p('subtext'),label: p('label'),
@@ -44,7 +44,7 @@ export function getMainProperties(props,getProp,types){
     }
     if(types.isDropdown){
         properties = {...properties,caret: p('caret'),popover:p('popover')}
-        if(types.hasOption){properties = {...properties,optionClose:p('optionClose'),}}
+        if(types.hasOption){properties = {...properties,optionClose:p('optionClose'),onSwap:p('onSwap')}}
     }
     if(types.isInput){properties = {...properties,inputAttrs:p('inputAttrs'),blurChange:p('blurChange')}}
     if(types.hasPlaceholder){properties = {...properties,placeholder: p('placeholder')}}
@@ -79,6 +79,12 @@ export function getMainProperties(props,getProp,types){
             dateAttrs:p('dateAttrs'),
             remove:p('remove'),
             close:p('close')
+        }
+    }
+    else if(type === 'time'){
+        properties = {
+            ...properties,
+            calendarType:p('calendarType','gregorian')
         }
     }
     else if(type === 'list'){
@@ -266,7 +272,7 @@ export class AIOInputValidate {
             multiselect: {
                 type: '"multiselect"', value: 'array|undefined',before: 'any', after: 'any', subtext,text: 'any',
                 options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
-                popover: 'object|undefined',hideTags: 'boolean|undefined',search: 'boolean|undefined',
+                popover: 'object|undefined',hideTags: 'boolean|undefined',search: 'boolean|undefined',onSwap:'function|undefined',
                 caret: 'any',disabled, loading: 'any',optionTagBefore: 'any', optionTagAfter: 'any', optionTagAttrs: 'any',
             },
             password: {
@@ -305,8 +311,8 @@ export class AIOInputValidate {
                 scaleStep: 'number|array|undefined',editLabel: 'function|undefined',labelRotate: 'number|function|undefined'
             },
             form: {
-                type: '"form"',inputs: 'object',value: 'object',disabled,inputClassName: 'string|function|undefined',inputStyle: style,
-                labelAttrs: 'object|function|undefined',lang: '"en"|"fa"|undefined',updateInput: 'function|undefined'
+                type: '"form"',inputs: 'object',value: 'object',disabled,inputClassName: 'string|function|undefined',inputStyle: style,submitText:'string|undefined',closeText:'string|undefined',
+                labelAttrs: 'object|function|undefined',lang: '"en"|"fa"|undefined',updateInput: 'function|undefined',onSubmit:'function|undefined',resetText:'string|undefined'
             },
             datepicker: {
                 type: '"datepicker"', value: 'any',caret: 'any',popover: 'object|undefined',
@@ -319,9 +325,9 @@ export class AIOInputValidate {
                 placeholder: 'any',attrs: 'object|undefined',preview: 'boolean|undefined',disabled, loading: 'any',
                 width: 'string|number|undefined', height: 'string|number|undefined',
             },
-            time: {type: '"time"', value: 'object|undefined',before: 'any', after: 'any', subtext,disabled, loading: 'any'},
+            time: {type: '"time"', value: 'object|undefined',before: 'any', after: 'any', subtext,disabled, loading: 'any',calendarType:'jalali|gregorian'},
             button: {
-                type: '"button"', value: 'any',before: 'any', after: 'any', subtext,
+                type: '"button"', value: 'any',before: 'any', after: 'any', subtext,onClick:'function|undefined',
                 disabled, loading: 'any',caret: 'any',justify: 'boolean|undefined',popover: 'object|undefined',
             },
             list: {

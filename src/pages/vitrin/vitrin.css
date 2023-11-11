@@ -1,0 +1,11 @@
+.vitrin-suggestion-footer{
+    justify-content: center;
+
+}
+.vitrin-suggestion-footer button{
+    min-width:300px !important;
+    height:40px;
+    border-radius:6px !important;
+    background:#3B55A5;
+    
+}

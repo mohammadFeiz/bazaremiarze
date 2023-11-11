@@ -8,7 +8,7 @@ import { Icon } from '@mdi/react';
 import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown,
     mdiSort, mdiFileExcel, mdiMagnify, mdiPlusThick, mdiChevronLeft, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline,
-    mdiCrosshairsGps
+    mdiCrosshairsGps,mdiDragVertical
 } from "@mdi/js";
 import AIOPopup from 'aio-popup';
 import $ from 'jquery';
@@ -99,9 +99,9 @@ export default class AIOInput extends Component {
         let newStyle = stylePriority ? { ...attrs.style, ...style } : { ...style, ...attrs.style };
         return { ...attrs, className: newClassName, style: newStyle }
     }
-    getProp(key, def) {
+    getProp(key, def,preventFunction) {
         let { type } = this.props;
-        let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
+        let propsResult = this.props[key] === 'function' && !preventFunction ? this.props[key]() : this.props[key];
         if (key === 'value') {
             if (propsResult === null) { propsResult = undefined }
             
@@ -199,8 +199,9 @@ export default class AIOInput extends Component {
         let onChange = this.properties.onChange || (() => { });
         let type = this.types.type;
         let Value = this.properties.value;
-        let { value, attrs = {}, close, text } = option;
-        if (attrs.onClick) { attrs.onClick(value, option); }
+        let { value, attrs = {},onClick, close, text } = option;
+        if (onClick) { onClick(value, option); }
+        else if (attrs.onClick) { attrs.onClick(value, option); }
         else if (type && ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1) { onChange(text, option) }
         else if (this.isMultiple()) {
             if (Value.indexOf(value) === -1) { onChange(Value.concat(value), value, 'add') }
@@ -222,6 +223,7 @@ export default class AIOInput extends Component {
         let result = [];
         let renderIndex = 0;
         let Value = this.properties.value;
+        let draggable = this.types.isDropdown && this.types.hasOption && this.props.onSwap;
         for (let i = 0; i < options.length; i++) {
             let option = options[i];
             let disabled = this.properties.disabled || this.getOptionProp(option, 'disabled');
@@ -232,13 +234,13 @@ export default class AIOInput extends Component {
             let value = this.getOptionProp(option, 'value')
             let attrs = this.getOptionProp(option, 'attrs', {});
             let obj = {
-                attrs,text, value,disabled,
+                attrs,text, value,disabled,draggable,
                 checkIcon: this.getOptionProp(option, 'checkIcon', [], true),
                 checked: this.getOptionProp(option, 'checked', getDefaultOptionChecked(value)),
                 before: this.getOptionProp(option, 'before'),
                 after: this.getOptionProp(option, 'after'),
                 subtext: this.getOptionProp(option, 'subtext'),
-                onClick: this.getOptionProp(option, 'onClick'),
+                onClick: this.getOptionProp(option, 'onClick',undefined,true),
                 className: this.getOptionProp(option, 'className'),
                 style: this.getOptionProp(option, 'style'),
                 tagAttrs: this.getOptionProp(option, 'tagAttrs'),
@@ -1120,10 +1122,11 @@ class Table extends Component {
         if (template !== undefined) { return template }
         let input = getDynamics({ value: column.input, row, rowIndex, column });
         if (!input) { input = { type: 'text' } }
-        for (let prop in input) { input[prop] = getDynamics({ value: input[prop], row, rowIndex, column }) }
+        let convertedInput = {}
+        for (let prop in input) { convertedInput[prop] = getDynamics({ value: input[prop], row, rowIndex, column }) }
         return (
             <AIOInput
-                {...input}
+                {...convertedInput}
                 value={getDynamics({ value: column.value, row, rowIndex, column })}
                 onChange={column.input ? (value) => setCell(row, column, value) : undefined}
             />
@@ -1215,7 +1218,7 @@ function TableRows() {
     let { properties, ROWS } = useContext(AITableContext)
     let {rowTemplate,rowAfter = () => null,rowBefore = () => null,rowsTemplate,placeholder = 'there is not any items'} = properties;
     function getContent() {
-        let rows = ROWS.pagedRows;
+        let rows = ROWS.pagedRows || [];
         if (rowsTemplate) { return rowsTemplate(rows) }
         if (rows.length) {
             return rows.map((o, i) => {
@@ -1242,7 +1245,7 @@ function TableToolbar() {
             <div {...toolbarAttrs}>
                 {toolbar && <div className='aio-input-table-toolbar-content'>{typeof toolbar === 'function' ? toolbar() : toolbar}</div>}
                 <div className='aio-input-table-search'>
-                    {!!onSearch && <AIOInput type='text' onChange={(value) => search(value)} after={<Icon path={mdiMagnify} size={1} />} />}
+                    {!!onSearch && <AIOInput type='text' onChange={(value) => search(value)} after={<Icon path={mdiMagnify} size={0.7} />} />}
                 </div>
                 {state.Sort.getSortButton()}
                 {!!excel && <div className='aio-input-table-toolbar-icon' onClick={() => exportToExcel()}><Icon path={mdiFileExcel} size={0.8} /></div>}
@@ -1288,7 +1291,7 @@ function TableRow({ row, isLast, rowIndex }) {
                 {getCells(row, rowIndex)}
                 {onRemove ? <button className='aio-input-table-remove' onClick={() => remove(row)}><Icon path={mdiClose} size={0.8} /></button> : null}
             </div>
-            {!isLast && RowGap}
+            {RowGap}
         </>
     )
 }
@@ -1366,7 +1369,7 @@ class SortClass {
             let column = columns[i];
             let { sort, _id, type } = column;
             if (!sort) { continue }
-            let { active = true, dir = 'dec' } = sort;
+            let { active = false, dir = 'dec' } = sort;
             let getValue = (row) => {
                 let value = getDynamics({ value: column.value, row, column })
                 if (type === 'datepicker') { value = AIODate().getTime(value); }
@@ -1439,9 +1442,9 @@ class Layout extends Component {
         return cls;
     }
     getProps() {
-        let { dragStart, dragOver, drop, click, optionClick, open,addToAttrs } = this.context;
+        let { dragStart, dragOver, drop, click, optionClick, open,addToAttrs,getProp } = this.context;
         let { option, realIndex, renderIndex } = this.props;
-        let { label, justify, attrs = {}, disabled,onSwap } = this.properties;
+        let { label, justify, attrs = {}, disabled,draggable } = this.properties;
         let zIndex;
         if (open && !option && ['text', 'number', 'textarea'].indexOf(this.properties.type) !== -1) {
             zIndex = 100000
@@ -1457,7 +1460,7 @@ class Layout extends Component {
             style: { justifyContent: justify ? 'center' : undefined, zIndex }
         })
         let p = {...attrs, onClick, ref: this.dom, disabled, 'data-label': label}
-        if (option && onSwap) {
+        if (draggable) {
             p.datarealindex = realIndex;
             p.datarenderindex = renderIndex;
             p.onDragStart = dragStart;
@@ -1507,12 +1510,20 @@ class Layout extends Component {
         if(text !== undefined){res.text = text}
         return {...res,type}
     }
+    getDragIcon(){
+        return (
+            <svg viewBox="8 4 10 13" role="presentation" style={{width: 12,height: '1.8rem'}}>
+                <path d="M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7M9,11H11V13H9V11M13,11H15V13H13V11M9,15H11V17H9V15M13,15H15V17H13V15M9,19H11V21H9V19M13,19H15V21H13V19Z" style={{fill: 'currentcolor'}}></path>
+            </svg>
+        )
+    }
     render() {
         let { option } = this.props;
         this.properties = this.getProperties();
-        let { checked, checkIcon = AIOInput.defaults.checkIcon, before, text, subtext, after, caret, placeholder, loading, justify,type } = this.properties;
+        let { checked, checkIcon = AIOInput.defaults.checkIcon, before, text, subtext, after, caret, placeholder, loading, justify,type,draggable } = this.properties;
         let content = (
             <>
+                {draggable && this.getDragIcon()}
                 <CheckIcon {...{ checked, checkIcon, type, option }} />
                 {before !== undefined && <div className={this.getItemClassName('before')}>{before}</div>}
                 {this.text_layout()}
@@ -2842,7 +2853,7 @@ class MapUnit extends Component {
             if (popup === true) { popup = {} }
             let props = {
                 ...this.props, ...popup, value,
-                mapConfig: { ...this.props.mapConfig, ...popup.mapConfig },
+                mapConfig: {...popup.mapConfig },
                 isPopup: true, popup: false,
                 onClose: () => this.setState({ showPopup: false }),
                 attrs: { ...attrs, style: { width: '100%', height: '100%', top: 0, position: 'fixed', left: 0, zIndex: 1000000, ...attrs.style }, onClick: undefined },
@@ -3028,27 +3039,27 @@ export function AIOValidation(props) {
         },
         length(target, validation, value, unit, exact) {
             if (exact) { return this.getMessage(target, { validation, be: 'should be contain', unit }) }
-            if (value.length !== target) { return this.getMessage(target, { validation, be: 'should be contain', unit }) }
+            if (value && value.length !== target) { return this.getMessage(target, { validation, be: 'should be contain', unit }) }
         },
         notLength(target, validation, value, unit, exact) {
             if (exact) { return this.getMessage(target, { validation, be: 'should not be contain', unit }) }
-            if (value.length === target) { return this.getMessage(target, { validation, be: 'should not be contain', unit }) }
+            if (value && value.length === target) { return this.getMessage(target, { validation, be: 'should not be contain', unit }) }
         },
         lengthLess(target, validation, value, unit, exact) {
             if (exact) { return this.getMessage(target, { validation, be: 'should be less than', unit }) }
-            if (value.length >= target) { return this.getMessage(target, { validation, be: 'should be less than', unit }) }
+            if (value && value.length >= target) { return this.getMessage(target, { validation, be: 'should be less than', unit }) }
         },
         lengthLessEqual(target, validation, value, unit, exact) {
             if (exact) { return this.getMessage(target, { validation, be: 'could not be more than', unit }) }
-            if (value.length > target) { return this.getMessage(target, { validation, be: 'could not be more than', unit }) }
+            if (value && value.length > target) { return this.getMessage(target, { validation, be: 'could not be more than', unit }) }
         },
         lengthMore(target, validation, value, unit, exact) {
             if (exact) { return this.getMessage(target, { validation, be: 'should be more than', unit }) }
-            if (value.length <= target) { return this.getMessage(target, { validation, be: 'should be more than', unit }) }
+            if (value && value.length <= target) { return this.getMessage(target, { validation, be: 'should be more than', unit }) }
         },
         lengthMoreEqual(target, validation, value, unit, exact) {
             if (exact) { return this.getMessage(target, { validation, be: 'could not be less than', unit }) }
-            if (value.length < target) { return this.getMessage(target, { validation, be: 'could not be less than', unit }) }
+            if (value && value.length < target) { return this.getMessage(target, { validation, be: 'could not be less than', unit }) }
         },
         equal(target, validation, value, a, exact) {
             if (exact) { this.getMessage(target, { validation, be: 'should be equal' }) }

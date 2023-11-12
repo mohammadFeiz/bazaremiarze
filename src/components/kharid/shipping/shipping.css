@@ -1,0 +1,22 @@
+.shipping-code-button{
+    background:dodgerblue;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.shipping-code-button:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+}
+
+.shipping-code-button.error{
+    background:#ff000030;
+    color:#ff0000; 
+}
+.shipping-code-button.success{
+    background:#00ff0030;
+    color:#206e20;
+}

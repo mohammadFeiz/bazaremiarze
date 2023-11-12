@@ -2,12 +2,19 @@ import React,{Component} from 'react';
 import RVD from './../../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from '../../../npm/aio-input/aio-input';
 import appContext from './../../../app-context';
+import { mdiCheck, mdiClose } from '@mdi/js';
+import {Icon} from '@mdi/react';
+import './shipping.css';
 
 export default class Shipping extends Component{
     static contextType = appContext;
     constructor(props){
       super(props);
-      this.state = {}
+      this.state = {
+        discountCode:'',giftCode:'',
+        discountCodeState:false,giftCodeState:false,
+        dicountCodeInfo:undefined,giftCodeInfo:undefined
+      }
     }
     details_layout(list){
       return {
@@ -121,10 +128,10 @@ export default class Shipping extends Component{
       let {cartId} = this.props;
       let {getShopById} = this.context;
       let Shop = getShopById(cartId);
-      let {address} = this.state;
+      let {address,giftCodeInfo,discountCodeInfo} = this.state;
       let {PayDueDate,SettleType,DeliveryType,PaymentTime} = this.state;
       let {getFactorItems,getPaymentButtonText} = Shop;
-      let factorItems = getFactorItems({PayDueDate,SettleType,DeliveryType,PaymentTime,address})
+      let factorItems = getFactorItems({PayDueDate,SettleType,DeliveryType,PaymentTime,address,giftCodeInfo,discountCodeInfo})
       return {
         className:'p-h-12 bg-fff theme-box-shadow',
         style:{paddingTop:12,borderRadius:'16px 16px 0 0'},
@@ -152,6 +159,74 @@ export default class Shipping extends Component{
           },
           {size:12}
         ]
+      }
+    }
+    getCodeAfter(key){
+      let state = this.state[`${key}State`]
+      let value = this.state[key]
+      let text,className = '';
+      if(state === true){
+        text = <Icon path={mdiCheck} size={0.8}/>
+        className = 'success'
+      }
+      else if(state === false){
+        text = 'اعمال'
+      }
+      return (
+        <button disabled={!value || value.length < 5} onClick={()=>this.checkCode(key)} className={'shipping-code-button' + (className?' ' + className:'')}>{text}</button>
+      )
+    }
+    checkCode(type){
+      if(this.state[`${type}State`]){
+        this.setState({[`${type}State`]:false,[`${type}Info`]:undefined})
+        return
+      }
+      let {apis} = this.context;
+      let code = this.state[type];
+      let description = {
+        'giftCode':'کارت هدیه',
+        'discountCode':'کد تخفیف'
+      }[type]
+      apis.request({
+        api:'kharid.checkCode',
+        description:`ارسال ${description}`,
+        parameter:{type,code},
+        onSuccess:(obj)=>{
+          this.setState({
+            [`${type}State`]:true,
+            [`${type}Info`]:obj,
+          })
+        },
+        onError:()=>{
+          this.setState({[type]:'',[`${type}Info`]:undefined})
+        },
+        onCatch:(response)=>{
+          return response.response.data.Message;
+        }
+      })
+    }
+    code_layout(type){
+      let placeholder = {
+        'giftCode':'کارت هدیه',
+        'discountCode':'کد تخفیف'
+      }[type]
+      let value = this.state[type];
+      
+      return {
+        className:'box m-h-12',
+        html:(
+          <AIOInput
+            key={type}
+            disabled={!!this.state[`${type}State`]}
+            type='text'
+            style={{height:36}}
+            placeholder={`${placeholder} را وارد کنید`}
+            value={value}
+            onChange={(code)=>this.setState({[type]:code})}
+            after={this.getCodeAfter(type)}
+            before={placeholder}
+          />
+        )
       }
     }
     render(){
@@ -183,6 +258,9 @@ export default class Shipping extends Component{
                   {size:12},
                   this.options_layout('SettleType','نحوه پرداخت'),
                   {size:12},
+                  this.code_layout('giftCode'),
+                  {size:12},
+                  this.code_layout('discountCode'),
                   this.products_layout()
                 ],
               },

@@ -113,6 +113,7 @@ export default class ShopClass {
     }
     getFactorItems = (shippingOptions) => {
         let amounts = this.getAmounts(shippingOptions);
+        let {discountCode,giftCode} = shippingOptions;
         if (this.cartId === 'Bundle') { return this.getFactorItems_bundle(amounts) }
         else { return this.getFactorItems_all(amounts) }
     }

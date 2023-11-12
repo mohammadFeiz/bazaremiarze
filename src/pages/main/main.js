@@ -349,6 +349,25 @@ export default class Main extends Component {
       if(res){this.state.backOfficeAccess = true;}
     }
   }
+  // public string? PromotionCode { get; set; }
+  // public double? PromotionValue { get; set; }
+  // public int? PromotionId { get; set; }
+
+  // public string? DiscountCode { get; set; }
+  // public int? DiscountId { get; set; }
+  // public double? DiscountPercentage { get; set; }
+  // public double? DiscountMaxValue { get; set; }
+  // public double? DiscountValue { get; set; }
+
+  getPromo(id){
+    if(id === 0){}
+    if(id === 1){return { Id: 1, Name: "5% تخفیف تا سقف 10 میلیون تومان", Max: 100000000, Discount: 5 }}
+    if(id === 2){return { Id: 2, Name: "10% تخفیف تا سقف 5 میلیون تومان", Max: 50000000, Discount: 10 }}
+    if(id === 3){return { Id: 3, Name: "هدیه 500 هزارتومان", Max: 5000000, Discount: 100 }}
+    if(id === 4){return { Id: 4, Name: "هدیه یک میلیون تومان", Max: 10000000, Discount: 100 }}
+    if(id === 5){return { Id: 5, Name: "هدیه یک و نیم میلیون تومان", Max: 15000000, Discount: 100 }}
+    if(id === 6){return { Id: 6, Name: "هدیه دو میلیون تومان", Max: 20000000, Discount: 100 }}    
+  }
   async componentDidMount() {
     let { userInfo } = this.props;
     let {apis,backOffice} = this.state;
@@ -358,9 +377,27 @@ export default class Main extends Component {
     this.updateBackOfficeAccess(backOffice);
     this.updateSpreeCategories(backOffice);
     let getFactorDetails = (items, obj = {}) => {
-      let { SettleType, PaymentTime, PayDueDate, DeliveryType } = obj;
+      let { SettleType, PaymentTime, PayDueDate, DeliveryType,giftCodeInfo,discountCodeInfo } = obj;
+      let DiscountList;
+      if(giftCodeInfo){
+        let {Max} = this.getPromo(giftCodeInfo.promotion_code.promotion_type)
+        DiscountList = DiscountList || {};
+        DiscountList.PromotionCode = giftCodeInfo.promotion_code.code;
+        DiscountList.PromotionValue = Max;
+        DiscountList.PromotionId = giftCodeInfo.promotion_code.id;
+        
+      }
+      if(discountCodeInfo){
+        let {Max,Discount} = this.getPromo(discountCodeInfo.promotion_code.promotion_type)
+        DiscountList = DiscountList || {};
+        DiscountList.DiscountId = discountCodeInfo.promotion_code.id;
+        DiscountList.DiscountPercentage = Discount;
+        DiscountList.DiscountMaxValue = Max;
+        DiscountList.DiscountCode = discountCodeInfo.promotion_code.code;
+      }
       let { userInfo } = this.props;
       let config = {
+        "DiscountList":DiscountList,
         "CardCode": userInfo.cardCode,
         "CardGroupCode": userInfo.groupCode,
         "MarketingLines": items,

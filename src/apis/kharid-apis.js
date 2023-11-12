@@ -7,6 +7,16 @@ import AIOStorage from 'aio-storage';
 
 export default function kharidApis({baseUrl,helper}) {
   return {
+    async checkCode({type,code}){
+      const response = await Axios.get(`${baseUrl}/os/couponvalidation?code=${code}`);
+      if(response.data.isSuccess){
+        return {result:response.data.data}
+      }
+      else {
+        return {result:response.data.message || response.data.Message}
+      }
+      
+    },
     async eydane_registered() {
       const result = await Axios.get(`${baseUrl}/Users/GetEydaneStatus`);
       return { result: result.data.isSuccess && result.data.data };
@@ -694,6 +704,7 @@ export default function kharidApis({baseUrl,helper}) {
         };
         let productProps = {}
         if(Taxons === '10673'){
+          debugger
           let price = product.attributes.price;
           productProps = {
             inStock:defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs:iimages,

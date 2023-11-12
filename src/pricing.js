@@ -1,5 +1,5 @@
-﻿///***Version 1.1.10****///
-//Edited: 2023-10-01
+﻿///***Version 1.1.13****///
+//Edited: 2023-11-12
 
 "use strict";
 
@@ -662,6 +662,42 @@ export default class Pricing {
 
         /// اضافه شده برای تغییر تخفیف ماهانه از 3 به 4.5
         MD.marketingdetails.DocumentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent * 1.5;
+
+        if (MD.marketingdetails.DiscountList == null) {
+            MD.marketingdetails.DiscountList = {};
+        }
+        MD.marketingdetails.DiscountList.PaymentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent;
+        let docSum = 0;
+        if (MD.MarketingLines == null) {
+            return MD;
+        }
+        for (let line of MD.MarketingLines) {
+            docSum += line.LineTotal ?? 0;
+        }
+        MD.marketingdetails.DiscountList.PaymentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent;
+        MD.marketingdetails.DiscountList.PaymentDiscountValue = docSum * MD.marketingdetails.DocumentDiscountPercent / 100;
+
+        MD.marketingdetails.DocumentDiscount = docSum * (MD.marketingdetails.DocumentDiscountPercent) / 100;
+
+        if (MD.marketingdetails.DiscountList != null & docSum > 0) {
+            let prom = 0;
+            let extra = 0;
+            if (MD.marketingdetails.DiscountList.PromotionId != null) {
+                prom = MD.marketingdetails.DiscountList.PromotionValue;
+            }
+            if (MD.marketingdetails.DiscountList.DiscountId != null) {
+                extra = Math.min(0,
+                    Math.min((docSum - (MD.marketingdetails?.DocumentDiscount ?? 0)) * (MD.marketingdetails?.DiscountList?.DiscountPercentage ?? 0), (MD.marketingdetails?.DiscountList?.DiscountMaxValue ?? 0)
+                    ));
+            }
+            if (docSum > 0) {
+                let newDisc = ((MD.marketingdetails?.DocumentDiscount ?? 0) + (prom + extra) / 1.09) / docSum * 100;
+                if (newDisc >= 99) {
+                    newDisc = 99;
+                }
+                MD.marketingdetails.DocumentDiscountPercent = newDisc;
+            }
+        }
         return MD;
     }
 
@@ -1079,6 +1115,7 @@ export default class Pricing {
         let PrssdLine = [];
         let br = {};
         // فعلا فقط پیاده سازی تعدادی انجام شده است. پیاده سازی مبلغی باید بعدا اضافه شود.
+        //debugger;
         if (shortrules.length > 0) {
             let isReq = false;
             let linenum = 0;
@@ -1350,6 +1387,424 @@ export default class Pricing {
         return results;
     }
 
+    CalculateClubPoint(MD) {
+        let result = 0;
+        if (MD == null) {
+            return 0;
+        }
+        if (MD.marketingdetails == null) {
+            MD.marketingdetails = new MarketingDetails();
+        }
+        if (MD.marketingdetails.PayDueDate == null) {
+            MD.marketingdetails.PayDueDate = enPayDueDate.NotSet;
+        }
+
+        if (MD.marketingdetails.ClubPoints == null) {
+            MD.marketingdetails.ClubPoints = {};
+        }
+        MD.marketingdetails.ClubPoints.PurchasePoint = 0;
+        MD.marketingdetails.ClubPoints.CashPoint = 0;
+        MD.marketingdetails.ClubPoints.CampaignPoint = 0;
+
+        let docSum = 0;
+        for (let line of MD.MarketingLines) {
+            docSum += line.LineTotal ?? 0;
+        }
+
+        MD.DocumentTotal = docSum * (100 - MD.marketingdetails.DocumentDiscountPercent) / 100;
+
+        /// امتیاز پرداخت عادی
+        result += Math.floor(((MD?.DocumentTotal ?? 0) / 10000000));
+        MD.marketingdetails.ClubPoints.PurchasePoint = result;
+
+        /// امتیاز پرداخت نقدی
+        let CashRate = 0;
+        switch (MD.marketingdetails.PayDueDate) {
+            case 1:
+            case 2:
+                CashRate = 100;
+                break;
+            case 4:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 5:
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+            case 14:
+            case 3:
+                CashRate = 0;
+                break;
+            case 20:
+            case 21:
+            case 22:
+            case 23:
+                CashRate = 10;
+                break;
+            case 17:
+            case 28:
+                CashRate = 20;
+                break;
+            case 15:
+                CashRate = 25;
+                break;
+            case 25:
+            case 18:
+                CashRate = 30;
+                break;
+            case 26:
+                CashRate = 40;
+                break;
+            case 27:
+            case 24:
+            case 16:
+            case 19:
+                CashRate = 50;
+                break;
+            default:
+                CashRate = 0;
+                break;
+        }
+        let CashPoint = 2 * Math.floor(((MD?.DocumentTotal ?? 0) * CashRate / 100 / 10000000));
+        MD.marketingdetails.ClubPoints.PurchasePoint = CashPoint;
+        result += CashPoint;
+
+        /// امتیاز بسته های عادی همایش
+        let clubPoints =
+            [
+
+                {
+                    PackCode: "2370",
+                    PackName: " طرح 7 وات ",
+                    ItemCode1: ["2372", "2370"],
+                    Point1: 1,
+                    Levels: [300, 500, 1000, 3000]
+                },
+
+                {
+                    PackCode: "5320",
+                    PackName: "طرح 10 وات ",
+                    ItemCode1: [
+                        "5322", "5320"
+                    ],
+                    Point1: 1,
+                    Levels: [
+                        300, 500, 1000, 3000
+                    ]
+                },
+
+                {
+                    PackCode: "5340",
+                    PackName: "طرح 12 وات ",
+                    ItemCode1: [
+                        "5342", "5340"
+                    ],
+                    Point1: 1,
+                    Levels: [
+                        300, 500, 1000, 3000],
+
+                },
+
+                {
+                    PackCode: "5330",
+                    PackName: "طرح 15 وات ",
+                    ItemCode1: [
+                        "5332", "5330"
+                    ],
+                    Point1: 1,
+                    Levels: [
+                        150, 250, 500, 1500
+                    ],
+                },
+
+                {
+                    PackCode: "BIG5350",
+                    PackName: "طرح 20 وات ",
+                    ItemCode1: [
+                        "BIG5352", "BIG5350"
+                    ],
+                    Point1: 1,
+                    Levels: [
+                        150, 250, 500, 1500
+                    ],
+                },
+
+                {
+                    PackCode: "BIG5390",
+                    PackName: "طرح 25 وات ",
+                    ItemCode1: [
+                        "BIG5392", "BIG5390"
+                    ], Point1: 1,
+                    Levels: [
+                        150, 250, 500, 1500
+                    ],
+                },
+
+                {
+                    PackCode: "1220",
+                    PackName: "طرح اشکی 6 وات ",
+                    ItemCode1: [
+                        "1222", "1220"
+                    ], Point1: 1,
+                    Levels: [
+                        300, 500, 1000, 3000
+                    ],
+                },
+
+                {
+                    PackCode: "1370",
+                    PackName: "طرح شمعی 7 وات ",
+                    ItemCode1: [
+                        "1372", "1370"
+                    ], Point1: 1,
+                    Levels: [
+                        300, 500, 1000, 3000
+                    ],
+                },
+
+                {
+                    PackCode: "3580",
+                    PackName: "طرح لاینر 40 وات ",
+                    ItemCode1: [
+                        "3582", "3580", "3581"
+                    ], Point1: 1,
+                    Levels: [
+                        75, 125, 250, 750
+                    ],
+                },
+
+                {
+                    PackCode: "8200",
+                    PackName: "طرح چراغ سقفی سنسور دار",
+                    ItemCode1: [
+                        "8200"
+                    ], Point1: 1,
+                    Levels: [
+                        30, 50, 100, 300
+                    ],
+                },
+
+                {
+                    PackCode: "3060",
+                    PackName: "طرح هالوژن بدون سوکت ",
+                    ItemCode1: [
+                        "3062", "3060"
+                    ], Point1: 1,
+                    Levels: [
+                        300, 500, 1000, 3000
+                    ],
+                },
+
+                {
+                    PackCode: "7550",
+                    PackName: "طرح پنل 8 وات ",
+                    ItemCode1: [
+                        "7552", "7550", "7551"
+                    ], Point1: 1,
+                    Levels: [
+                        120, 200, 400, 1200
+                    ],
+                },
+
+                {
+                    PackCode: "7560",
+                    PackName: "طرح پنل 15 وات ",
+                    ItemCode1: [
+                        "7562", "7560", "7561"
+                    ], Point1: 1,
+                    Levels: [
+                        60, 100, 200, 600
+                    ],
+                },
+
+                {
+                    PackCode: "7570",
+                    PackName: "طرح پنل 18 وات ",
+                    ItemCode1: [
+                        "7572", "7570", "7571"
+                    ], Point1: 1,
+                    Levels: [
+                        60, 100, 200, 600
+                    ],
+                },
+
+                {
+                    PackCode: "7730",
+                    PackName: "طرح پنل 32 وات روکار ",
+                    ItemCode1: [
+                        "7732", "7730", "7731"
+                    ], Point1: 1,
+                    Levels: [
+                        36, 60, 120, 360
+                    ],
+                },
+
+                {
+                    PackCode: "5943",
+                    PackName: "طرح لامپ رنگی 9 وات ",
+                    ItemCode1: [
+                        "5943", "5945", "5947", "5946", "5944"
+                    ], Point1: 1,
+                    Levels: [
+                        300, 500, 1000, 3000
+                    ],
+                },
+
+                {
+                    PackCode: "2820",
+                    PackName: "طرح انعکاسی 6 وات ",
+                    ItemCode1: [
+                        "2822", "2820"
+                    ], Point1: 1,
+                    Levels: [
+                        300, 500, 1000, 3000
+                    ],
+                },
+
+                {
+                    PackCode: "2830",
+                    PackName: "طرح انعکاسی 7 وات",
+                    ItemCode1: [
+                        "2832", "2830"
+                    ], Point1: 1,
+                    Levels: [
+                        300, 500, 1000, 3000
+                    ],
+                },
+
+                {
+                    PackCode: "9415",
+                    PackName: "طرح چسب 123  ",
+                    ItemCode1: [
+                        "9415"
+                    ], Point1: 1,
+                    Levels: [
+                        75, 125, 250, 750
+                    ],
+                },
+
+                {
+                    PackCode: "BIG9450",
+                    PackName: "طرح چسب سیلیکونی  ",
+                    ItemCode1: [
+                        "BIG9450"
+                    ], Point1: 1,
+                    Levels: [
+                        84, 140, 280, 840
+                    ],
+                },
+
+                {
+                    PackCode: "7345",
+                    PackName: "مدل سپهر تمام مس قرقره 600 متری",
+                    ItemCode1: [
+                        "7345"
+                    ], Point1: 1,
+                    Levels: [
+                        1, 3, 5
+                    ],
+                },
+
+                {
+                    PackCode: "7344",
+                    PackName: "مدل سما تمام مس قرقره 600 متری ",
+                    ItemCode1: [
+                        "7344"
+                    ], Point1: 1,
+                    Levels: [
+                        1, 3, 5,
+                    ],
+                },
+
+                {
+                    PackCode: "BIG7838",
+                    PackName: "طرح کلید مینیاتوری ",
+                    ItemCode1: [
+                        "BIG7838", "BIG7872", "BIG7873", "BIG7874", "BIG7875", "BIG7837", "BIG7839", "BIG7840", "BIG7841", "BIG7842", "BIG7843", "BIG7844", "BIG7845", "BIG7846"
+                    ], Point1: 1,
+                    Levels: [
+                        120, 360, 600,
+                    ],
+                    ItemCode2: [
+                        "BIG7838", "BIG7872", "BIG7873", "BIG7874", "BIG7875", "BIG7837", "BIG7839", "BIG7840", "BIG7841", "BIG7842", "BIG7843", "BIG7844", "BIG7845", "BIG7846"
+                    ],
+                    Point2: 2,
+                    ItemCode3: [
+                        "BIG7849", "BIG7850", "BIG7851", "BIG7852", "BIG7853", "BIG7854", "BIG7855", "BIG7856"
+                    ], Point3: 3,
+                    ItemCode4: [
+                        "BIG7857", "BIG7858", "BIG7859", "BIG7860", "BIG7861", "BIG7862", "BIG7863", "BIG7864"
+                    ],
+                    Point4: 4,
+                }
+            ];
+
+        if (MD.MarketingLines == null || MD.MarketingLines.length == 0) {
+            return result;
+        }
+        for (let item of clubPoints) {
+            item.TotalQty = 0;
+        }
+        for (let line of MD.MarketingLines) {
+            if (line == null || (line?.ItemCode == null) || (line?.ItemQty ?? 0) == 0) {
+                continue;
+            }
+            for (let item of clubPoints) {
+                if (item.ItemCode1.includes(line?.ItemCode)) {
+                    item.TotalQty += (line?.ItemQty ?? 0) * item.Point1;
+                    break;
+                }
+                if (item.ItemCode2 != null && item.ItemCode2.includes(line?.ItemCode)) {
+                    item.TotalQty += (line?.ItemQty ?? 0) * item.Point2;
+                    break;
+                }
+                if (item.ItemCode3 != null && item.ItemCode3.includes(line?.ItemCode)) {
+                    item.TotalQty += (line?.ItemQty ?? 0) * item.Point3;
+                    break;
+                }
+                if (item.ItemCode4 != null && item.ItemCode4.includes(line?.ItemCode)) {
+                    item.TotalQty += (line?.ItemQty ?? 0) * item.Point4;
+                    break;
+                }
+            }
+        }
+        let productPoint = 0;
+        let countLevel = 0;
+        let i = 0;
+        for (let item of clubPoints) {
+            countLevel = item.Levels.length;
+            for (i = countLevel - 1; i >= 0; i--) {
+                if (item.TotalQty >= item.Levels[i]) {
+                    break;
+                }
+            }
+            switch (i) {
+                case 0:
+                    productPoint += 5;
+                    break;
+                case 1:
+                    productPoint += 10;
+                    break;
+                case 2:
+                    productPoint += 25;
+                    break;
+                case 3:
+                    productPoint += 60;
+                    break;
+                case -1:
+                default:
+                    break;
+            }
+        }
+        MD.marketingdetails.ClubPoints.CampaignPoint = productPoint;
+        result += productPoint;
+        return result;
+
+    }
+
     GetPriceListInfo(ItemCodes, Items, DisRules, campaignRules, SlpCodes = null, CurrentDoc = null, CardCode = null
         , CardGroupCode = 100, payDueDate = 1, paymentTime = 1, settleType = 1, WhsCode = "01") {
         let result = [];
@@ -1399,6 +1854,7 @@ export default class Pricing {
                     break;
                 }
         }
+        //debugger;
         //محاسبه تخفیف نحوه پرداخت
         doctocalc = this.CalculatePaymentDiscount(doctocalc);
         let PaymentDic = doctocalc.marketingdetails?.DocumentDiscountPercent ?? 0;
@@ -1428,12 +1884,20 @@ export default class Pricing {
                 SalesMeasureUnit: SaleMeasureUnit,
                 NumInSale: NumInsale,
             });
-            if (!doctocalc.MarketingLines.indexOf(x => x.ItemCode == item) > -1) {
+            let isfound = 0;
+            for (let item1 of doctocalc.MarketingLines) {
+                if (item1.ItemCode == item) {
+                    isfound = 1;
+                    break;
+                }
+            }
+            if (!isfound) {
                 doctocalc.MarketingLines.push({
                     ItemCode: item,
                     ItemQty: 1,
                 });
             }
+
         }
 
         let DocAfterB1 = doctocalc;

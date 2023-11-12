@@ -786,8 +786,8 @@ class ProductCard extends Component {
         let { price, selected, onSelect, id,loading } = this.props;
         price = isNaN(price)?0:price;
         if(price < 500){price = 0}
-        
-        if (!price || !onSelect) { return false }
+        if (!price && !selected) { return false }
+        if (!onSelect) { return false }
         return {
             html: <Icon path={selected ? mdiClose : mdiPlus} size={1} />,
             style: { border: loading?undefined:'2px solid', color: selected ? 'orange' : '#3B55A5' },

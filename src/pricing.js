@@ -1,4 +1,4 @@
-﻿///***Version 1.1.13****///
+﻿///***Version 1.1.14****///
 //Edited: 2023-11-12
 
 "use strict";
@@ -1393,10 +1393,10 @@ export default class Pricing {
             return 0;
         }
         if (MD.marketingdetails == null) {
-            MD.marketingdetails = new MarketingDetails();
+            MD.marketingdetails = {};
         }
         if (MD.marketingdetails.PayDueDate == null) {
-            MD.marketingdetails.PayDueDate = enPayDueDate.NotSet;
+            MD.marketingdetails.PayDueDate = 0;
         }
 
         if (MD.marketingdetails.ClubPoints == null) {

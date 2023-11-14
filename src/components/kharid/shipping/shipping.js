@@ -36,6 +36,9 @@ export default class Shipping extends Component {
     let { userInfo, backOffice } = this.context;
     let { cartId } = this.props;
     let defaultShipping = backOffice[cartId]
+    if(!defaultShipping){
+      defaultShipping = backOffice.spreeCampaigns.find((o)=>o.id === cartId)
+    }
     let { PayDueDate, PaymentTime, DeliveryType, SettleType,
       PayDueDates = [], PaymentTimes = [], SettleTypes = [], DeliveryTypes = []
     } = defaultShipping;
@@ -163,7 +166,6 @@ export default class Shipping extends Component {
     let { PayDueDate, SettleType, DeliveryType, PaymentTime } = this.state;
     let { getFactorItems, getPaymentButtonText } = Shop;
     let factorItems = getFactorItems({ PayDueDate, SettleType, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo })
-    debugger
     return {
       className: 'p-h-12 bg-fff theme-box-shadow',
       style: { paddingTop: 12, borderRadius: '16px 16px 0 0' },

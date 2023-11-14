@@ -10,7 +10,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "aio-date": "^4.0.0",
-    "aio-popup": "^3.0.1",
+    "aio-popup": "^3.0.2",
     "aio-storage": "^4.0.0",
     "aio-swip": "^2.0.0",
     "axios": "^1.2.1",

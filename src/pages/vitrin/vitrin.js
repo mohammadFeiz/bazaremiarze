@@ -92,6 +92,15 @@ export default class Vitrin extends Component {
         apis.request({
             api: 'vitrin.v_updateMyVitrin',
             parameter: { id, state,product },
+            onCatch:(error)=>{   
+                try{
+                    let {message,Message} = error.response.data;
+                    return message || Message
+                }
+                catch{
+                    return 'خطای 1133'
+                }
+            },
             onSuccess: () => {
                 let { selectedProducts } = this.state;
                 let newSelectedProducts;

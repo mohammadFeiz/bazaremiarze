@@ -528,7 +528,7 @@ class SearchProducts extends Component {
                         },
                         { size: 24 },
                         {input:{type:'text',placeholder:'نام کامل محصول'},label:'نام محصول',field:'value.name',validations:[['required']]},
-                        {input:{type:'text',placeholder:'برند محصول'},label:'برند محصول',field:'value.brand'},
+                        {input:{type:'text',placeholder:'برند محصول'},label:'برند محصول',field:'value.brand',validations:[['required']]},
                         {
                             input:{
                                 type:'image',placeholder:<Icon path={mdiCamera} size={1} />,width:'100%'

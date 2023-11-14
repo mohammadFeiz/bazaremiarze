@@ -704,7 +704,6 @@ export default function kharidApis({baseUrl,helper}) {
         };
         let productProps = {}
         if(Taxons === '10673'){
-          debugger
           let price = product.attributes.price;
           productProps = {
             inStock:defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs:iimages,
@@ -891,6 +890,7 @@ export default function kharidApis({baseUrl,helper}) {
             products.push({
               cartId: 'Bundle',
               name: subItem.itemname,
+              clubpoint:subItem.clubpoint,
               code: subItem.itemcode,
               price: subItem.price,
               cableCategory: false,
@@ -913,6 +913,7 @@ export default function kharidApis({baseUrl,helper}) {
 
             products.push({
               cartId: 'Bundle',
+              clubpoint:subItem.clubpoint,
               name: subItem.itemname,
               code: subItem.itemcode,
               price: subItem.price,

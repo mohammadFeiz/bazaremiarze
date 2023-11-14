@@ -120,6 +120,35 @@ export default class Main extends Component {
         if(Shop_Bundle.active){ids.push('Bundle')}
         return ids;
       },
+      getCodeDetails({giftCodeInfo,discountCodeInfo}){
+        function getPromo(id){
+          if(id === 0){}
+          if(id === 1){return { Id: 1, Name: "5% تخفیف تا سقف 10 میلیون تومان", Max: 100000000, Discount: 5 }}
+          if(id === 2){return { Id: 2, Name: "10% تخفیف تا سقف 5 میلیون تومان", Max: 50000000, Discount: 10 }}
+          if(id === 3){return { Id: 3, Name: "هدیه 500 هزارتومان", Max: 5000000, Discount: 100 }}
+          if(id === 4){return { Id: 4, Name: "هدیه یک میلیون تومان", Max: 10000000, Discount: 100 }}
+          if(id === 5){return { Id: 5, Name: "هدیه یک و نیم میلیون تومان", Max: 15000000, Discount: 100 }}
+          if(id === 6){return { Id: 6, Name: "هدیه دو میلیون تومان", Max: 20000000, Discount: 100 }}    
+        }
+        let DiscountList;
+        if(giftCodeInfo){
+          let {Max} = getPromo(giftCodeInfo.promotion_code.promotion_type)
+          DiscountList = DiscountList || {};
+          DiscountList.PromotionCode = giftCodeInfo.promotion_code.code;
+          DiscountList.PromotionValue = Max;
+          DiscountList.PromotionId = giftCodeInfo.promotion_code.id;
+          
+        }
+        if(discountCodeInfo){
+          let {Max,Discount} = getPromo(discountCodeInfo.promotion_code.promotion_type)
+          DiscountList = DiscountList || {};
+          DiscountList.DiscountId = discountCodeInfo.promotion_code.id;
+          DiscountList.DiscountPercentage = Discount;
+          DiscountList.DiscountMaxValue = Max;
+          DiscountList.DiscountCode = discountCodeInfo.promotion_code.code;
+        }
+        return DiscountList
+      },
       removeCart:this.removeCart.bind(this),
       getLinkToFunction:this.getLinkToFunction.bind(this),
       bazargahPower:this.bazargahPowerStorage('get'),
@@ -359,18 +388,10 @@ export default class Main extends Component {
   // public double? DiscountMaxValue { get; set; }
   // public double? DiscountValue { get; set; }
 
-  getPromo(id){
-    if(id === 0){}
-    if(id === 1){return { Id: 1, Name: "5% تخفیف تا سقف 10 میلیون تومان", Max: 100000000, Discount: 5 }}
-    if(id === 2){return { Id: 2, Name: "10% تخفیف تا سقف 5 میلیون تومان", Max: 50000000, Discount: 10 }}
-    if(id === 3){return { Id: 3, Name: "هدیه 500 هزارتومان", Max: 5000000, Discount: 100 }}
-    if(id === 4){return { Id: 4, Name: "هدیه یک میلیون تومان", Max: 10000000, Discount: 100 }}
-    if(id === 5){return { Id: 5, Name: "هدیه یک و نیم میلیون تومان", Max: 15000000, Discount: 100 }}
-    if(id === 6){return { Id: 6, Name: "هدیه دو میلیون تومان", Max: 20000000, Discount: 100 }}    
-  }
+  
   async componentDidMount() {
     let { userInfo } = this.props;
-    let {apis,backOffice} = this.state;
+    let {apis,backOffice,getCodeDetails} = this.state;
     let pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode, 12 * 60 * 60 * 1000)
     pricing.startservice().then((value) => { return value; });
     await this.getShopState(backOffice);
@@ -378,23 +399,7 @@ export default class Main extends Component {
     this.updateSpreeCategories(backOffice);
     let getFactorDetails = (items, obj = {}) => {
       let { SettleType, PaymentTime, PayDueDate, DeliveryType,giftCodeInfo,discountCodeInfo } = obj;
-      let DiscountList;
-      if(giftCodeInfo){
-        let {Max} = this.getPromo(giftCodeInfo.promotion_code.promotion_type)
-        DiscountList = DiscountList || {};
-        DiscountList.PromotionCode = giftCodeInfo.promotion_code.code;
-        DiscountList.PromotionValue = Max;
-        DiscountList.PromotionId = giftCodeInfo.promotion_code.id;
-        
-      }
-      if(discountCodeInfo){
-        let {Max,Discount} = this.getPromo(discountCodeInfo.promotion_code.promotion_type)
-        DiscountList = DiscountList || {};
-        DiscountList.DiscountId = discountCodeInfo.promotion_code.id;
-        DiscountList.DiscountPercentage = Discount;
-        DiscountList.DiscountMaxValue = Max;
-        DiscountList.DiscountCode = discountCodeInfo.promotion_code.code;
-      }
+      let DiscountList = getCodeDetails({giftCodeInfo,discountCodeInfo});
       let { userInfo } = this.props;
       let config = {
         "DiscountList":DiscountList,

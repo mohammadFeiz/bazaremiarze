@@ -113,9 +113,14 @@ export default class Register extends Component{
             res = await Axios.post(url, model);
         }
         catch(err){
-            let data = err.response.data;
-            if(typeof data !== 'object'){alert(err.message || err.Message)}
-            alert(data.Message || data.message)
+            try{
+                let data = err.response.data;
+                if(typeof data !== 'object'){alert(err.message || err.Message)}
+                alert(data.Message || data.message)
+            }
+            catch{
+                alert('خطای نا مشخص')
+            }
         }
         this.setState({loading:false})
         let result = false;
@@ -131,7 +136,7 @@ export default class Register extends Component{
             res = res || {};
             res.data = res.data || {}; 
             let {message,Message} = res.data;
-            alert(message || Message)
+            alert(message || Message || 'خطای نا مشخص')
         }
     }
     change(model){

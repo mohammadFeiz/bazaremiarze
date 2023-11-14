@@ -588,7 +588,7 @@ class FormSetting extends Component {
     let { data, type, onChange, id } = this.props;
     return (
       <AIOInput
-        type='form'
+        type='form' lang='fa'
         style={{padding:12}}
         value={data}
         className='back-office-form-setting'
@@ -765,8 +765,8 @@ class PriceList extends Component {
                       html: (
                         <AIOInput
                           type='file' text={'آپلود فایل'}
-                          onChange={(files) => this.setState({ file: files[0] })}
-                          value={file ? [file] : []}
+                          onChange={(file) => this.setState({ file })}
+                          value={file}
                         />
                       )
                     }
@@ -976,7 +976,7 @@ class AppSetting extends Component {
       className: 'back-office-app-setting-item',
       html: (
         <AIOInput
-          type='form'
+          type='form' lang='fa'
           style={{ flex: 'none', width: '100%', height: 'fit-content', background: 'none' }}
           theme={{ rowStyle: { marginBottom: 0 }, bodyStyle: { padding: 0 }, inputStyle: { border: 'none' } }}
           onChange={(obj) => setModel('activeManager', obj)}
@@ -999,7 +999,7 @@ class AppSetting extends Component {
       className: 'back-office-app-setting-item',
       html: (
         <AIOInput
-          type='form'
+          type='form' lang='fa'
           rtl={true}
           style={{ flex: 'none', width: '100%', height: 'fit-content', background: 'none' }}
           theme={{ bodyStyle: { padding: 0 } }}
@@ -1029,7 +1029,7 @@ class AppSetting extends Component {
     return {
       className:'p-12',gap:12,
       row:[
-        {html:(<AIOInput type='file' text='آپلود' className='back-office-button' onChange={(files)=>this.upload(files[0])}/>)},
+        {html:(<AIOInput type='file' text='آپلود' className='back-office-button' onChange={(file)=>this.upload(file)}/>)},
         {
           html:(
             <button className='back-office-button' onClick={()=>this.download()}>دانلود</button>
@@ -1074,8 +1074,7 @@ class Image extends Component {
         className='back-office-image'
         style={{ ...style }}
         text={!url && placeholder ? placeholder : (<img src={url} alt='' width='100%' />)}
-        onChange={async (value) => {
-          let file = value[0].file;
+        onChange={async (file) => {
           let { apis } = this.context;
           let { url } = await apis.request({api: 'backOffice.set_file',parameter: { file, name: id }})
           onChange(url);
@@ -1253,12 +1252,12 @@ class ShippingOptions extends Component {
   }
   getColumns(activeTabId){
     let columns = [
-      { title: 'نام', value: 'row.text',type: 'text'},
-      { title: 'v', value: 'row.value', width: 50, justify: true, type: 'number' },
+      { title: 'نام', value: 'row.text',input:{type: 'text'}},
+      { title: 'v', value: 'row.value', width: 50, justify: true, input:{type: 'number'} },
     ]
     if(activeTabId === 'PayDueDate_options'){
       columns.push(
-        { title: '%', value: 'row.percent', width: 72, justify: true, type: 'number' },
+        { title: '%', value: 'row.percent', width: 72, justify: true, input:{type: 'number'} },
       )
     }
     return columns
@@ -1285,7 +1284,7 @@ class ShippingOptions extends Component {
             setModel(activeTabId, [...model[activeTabId],newRow])
           }}
           key={activeTabId}
-          rows={model[activeTabId] || []}
+          value={model[activeTabId] || []}
           columns={this.getColumns(activeTabId)}
           onChange={(list) => {
             setModel(activeTabId, list)

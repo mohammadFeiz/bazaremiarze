@@ -43,6 +43,7 @@ export default class ShopClass {
             factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
         }
         let factorDetails = getFactorDetails(factorDetailsItems, shippingOptions);
+        let ClubPoints = factorDetails.marketingdetails.ClubPoints || {}
         let total = 0;
         for (let i = 0; i < factorDetails.MarketingLines.length; i++) {
             let o = factorDetails.MarketingLines[i];
@@ -53,7 +54,7 @@ export default class ShopClass {
         let paymentAmount = factorDetails.DocumentTotal;
         let discount = total - (paymentAmount + paymentMethodDiscount);
         return {
-            total, discount, paymentMethodDiscount, paymentMethodDiscountPercent, paymentAmount, factorDetails
+            total, discount, paymentMethodDiscount, paymentMethodDiscountPercent, paymentAmount, factorDetails,ClubPoints
         }
     }
     getAmounts_Bundle(cartItems, shippingOptions = {}) {
@@ -125,13 +126,25 @@ export default class ShopClass {
             { key: 'مبلغ قابل پرداخت', value: SplitNumber(this.fix(paymentAmount)) + ' ریال', className: 'theme-dark-font-color bold fs-16' }
         ]
     }
-    getFactorItems_all = ({ total, paymentMethodDiscount, paymentMethodDiscountPercent, paymentAmount, discount }) => {
-        return [
+    getFactorItems_all = ({ total, paymentMethodDiscount, paymentMethodDiscountPercent, paymentAmount, discount,ClubPoints = {} }) => {
+        let res = [];
+        if(ClubPoints.CampaignPoint){
+            res.push({ key: 'امتیاز خرید جشنواره', value: ClubPoints.CampaignPoint, className: 'theme-medium-font-color fs-14' },)
+        }
+        if(ClubPoints.CashPoint){
+            res.push({ key: 'امتیاز خرید نقدی', value: ClubPoints.CashPoint, className: 'theme-medium-font-color fs-14' },)
+        }
+        if(ClubPoints.PurchasePoint){
+            res.push({ key: 'امتیاز خرید', value: ClubPoints.PurchasePoint, className: 'theme-medium-font-color fs-14' },)
+        }
+        let factorItems = [
             { key: 'قیمت کالاها', value: SplitNumber(this.fix(total)) + ' ریال', className: 'theme-medium-font-color fs-14' },
             { key: 'تخفیف گروه مشتری', value: SplitNumber(this.fix(discount)) + ' ریال', className: 'colorFDB913 fs-14' },
             { key: 'تخفیف نحوه پرداخت', value: `${SplitNumber(this.fix(paymentMethodDiscount)) + ' ریال'} (${paymentMethodDiscountPercent} %)`, className: 'colorFF4335 fs-14' },
             { key: 'مبلغ قابل پرداخت', value: SplitNumber(this.fix(paymentAmount)) + ' ریال', className: 'theme-dark-font-color bold fs-16' }
         ]
+        res = [...res,...factorItems]
+        return res
     }
     edameye_farayande_kharid = () => {
         let { rsa } = this.getAppState();
@@ -214,12 +227,14 @@ export default class ShopClass {
         if (result.data.isSuccess) { window.location.href = result.data.data }
         else { return result.data.message }
     }
-    getOrderBody = ({ SettleType, PaymentTime, DeliveryType, PayDueDate, address }) => {
+    getOrderBody = ({ SettleType, PaymentTime, DeliveryType, PayDueDate, address,giftCodeInfo,discountCodeInfo }) => {
         let appState = this.getAppState();
-        let { userInfo } = appState;
+        let { userInfo,getCodeDetails } = appState;
+        let DiscountList = getCodeDetails({giftCodeInfo,discountCodeInfo})
         let marketingLines = this.getMarketingLines()
         return {
             "marketdoc": {
+                "DiscountList":DiscountList,
                 "DocType": this.cartId === 'Bundle' ? 17 : undefined,
                 "CardCode": userInfo.cardCode,
                 "CardGroupCode": userInfo.groupCode,
@@ -545,11 +560,35 @@ class BundleCard extends Component {
                 }
                 str += ' *** '
             }
-            return { html: str, className: 'fs-12 theme-medium-font-color', style: { textAlign: 'right' } }
+            return { column: [
+                {html:str},
+                {
+                    show:!!product.clubpoint,
+                    gap:3,className:'fs-9 m-t-12 bold',align:'v',
+                    row:[
+                        {html:'با خرید این محصول'},
+                        {html:product.clubpoint,className:'fs-12',style:{color:'orange'}},
+                        {html:'امتیاز باشگاه مشتریان دریافت کنید'},
+                        
+                    ]
+                }
+            ], className: 'fs-12 theme-medium-font-color', style: { textAlign: 'right' } }
 
         }
         let names = variants.map(({ name }) => name);
-        return { html: names.join(' - '), className: 'fs-12 theme-medium-font-color', style: { textAlign: 'right' } }
+        return { column: [
+            {html:names.join(' - ')},
+            {
+                show:!!product.clubpoint,
+                gap:3,className:'fs-9 m-t-12 bold',align:'v',
+                row:[
+                    {html:'با خرید این محصول'},
+                    {html:product.clubpoint,className:'fs-12',style:{color:'orange'}},
+                    {html:'امتیاز باشگاه مشتریان دریافت کنید'},
+                    
+                ]
+            }
+        ], className: 'fs-12 theme-medium-font-color', style: { textAlign: 'right' } }
     }
     price_layout() {
         let { product } = this.props;
@@ -821,11 +860,10 @@ class RegularPage extends Component {
                         <AIOInput
                             type='select' className='product-exist-options'
                             style={{ width: '100%',fontSize:12 }}
-                            popupAttrs={{ style: { maxHeight: 400 } }}
                             options={this.options}
                             popover={{fitHorizontal:true}}
                             value={selectedVariant ? selectedVariant.id : undefined}
-                            optionStyle='{height:28,fontSize:12}'
+                            optionStyle={{height:28,fontSize:12}}
                             onChange={(value, obj) => {
                                 this.changeOptionType(obj.option.variant.optionValues)
                             }}
@@ -1048,6 +1086,18 @@ class BundlePage extends Component {
             ]
         };
     }
+    clubpoint_layout(){
+        let { product } = this.props;
+        if(!product.clubpoint){return false}
+        return {
+            gap:3, className: "theme-box-shadow theme-card-bg theme-border-radius m-h-12 fs-10 bold p-12",align:'v',
+            row:[
+                {html:'با خرید این محصول'},
+                {html:product.clubpoint,className:'fs-12',style:{color:'orange'}},
+                {html:'امتیاز باشگاه مشتریان دریافت کنید'}   
+            ]
+        };
+    }
     changePackQty(v) {
         let { product, maxCart = 40 } = this.props;
         let { count } = this.state;
@@ -1164,6 +1214,9 @@ class BundlePage extends Component {
                 let { qty, name, id } = variant;
                 qty *= packQty;
                 let qtyInPack = qtyInPacks[id]
+                if(qtyInPack.length < 2){
+                    return false
+                }
                 let selectedCount = this.getSelectedCount(id);
                 let isFull = this.isFull(id);
                 return {
@@ -1290,6 +1343,7 @@ class BundlePage extends Component {
                             flex: 1, className: "ofy-auto", gap: 12,
                             column: [
                                 this.image_layout(name, code, src),
+                                this.clubpoint_layout(),
                                 this.packDetails_layout(),
                                 {
                                     className: 'theme-card-bg theme-box-shadow theme-border-radius m-h-12 p-12',

@@ -1,5 +1,5 @@
-﻿///***Version 1.1.14****///
-//Edited: 2023-11-12
+﻿///***Version 1.1.16****///
+//Edited: 2023-11-13
 
 "use strict";
 
@@ -684,11 +684,13 @@ export default class Pricing {
             let extra = 0;
             if (MD.marketingdetails.DiscountList.PromotionId != null) {
                 prom = MD.marketingdetails.DiscountList.PromotionValue;
+                MD.marketingdetails.DiscountList.PromotionValueUsed = prom;
             }
             if (MD.marketingdetails.DiscountList.DiscountId != null) {
-                extra = Math.min(0,
-                    Math.min((docSum - (MD.marketingdetails?.DocumentDiscount ?? 0)) * (MD.marketingdetails?.DiscountList?.DiscountPercentage ?? 0), (MD.marketingdetails?.DiscountList?.DiscountMaxValue ?? 0)
+                extra = Math.max(0,
+                    Math.min((docSum - (MD.marketingdetails?.DocumentDiscount ?? 0)) * (MD.marketingdetails?.DiscountList?.DiscountPercentage ?? 0)/100, (MD.marketingdetails?.DiscountList?.DiscountMaxValue ?? 0)
                     ));
+                MD.marketingdetails.DiscountList.DiscountValueUsed = extra;
             }
             if (docSum > 0) {
                 let newDisc = ((MD.marketingdetails?.DocumentDiscount ?? 0) + (prom + extra) / 1.09) / docSum * 100;
@@ -1028,6 +1030,7 @@ export default class Pricing {
         }
 
         MD = this.CalculatePaymentDiscount(MD);
+        this.CalculateClubPoint(MD);
 
         results.marketingdetails.DocumentDiscount = results.marketingdetails.DocumentDiscountPercent * sum / 100;
         results.DocumentTotal = sum - results.marketingdetails.DocumentDiscount;
@@ -1467,6 +1470,10 @@ export default class Pricing {
             default:
                 CashRate = 0;
                 break;
+        }
+        if ((MD.marketingdetails?.PaymentTime ?? 1) == 5
+            && (MD.marketingdetails?.SettleType ?? 3) == 1) {
+            CashRate = 100;
         }
         let CashPoint = 2 * Math.floor(((MD?.DocumentTotal ?? 0) * CashRate / 100 / 10000000));
         MD.marketingdetails.ClubPoints.PurchasePoint = CashPoint;

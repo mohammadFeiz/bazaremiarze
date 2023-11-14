@@ -87,7 +87,7 @@ export default function backOfficeApis({helper,baseUrl}) {
         },
         async priceList_add({ brandText, file }) {
             let formdata = new FormData();
-            formdata.append("File", file.file);
+            formdata.append("File", file);
             formdata.append("Brand", brandText);
             let res = await Axios.post(`${baseUrl}/BackOffice/AddPriceList`, formdata)
             let result = {

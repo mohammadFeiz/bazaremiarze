@@ -34,22 +34,22 @@ export default class Header extends Component {
         )
       }
     }
-    bazargahPower_layout() {
-      let { bazargahPower,bazargahPowerStorage } = this.context;
-      let { navId, type } = this.props;
-      if (type !== 'page' || navId !== 'bazargah' || !bazargahPower) { return false }
-      return {
-        html: (
-          <AIOInput
-            type="button" center={true}
-            className='header-icon'
-            style={{ background: "none", color: '#605E5C' }}
-            text={<Icon path={mdiPower} size={0.7} />}
-            onClick={()=>bazargahPowerStorage('set')}
-          />
-        )
-      }
-    }
+    // bazargahPower_layout() {
+    //   let { bazargahPower,bazargahPowerStorage } = this.context;
+    //   let { navId, type } = this.props;
+    //   if (type !== 'page' || navId !== 'bazargah' || !bazargahPower) { return false }
+    //   return {
+    //     html: (
+    //       <AIOInput
+    //         type="button" center={true}
+    //         className='header-icon'
+    //         style={{ background: "none", color: '#605E5C' }}
+    //         text={<Icon path={mdiPower} size={0.7} />}
+    //         onClick={()=>bazargahPowerStorage('set')}
+    //       />
+    //     )
+    //   }
+    // }
     buySearch_layout() {
       let { openPopup } = this.context;
       let { navId, type } = this.props;
@@ -75,7 +75,7 @@ export default class Header extends Component {
               { flex: 1 },
               //this.buySearch_layout(),
               this.cart_layout(),
-              this.bazargahPower_layout(),
+              //this.bazargahPower_layout(),
             ]
           }}
         />

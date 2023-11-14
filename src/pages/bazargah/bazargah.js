@@ -181,11 +181,11 @@ export default class Bazargah extends Component{
             />
         )
     }
-    bazargahPower_layout(){
-        let {bazargahPower,bazargahPowerStoragte} = this.context;
-        if(bazargahPower){return false}
-        return {html:getSvg('bazargahPower'),onClick:()=>bazargahPowerStoragte('set')}
-    }
+    // bazargahPower_layout(){
+    //     let {bazargahPower,bazargahPowerStoragte} = this.context;
+    //     if(bazargahPower){return false}
+    //     return {html:getSvg('bazargahPower'),onClick:()=>bazargahPowerStoragte('set')}
+    // }
     render(){
         if(this.props.renderInHome){return this.renderInHome()}
         return (
@@ -193,7 +193,7 @@ export default class Bazargah extends Component{
                 layout={{
                     className:'page-bg',style:{width:'100%'},
                     column:[
-                        this.bazargahPower_layout(),
+                        //this.bazargahPower_layout(),
                         this.tabs_layout(),
                         {size:12},
                         this.wait_to_get_layout(),

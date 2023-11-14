@@ -165,12 +165,14 @@ export default class Shipping extends Component {
     let { address, giftCodeInfo, discountCodeInfo } = this.state;
     let { PayDueDate, SettleType, DeliveryType, PaymentTime } = this.state;
     let { getFactorItems, getPaymentButtonText } = Shop;
+    debugger
     let factorItems = getFactorItems({ PayDueDate, SettleType, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo })
+    let Details = this.details_layout(factorItems);
     return {
       className: 'p-h-12 bg-fff theme-box-shadow',
       style: { paddingTop: 12, borderRadius: '16px 16px 0 0' },
       column: [
-        this.details_layout(factorItems),
+        Details,
         { size: 6 },
         {
           size: 36, align: 'vh', className: 'theme-medium-font-color fs-14 bold',

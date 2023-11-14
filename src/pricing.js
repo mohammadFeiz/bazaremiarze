@@ -1,5 +1,5 @@
-﻿///***Version 1.1.16****///
-//Edited: 2023-11-13
+﻿///***Version 1.1.19 ****///
+//Edited: 2023-11-14
 
 "use strict";
 
@@ -652,6 +652,12 @@ export default class Pricing {
             case 28:
                 MD.marketingdetails.DocumentDiscountPercent = 7.2;
                 break;
+            case 36:
+                MD.marketingdetails.DocumentDiscountPercent = 5.7;
+                break;
+            case 37:
+                MD.marketingdetails.DocumentDiscountPercent = 4.8;
+                break;
 
             case 14:
             case 5:
@@ -688,7 +694,7 @@ export default class Pricing {
             }
             if (MD.marketingdetails.DiscountList.DiscountId != null) {
                 extra = Math.max(0,
-                    Math.min((docSum - (MD.marketingdetails?.DocumentDiscount ?? 0)) * (MD.marketingdetails?.DiscountList?.DiscountPercentage ?? 0)/100, (MD.marketingdetails?.DiscountList?.DiscountMaxValue ?? 0)
+                    Math.min((docSum - (MD.marketingdetails?.DocumentDiscount ?? 0)) * (MD.marketingdetails?.DiscountList?.DiscountPercentage ?? 0) / 100, (MD.marketingdetails?.DiscountList?.DiscountMaxValue ?? 0)
                     ));
                 MD.marketingdetails.DiscountList.DiscountValueUsed = extra;
             }
@@ -698,6 +704,8 @@ export default class Pricing {
                     newDisc = 99;
                 }
                 MD.marketingdetails.DocumentDiscountPercent = newDisc;
+                MD.DocumentTotal = docSum * (100 - MD.marketingdetails.DocumentDiscountPercent) / 100;
+                MD.marketingdetails.DocumentDiscount = docSum * MD.marketingdetails.DocumentDiscountPercent / 100;
             }
         }
         return MD;
@@ -1456,9 +1464,11 @@ export default class Pricing {
                 break;
             case 25:
             case 18:
+            case 36:
                 CashRate = 30;
                 break;
             case 26:
+            case 37:
                 CashRate = 40;
                 break;
             case 27:
@@ -1778,36 +1788,54 @@ export default class Pricing {
                 }
             }
         }
-        let productPoint = 0;
-        let countLevel = 0;
-        let i = 0;
-        for (let item of clubPoints) {
-            countLevel = item.Levels.length;
-            for (i = countLevel - 1; i >= 0; i--) {
-                if (item.TotalQty >= item.Levels[i]) {
-                    break;
+
+        if (MD.marketingdetails.Campaign == 46) {
+            let productPoint = 0;
+            let countLevel = 0;
+            let i = 0;
+            for (let item of clubPoints) {
+                countLevel = item.Levels.length;
+                for (i = countLevel - 1; i >= 0; i--) {
+                    if (item.TotalQty >= item.Levels[i]) {
+                        break;
+                    }
+                }
+                switch (i) {
+                    case 0:
+                        productPoint += 5;
+                        break;
+                    case 1:
+                        productPoint += 10;
+                        break;
+                    case 2:
+                        productPoint += 25;
+                        break;
+                    case 3:
+                        productPoint += 80;
+                        break;
+                    case -1:
+                    default:
+                        break;
                 }
             }
-            switch (i) {
-                case 0:
-                    productPoint += 5;
-                    break;
-                case 1:
-                    productPoint += 10;
-                    break;
-                case 2:
-                    productPoint += 25;
-                    break;
-                case 3:
-                    productPoint += 60;
-                    break;
-                case -1:
-                default:
-                    break;
-            }
+            MD.marketingdetails.ClubPoints.CampaignPoint = productPoint;
+            result += productPoint;
         }
-        MD.marketingdetails.ClubPoints.CampaignPoint = productPoint;
-        result += productPoint;
+        else if (MD.marketingdetails.Campaign == 49) {
+            if (MD.DocumentTotal ?? 0 > 300000001) {
+                MD.marketingdetails.ClubPoints.CampaignPoint = 50;
+            } else if (MD.DocumentTotal ?? 0 > 200000001) {
+                MD.marketingdetails.ClubPoints.CampaignPoint = 40;
+            }
+            else if (MD.DocumentTotal ?? 0 > 100000001) {
+                MD.marketingdetails.ClubPoints.CampaignPoint = 25;
+            }
+            else if (MD.DocumentTotal ?? 0 > 70000000) {
+                MD.marketingdetails.ClubPoints.CampaignPoint = 10;
+            }
+            result += MD.marketingdetails?.ClubPoints?.CampaignPoint ?? 0;
+        }
+
         return result;
 
     }

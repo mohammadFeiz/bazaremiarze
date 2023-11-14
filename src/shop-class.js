@@ -65,12 +65,12 @@ export default class ShopClass {
         }
         let { PayDueDate = 1 } = shippingOptions;
         let paymentMethodDiscountPercent = {
-            '1': 12, '25': 7.8, '26': 6.6, '27': 6
+            '1': 18, '20': 13.95, '28': 10.8, '37': 8.55,'38':7.2,'19':6.75
         }[(PayDueDate).toString()]
         let paymentMethodDiscount = total * paymentMethodDiscountPercent / 100;
         let paymentAmount = total - paymentMethodDiscount;
         let peymentPercent = {
-            '1': 100, '25': 30, '26': 40, '27': 50
+            '1': 100, '20': 10, '28': 20, '37': 30,'38':40,'19':50
         }[(PayDueDate).toString()]
         paymentAmount = paymentAmount * peymentPercent / 100
         return { total, paymentMethodDiscountPercent, paymentMethodDiscount, paymentAmount };

@@ -65,18 +65,33 @@ export default class ShopClass {
         let total = 0;
         for (let i = 0; i < cartItems.length; i++) {
             let { count, product } = cartItems[i];
-            total += ((count.packQty * product.price) / 88) * 100;
+            total += count.packQty * product.price;
         }
-        let { PayDueDate = 1 ,discountCodeInfo,giftCodeInfo} = shippingOptions;
-        let paymentMethodDiscountPercent = {
-            '1': 18, '20': 13.95, '28': 10.8, '37': 8.55,'38':7.2,'19':6.75
-        }[(PayDueDate).toString()]
-        let DiscountList = getCodeDetails({discountCodeInfo,giftCodeInfo});
+        let { PayDueDate,discountCodeInfo,giftCodeInfo} = shippingOptions;
+        let paymentMethodDiscountPercent = 0;
+        if(PayDueDate){
+            paymentMethodDiscountPercent = {
+                '1': 18, '20': 13.95, '28': 10.8, '37': 8.55,'38':7.2,'19':6.75
+            }[(PayDueDate).toString()]
+        }
+        let DiscountList = getCodeDetails({discountCodeInfo,giftCodeInfo}) || {};
         let paymentMethodDiscount = total * paymentMethodDiscountPercent / 100;
         let paymentAmount = total - paymentMethodDiscount;
-        let peymentPercent = {
-            '1': 100, '20': 10, '28': 20, '37': 30,'38':40,'19':50
-        }[(PayDueDate).toString()]
+        
+        let codePercent = DiscountList.DiscountPercentage || 0;
+        if(codePercent){
+            let codeAmount = paymentAmount * paymentMethodDiscountPercent / 100;
+            paymentAmount = paymentAmount - codeAmount
+        }
+        let giftValue = DiscountList.PromotionValue || 0;
+        paymentAmount -= giftValue;
+        let peymentPercent = 100;
+        if(PayDueDate){
+            peymentPercent = {
+                '1': 100, '20': 10, '28': 20, '37': 30,'38':40,'19':50
+            }[(PayDueDate).toString()]
+            
+        }
         paymentAmount = paymentAmount * peymentPercent / 100
         return { total, paymentMethodDiscountPercent, paymentMethodDiscount, paymentAmount,DiscountList };
     }

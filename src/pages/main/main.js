@@ -402,19 +402,21 @@ export default class Main extends Component {
       let DiscountList = getCodeDetails({giftCodeInfo,discountCodeInfo});
       let { userInfo } = this.props;
       let config = {
-        "DiscountList":DiscountList,
         "CardCode": userInfo.cardCode,
         "CardGroupCode": userInfo.groupCode,
         "MarketingLines": items,
         "DeliverAddress": userInfo.address,
+        "DiscountList":DiscountList,
         "marketingdetails": {
           "SlpCode": userInfo.slpcode,
           SettleType,
           PaymentTime,
           PayDueDate,
+          "DiscountList":DiscountList,
           DeliveryType
         }
       }
+      console.log('آبجکت ارسال شده به autoCalcDoc',JSON.stringify(config,null,4))
       let res = pricing.autoCalcDoc(config)
       return res
     }

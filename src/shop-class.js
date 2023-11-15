@@ -233,6 +233,7 @@ export default class ShopClass {
         let DiscountList = getCodeDetails({giftCodeInfo,discountCodeInfo})
         let marketingLines = this.getMarketingLines()
         return {
+            "DiscountList":DiscountList,
             "marketdoc": {
                 "DiscountList":DiscountList,
                 "DocType": this.cartId === 'Bundle' ? 17 : undefined,

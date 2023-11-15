@@ -165,7 +165,6 @@ export default class Shipping extends Component {
     let { address, giftCodeInfo, discountCodeInfo } = this.state;
     let { PayDueDate, SettleType, DeliveryType, PaymentTime } = this.state;
     let { getFactorItems, getPaymentButtonText } = Shop;
-    debugger
     let factorItems = getFactorItems({ PayDueDate, SettleType, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo })
     let Details = this.details_layout(factorItems);
     return {
@@ -217,7 +216,7 @@ export default class Shipping extends Component {
       this.setState({ [`${type}State`]: false, [`${type}Info`]: undefined })
       return
     }
-    let { apis } = this.context;
+    let { apis,addLog } = this.context;
     let code = this.state[type];
     let description = {
       'giftCode': 'کارت هدیه',
@@ -228,6 +227,7 @@ export default class Shipping extends Component {
       description: `ارسال ${description}`,
       parameter: { type, code },
       onSuccess: (obj) => {
+        addLog(`اطلاعات دریافت شده از ${description}`)
         this.setState({
           [`${type}State`]: true,
           [`${type}Info`]: obj,

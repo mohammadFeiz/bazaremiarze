@@ -562,7 +562,6 @@ export default class Pricing {
     }
 
     CalculatePaymentDiscount(MD) {
-        debugger
         if (MD.marketingdetails.SettleType == null) {
             MD.marketingdetails.SettleType = 1;
         }
@@ -687,7 +686,6 @@ export default class Pricing {
         MD.marketingdetails.DocumentDiscount = docSum * (MD.marketingdetails.DocumentDiscountPercent) / 100;
 
         if (MD.marketingdetails.DiscountList != null & docSum > 0) {
-            debugger
             let prom = 0;
             let extra = 0;
             if (MD.marketingdetails.DiscountList.PromotionId != null) {

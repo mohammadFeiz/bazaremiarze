@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useEffect, useState } from "react";
 import ShopClass from "../../shop-class";
 import Header from "../../components/header";
 //pages//////////////////////////////////
@@ -25,7 +25,7 @@ import Register from "../../components/register/register";
 
 //npm////////////////////////////////////////
 import { Icon } from '@mdi/react';
-import { mdiCart,mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList, mdiExitToApp, mdiOpacity, mdiCash, mdiSecurity } from "@mdi/js";
+import { mdiCart,mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList, mdiExitToApp, mdiOpacity, mdiCash, mdiSecurity, mdiSkullScan, mdiClose } from "@mdi/js";
 import RSA from '../../npm/react-super-app/react-super-app';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
 import AIOStorage from 'aio-storage';
@@ -42,6 +42,7 @@ import Splash from "../../components/spalsh/splash";
 import UrlToJson from './../../npm/aio-functions/url-to-json';
 import $ from 'jquery';
 import "./index.css";
+import AIOInput from "../../npm/aio-input/aio-input";
 export default class Main extends Component {
   constructor(props) {
     super(props);
@@ -70,8 +71,11 @@ export default class Main extends Component {
     let { baseUrl } = this.props;
     let homeBillboards = props.backOffice.homeContent || [];
     homeBillboards = homeBillboards.filter((o)=>o.type === 'billboard');
-    props.apis.setProperty('getState',()=>{return {...this.state}})
+    props.apis.setProperty('getState',()=>{return {...this.state}});
+    this.logs = [];
     this.state = {
+      addLog:this.addLog.bind(this),
+      removeLog:this.removeLog.bind(this),
       Login:props.Login,
       apis:props.apis,
       jsonUrl,
@@ -388,7 +392,14 @@ export default class Main extends Component {
   // public double? DiscountMaxValue { get; set; }
   // public double? DiscountValue { get; set; }
 
-  
+  addLog(key ,value){
+    this.logs.push({key,value}) 
+  }
+  removeLog(index){
+    if(!this.logs.length){return}
+    if(!this.logs[index]){return}
+    this.logs = this.logs.filter((o,i)=>i !== index)
+  }
   async componentDidMount() {
     let { userInfo } = this.props;
     let {apis,backOffice,getCodeDetails} = this.state;
@@ -416,7 +427,7 @@ export default class Main extends Component {
           DeliveryType
         }
       }
-      console.log('آبجکت ارسال شده به autoCalcDoc',JSON.stringify(config,null,4))
+      this.addLog('آبجکت ارسال شده به autoCalcDoc',<pre>{JSON.stringify(config,null,4)}</pre>)
       let res = pricing.autoCalcDoc(config)
       return res
     }
@@ -494,6 +505,12 @@ export default class Main extends Component {
           }
         }, 
         header:false
+      })
+    }
+    else if (type === 'logs') {
+      addModal({
+        position: 'fullscreen', id: type,
+        body: {render:() => <Logs logs={this.logs} onRemove={this.removeLog.bind(this)} getState={()=>this.state}/>}, header:{title: 'رفتار سیستم'}
       })
     }
     else if (type === 'priceList') {
@@ -652,6 +669,7 @@ export default class Main extends Component {
               { text: 'درخواست گارانتی', icon: () => <Icon path={mdiShieldCheck} size={0.8} />, onClick: () => this.openPopup('sabteGarantiJadid'), show: () => !!backOffice.activeManager.garanti && userInfo.slpcode },
               { text: 'لیست قیمت', icon: () => <Icon path={mdiCash} size={0.8} />, onClick: () => this.openPopup('priceList'),show: ()=>!!backOffice.activeManager.priceList},
               { text: 'پنل ادمین', icon: () => <Icon path={mdiSecurity} size={0.8} />, onClick: () => this.openPopup('admin-panel'), show: () => backOfficeAccess },
+              { text: 'رفتار سیستم', icon: () => <Icon path={mdiSkullScan} size={0.8} />, onClick: () => this.openPopup('logs') },
               { text: 'خروج از حساب کاربری', icon: () => <Icon path={mdiExitToApp} size={0.8} />, className: 'colorFDB913', onClick: () => Login.logout() }  
             ],
             header:() => <div style={{margin:'24px 0'}}><img src={Logo1} alt='' height={48}/></div>,
@@ -697,4 +715,105 @@ class NavHeader extends Component {
 
     )
   }
+}
+function Logs(props){
+  let [logs,setLogs] = useState(props.logs);
+  let [tab,setTab] = useState('logs');
+  let [showCartProduct,setShowCartProduct] = useState(false)
+  
+  function remove(index){
+    setLogs(logs.filter((o,i)=>i !== index))
+    props.onRemove(index)
+  }
+  function cart_layout(){
+    if(tab !== 'cart'){return false}
+    
+    let state = props.getState();
+    let {cart} = state;
+    let cartkeys = Object.keys(cart);
+    return {
+      style:{direction:'ltr'},flex:1,className:'ofy-auto',
+      column:cartkeys.map((key)=>{
+        return {
+          column:[
+            {
+              row:[
+                {html:`cart tab (${key})`,flex:1}
+              ]
+            },
+            {
+              column:Object.keys(cart[key].items).map((itemKey)=>{
+                return {
+                  className:'p-h-12',
+                  column:[
+                    {
+                      style:{background:'dodgerblue',color:'#fff',padding:6},
+                      row:[
+                        {html:`${itemKey} (${JSON.stringify(cart[key].items[itemKey].count)})`,flex:1,style:{textAlign:'left'}},
+                        {html:'show',onClick:()=>{
+                          if(showCartProduct === itemKey){setShowCartProduct(false)}
+                          else {setShowCartProduct(itemKey)}
+                          
+                        }}
+                      ]
+                    },
+                    {
+                      show:itemKey === showCartProduct,
+                      html:(
+                        <pre style={{width:'100%'}}>
+                          <code>
+                            {JSON.stringify(cart[key].items[itemKey].product,null,4)}
+                          </code>
+                        </pre>
+                      )
+                    }
+                  ]
+                }
+              })
+            }
+          ]
+        }
+      })
+    }
+  }
+  return (
+    <RVD
+      layout={{
+        style:{height:'100%'},
+        column:[
+          {
+            size:36,
+            html:(
+              <AIOInput
+                type='tabs' optionText='option' optionValue='option' options={['logs','cart']}
+                onChange={(tab)=>setTab(tab)} value={tab}
+              />
+            )
+          },
+          cart_layout(),
+          {
+            show:tab === 'logs',
+            flex:1,className:'ofy-auto',
+            style:{background:'dodgerblue'},
+            column:logs.map((o,i)=>{
+              return {
+                className:'p-12 br-6 m-12',style:{border:'1px solid #ddd',background:'#fff'},
+                column:[
+                  {
+                    size:36,row:[
+                      {html:o.key,flex:1,align:'v'},
+                      {html:<Icon path={mdiClose} size={.8}/>,flex:1,align:'vh',size:36,onClick:()=>remove(i)}
+                    ]
+                  },
+                  {
+                    className:'p-12',html:o.value,align:'v',style:{direction:'ltr'}
+                  }
+                ]
+              }
+            })
+          }
+        ]
+      }}
+    />
+  )
 }

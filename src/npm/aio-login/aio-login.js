@@ -4,7 +4,6 @@ import AIOStorage from 'aio-storage';
 import AIOInput from './../aio-input/aio-input';
 import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
-
 import './aio-login.css';
 import AIOPopup from 'aio-popup';
 export default class AIOlogin {
@@ -149,7 +148,7 @@ class AIOLOGIN extends Component {
     }
     async onSubmit(model, currentMode) {
         try {
-            let { modes, setStorage, removeToken, onSubmit, addLog } = this.props;
+            let { modes, setStorage, removeToken, onSubmit } = this.props;
             let res = await onSubmit(model, currentMode);
             if (typeof res !== 'object') { return }
             let { nextMode, error, token } = res;
@@ -197,7 +196,9 @@ class AIOLOGIN extends Component {
                 if (!reportedAuthToParent) {
                     let { token, userId, userInfo } = getStorage();
                     onAuth({ token, userId, userInfo, logout })
-                    this.setState({ reportedAuthToParent: true })
+                    setTimeout(()=>{
+                        this.setState({ reportedAuthToParent: true })
+                    },0)
                 }
                 return splash()
             }

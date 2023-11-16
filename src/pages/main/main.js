@@ -48,7 +48,7 @@ export default class Main extends Component {
     super(props);
     let wrl = window.location.href;
     let rsa = new RSA({rtl:true,maxWidth:770})
-    this.addAnaliticsHistory({userId:props.userInfo.phoneNumber})
+    //this.addAnaliticsHistory({userId:props.userInfo.phoneNumber})
     let jsonUrl = UrlToJson(wrl)
     if (jsonUrl.status === '2') {
       alert('خطا در پرداخت')

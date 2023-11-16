@@ -186,8 +186,8 @@ export default class Profile extends Component{
         }
     }
     componentDidMount(){
-        let {addAnaliticsHistory} = this.context;
-        addAnaliticsHistory({url:'Profile',title:'Profile'})
+        // let {addAnaliticsHistory} = this.context;
+        // addAnaliticsHistory({url:'Profile',title:'Profile'})
     }
     render(){
         let {showProfile,showWallet} = this.state;

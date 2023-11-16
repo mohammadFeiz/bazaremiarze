@@ -1,4 +1,4 @@
-import React, { Component, createRef } from 'react';
+import React, { Component } from 'react';
 import RVD from 'react-virtual-dom';
 import AIOStorage from 'aio-storage';
 import AIOInput from './../aio-input/aio-input';
@@ -225,7 +225,6 @@ class AIOLOGIN extends Component {
 class LoginForm extends Component {
     constructor(props) {
         super(props);
-        this.dom = createRef()
         this.storage = AIOStorage(`-AIOLogin-${props.id}`);
         let { timer = 30, fields = [] } = props;
         let mode = props.modes[0];
@@ -260,24 +259,14 @@ class LoginForm extends Component {
         }
     }
     changeMode(mode) {
-        try {
-            this.setState({ mode, formError: true, model: this.getInitialModel(mode) })
-        }
-        catch (err) {
-            let { addLog } = this.props;
-            addLog('19', err.message)
-        }
+        //alert(17)
+        this.setState({ mode, formError: true, model: this.getInitialModel(mode) })
+        //alert(18) 
     }
     getInitialModel(mode) {
-        try {
-            if (!mode) { mode = this.state.mode }
-            let { userId } = this.props;
-            return { forget: {}, register: {}, login: { userId } };
-        }
-        catch (err) {
-            let { addLog } = this.props;
-            addLog('20', err.message)
-        }
+        if (!mode) { mode = this.state.mode }
+        let { userId } = this.props;
+        return { forget: {}, register: {}, login: { userId } };
     }
     getWaitingTime() {
         try {
@@ -294,33 +283,46 @@ class LoginForm extends Component {
         }
     }
     setLastTry() {
-        try {
-            let { mode } = this.state;
-            this.storage.save({ name: 'lastTry' + mode, value: new Date().getTime() })
-        }
-        catch (err) {
-            let { addLog } = this.props;
-            addLog('22', err.message)
-        }
+        let { mode } = this.state;
+        //alert(19)
+        this.storage.save({ name: 'lastTry' + mode, value: new Date().getTime() })
+        //alert(20) 
     }
     async onSubmit() {
-        try {
-            let { onSubmit } = this.props;
-            let { loading, formError, model, mode } = this.state;
-            if (formError || loading) { return }
-            this.setState({ loading: true })
-            let nextMode;
-            try { nextMode = await onSubmit(model, mode); }
-            catch { this.setState({ loading: false }) }
-            this.setState({ loading: false })
-            if (!nextMode) { return }
-            this.setLastTry();
-            if (nextMode === 'error') { this.changeMode(mode) }
-            else { this.setState({ mode: nextMode }) }
+        //alert(2)
+        let { onSubmit } = this.props;
+        let { loading, formError, model, mode } = this.state;
+        if (formError || loading) { return }
+        //alert(3)
+        this.setState({ loading: true })
+        //alert(4)
+        let nextMode;
+        try { 
+            //alert(5)
+            nextMode = await onSubmit(model, mode);
+            //alert(6)  
         }
-        catch (err) {
-            let { addLog } = this.props;
-            addLog('23', err.message)
+        catch { 
+            //alert(7)
+            this.setState({ loading: false }) 
+            //alert(8)
+        }
+        //alert(9)
+        this.setState({ loading: false })
+        //alert(10)
+        if (!nextMode) { return }
+        //alert(11)
+        this.setLastTry();
+        //alert(12)
+        if (nextMode === 'error') { 
+            //alert(13)
+            this.changeMode(mode) 
+            //alert(14)
+        }
+        else { 
+            //alert(15)
+            this.setState({ mode: nextMode }) 
+            //alert(16)
         }
     }
     title_layout({ title, backButton }) {
@@ -457,41 +459,29 @@ class LoginForm extends Component {
         }
     }
     form_layout(labels) {
-        try {
-            let { model, mode } = this.state;
-            return {
-                className: 'ofy-auto',
-                html: (
-                    <AIOInput
-                        type='form' key={mode} lang='fa' value={model} rtl={true}
-                        onChange={(model, errors) => this.setState({ model, formError: !!Object.keys(errors).length })}
-                        inputs={{ props: { gap: 12 }, column: this.getInputs(labels) }}
-                    />
-                )
-            }
-        }
-        catch (err) {
-            let { addLog } = this.props;
-            addLog('27', err.message)
+        let { model, mode } = this.state;
+        return {
+            className: 'ofy-auto',
+            html: (
+                <AIOInput
+                    type='form' key={mode} lang='fa' value={model} rtl={true}
+                    onChange={(model, errors) => this.setState({ model, formError: !!Object.keys(errors).length })}
+                    inputs={{ props: { gap: 12 }, column: this.getInputs(labels) }}
+                />
+            )
         }
     }
     submit_layout({ submitText }) {
-        try {
-            let { loading, formError } = this.state;
-            let waitingTime = this.getWaitingTime();
-            let text;
-            if (waitingTime) {
-                setTimeout(() => this.setState({}), 1000)
-                text = `لطفا ${waitingTime} ثانیه صبر کنید`
-            }
-            return {
-                style: { padding: '0 12px' }, className: 'm-b-12',
-                html: (<SubmitButton text={text || submitText} loading={loading} disabled={() => !!formError || !!waitingTime} onClick={() => this.onSubmit()} />)
-            }
+        let { loading, formError } = this.state;
+        let waitingTime = this.getWaitingTime();
+        let text;
+        if (waitingTime) {
+            setTimeout(() => this.setState({}), 1000)
+            text = `لطفا ${waitingTime} ثانیه صبر کنید`
         }
-        catch (err) {
-            let { addLog } = this.props;
-            addLog('28', err.message)
+        return {
+            style: { padding: '0 12px' }, className: 'm-b-12',
+            html: (<SubmitButton text={text || submitText} loading={loading} disabled={() => !!formError || !!waitingTime} onClick={() => this.onSubmit()} />)
         }
     }
     changeUserId_layout() {
@@ -653,30 +643,25 @@ function errorHandler({ field, value = '', parameter }) {
 }
 
 class SubmitButton extends Component {
-    state = { reload: false }
-    async onClick() {
+    onClick() {
         let { onClick, loading } = this.props;
-        let { reload } = this.state;
         if (loading) { return; }
-        if (reload) { window.location.reload() }
-        await onClick();
+        //alert(1);
+        onClick();
+    }
+    getLoadingIcon(){
+        let { loading } = this.props;
+        if(!loading){return null}
+        return <Icon path={mdiLoading} size={1} spin={0.2} style={{ margin: '0 6px' }} />
     }
     render() {
         let { disabled, loading, text, outline } = this.props;
-        let { reload } = this.state;
-        if (reload) { setTimeout(() => this.setState({ reload: false }), 0) }
-        else {
-            if (loading) {
-                clearTimeout(this.timeout);
-                this.timeout = setTimeout(() => this.setState({ reload: true }), 16 * 1000)
-            }
-        }
-        let loadingText = reload ? 'بارگزاری مجدد' : 'در حال ارسال';
+        let loadingText = 'در حال ارسال';
+        let TEXT = loading?loadingText:text;
+        let LOADING = this.getLoadingIcon()
         return (
             <button className={'aio-login-submit' + (outline ? ' aio-login-submit-outline' : '')} disabled={disabled()} onClick={() => this.onClick()}>
-                {!loading && text}
-                {!!loading && <Icon path={mdiLoading} size={1} spin={0.2} style={{ margin: '0 6px' }} />}
-                {!!loading && loadingText}
+                {TEXT} {LOADING}
             </button>
         )
     }

@@ -71,7 +71,12 @@ export default class ShopClass {
         let paymentMethodDiscountPercent = 0;
         if(PayDueDate){
             paymentMethodDiscountPercent = {
-                '1': 18, '20': 13.95, '28': 10.8, '37': 8.55,'38':7.2,'19':6.75
+                '1': 18,
+                '19':6.75, 
+                '20': 13.95,
+                '21':9.9,
+                '18':5.4, 
+                '17':7.2
             }[(PayDueDate).toString()]
         }
         let DiscountList = getCodeDetails({discountCodeInfo,giftCodeInfo}) || {};
@@ -80,7 +85,7 @@ export default class ShopClass {
         
         let codePercent = DiscountList.DiscountPercentage || 0;
         if(codePercent){
-            let codeAmount = paymentAmount * paymentMethodDiscountPercent / 100;
+            let codeAmount = paymentAmount * codePercent / 100;
             paymentAmount = paymentAmount - codeAmount
         }
         let giftValue = DiscountList.PromotionValue || 0;
@@ -88,7 +93,7 @@ export default class ShopClass {
         let peymentPercent = 100;
         if(PayDueDate){
             peymentPercent = {
-                '1': 100, '20': 10, '28': 20, '37': 30,'38':40,'19':50
+                '1': 100, '19': 50, '20': 10, '21': 10,'18':30,'17':20
             }[(PayDueDate).toString()]
             
         }

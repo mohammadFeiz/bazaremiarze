@@ -672,6 +672,7 @@ export default class Pricing {
         if (MD.marketingdetails.DiscountList == null) {
             MD.marketingdetails.DiscountList = {};
         }
+        debugger;
         MD.marketingdetails.DiscountList.PaymentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent;
         let docSum = 0;
         if (MD.MarketingLines == null) {
@@ -699,7 +700,7 @@ export default class Pricing {
                 MD.marketingdetails.DiscountList.DiscountValueUsed = extra;
             }
             if (docSum > 0) {
-                let newDisc = ((MD.marketingdetails?.DocumentDiscount ?? 0) + (prom + extra) / 1.09) / docSum * 100;
+                let newDisc = ((MD.marketingdetails?.DocumentDiscount ?? 0) + (prom + extra) ) / docSum * 100;
                 if (newDisc >= 99) {
                     newDisc = 99;
                 }

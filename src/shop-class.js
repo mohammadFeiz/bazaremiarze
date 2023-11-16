@@ -52,9 +52,10 @@ export default class ShopClass {
             let o = factorDetails.MarketingLines[i];
             total += o.Price * o.ItemQty;
         }
-        let paymentMethodDiscountPercent = factorDetails.marketingdetails.DocumentDiscountPercent
-        let paymentMethodDiscount = factorDetails.marketingdetails.DocumentDiscount;
-        let paymentAmount = factorDetails.DocumentTotal - (PromotionValueUsed + DiscountValueUsed);
+        debugger
+        let paymentMethodDiscountPercent = factorDetails.marketingdetails.DiscountList.PaymentDiscountPercent;
+        let paymentMethodDiscount = factorDetails.marketingdetails.DiscountList.PaymentDiscountValue;
+        let paymentAmount = factorDetails.DocumentTotal;
         let discount = total - (paymentAmount + paymentMethodDiscount);
         return {
             total, discount, paymentMethodDiscount, paymentMethodDiscountPercent, paymentAmount, factorDetails,ClubPoints,DiscountList

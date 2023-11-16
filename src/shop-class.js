@@ -61,7 +61,8 @@ export default class ShopClass {
         }
     }
     getAmounts_Bundle(cartItems, shippingOptions = {}) {
-        let { getCodeDetails } = this.getAppState();
+        let { getCodeDetails,backOffice } = this.getAppState();
+        let {PayDueDate_options} = backOffice;
         let total = 0;
         for (let i = 0; i < cartItems.length; i++) {
             let { count, product } = cartItems[i];
@@ -69,15 +70,13 @@ export default class ShopClass {
         }
         let { PayDueDate,discountCodeInfo,giftCodeInfo} = shippingOptions;
         let paymentMethodDiscountPercent = 0;
+        let peymentPercent = 100;
         if(PayDueDate){
-            paymentMethodDiscountPercent = {
-                '1': 18,
-                '19':6.75, 
-                '20': 13.95,
-                '21':9.9,
-                '18':5.4, 
-                '17':7.2
-            }[(PayDueDate).toString()]
+            let PayDueDateOption = PayDueDate_options.find((o)=>o.value === PayDueDate);
+            if(PayDueDateOption){
+                paymentMethodDiscountPercent = PayDueDateOption.discountPercent;
+                peymentPercent = PayDueDateOption.cashPercent
+            }
         }
         let DiscountList = getCodeDetails({discountCodeInfo,giftCodeInfo}) || {};
         let paymentMethodDiscount = total * paymentMethodDiscountPercent / 100;
@@ -90,13 +89,7 @@ export default class ShopClass {
         }
         let giftValue = DiscountList.PromotionValue || 0;
         paymentAmount -= giftValue;
-        let peymentPercent = 100;
-        if(PayDueDate){
-            peymentPercent = {
-                '1': 100, '19': 50, '20': 10, '21': 10,'18':30,'17':20
-            }[(PayDueDate).toString()]
-            
-        }
+        
         paymentAmount = paymentAmount * peymentPercent / 100
         return { total, paymentMethodDiscountPercent, paymentMethodDiscount, paymentAmount,DiscountList };
     }
@@ -115,7 +108,7 @@ export default class ShopClass {
         let paymentMethodDiscountPercent;
         if (renderIn === 'shipping') {
             let { PayDueDate_options, PayDueDate } = shippingOptions;
-            paymentMethodDiscountPercent = PayDueDate_options.find(({ value }) => value === PayDueDate).percent;
+            paymentMethodDiscountPercent = PayDueDate_options.find(({ value }) => value === PayDueDate).discountPercent;
         }
         return cartItems.map(({ product, count, variantId }, i) => {
             let variant = product.variants.find((o) => o.id === variantId);
@@ -146,7 +139,6 @@ export default class ShopClass {
         let res = [
             { key: 'جمع کل سبد خرید', value: `${SplitNumber(this.fix(total)) + ' ریال'}`, className: 'color00B5A5 fs-14' }
         ]
-        debugger
         // if(giftCodeInfo.PromotionValueUsed){
         //     res.push(
         //         { key: 'تخفیف کارت هدیه', value: SplitNumber(this.fix(DiscountList.PromotionValueUsed)) + ' ریال', className: 'colorFDB913 fs-14' }
@@ -165,6 +157,7 @@ export default class ShopClass {
         return res
     }
     getFactorItems_all = ({ total, paymentMethodDiscount, paymentMethodDiscountPercent, paymentAmount, discount,ClubPoints = {},DiscountList }) => {
+        debugger
         let res = [];
         if(ClubPoints.CampaignPoint){
             res.push({ key: 'امتیاز خرید جشنواره', value: ClubPoints.CampaignPoint, className: 'theme-medium-font-color fs-14' },)

@@ -1008,15 +1008,14 @@ class Table extends Component {
                 if (type === 'function') { return value({ row, column, rowIndex }) }
                 return value === undefined ? def : value
             },
-            setCell: (row, column, value) => {
-                if (column.input && column.input.onChange) { column.input.onChange({ value, row, column }) }
+            setCell: (row, column, cellNewValue) => {
+                if (column.input && column.input.onChange) { column.input.onChange({ value:cellNewValue, row, column }) }
                 else {
                     let {properties} = this.props;
                     let {value,onChange = ()=>{}} = properties;
-                    let rows = value;
                     row = JSON.parse(JSON.stringify(row));
-                    eval(`${column.value} = value`);
-                    onChange(rows.map((o) => o._id !== row._id ? o : row))
+                    eval(`${column.value} = cellNewValue`);
+                    onChange(value.map((o) => o._id !== row._id ? o : row))
                 }
             }
         }

@@ -83,13 +83,14 @@ export default class Shipping extends Component {
           html: (
             <AIOInput
               key={key}
-              className='shipping-options fs-14'
+              style={{padding:0}}
+              className='shipping-options fs-12'
               type='radio'
               optionAfter={(option) => {
-                if (option.percent) { return <div style={{ whiteSpace: 'nowrap' }}>{`${option.percent}% تخفیف`}</div> }
+                if (option.discountPercent) { return <div style={{ whiteSpace: 'nowrap' }}>{`${option.discountPercent}% تخفیف`}</div> }
               }}
               options={options}
-              optionAttrs={{ style: { height: 36, width: '100%' } }}
+              optionAttrs={{ style: { height: 36, width: '100%',padding:0 } }}
               value={value}
               onChange={(newValue) => {
                 this.setState({ [key]: newValue })

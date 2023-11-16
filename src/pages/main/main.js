@@ -427,8 +427,10 @@ export default class Main extends Component {
           DeliveryType
         }
       }
-      this.addLog('آبجکت ارسال شده به autoCalcDoc',<pre>{JSON.stringify(config,null,4)}</pre>)
-      let res = pricing.autoCalcDoc(config)
+      this.addLog('آبجکت ارسال شده به autoCalcDoc',<pre>{JSON.stringify(config,null,4)}</pre>,'autoCalcDoc')
+      let res = pricing.autoCalcDoc(config);
+      this.addLog('آبجکت دریافت شده از autoCalcDoc',<pre>{JSON.stringify(res,null,4)}</pre>,'autoCalcDoc')
+      
       return res
     }
     let fixPrice = ({items, CampaignId,PriceListNum}) => {
@@ -806,7 +808,7 @@ function Logs(props){
                     ]
                   },
                   {
-                    className:'p-12',html:o.value,align:'v',style:{direction:'ltr'}
+                    className:'p-12',html:o.value,align:'v',style:{direction:'ltr',textAlign:'left',overflow:'auto'}
                   }
                 ]
               }

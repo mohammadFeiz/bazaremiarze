@@ -15,12 +15,89 @@ export default class BackOffice extends Component {
     super(props);
     //let model = backofficebackup;
     let {model} = props;
+    model = this.fixInitialModel(model)
     this.state = {
       model,
       currentVersions: model.versions,
       tabs:this.getTabs(model),
       tab: 'appsetting'
     }
+  }
+  fixInitialModel(model){
+    return model;
+    // let newModel = {
+    //   ...model,
+    //   PayDueDate_options:model.PayDueDate_options.map((o)=>{
+    //     let {percent,value,discountPercent,cashPercent,days,text} = o;
+    //     if(discountPercent === undefined){discountPercent = percent}
+    //     if(cashPercent === undefined){
+    //       if(value === 1){cashPercent = 100;}//
+    //       if(value === 2){cashPercent = 0;}//
+    //       if(value === 3){cashPercent = 0;}//
+    //       if(value === 4){cashPercent = 0;}//
+    //       if(value === 6){cashPercent = 0;}//
+    //       if(value === 7){cashPercent = 0;}//
+    //       if(value === 8){cashPercent = 0;}//
+    //       if(value === 9){cashPercent = 0;}//
+    //       if(value === 10){cashPercent = 0;}//
+    //       if(value === 11){cashPercent = 0;}//
+    //       if(value === 12){cashPercent = 0;}//
+    //       if(value === 13){cashPercent = 0;}//
+    //       if(value === 14){cashPercent = 0;}//
+    //       if(value === 15){cashPercent = 25;}//
+    //       if(value === 16){cashPercent = 50;}//
+    //       if(value === 17){cashPercent = 20;}//
+    //       if(value === 18){cashPercent = 30;}//
+    //       if(value === 19){cashPercent = 50;}//
+    //       if(value === 20){cashPercent = 10;}//
+    //       if(value === 21){cashPercent = 10;}//
+    //       if(value === 22){cashPercent = 10;}//
+    //       if(value === 23){cashPercent = 10;}//
+    //       if(value === 24){cashPercent = 50;}//
+    //       if(value === 25){cashPercent = 30;}//
+    //       if(value === 26){cashPercent = 40;}//
+    //       if(value === 27){cashPercent = 50;}//
+    //       if(value === 28){cashPercent = 20;}//
+    //       if(value === 28){cashPercent = 20;}//
+    //       if(value === 38){cashPercent = 40;}//
+    //       if(value === 37){cashPercent = 30;}//
+
+    //     }
+    //     if(days === undefined){
+    //       if(value === 1){days = 0;}//
+    //       if(value === 2){days = 15;}//
+    //       if(value === 3){days = 30;}//
+    //       if(value === 4){days = 45;}//
+    //       if(value === 6){days = 60;}//
+    //       if(value === 7){days = 70;}//
+    //       if(value === 8){days = 90;}//
+    //       if(value === 9){days = 105;}//
+    //       if(value === 10){days = 120;}//
+    //       if(value === 11){days = 135;}//
+    //       if(value === 12){days = 150;}//
+    //       if(value === 13){days = 165;}//
+    //       if(value === 14){days = 180;}//
+    //       if(value === 15){days = 60;}//
+    //       if(value === 16){days = 90;}//
+    //       if(value === 17){days = 90;}//
+    //       if(value === 18){days = 120;}//
+    //       if(value === 19){days = 150;}//
+    //       if(value === 20){days = 30;}//
+    //       if(value === 22){days = 90;}//
+    //       if(value === 21){days = 60;}//
+    //       if(value === 23){days = 120;}//
+    //       if(value === 24){days = 30;}//
+    //       if(value === 25){days = 60;}//
+    //       if(value === 26){days = 90;}//
+    //       if(value === 27){days = 120;}//
+    //       if(value === 28){days = 60;}//
+    //       if(value === 38){days = 120;}//
+    //       if(value === 37){days = 90;}//
+    //     }
+    //     return {value,discountPercent,cashPercent,days,text};
+    //   })
+    // }
+    // return newModel;
   }
   getTabs(model){
     return [
@@ -582,6 +659,15 @@ class Content extends Component {
 }
 class FormSetting extends Component {
   static contextType = BackOfficeContext;
+  getSelectedPayDueDates(){
+    let { data } = this.props;
+    let {PayDueDates = []} = data;
+    let { model } = this.context;
+    let { PayDueDate_options } = model;
+    return PayDueDate_options.filter(({value})=>{
+      return PayDueDates.indexOf(value) !== -1
+    })
+  }
   render() {
     let { model } = this.context;
     let { SettleType_options, PayDueDate_options, DeliveryType_options, PaymentTime_options } = model;
@@ -662,27 +748,28 @@ class FormSetting extends Component {
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
-              input:{type: 'select',options: SettleType_options,popover:{fitHorizontal:true}}, label: 'پیشفرض نحوه پرداخت', field: 'value.SettleType',
-            },
-            {
-              show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
-              input:{type: 'select',options: PayDueDate_options,popover:{fitHorizontal:true}}, label: 'پیشفرض نوع پرداخت چکی', field: 'value.PayDueDate'
-            },
-            {
-              show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
-              input:{type: 'select',options: DeliveryType_options,popover:{fitHorizontal:true}}, label: 'پیشفرض نحوه ارسال', field: 'value.DeliveryType',
-            },
-            {
-              show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
-              input:{type: 'select',options: PaymentTime_options,popover:{fitHorizontal:true}}, label: 'پیشفرض زمان پرداخت', field: 'value.PaymentTime',
-            },
-            {
-              show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
               input:{type: 'multiselect',options: PayDueDate_options, text: 'پرداخت های چکی'}, field: 'value.PayDueDates',
+            },
+            {
+              show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
+              input:{type: 'select',options: this.getSelectedPayDueDates(),popover:{fitHorizontal:true}}, 
+              label: 'پیشفرض نوع پرداخت چکی', field: 'value.PayDueDate'
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1, field: 'value.SettleTypes',
               input:{type: 'multiselect',options: SettleType_options, text: 'نحوه های پرداخت'},
+            },
+            {
+              show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
+              input:{type: 'select',options: SettleType_options,popover:{fitHorizontal:true}}, label: 'پیشفرض نحوه پرداخت', field: 'value.SettleType',
+            },
+            {
+              show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
+              input:{type: 'multiselect',text: 'نحوه های ارسال',options: DeliveryType_options}, field: 'value.DeliveryTypes'
+            },
+            {
+              show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
+              input:{type: 'select',options: DeliveryType_options,popover:{fitHorizontal:true}}, label: 'پیشفرض نحوه ارسال', field: 'value.DeliveryType',
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1, field: 'value.PaymentTimes',
@@ -690,8 +777,11 @@ class FormSetting extends Component {
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
-              input:{type: 'multiselect',text: 'نحوه های ارسال',options: DeliveryType_options}, field: 'value.DeliveryTypes'
-            }
+              input:{type: 'select',options: PaymentTime_options,popover:{fitHorizontal:true}}, label: 'پیشفرض زمان پرداخت', field: 'value.PaymentTime',
+            },
+            
+            
+            
           ]
         }}
         onChange={(obj) => onChange(obj)}
@@ -1023,7 +1113,7 @@ class AppSetting extends Component {
   upload(file){
     let {update} = this.context;
     let storage = AIOStorage('bmbof');
-    storage.read({file:file.file,callback:(backOffice)=>update(backOffice)})
+    storage.read({file:file,callback:(backOffice)=>update(backOffice)})
   }
   file_layout(){
     return {
@@ -1233,6 +1323,12 @@ class SpreeEntity extends Component {
 class ShippingOptions extends Component {
   static contextType = BackOfficeContext;
   state = { activeTabId: 'PayDueDate_options' }
+  getPayDueDateText({cashPercent = 0,days = 0}){
+    let res = []
+    if(cashPercent){res.push(`${cashPercent}% نقد`)}
+    if(days){res.push(`%${100 - cashPercent} چک ${(days / 30).toFixed(1)} ماهه`)}
+    return res.join(' - ') 
+  }
   tabs_layout() {
     let { activeTabId } = this.state;
     return {
@@ -1251,16 +1347,22 @@ class ShippingOptions extends Component {
     }
   }
   getColumns(activeTabId){
-    let columns = [
-      { title: 'نام', value: 'row.text',input:{type: 'text'}},
-      { title: 'v', value: 'row.value', width: 50, justify: true, input:{type: 'number'} },
-    ]
     if(activeTabId === 'PayDueDate_options'){
-      columns.push(
-        { title: '%', value: 'row.percent', width: 72, justify: true, input:{type: 'number'} },
-      )
+      let badgeStyle = {background:'dodgerblue',color:'#fff',padding:'0 3px'};
+      let base = {titleAttrs:{style:{fontSize:10}},justify: true};
+      return [
+        { ...base,title: 'درصد نقدی', value: 'row.cashPercent',width:70,input:{type: 'text',before:<div style={badgeStyle}>%</div>}},
+        { ...base,title: 'مدت چک(روز)', value: 'row.days',input:{type: 'text',before:({row})=><div style={badgeStyle}>{`${((row.days || 0) / 30).toFixed(1)} ماهه`}</div>}},
+        { ...base,title: 'درصد تخفیف', value: 'row.discountPercent', width: 72, input:{type: 'number',before:<div style={badgeStyle}>%</div>} },
+        { ...base,title: 'v', value: 'row.value', width: 60, input:{type: 'number'} },
+      ]
     }
-    return columns
+    else {
+      return [
+        { title: 'نام', value: 'row.text',input:{type: 'text'}},
+        { title: 'v', value: 'row.value', width: 50, justify: true, input:{type: 'number'} },
+      ]
+    }
   }
   table_layout() {
     let { activeTabId } = this.state;
@@ -1276,7 +1378,7 @@ class ShippingOptions extends Component {
             let { model } = this.context;
             let newRow;
             if(activeTabId === 'PayDueDate_options'){
-              newRow = {text:'',value:'',percent:''}
+              newRow = {value:'',discountPercent:'',cashPercent:'',days:''}
             }
             else {
               newRow = {text:'',value:''}
@@ -1287,6 +1389,11 @@ class ShippingOptions extends Component {
           value={model[activeTabId] || []}
           columns={this.getColumns(activeTabId)}
           onChange={(list) => {
+            if(activeTabId === 'PayDueDate_options'){
+              list = list.map((o)=>{
+                return {...o,text:this.getPayDueDateText(o)}
+              })
+            }
             setModel(activeTabId, list)
           }}
         />
@@ -1307,225 +1414,4 @@ class ShippingOptions extends Component {
     )
   }
 }
-
-let sample = {
-  "cardCodes":[],
-  "activeManager": { "garanti": false, "bazargah": true, "wallet": false, "vitrin": true, "priceList": true },
-  "bazargah": { "forsate_ersale_sefareshe_bazargah": 960, "forsate_akhze_sefareshe_bazargah": 1440 },
-  "colors": { "آفتابی": "#ffd100", "مهتابی": "#66b6ff", "یخی": "#f9ffd6", "سبز": "green", "قرمز": "red", "آبی": "blue", "نارنجی": "orange" },
-  "PayDueDate_options": [
-    { "value": 1, "text": "1", "percent": 12 },
-    { "value": 2, "text": "چک 15 روزه" },
-    { "value": 3, "text": "چک 30 روزه" },
-    { "value": 4, "text": "چک 45 روزه" },
-    { "value": 6, "text": "چک 60 روزه" },
-    { "value": 7, "text": "چک 70 روزه" },
-    { "value": 8, "text": "چک 3 ماهه" },
-    { "value": 9, "text": "چک 3 و نیم ماهه" },
-    { "value": 10, "text": "چک 4 ماهه", "percent": 0 },
-    { "value": 11, "text": "چک 4 و نیم ماهه" },
-    { "value": 12, "text": "چک 5 ماهه" },
-    { "value": 13, "text": "چک 5 و نیم ماهه" },
-    { "value": 14, "text": "چک 6 ماهه", "percent": 0 },
-    { "value": 15, "text": "25% نقد و 75% چک دو ماهه", "percent": 7.5 },
-    { "value": 16, "text": "50% نقد و 50% چک سه ماهه", "percent": 7.5 },
-    { "value": 17, "text": "20% نقد و 80% چک سه ماهه", "percent": 4.8 },
-    { "value": 18, "text": "30% نقد و 70% چک چهار ماهه", "percent": 3.6 },
-    { "value": 19, "text": "50% نقد و 50% چک پنج ماهه", "percent": 4.5 },
-    { "value": 20, "text": "50% نقد و 50% چک یک ماهه", "percent": 10.5 },
-    { "value": 21, "text": "10% نقد 90% چک دو ماهه", "percent": 9.3 },
-    { "value": 22, "text": "10% نقد 90% چک دو ماهه", "percent": 6.6 },
-    { "value": 23, "text": "10% نقد 90% چک چهار ماهه", "percent": 3.9 },
-    { "value": 24, "text": "50% نقد 50% چک یک ماهه", "percent": 1.2 },
-    { "value": 25, "text": "30% نقد الباقی چک دو ماهه", "percent": 7.8 },
-    { "value": 26, "text": "40% نقد الباقی چک سه ماهه", "percent": 6.6 },
-    { "value": 27, "text": "50% نقد الباقی چک چهار ماهه", "percent": 6 },
-    { "value": 28, "text": "20% نقد الباقی چک دو ماهه", "percent": 7.2 }
-  ],
-  "PaymentTime_options": [
-    { "value": 5, "text": "اینترنتی" },
-    { "value": 1, "text": "واریز قبل ارسال" },
-    { "value": 2, "text": "واریز پای بار" }
-  ],
-  "SettleType_options": [
-    { "value": 1, "text": "نقد" },
-    { "value": 2, "text": "چک" },
-    { "value": 8, "text": "دستگاه پوز" },
-    { "value": 16, "text": "آنلاین" }
-  ],
-  "DeliveryType_options": [
-    { "value": 11, "text": "ماشین توزیع بروکس" },
-    { "value": 12, "text": "ماشین اجاره ای" },
-    { "value": 13, "text": "باربری" },
-    { "value": 14, "text": "پخش گرم" },
-    { "value": 15, "text": "ارسال توسط ویزیتور" }
-  ],
-  "Regular": {
-    "active": true, "name": "خرید عادی", "id": "",
-    "PayDueDate": 1, "PaymentTime": 1, "DeliveryType": 11, "SettleType": 1,
-    "PayDueDates": [1, 15, 16, 17, 18, 19, 21, 22, 23, 24],
-    "PaymentTimes": [1, 2],
-    "DeliveryTypes": [11, 12, 13, 15],
-    "SettleTypes": [1, 8, 16],
-  },
-  "Bundle": {
-    "active": true, "name": "10 وات طلایی", "id": "", "B1Id": "44",
-    "maxCart": 1,
-    "PayDueDate": 1, "SettleType": 1, "DeliveryType": 11, "PaymentTime": 1,
-    "PaymentTimes": [1, 5],
-    "PayDueDates": [1],
-    "SettleTypes": [1, 16],
-    "DeliveryTypes": [11, 12, 13, 15],
-    "billboard": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=963e4ecf-6ddc-4c3a-bb95-5f0efb2cfe05.png",
-    "icon": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=f7a82337-3b71-4aa2-8194-b9d19a15e237.png",
-  },
-  "spreeCampaigns": [
-    {
-      "active": true, "name": " آخرین فروش با قیمت 1401", "id": "10721", "B1Id": "44",
-      "billboard": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=85addec7-35e0-4270-8005-afa83bc07672.png",
-      "CampaignId": 33,
-      "PriceListNum": 44,
-      "icon": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=18bc9297-db90-42dd-ace5-bebd2264d4bc.png",
-      "SettleType": 16, "PayDueDate": 1, "DeliveryType": 11, "PaymentTime": 5,
-      "PayDueDates": [1, 15, 16],
-      "SettleTypes": [16],
-      "PaymentTimes": [5],
-      "DeliveryTypes": [11, 12, 13, 15]
-    }
-  ],
-  "landing": [
-    {
-      "type": "image",
-      "url": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=e8b6f652-80dd-418f-874e-4e42e8fc7ab7.png",
-      "id": "bo_image_9778531",
-      "active": true
-    },
-    {
-      "type": "image",
-      "url": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=7e391347-f884-4a4b-a72c-39a79c767072.png",
-      "linkTo": "",
-      "id": "bo_image_5416420",
-      "active": true
-    },
-    {
-      "type": "image",
-      "url": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=7f73769a-88a4-4b82-8102-dc4237688933.png",
-      "linkTo": "",
-      "id": "bo_image_8613749",
-      "active": true
-    },
-    {
-      "type": "description",
-      "text": "این روزها که شاهد گرونی های روزافزون و کاهش قدرت خرید هستیم، شرکت بروکس با در نظر گرفتن شرایط اقتصادی فعلی جامعه و نرخ تورم سعی در کمک به کسب و کار الکتریکی ها داره. برای همین طی مذاکرات و تصمیم گیری ها، در نظر گرفتیم تمامی محصولات روشنایی و الکتریکی خود را با 25 الی 30 درصد زیر قیمت به فروش برسونیم!",
-      "linkTo": "",
-      "id": "bo_image_8275190",
-      "active": true
-    },
-    {
-      "type": "image",
-      "url": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=802a6b56-c106-488e-a0f5-3135b24a6ded.png",
-      "linkTo": "",
-      "id": "bo_image_6233115",
-      "active": true
-    },
-    {
-      "type": "label",
-      "text": "لامپ 10 وات بروکس فقط 20 هزارتومن!",
-      "linkTo": "",
-      "id": "bo_image_9558052",
-      "active": true
-    },
-    {
-      "type": "description",
-      "text": "هدیه ما به شما در بازار می ارزه خرید لامپ 10 وات با قیمت استثنایی!\n  شما میتوانید حداکثر 2 کارتن لامپ 10 وات را با قیمت 20 هزار تومان خریداری کنید! یعنی 4 میلیون ریال هدیه ما به شما!\n  این فرصت بی نظیر را از دست ندهید!",
-      "linkTo": "",
-      "id": "bo_image_9430143",
-      "active": true
-    }
-  ],
-  "homeContent": [
-    {
-      "type": "billboard",
-      "url": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=30416b89-ed06-4db1-bfba-1b7ad8ce251c.png",
-      "id": "bo_image_3625884",
-      "active": true,
-      "linkTo": "bottomMenu_kharid"
-    },
-    {
-      "type": "image",
-      "url": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=e5d815e2-4d58-42e2-ba8b-874313741d23.png",
-      "id": "bo_image_2398703",
-      "linkTo": "Bundle",
-      "active": true
-    },
-    {
-      "type": "image",
-      "url": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=4082762a-cb07-4be3-8890-ece87ccf7fb1.png",
-      "linkTo": "openPopup_priceList",
-      "id": "bo_image_7748843",
-      "active": true
-    }
-  ],
-  "active_landing": true,
-  "spreeCategories": [
-    {
-      "id": "10709",
-      "name": "روشنایی",
-      "billboard": "",
-      "icon": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=acffbc67-cf4b-478c-88b9-f2eca5b8f9cc.png",
-      "showType": "icon",
-      "active": true
-    },
-    {
-      "id": "10711",
-      "name": "آویزها",
-      "billboard": "",
-      "icon": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=3932b3e2-c7d6-425c-8490-157db5f2d37d.png",
-      "showType": "icon",
-      "active": true
-    },
-    {
-      "id": "10713",
-      "name": "ابزار ",
-      "billboard": "",
-      "icon": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=a7204258-65fc-4b4b-be70-4ff97cee05c2.png",
-      "showType": "icon",
-      "active": true
-    },
-    {
-      "id": "10714",
-      "name": "فیوز",
-      "billboard": "",
-      "icon": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=9bebf375-ac73-4b3b-bb5f-ece355147d8f.png",
-      "showType": "icon",
-      "active": true
-    },
-    {
-      "id": "10732",
-      "name": "سیم و کابل",
-      "billboard": "",
-      "icon": "https://retailerapp.bbeta.ir/api/v1/backoffice/GetImage?imageName=a3eee3bc-2ec0-4dd3-a665-596009c8ea33.png",
-      "showType": "icon",
-      "active": true
-    },
-    {
-      "id": "10715",
-      "name": "محصولات جدید",
-      "billboard": "",
-      "icon": "",
-      "showType": "slider",
-      "active": true
-    }
-  ],
-  "active_homeContent": true,
-  "versions": {
-    "login": 0,
-    "campaignProducts": 1,
-    "categories": 3,
-    "cart": 1
-  }
-}
-
-
-
 

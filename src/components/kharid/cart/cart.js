@@ -77,7 +77,7 @@ export default class Cart extends Component{
       let {activeTabId} = this.state;
       if(!activeTabId){return false}
       let {getShopById} = this.context;
-      let {payment} = getShopById(activeTabId).getAmounts();
+      let {payment} = getShopById(activeTabId).getAmounts(undefined,'cart');
       let {continued} = this.state;
       return {
         size: 72,className: "bgFFF p-h-12 theme-box-shadow",
@@ -104,7 +104,8 @@ export default class Cart extends Component{
     continue(){
       let {activeTabId} = this.state;
       if(!activeTabId){return false}
-      let {getShopById} = this.context;
+      let {getShopById,rsa} = this.context;
+      rsa.removeModal('all');
       getShopById(activeTabId).edameye_farayande_kharid()
     }
     render(){

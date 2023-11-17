@@ -7,6 +7,7 @@ import AIOInput from './npm/aio-input/aio-input';
 import PageError from './components/page-error';
 import Landing from './components/landing';
 import AIOLogin from './npm/aio-login/aio-login';
+import AIOLog from './npm/aio-log/aio-log';
 import AIOService from './npm/aio-service/aio-service';
 import getApiFunctions from './apis/apis';
 import './App.css';
@@ -23,7 +24,7 @@ class App extends Component {
     super(props);
     let baseUrl = this.getBaseUrl();
     this.state = {
-      apis: this.getApisInstance(baseUrl), Login: this.getLoginInstance(),registered:false,
+      apis: this.getApisInstance(baseUrl), Login: this.getLoginInstance(),registered:false,Logger:new AIOLog('bmlog'),
       baseUrl, isAutenticated: false, pageError: false, userInfo: {}, landing: false, splash: true, token: false
     }
   }
@@ -79,7 +80,7 @@ class App extends Component {
     else if (res === false) { return false }
   }
   async onAuth({ token,userId }){
-    let { apis,Login } = this.state;
+    let { apis } = this.state;
     let registered = await apis.request({api:'login.checkIsRegistered',parameter:userId,loading:false});
     apis.setToken(token);
     this.setState({ token, isAutenticated: true,registered })
@@ -148,7 +149,7 @@ class App extends Component {
     this.setState({ splash: false })  
   }
   render() {
-    let { isAutenticated, userInfo, registered, pageError, landing, backOffice, splash, apis, Login, baseUrl } = this.state;
+    let { isAutenticated, userInfo, registered, pageError, landing, backOffice, splash, apis, Login, baseUrl,Logger } = this.state;
     if (splash) { return <Splash /> }
     if (landing) { return <Landing onClose={() => this.setState({ landing: false })} items={landing} /> }
     if (pageError) { return <PageError {...pageError} /> }
@@ -165,7 +166,7 @@ class App extends Component {
       }
       return (
         <Main
-          apis={apis} Login={Login}
+          apis={apis} Login={Login} Logger={Logger}
           userInfo={userInfo}
           backOffice={backOffice}
           updateUserInfo={this.updateUserInfo.bind(this)}

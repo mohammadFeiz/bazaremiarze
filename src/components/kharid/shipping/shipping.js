@@ -166,7 +166,7 @@ export default class Shipping extends Component {
     let { address, giftCodeInfo, discountCodeInfo } = this.state;
     let { PayDueDate, SettleType, DeliveryType, PaymentTime } = this.state;
     let { getFactorItems, getPaymentButtonText } = Shop;
-    let factorItems = getFactorItems({ PayDueDate, SettleType, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo })
+    let factorItems = getFactorItems({ PayDueDate, SettleType, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo },'shipping')
     let Details = this.details_layout(factorItems);
     return {
       className: 'p-h-12 bg-fff theme-box-shadow',
@@ -217,7 +217,7 @@ export default class Shipping extends Component {
       this.setState({ [`${type}State`]: false, [`${type}Info`]: undefined })
       return
     }
-    let { apis,addLog } = this.context;
+    let { apis,Logger } = this.context;
     let code = this.state[type];
     let description = {
       'giftCode': 'کارت هدیه',
@@ -227,8 +227,8 @@ export default class Shipping extends Component {
       api: 'kharid.checkCode',
       description: `ارسال ${description}`,
       parameter: { type, code },
-      onSuccess: (obj) => {
-        addLog(`اطلاعات دریافت شده از ${description}`)
+      onSuccess: (obj = {}) => {
+        Logger.add(`اطلاعات دریافت شده از ${description}`,obj,type)
         this.setState({
           [`${type}State`]: true,
           [`${type}Info`]: obj,

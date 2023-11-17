@@ -25,7 +25,7 @@ import Register from "../../components/register/register";
 
 //npm////////////////////////////////////////
 import { Icon } from '@mdi/react';
-import { mdiCart,mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList, mdiExitToApp, mdiOpacity, mdiCash, mdiSecurity, mdiSkullScan, mdiClose } from "@mdi/js";
+import { mdiCart,mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList, mdiExitToApp, mdiOpacity, mdiCash, mdiSecurity, mdiSkullScan, mdiClose, mdiPageLayoutBody } from "@mdi/js";
 import RSA from '../../npm/react-super-app/react-super-app';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
 import AIOStorage from 'aio-storage';
@@ -40,9 +40,7 @@ import PayameSabteGaranti from "../../components/garanti/payame-sabte-garanti/pa
 import SignalR from '../../singalR/signalR';
 import Splash from "../../components/spalsh/splash";
 import UrlToJson from './../../npm/aio-functions/url-to-json';
-import $ from 'jquery';
 import "./index.css";
-import AIOInput from "../../npm/aio-input/aio-input";
 export default class Main extends Component {
   constructor(props) {
     super(props);
@@ -53,12 +51,12 @@ export default class Main extends Component {
     if (jsonUrl.status === '2') {
       alert('خطا در پرداخت')
         //window.location.href = wrl.slice(0,wrl.indexOf('/?status')) 
-        window.history.pushState(window.history.state, window.title, wrl.slice(0, wrl.indexOf('/?status')));
+        //window.history.pushState(window.history.state, window.title, wrl.slice(0, wrl.indexOf('/?status')));
     }
     else if (jsonUrl.status === '3') {
       alert('پرداخت موفق')
         //window.location.href = wrl.slice(0,wrl.indexOf('/?status')) 
-        window.history.pushState(window.history.state, window.title, wrl.slice(0, wrl.indexOf('/?status')));
+        //window.history.pushState(window.history.state, window.title, wrl.slice(0, wrl.indexOf('/?status')));
     }
     let images = localStorage.getItem('electricy-images');
     if (images === undefined || images === null) {
@@ -68,14 +66,12 @@ export default class Main extends Component {
     else {
       images = JSON.parse(images);
     }
-    let { baseUrl } = this.props;
+    let { baseUrl,Logger } = this.props;
     let homeBillboards = props.backOffice.homeContent || [];
     homeBillboards = homeBillboards.filter((o)=>o.type === 'billboard');
     props.apis.setProperty('getState',()=>{return {...this.state}});
-    this.logs = [];
     this.state = {
-      addLog:this.addLog.bind(this),
-      removeLog:this.removeLog.bind(this),
+      Logger,
       Login:props.Login,
       apis:props.apis,
       jsonUrl,
@@ -392,23 +388,15 @@ export default class Main extends Component {
   // public double? DiscountMaxValue { get; set; }
   // public double? DiscountValue { get; set; }
 
-  addLog(key ,value){
-    this.logs.push({key,value}) 
-  }
-  removeLog(index){
-    if(!this.logs.length){return}
-    if(!this.logs[index]){return}
-    this.logs = this.logs.filter((o,i)=>i !== index)
-  }
   async componentDidMount() {
     let { userInfo } = this.props;
-    let {apis,backOffice,getCodeDetails} = this.state;
+    let {apis,backOffice,getCodeDetails,Logger} = this.state;
     let pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode, 12 * 60 * 60 * 1000)
     pricing.startservice().then((value) => { return value; });
     await this.getShopState(backOffice);
     this.updateBackOfficeAccess(backOffice);
     this.updateSpreeCategories(backOffice);
-    let getFactorDetails = (items, obj = {}) => {
+    let getFactorDetails = (items, obj = {},container) => {
       let { SettleType, PaymentTime, PayDueDate, DeliveryType,giftCodeInfo,discountCodeInfo } = obj;
       let DiscountList = getCodeDetails({giftCodeInfo,discountCodeInfo});
       let { userInfo } = this.props;
@@ -427,10 +415,13 @@ export default class Main extends Component {
           DeliveryType
         }
       }
-      this.addLog('آبجکت ارسال شده به autoCalcDoc',<pre>{JSON.stringify(config,null,4)}</pre>,'autoCalcDoc')
+      if(container === 'shipping'){
+        Logger.add(`autoCalcDoc payload(${container})`,config,'autoCalcDoc_payload' + container)
+      }
       let res = pricing.autoCalcDoc(config);
-      this.addLog('آبجکت دریافت شده از autoCalcDoc',<pre>{JSON.stringify(res,null,4)}</pre>,'autoCalcDoc')
-      
+      if(container === 'shipping'){
+        Logger.add(`autoCalcDoc response(${container})`,res,'autoCalcDoc_response' + container)
+      }
       return res
     }
     let fixPrice = ({items, CampaignId,PriceListNum}) => {
@@ -510,9 +501,10 @@ export default class Main extends Component {
       })
     }
     else if (type === 'logs') {
+      let {Logger} = this.state;
       addModal({
         position: 'fullscreen', id: type,
-        body: {render:() => <Logs logs={this.logs} onRemove={this.removeLog.bind(this)} getState={()=>this.state}/>}, header:{title: 'رفتار سیستم'}
+        body: {render:() => Logger.render()}, header:{title: 'رفتار سیستم'}
       })
     }
     else if (type === 'priceList') {
@@ -717,105 +709,4 @@ class NavHeader extends Component {
 
     )
   }
-}
-function Logs(props){
-  let [logs,setLogs] = useState(props.logs);
-  let [tab,setTab] = useState('logs');
-  let [showCartProduct,setShowCartProduct] = useState(false)
-  
-  function remove(index){
-    setLogs(logs.filter((o,i)=>i !== index))
-    props.onRemove(index)
-  }
-  function cart_layout(){
-    if(tab !== 'cart'){return false}
-    
-    let state = props.getState();
-    let {cart} = state;
-    let cartkeys = Object.keys(cart);
-    return {
-      style:{direction:'ltr'},flex:1,className:'ofy-auto',
-      column:cartkeys.map((key)=>{
-        return {
-          column:[
-            {
-              row:[
-                {html:`cart tab (${key})`,flex:1}
-              ]
-            },
-            {
-              column:Object.keys(cart[key].items).map((itemKey)=>{
-                return {
-                  className:'p-h-12',
-                  column:[
-                    {
-                      style:{background:'dodgerblue',color:'#fff',padding:6},
-                      row:[
-                        {html:`${itemKey} (${JSON.stringify(cart[key].items[itemKey].count)})`,flex:1,style:{textAlign:'left'}},
-                        {html:'show',onClick:()=>{
-                          if(showCartProduct === itemKey){setShowCartProduct(false)}
-                          else {setShowCartProduct(itemKey)}
-                          
-                        }}
-                      ]
-                    },
-                    {
-                      show:itemKey === showCartProduct,
-                      html:(
-                        <pre style={{width:'100%'}}>
-                          <code>
-                            {JSON.stringify(cart[key].items[itemKey].product,null,4)}
-                          </code>
-                        </pre>
-                      )
-                    }
-                  ]
-                }
-              })
-            }
-          ]
-        }
-      })
-    }
-  }
-  return (
-    <RVD
-      layout={{
-        style:{height:'100%'},
-        column:[
-          {
-            size:36,
-            html:(
-              <AIOInput
-                type='tabs' optionText='option' optionValue='option' options={['logs','cart']}
-                onChange={(tab)=>setTab(tab)} value={tab}
-              />
-            )
-          },
-          cart_layout(),
-          {
-            show:tab === 'logs',
-            flex:1,className:'ofy-auto',
-            style:{background:'dodgerblue'},
-            column:logs.map((o,i)=>{
-              return {
-                className:'p-12 br-6 m-12',style:{border:'1px solid #ddd',background:'#fff'},
-                column:[
-                  {
-                    size:36,row:[
-                      {html:o.key,flex:1,align:'v'},
-                      {html:<Icon path={mdiClose} size={.8}/>,flex:1,align:'vh',size:36,onClick:()=>remove(i)}
-                    ]
-                  },
-                  {
-                    className:'p-12',html:o.value,align:'v',style:{direction:'ltr',textAlign:'left',overflow:'auto'}
-                  }
-                ]
-              }
-            })
-          }
-        ]
-      }}
-    />
-  )
 }

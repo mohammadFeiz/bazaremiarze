@@ -25,16 +25,7 @@ export default class ShopClass {
         if (!cartTab) { return [] }
         let { items = {} } = cartTab;
         return Object.keys(items).map((o) => items[o])
-    }
-    getAmounts = (shippingOptions) => {
-        let { cart } = this.getAppState();
-        let cartTab = cart[this.cartId];
-        if (!cartTab) { return {} }
-        let cartItems = this.getCartItems();
-        if (this.cartId === 'Bundle') {return this.getAmounts_Bundle(cartItems, shippingOptions)}
-        else { return this.getAmounts_all(cartItems, shippingOptions) }
-    }
-    
+    } 
     getCartProducts = (renderIn,shippingOptions) => {
         let { cart } = this.getAppState();
         let cartTab = cart[this.cartId];
@@ -67,7 +58,15 @@ export default class ShopClass {
         try { return +value.toFixed(v) }
         catch { return 0 }
     }
-    getAmounts_all(cartItems, shippingOptions) {
+    getAmounts = (shippingOptions,container) => {
+        let { cart } = this.getAppState();
+        let cartTab = cart[this.cartId];
+        if (!cartTab) { return {} }
+        let cartItems = this.getCartItems();
+        if (this.cartId === 'Bundle') {return this.getAmounts_Bundle(cartItems, shippingOptions,container)}
+        else { return this.getAmounts_all(cartItems, shippingOptions,container) }
+    }
+    getAmounts_all(cartItems, shippingOptions,container) {
         let { getFactorDetails } = this.getAppState();
         let factorDetailsItems = [];
         for (let i = 0; i < cartItems.length; i++) {
@@ -75,7 +74,7 @@ export default class ShopClass {
             let variant = product.variants.find((o) => o.id === variantId)
             factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
         }
-        let factorDetails = getFactorDetails(factorDetailsItems, shippingOptions);
+        let factorDetails = getFactorDetails(factorDetailsItems, shippingOptions,container);
         let {marketingdetails,DocumentTotal} = factorDetails;
         let {DiscountList,ClubPoints = {}} = marketingdetails;
         let {DiscountValueUsed,DiscountPercentage,PaymentDiscountPercent,PaymentDiscountValue,PromotionValueUsed} = DiscountList;
@@ -96,7 +95,7 @@ export default class ShopClass {
         }
         return {total,discounts, payment:DocumentTotal, ClubPoints}
     }
-    getAmounts_Bundle(cartItems, shippingOptions = {}) {
+    getAmounts_Bundle(cartItems, shippingOptions = {},container) {
         let { getCodeDetails,backOffice } = this.getAppState();
         let {PayDueDate_options} = backOffice;
         let total = 0;
@@ -134,8 +133,8 @@ export default class ShopClass {
         payment = payment * cashPercent / 100;
         return { total, discounts, payment,ClubPoints:{} };//notice // ClubPoints!!!!
     }
-    getFactorItems = (shippingOptions) => {
-        let amounts = this.getAmounts(shippingOptions);
+    getFactorItems = (shippingOptions,container) => {
+        let amounts = this.getAmounts(shippingOptions,container);
         let { total, payment,discounts,ClubPoints } = amounts;
         if(!total){alert('missing total in ShopClass.getFactorItems')}
         if(!payment){alert('missing payment in ShopClass.getFactorItems')}
@@ -236,7 +235,7 @@ export default class ShopClass {
             return 'BOne/AddNewOrder not compatible response'
         }
         let result = await Axios.post(`${baseUrl}/payment/request`, {
-            "Price": Math.round(this.getAmounts(obj).payment),
+            "Price": Math.round(this.getAmounts(obj,'payment').payment),
             "IsDraft": registredOrder.isDraft,
             "DocNum": registredOrder.docNum,
             "DocEntry": registredOrder.docEntry,

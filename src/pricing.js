@@ -672,7 +672,6 @@ export default class Pricing {
         if (MD.marketingdetails.DiscountList == null) {
             MD.marketingdetails.DiscountList = {};
         }
-        debugger;
         MD.marketingdetails.DiscountList.PaymentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent;
         let docSum = 0;
         if (MD.MarketingLines == null) {

@@ -77,7 +77,7 @@ export default class Cart extends Component{
       let {activeTabId} = this.state;
       if(!activeTabId){return false}
       let {getShopById} = this.context;
-      let {paymentAmount} = getShopById(activeTabId).getAmounts();
+      let {payment} = getShopById(activeTabId).getAmounts();
       let {continued} = this.state;
       return {
         size: 72,className: "bgFFF p-h-12 theme-box-shadow",
@@ -89,7 +89,7 @@ export default class Cart extends Component{
               {align: "v",html: "مبلغ قابل پرداخت",className: "theme-medium-font-color fs-12"},
               {
                 row:[
-                  {align: "v",html: SplitNumber(paymentAmount),className: "theme-dark-font-color fs-20 bold"},
+                  {align: "v",html: SplitNumber(payment),className: "theme-dark-font-color fs-20 bold"},
                   {size:4},
                   {align: "v",html: " ریال",className: "theme-dark-font-color fs-12"}
                 ]

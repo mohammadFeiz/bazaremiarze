@@ -35,11 +35,7 @@ export default class Register extends Component{
     }
     onClose(closeButton){
         let {onClose,mode,locationMode} = this.props;
-        if(locationMode){
-            if(closeButton){alert('لطفا موقعیت خود را ثبت کنید')}
-            else{onClose()}
-            
-        }
+        if(locationMode){onClose()}
         else{
             $(this.dom.current).animate({height: '0%',width: '0%',left:'50%',top:'100%',opacity:0}, 300,()=>{
                 if(mode === 'edit'){onClose()}

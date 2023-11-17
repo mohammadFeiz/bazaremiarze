@@ -34,66 +34,7 @@ export default class ShopClass {
         if (this.cartId === 'Bundle') {return this.getAmounts_Bundle(cartItems, shippingOptions)}
         else { return this.getAmounts_all(cartItems, shippingOptions) }
     }
-    getAmounts_all(cartItems, shippingOptions) {
-        let { getFactorDetails } = this.getAppState();
-        let factorDetailsItems = [];
-        for (let i = 0; i < cartItems.length; i++) {
-            let { variantId, count, product } = cartItems[i];
-            let variant = product.variants.find((o) => o.id === variantId)
-            factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
-        }
-        let factorDetails = getFactorDetails(factorDetailsItems, shippingOptions);
-        let DiscountList = factorDetails.marketingdetails.DiscountList || {}
-        let PromotionValueUsed = DiscountList.PromotionValueUsed || 0
-        let DiscountValueUsed = DiscountList.DiscountValueUsed || 0
-        let ClubPoints = factorDetails.marketingdetails.ClubPoints || {}
-        let total = 0;
-        for (let i = 0; i < factorDetails.MarketingLines.length; i++) {
-            let o = factorDetails.MarketingLines[i];
-            total += o.Price * o.ItemQty;
-        }
-        debugger
-        let paymentMethodDiscountPercent = factorDetails.marketingdetails.DiscountList.PaymentDiscountPercent;
-        let paymentMethodDiscount = factorDetails.marketingdetails.DiscountList.PaymentDiscountValue;
-        let paymentAmount = factorDetails.DocumentTotal;
-        let discount = total - (paymentAmount + paymentMethodDiscount);
-        return {
-            total, discount, paymentMethodDiscount, paymentMethodDiscountPercent, paymentAmount, factorDetails,ClubPoints,DiscountList
-        }
-    }
-    getAmounts_Bundle(cartItems, shippingOptions = {}) {
-        let { getCodeDetails,backOffice } = this.getAppState();
-        let {PayDueDate_options} = backOffice;
-        let total = 0;
-        for (let i = 0; i < cartItems.length; i++) {
-            let { count, product } = cartItems[i];
-            total += count.packQty * product.price;
-        }
-        let { PayDueDate,discountCodeInfo,giftCodeInfo} = shippingOptions;
-        let paymentMethodDiscountPercent = 0;
-        let peymentPercent = 100;
-        if(PayDueDate){
-            let PayDueDateOption = PayDueDate_options.find((o)=>o.value === PayDueDate);
-            if(PayDueDateOption){
-                paymentMethodDiscountPercent = PayDueDateOption.discountPercent;
-                peymentPercent = PayDueDateOption.cashPercent
-            }
-        }
-        let DiscountList = getCodeDetails({discountCodeInfo,giftCodeInfo}) || {};
-        let paymentMethodDiscount = total * paymentMethodDiscountPercent / 100;
-        let paymentAmount = total - paymentMethodDiscount;
-        
-        let codePercent = DiscountList.DiscountPercentage || 0;
-        if(codePercent){
-            let codeAmount = paymentAmount * codePercent / 100;
-            paymentAmount = paymentAmount - codeAmount
-        }
-        let giftValue = DiscountList.PromotionValue || 0;
-        paymentAmount -= giftValue;
-        
-        paymentAmount = paymentAmount * peymentPercent / 100
-        return { total, paymentMethodDiscountPercent, paymentMethodDiscount, paymentAmount,DiscountList };
-    }
+    
     getCartProducts = (renderIn,shippingOptions) => {
         let { cart } = this.getAppState();
         let cartTab = cart[this.cartId];
@@ -105,12 +46,7 @@ export default class ShopClass {
     getCartProducts_Bundle = (cartItems, renderIn) => {
         return cartItems.map(({ product, count, variantId }) => this.renderCard({ product, count, variantId, renderIn }))
     }
-    getCartProducts_all = (cartItems, renderIn, shippingOptions) => {
-        let paymentMethodDiscountPercent;
-        if (renderIn === 'shipping') {
-            let { PayDueDate_options, PayDueDate } = shippingOptions;
-            paymentMethodDiscountPercent = PayDueDate_options.find(({ value }) => value === PayDueDate).discountPercent;
-        }
+    getCartProducts_all = (cartItems, renderIn, shippingOptions) => {//notice // shippingOptions here never used
         return cartItems.map(({ product, count, variantId }, i) => {
             let variant = product.variants.find((o) => o.id === variantId);
             let { optionTypes } = product;
@@ -122,43 +58,88 @@ export default class ShopClass {
             }
             let props = {
                 key: variantId, variantId, index: i, product, details, type: 'horizontal',
-                renderIn, cartId: this.cartId, paymentMethodDiscountPercent
+                renderIn, cartId: this.cartId
             }
             return this.renderCard(props)
         })
     }
-    fix(value) {
-        try { return +value.toFixed(0) }
+    fix(value,v = 0) {
+        try { return +value.toFixed(v) }
         catch { return 0 }
+    }
+    getAmounts_all(cartItems, shippingOptions) {
+        let { getFactorDetails } = this.getAppState();
+        let factorDetailsItems = [];
+        for (let i = 0; i < cartItems.length; i++) {
+            let { variantId, count, product } = cartItems[i];
+            let variant = product.variants.find((o) => o.id === variantId)
+            factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
+        }
+        let factorDetails = getFactorDetails(factorDetailsItems, shippingOptions);
+        let {marketingdetails,DocumentTotal} = factorDetails;
+        let {DiscountList,ClubPoints = {}} = marketingdetails;
+        let {DiscountValueUsed,DiscountPercentage,PaymentDiscountPercent,PaymentDiscountValue,PromotionValueUsed} = DiscountList;
+        let total = 0;
+        for (let i = 0; i < factorDetails.MarketingLines.length; i++) {
+            let o = factorDetails.MarketingLines[i];
+            total += o.Price * o.ItemQty;
+        }
+        let discounts = []
+        if(PaymentDiscountPercent && PaymentDiscountValue){
+            discounts.push({percent:PaymentDiscountPercent,value:PaymentDiscountValue,title:'تخفیف نحوه پرداخت'})
+        }
+        if(DiscountValueUsed && DiscountPercentage){
+            discounts.push({percent:DiscountPercentage,value:DiscountValueUsed,title:'کد تخفیف'})
+        }
+        if(PromotionValueUsed){
+            discounts.push({value:PromotionValueUsed,title:'کارت هدیه'})
+        }
+        return {total,discounts, payment:DocumentTotal, ClubPoints}
+    }
+    getAmounts_Bundle(cartItems, shippingOptions = {}) {
+        let { getCodeDetails,backOffice } = this.getAppState();
+        let {PayDueDate_options} = backOffice;
+        let total = 0;
+        for (let i = 0; i < cartItems.length; i++) {
+            let { count, product } = cartItems[i];
+            total += count.packQty * product.price;
+        }
+        let payment = total;
+        let { PayDueDate,discountCodeInfo,giftCodeInfo} = shippingOptions;
+        let cashPercent = 100;
+        let discounts = [];
+        if(PayDueDate){
+            let PayDueDateOption = PayDueDate_options.find((o)=>o.value === PayDueDate);
+            let percent = PayDueDateOption.discountPercent;
+            let value = total * percent / 100;
+            let title = 'نخفیف نحوه پرداخت';
+            discounts.push({percent,value,title});
+            cashPercent = PayDueDateOption.cashPercent;
+            payment -= value;
+        }
+        let DiscountList = getCodeDetails({discountCodeInfo,giftCodeInfo}) || {};
+        if(DiscountList.DiscountPercentage){
+            let percent = DiscountList.DiscountPercentage;
+            let value = payment * percent / 100;
+            let title = 'کد تخفیف';
+            discounts.push({percent,value,title})
+            payment -= value;
+        }
+        if(DiscountList.PromotionValue){
+            let value = DiscountList.PromotionValue;
+            let title = 'کارت هدیه';
+            discounts.push({title,value});
+            payment -= value;
+        }
+        payment = payment * cashPercent / 100;
+        return { total, discounts, payment,ClubPoints:{} };//notice // ClubPoints!!!!
     }
     getFactorItems = (shippingOptions) => {
         let amounts = this.getAmounts(shippingOptions);
-        if (this.cartId === 'Bundle') { return this.getFactorItems_bundle(amounts) }
-        else { return this.getFactorItems_all(amounts) }
-    }
-    getFactorItems_bundle = ({ total, paymentMethodDiscount, paymentMethodDiscountPercent, paymentAmount,DiscountList = {}}) => {
-        let res = [
-            { key: 'جمع کل سبد خرید', value: `${SplitNumber(this.fix(total)) + ' ریال'}`, className: 'color00B5A5 fs-14' }
-        ]
-        // if(giftCodeInfo.PromotionValueUsed){
-        //     res.push(
-        //         { key: 'تخفیف کارت هدیه', value: SplitNumber(this.fix(DiscountList.PromotionValueUsed)) + ' ریال', className: 'colorFDB913 fs-14' }
-        //     )    
-        // }
-        // if(DiscountList.DiscountValueUsed){
-        //     res.push(
-        //         { key: 'کد تخفیف', value: SplitNumber(this.fix(DiscountList.DiscountValueUsed)) + ' ریال', className: 'colorFDB913 fs-14' }
-        //     )    
-        // }
-        res.push(
-            { key: 'تخفیف نحوه پرداخت', value: `${SplitNumber(this.fix(paymentMethodDiscount)) + ' ریال'} (${paymentMethodDiscountPercent} %)`, className: 'color00B5A5 fs-14' },
-            { key: 'مبلغ چک', value: SplitNumber(this.fix(total - paymentMethodDiscount - paymentAmount)) + ' ریال', className: 'theme-medium-font-color fs-14' },
-            { key: 'مبلغ قابل پرداخت', value: SplitNumber(this.fix(paymentAmount)) + ' ریال', className: 'theme-dark-font-color bold fs-16' }
-        )
-        return res
-    }
-    getFactorItems_all = ({ total, paymentMethodDiscount, paymentMethodDiscountPercent, paymentAmount, discount,ClubPoints = {},DiscountList }) => {
-        debugger
+        let { total, payment,discounts,ClubPoints } = amounts;
+        if(!total){alert('missing total in ShopClass.getFactorItems')}
+        if(!payment){alert('missing payment in ShopClass.getFactorItems')}
+        if(!ClubPoints){alert('missing ClubPoints in ShopClass.getFactorItems')}
         let res = [];
         if(ClubPoints.CampaignPoint){
             res.push({ key: 'امتیاز خرید جشنواره', value: ClubPoints.CampaignPoint, className: 'theme-medium-font-color fs-14' },)
@@ -169,31 +150,17 @@ export default class ShopClass {
         if(ClubPoints.PurchasePoint){
             res.push({ key: 'امتیاز خرید', value: ClubPoints.PurchasePoint, className: 'theme-medium-font-color fs-14' },)
         }
-
-        let factorItems = [
-            { key: 'قیمت کالاها', value: SplitNumber(this.fix(total)) + ' ریال', className: 'theme-medium-font-color fs-14' },
-        ]
-        if(DiscountList.PromotionValueUsed){
-            factorItems.push(
-                { key: 'تخفیف کارت هدیه', value: SplitNumber(this.fix(DiscountList.PromotionValueUsed)) + ' ریال', className: 'colorFDB913 fs-14' }
-            )    
+        res.push({ key: 'قیمت کالاها', value: SplitNumber(this.fix(total)) + ' ریال', className: 'theme-medium-font-color fs-14' })
+        for(let i = 0; i < discounts.length; i++){
+            let {title,percent,value} = discounts[i];
+            if(!title){alert('missing discount.title in ShopClass.getFactorItems')}
+            if(!value){alert('missing discount.value in ShopClass.getFactorItems')}
+            let text = `${percent?`${percent}% - `:''}${SplitNumber(value)} ریال`
+            res.push({ key: title, value: text, className: 'colorFDB913 fs-14' })
         }
-        if(DiscountList.DiscountValueUsed){
-            factorItems.push(
-                { key: 'کد تخفیف', value: SplitNumber(this.fix(DiscountList.DiscountValueUsed)) + ' ریال', className: 'colorFDB913 fs-14' }
-            )    
-        }
-        let per;
-        try{
-            per = paymentMethodDiscountPercent.toFixed(1)
-        }
-        catch{per = 0}
-        factorItems.push(
-            { key: 'تخفیف گروه مشتری', value: SplitNumber(this.fix(discount)) + ' ریال', className: 'colorFDB913 fs-14' },
-            { key: 'تخفیف نحوه پرداخت', value: `${SplitNumber(this.fix(paymentMethodDiscount)) + ' ریال'} (${per} %)`, className: 'colorFF4335 fs-14' },
-            { key: 'مبلغ قابل پرداخت', value: SplitNumber(this.fix(paymentAmount)) + ' ریال', className: 'theme-dark-font-color bold fs-16' }
+        res.push(
+            { key: 'مبلغ قابل پرداخت', value: SplitNumber(this.fix(payment)) + ' ریال', className: 'theme-dark-font-color bold fs-16' }
         )
-        res = [...res,...factorItems]
         return res
     }
     edameye_farayande_kharid = () => {
@@ -269,7 +236,7 @@ export default class ShopClass {
             return 'BOne/AddNewOrder not compatible response'
         }
         let result = await Axios.post(`${baseUrl}/payment/request`, {
-            "Price": Math.round(this.getAmounts(obj).paymentAmount),
+            "Price": Math.round(this.getAmounts(obj).payment),
             "IsDraft": registredOrder.isDraft,
             "DocNum": registredOrder.docNum,
             "DocEntry": registredOrder.docEntry,
@@ -376,10 +343,10 @@ export default class ShopClass {
             return { billboard, products, description,title:name }
         }
     }
-    renderCard({ product, renderIn, variantId, paymentMethodDiscountPercent, count, details, loading, index, style, type }) {
+    renderCard({ product, renderIn, variantId, count, details, loading, index, style, type }) {
         let { apis, rsa, changeCart,getHeaderIcons } = this.getAppState();
         let props = {
-            title: this.name, product, renderIn, variantId, paymentMethodDiscountPercent, count, details, loading, index, style, type,
+            title: this.name, product, renderIn, variantId, count, details, loading, index, style, type,
             onClick: async () => {
                 if (this.spree && !product.hasFullDetail) {
                     product = await apis.request({
@@ -438,7 +405,7 @@ class RegularCard extends Component {
         return { html: name, className: 'fs-12 theme-medium-font-color bold', style: { whiteSpace: 'normal', textAlign: 'right' } }
     }
     discount_layout() {
-        let { product, count = 1, paymentMethodDiscountPercent } = this.props;
+        let { product, count = 1 } = this.props;
         let { inStock, Price, B1Dscnt = 0, CmpgnDscnt = 0, PymntDscnt = 0, FinalPrice } = product;
 
         if (!Price || !inStock) { return false }
@@ -452,7 +419,7 @@ class RegularCard extends Component {
                     row: [
                         { show: !!B1Dscnt, html: <div style={{ background: '#FFD335', color: '#fff', padding: '1px 3px', fontSize: 12, borderRadius: 6 }}>{B1Dscnt + '%'}</div> },
                         { show: !!CmpgnDscnt, html: <div style={{ background: '#ffa835', color: '#fff', padding: '1px 3px', fontSize: 12, borderRadius: 6 }}>{CmpgnDscnt + '%'}</div> },
-                        { show: !!paymentMethodDiscountPercent || !!PymntDscnt, html: <div style={{ background: '#ff4335', color: '#fff', padding: '1px 3px', fontSize: 12, borderRadius: 6 }}>{(paymentMethodDiscountPercent || PymntDscnt) + '%'}</div> }
+                        { show: !!PymntDscnt, html: <div style={{ background: '#ff4335', color: '#fff', padding: '1px 3px', fontSize: 12, borderRadius: 6 }}>{(PymntDscnt) + '%'}</div> }//notice
                     ]
                 },
             ]

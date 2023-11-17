@@ -428,7 +428,7 @@ class LoginForm extends Component {
                     show: mode === 'OTPNumber' || mode === 'phoneNumber', field: `value.login.userId`, label: labels.inputLabel,
                     input: {
                         type: 'text', disabled: !!userId, justNumber: true, before: <Icon path={mdiCellphone} size={0.8} />,
-                        placeholder: '09...', maxLength: 11, attrs: { style: { direction: 'ltr' } }
+                        placeholder: '09...', maxLength: 11, attrs: { style: { direction: 'ltr' } },inputAttrs:{pattern:"\d*",inputMode:"numeric"}
                     },
                     validations: [['function', () => errorHandler({ field: 'phoneNumber', value: model.login.userId })]]
                 },
@@ -441,7 +441,7 @@ class LoginForm extends Component {
                     show: !!model.login.userId && mode === 'OTPCode', field: 'value.login.password', label: labels.inputLabel,
                     input: {
                         maxLength: otpLength, justNumber: true, type: 'text', placeholder: Array(otpLength).fill('-').join(''),
-                        attrs: { className: 'aio-login-otp-code' }
+                        attrs: { className: 'aio-login-otp-code' },inputAttrs:{pattern:"\d*",inputMode:"numeric"}
                     },
                     validations: [['function', () => errorHandler({ field: 'code', value: model.login.password, parameter: { codeLength: otpLength } })]]
                 },

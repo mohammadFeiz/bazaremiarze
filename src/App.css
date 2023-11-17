@@ -725,7 +725,8 @@ button{
 	background:#f6f7f9;
 	box-shadow:inset 0 0 3px 0px rgb(0 0 0 / 5%);
 	border:none;
-	min-height:40px;
+	min-height:48px;
+	font-size:20px !important;
   }
   .badge-2{
 	position: absolute;
@@ -739,4 +740,7 @@ button{
     border-radius: 12px;
     align-items: center;
     justify-content: center;
+}
+.aio-login .aio-input-form-error{
+	font-size:14px !important;
 }

@@ -104,6 +104,10 @@
     height:40px;
     outline:none;
     border-radius:6px; 
+    font-size:inherit;
+}
+.aio-login .aio-input input{
+    font-size:inherit !important;
 }
 .aio-login .aio-input-form{
     overflow:visible;

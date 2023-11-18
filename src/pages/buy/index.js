@@ -40,7 +40,6 @@ export default class Buy extends Component {
   }
   async componentDidMount() {
     let {spreeCategories,Shop_Regular} = this.context;
-    debugger
     let {slider_type = []} = spreeCategories;
     let sliders = [];
     for(let i = 0; i < slider_type.length; i++){

@@ -115,7 +115,7 @@ export default class ActionClass {
             categories[`${showType}_type`].push(sc);
             categories.dic[id] = sc;
         }
-        states.spreeCategories = spreeCategories;
+        states.spreeCategories = categories;
         let cart = await apis.request({
             api: 'kharid.getCart',
             parameter: { userInfo, Shop_Bundle: states.Shop_Bundle, spreeCampaignIds: states.spreeCampaignIds },

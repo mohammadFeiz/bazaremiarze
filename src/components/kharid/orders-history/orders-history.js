@@ -45,7 +45,7 @@ export default class OrdersHistory extends Component {
       return {flex: 1,gap: 12,gapAttrs:{className:'theme-vertical-gap'},className:'ofy-auto h-100',column}
     }
     order_layout(order,index){
-      let {openPopup} = this.context;
+      let {actionClass} = this.context;
       let {loading} = this.state;
       return {
         className:'of-visible',
@@ -55,7 +55,7 @@ export default class OrdersHistory extends Component {
             order={order} 
             index={index} 
             loading={loading}
-            onClick={()=>openPopup('joziate-sefareshe-kharid',order)}
+            onClick={()=>actionClass.openPopup('joziate-sefareshe-kharid',order)}
           />
         )
       }

@@ -736,29 +736,16 @@ export default function kharidApis({baseUrl,helper}) {
       }
       return {result:allProducts};
     },
-    // async getCart() {
-    //   let {getCartIds} = getState();
-    //   let res = await Axios.get(`${baseUrl}/orderuidata`);
-    //   let cartIds = getCartIds();
-    //   let result = '{}';
-    //   try {result = res.data.data[0].jsonData || '{}';}
-    //   catch {result = '{}'}
-    //   let cart = JSON.parse(result)
-    //   if (typeof cart !== 'object') {return {result:{}}}
-    //   let keys = Object.keys(cart)
-    //   let newCart = {}
-    //   for (let i = 0; i < keys.length; i++) {
-    //     let cartId = keys[i];
-    //     if(cartIds.indexOf(cartId) === -1){continue}
-    //     newCart[cartId] = cart[cartId]
-    //   }
-    //   return {result:newCart}
-    // },
-    // async setCart(cart) {
-    //   let result = await Axios.post(`${baseUrl}/orderuidata/updatejson`, { JsonData: JSON.stringify(cart) });
-    //   return {result}
-    // },
-    async getCart(undefined,{userInfo,getCartIds}) {
+    async getCart({Shop_Bundle,spreeCampaignIds,userInfo}) {
+      function getCartIds(){
+        let ids = ['Regular'];
+        for(let i = 0; i < spreeCampaignIds.length; i++){
+          let spreeCampaignId = spreeCampaignIds[i];
+          ids.push(spreeCampaignId);
+        }
+        if(Shop_Bundle.active){ids.push('Bundle')}
+        return ids;   
+      }
       let cartStorage = AIOStorage('bazaremiarzeapis');
       let cart = cartStorage.load({name:'cart.' + userInfo.cardCode,def:{}});
       let cartIds = getCartIds();

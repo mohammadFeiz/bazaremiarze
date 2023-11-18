@@ -792,7 +792,7 @@ class JoziateSefaresheBazargah extends Component{
                             className='button-2 m-h-12' disabled={disabled} style={{height:36}}
                             onClick={async ()=>{
                                 if(disabled){return}
-                                let {apis,showMessage,SetState} = this.context;
+                                let {apis,SetState} = this.context;
                                 let {order} = this.props;
                                 let {orderId} = order;
                                 apis.request({
@@ -916,20 +916,20 @@ class AddDeliverer extends Component{
                 header={{title:'افزودن پیک جدید',className:'bold'}}
                 onChange={(model)=>this.setState({model})}
                 onSubmit={async ()=>{
-                    let {apis,showMessage} = this.context;
+                    let {apis,rsa} = this.context;
                     let {deliverers} = this.props;
                     if(deliverers.filter(({phoneNumber})=>phoneNumber === model.mobile).length){
-                        showMessage('افزودن پیک با خطا مواجه شد. این شماره تکراری است');
+                        rsa.addAlert({type:'error',text:'خطا در افزودن پیک',subtext:'افزودن پیک با خطا مواجه شد. این شماره تکراری است'});
                         return
                     }
-                    let res = await apis.request({api:'bazargah.add_deliverer',parameter:model});
-                    if(res){
-                        showMessage('افزودن پیک با موفقیت انجام شد')
-                        onSuccess(res)
-                        this.setState({model:{name:'',mobile:''}});
-                        
-                    }
-                    else {showMessage('افزودن پیک با خطا مواجه شد')}
+                    apis.request({
+                        api:'bazargah.add_deliverer',parameter:model,description:'افزودن پیک',
+                        message:{success:true},
+                        onSuccess:(res)=>{
+                            onSuccess(res)
+                            this.setState({model:{name:'',mobile:''}});
+                        }
+                    });
                 }}
                 submitText='افزودن پیک'
                 value={model}

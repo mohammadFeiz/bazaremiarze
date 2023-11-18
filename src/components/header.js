@@ -7,7 +7,7 @@ import appContext from "./../app-context";
 export default class Header extends Component {
     static contextType = appContext;
     cart_layout() {
-      let { openPopup } = this.context;
+      let { actionClass } = this.context;
       let { navId, type, popupId } = this.props;
       if (type === 'page') {
         if (['kharid'].indexOf(navId) === -1) { return false }
@@ -15,8 +15,7 @@ export default class Header extends Component {
       if (type === 'popup') {
         if (['product', 'search', 'category-view'].indexOf(popupId) === -1) { return false }
       }
-      let { getCartLength } = this.context;
-      let length = getCartLength();
+      let length = actionClass.getCartLength();
       return {
         html: (
           <AIOInput
@@ -29,7 +28,7 @@ export default class Header extends Component {
                 {length > 0 ? <div className='badge-2'>{length}</div> : undefined}
               </>
             }
-            onClick={() => openPopup('cart')}
+            onClick={() => actionClass.openPopup('cart')}
           />
         )
       }
@@ -51,7 +50,7 @@ export default class Header extends Component {
     //   }
     // }
     buySearch_layout() {
-      let { openPopup } = this.context;
+      let { actionClass } = this.context;
       let { navId, type } = this.props;
       if (type !== 'page' || navId !== 'kharid') { return false }
       return {
@@ -61,7 +60,7 @@ export default class Header extends Component {
             className='header-icon'
             style={{ background: "none", color: '#605E5C' }}
             text={<Icon path={mdiMagnify} size={0.7} />}
-            onClick={() => openPopup('search')}
+            onClick={() => actionClass.openPopup('search')}
           />
         )
       }

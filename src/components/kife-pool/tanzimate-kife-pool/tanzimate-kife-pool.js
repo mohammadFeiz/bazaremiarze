@@ -9,12 +9,13 @@ export default class TanzimateKifePool extends Component{
     static contextType = appContext;
     async removeCard(id){
         let {cards,onChange} = this.props;
-        let {apis,showMessage} = this.context;
-        let res = await apis.request({api:'wallet.hazfe_cart',parameter:id})
-        if(typeof res === 'string'){showMessage(res)}
-        else if(res === true){
-            onChange(cards.filter((o)=>o.id !== id))
-        }
+        let {apis} = this.context;
+        apis.request({
+            api:'wallet.hazfe_cart',parameter:id,description:'حذف کارت',
+            onSuccess:()=>{
+                onChange(cards.filter((o)=>o.id !== id))
+            }
+        })
     }
     cards_layout(){
         let {cards,onChange} = this.props;
@@ -75,15 +76,16 @@ class AddCard extends Component{
         this.state = {model:{name:'',number:'62198610'}}
     }
     async onSubmit(){
-        let {apis,showMessage} = this.context;
+        let {apis,rsa} = this.context;
         let {onClose,onAdd} = this.props;
         let {model} = this.state;
-        let res = await apis.request({api:'wallet.afzoozane_cart',parameter:model})
-        if(typeof res === 'string'){showMessage(res); onClose()}
-        if(res === true){
-            onAdd(model);
-            onClose()
-        } 
+        let res = await apis.request({
+            api:'wallet.afzoozane_cart',parameter:model,description:'افزودن کارت',
+            onSuccess:()=>{
+                onAdd(model);
+                onClose()
+            }
+        }) 
     }
     render(){
         let {model} = this.state;

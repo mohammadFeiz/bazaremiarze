@@ -49,7 +49,7 @@ export default class ProductCount extends Component{
         // clearInterval(this.interval) 
       }
       openPopup(){
-        let {openPopup,rsa} = this.context;
+        let {actionClass,rsa} = this.context;
         let {value} = this.state;
         let config = {
             onChange:(value)=>{
@@ -65,7 +65,7 @@ export default class ProductCount extends Component{
             },
             value,
         }
-        openPopup('count-popup',config)
+        actionClass.openPopup('count-popup',config)
       }
     render(){
         let {value,prevValue} = this.state;

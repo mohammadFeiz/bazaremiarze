@@ -19,7 +19,7 @@ export default function SignalR(getState) {
     let $$={
         start(){
             connection.on("BazargahOrder", async (order)=> {
-                let {SetState,bazargahOrders,showMessage,userInfo,apis} = getState();                
+                let {SetState,bazargahOrders,rsa,userInfo,apis} = getState();                
                 let type;
                 if(order.status === 'Pending' || order.status===1){type = 'wait_to_get'}
                 else if(order.status === 'Taken'  || order.status===2){type = 'wait_to_send'}
@@ -30,7 +30,7 @@ export default function SignalR(getState) {
                 if(type === 'wait_to_get'){
                     bazargahOrders.wait_to_get = bazargahOrders.wait_to_get || [];
                     bazargahOrders.wait_to_get.push(order);
-                    showMessage('سفارش جدیدی در بازارگاه دارید')
+                    rsa.addAlert({type:'info',text:'سفارش بازارگاه',subtext:'سفارش جدیدی در بازارگاه دارید'})
                 }
                 else if(type === 'wait_to_send'){
                     bazargahOrders.wait_to_get = bazargahOrders.wait_to_get || [];

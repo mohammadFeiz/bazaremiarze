@@ -116,8 +116,8 @@ export default class Vitrin extends Component {
         })
     }
     async componentDidMount() {
-        let { apis,userInfo,addAnaliticsHistory } = this.context;
-        //addAnaliticsHistory({url:'Vitrin',title:'Vitrin'})
+        let { apis,userInfo,actionClass } = this.context;
+        //actionClass.addAnaliticsHistory({url:'Vitrin',title:'Vitrin'})
         let started = await apis.request({
             api: 'vitrin.v_getStarted',
             description: 'دریافت وضعیت ویترین'

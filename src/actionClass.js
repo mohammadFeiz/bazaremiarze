@@ -1,0 +1,371 @@
+import UrlToJson from './npm/aio-functions/url-to-json';
+import Pricing from './pricing';
+import ShopClass from './shop-class';
+import { Icon } from '@mdi/react';
+import { mdiCart } from "@mdi/js";
+import Register from './components/register/register';
+import PriceList from './popups/price-list/price-list';
+import BackOffice from './back-office-panel';
+import CountPopup from './components/kharid/product-count/count-popup';
+import PasswordPopup from './components/password-popup/password-popup';
+import OrdersHistory from './components/kharid/orders-history/orders-history';
+import OrderPopup from './components/kharid/order-popup/order-popup';
+import SabteGarantiJadid from './components/garanti/sabte-garanti-jadid/sabte-garanti-jadid';
+import JoziateDarkhastHayeGaranti from './components/garanti/joziate-darkhast-haye-garanti/joziate-darkhast-haye-garanti';
+import PayameSabteGaranti from './components/garanti/payame-sabte-garanti/payame-sabte-garanti';
+import SabteGarantiJadidBaJoziat from './components/garanti/sabte-garanti-jadid-ba-joziat/sabte-garanti-jadid-ba-joziat';
+import Search from './components/kharid/search/search';
+import Wallet from './popups/wallet/wallet';
+import TanzimateKifePool from './components/kife-pool/tanzimate-kife-pool/tanzimate-kife-pool';
+import Cart from './components/kharid/cart/cart';
+import Sefareshe_Ersal_Shode_Baraye_Vizitor from './components/kharid/sefareshe-ersal-shode-baraye-vizitor/sefareshe-ersal-shode-baraye-vizitor';
+export default class ActionClass {
+    constructor({ getState, getProps, setState }) {
+        this.getState = getState;
+        this.getProps = getProps;
+        this.setState = setState;
+    }
+    addAnaliticsHistory = ({ url, title, userId }) => {
+        window.dataLayer = window.dataLayer || [];
+        if (userId) {
+            window.dataLayer.push({
+                'user_id': userId
+            });
+        }
+        else {
+
+        }
+        window.dataLayer.push({
+            'event': 'virtualPageview',
+            'pageUrl': `https://bazar.miarze.com/${url}`,
+            'pageTitle': title //some arbitrary name for the page/state
+        });
+    }
+
+    manageUrl = () => {
+        let { userInfo } = this.getProps()
+        let wrl = window.location.href;
+        //this.addAnaliticsHistory({userId:userInfo.phoneNumber})
+        let jsonUrl = UrlToJson(wrl)
+        if (jsonUrl.status === '2') {
+            alert('خطا در پرداخت')
+            //window.location.href = wrl.slice(0,wrl.indexOf('/?status')) 
+            //window.history.pushState(window.history.state, window.title, wrl.slice(0, wrl.indexOf('/?status')));
+        }
+        else if (jsonUrl.status === '3') {
+            alert('پرداخت موفق')
+            //window.location.href = wrl.slice(0,wrl.indexOf('/?status')) 
+            //window.history.pushState(window.history.state, window.title, wrl.slice(0, wrl.indexOf('/?status')));
+        }
+    }
+    getInitialNavId = () => {
+        let wrl = window.location.href;
+        let jsonUrl = UrlToJson(wrl)
+        return jsonUrl.tab || 'khane'
+    }
+    isAdmin = () => {
+        let { userInfo, backOffice } = this.getProps();
+        let { accessPhoneNumbers = [] } = backOffice;
+        if (userInfo.userName === '09123534314') { return true }
+        let res = false;
+        let obj = accessPhoneNumbers.find((o) => o.phoneNumber === userInfo.userName);
+        if (obj) {
+            let { access } = obj;
+            for (let prop in access) { if (access[prop] === true) { res = true; break; } }
+        }
+        return res;
+    }
+    startPricing = () => {
+        let { userInfo } = this.getProps();
+        this.pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode, 12 * 60 * 60 * 1000)
+        this.pricing.startservice().then((value) => { return value; });
+    }
+    getShopState = async () => {
+        let { apis } = this.getState();
+        let { backOffice, userInfo } = this.getProps();
+        let { Bundle = {}, Regular, spreeCampaigns = [] } = backOffice;
+        let states = { spreeCampaignIds: [], Shop_Bundle: {}, Shop_Regular: {}, spreeCategories: [] }
+
+        states.Shop_Regular = new ShopClass({
+            getAppState: () => this.getState(),
+            config: { ...Regular, cartId: 'Regular', spree: true }
+        })
+        states.Shop_Bundle = new ShopClass({
+            getAppState: () => this.getState(),
+            config: { ...Bundle, cartId: 'Bundle', products: [] }
+        })
+        if (Bundle.active) {
+            await apis.request({
+                api: "kharid.daryafte_ettelaate_bundle", loading: false, description: 'دریافت اطلاعات باندل',
+                onSuccess: (products) => states.Shop_Bundle.update({ products })
+            });
+        }
+
+        for (let i = 0; i < spreeCampaigns.length; i++) {
+            let spreeCampaign = spreeCampaigns[i];
+            let { id, active } = spreeCampaign;
+            if (!active) { continue }
+            states.spreeCampaignIds.push(id);
+            states[`Shop_${id}`] = new ShopClass({
+                getAppState: () => this.getState(),
+                config: { ...spreeCampaign, cartId: id, spree: true, spreeCampaign: true }
+            })
+        }
+        let { spreeCategories = [] } = backOffice;
+        let categories = { icon_type: [], slider_type: [], dic: {} }
+        for (let i = 0; i < spreeCategories.length; i++) {
+            let sc = spreeCategories[i];
+            let { showType = 'icon', id } = sc;
+            categories[`${showType}_type`].push(sc);
+            categories.dic[id] = sc;
+        }
+        states.spreeCategories = spreeCategories;
+        let cart = await apis.request({
+            api: 'kharid.getCart',
+            parameter: { userInfo, Shop_Bundle: states.Shop_Bundle, spreeCampaignIds: states.spreeCampaignIds },
+            description: 'دریافت اطلاعات سبد خرید'
+        });
+        states.cart = cart;
+        this.setState(states)
+    }
+    getCodeDetails = ({ giftCodeInfo, discountCodeInfo }) => {
+        function getPromo(id) {
+            if (id === 0) { }
+            if (id === 1) { return { Id: 1, Name: "5% تخفیف تا سقف 10 میلیون تومان", Max: 100000000, Discount: 5 } }
+            if (id === 2) { return { Id: 2, Name: "10% تخفیف تا سقف 5 میلیون تومان", Max: 50000000, Discount: 10 } }
+            if (id === 3) { return { Id: 3, Name: "هدیه 500 هزارتومان", Max: 5000000, Discount: 100 } }
+            if (id === 4) { return { Id: 4, Name: "هدیه یک میلیون تومان", Max: 10000000, Discount: 100 } }
+            if (id === 5) { return { Id: 5, Name: "هدیه یک و نیم میلیون تومان", Max: 15000000, Discount: 100 } }
+            if (id === 6) { return { Id: 6, Name: "هدیه دو میلیون تومان", Max: 20000000, Discount: 100 } }
+        }
+        let DiscountList;
+        if (giftCodeInfo) {
+            let { Max } = getPromo(giftCodeInfo.promotion_code.promotion_type)
+            DiscountList = DiscountList || {};
+            DiscountList.PromotionCode = giftCodeInfo.promotion_code.code;
+            DiscountList.PromotionValue = Max;
+            DiscountList.PromotionId = giftCodeInfo.promotion_code.id;
+
+        }
+        if (discountCodeInfo) {
+            let { Max, Discount } = getPromo(discountCodeInfo.promotion_code.promotion_type)
+            DiscountList = DiscountList || {};
+            DiscountList.DiscountId = discountCodeInfo.promotion_code.id;
+            DiscountList.DiscountPercentage = Discount;
+            DiscountList.DiscountMaxValue = Max;
+            DiscountList.DiscountCode = discountCodeInfo.promotion_code.code;
+        }
+        return DiscountList
+    }
+    getFactorDetails = (items, obj = {}, container) => {
+        let { SettleType, PaymentTime, PayDueDate, DeliveryType, giftCodeInfo, discountCodeInfo } = obj;
+        let DiscountList = this.getCodeDetails({ giftCodeInfo, discountCodeInfo });
+        let { userInfo } = this.getProps();
+        let { Logger } = this.getState();
+        let config = {
+            "CardCode": userInfo.cardCode,
+            "CardGroupCode": userInfo.groupCode,
+            "MarketingLines": items,
+            "DeliverAddress": userInfo.address,
+            "DiscountList": DiscountList,
+            "marketingdetails": { "SlpCode": userInfo.slpcode, SettleType, PaymentTime, PayDueDate, DeliveryType, DiscountList }
+        }
+        if (container === 'shipping') { Logger.add(`autoCalcDoc payload(${container})`, config, 'autoCalcDoc_payload' + container) }
+        let res = this.pricing.autoCalcDoc(config);
+        if (container === 'shipping') { Logger.add(`autoCalcDoc response(${container})`, res, 'autoCalcDoc_response' + container) }
+        return res
+    }
+    fixPrice = ({ items, CampaignId, PriceListNum }) => {
+        let { userInfo } = this.getProps();
+        if (!userInfo.groupCode) { console.error('fixPrice missing userInfo.groupCode') }
+        if (!userInfo.cardCode) { console.error('fixPrice missing userInfo.cardCode') }
+        if (!userInfo.slpcode) { console.error('fixPrice missing userInfo.slpcode') }
+        let data = {
+            "CardGroupCode": userInfo.groupCode,
+            "CardCode": userInfo.cardCode,
+            "marketingdetails": {
+                "PriceList": PriceListNum,
+                "SlpCode": userInfo.slpcode,
+                "Campaign": CampaignId
+            },
+            "MarketingLines": items
+        }
+        let list = items.map(({ itemCode }) => itemCode);
+        try {
+            list = this.pricing.autoPriceList(list, data);
+        }
+        catch (err) {
+            alert('Pricing در محاسبات دچار مشکل شد . لطفا این مساله را با ادمین سیستم در میان بگذارید')
+            alert(err)
+        }
+        return list
+    }
+    openLink = (linkTo) => {
+        let { Shop_Bundle, Shop_Regular, getShopById, rsa } = this.getState();
+        if (linkTo === 'Bundle') { Shop_Bundle.openCategory() }
+        else if (linkTo.indexOf('category') === 0) {
+            let id = linkTo.split('_')[1];
+            Shop_Regular.openCategory(id);
+        }
+        else if (linkTo.indexOf('spreeCampaign') === 0) {
+            let id = linkTo.split('_')[1];
+            let shop = getShopById(id);
+            if (!shop) { return }
+            shop.openCategory();
+        }
+        else if (linkTo.indexOf('openPopup') === 0) { this.openPopup(linkTo.split('_')[1]); }
+        else if (linkTo.indexOf('bottomMenu') === 0) { rsa.setNavId(linkTo.split('_')[1]) }
+    }
+    handleMissedLocation = () => {
+        setTimeout(() => {
+            try {
+                let { userInfo } = this.getProps();
+                let { latitude, longitude, userProvince, userCity } = userInfo;
+                if (!userProvince || !userCity || !latitude || !longitude || Math.abs(latitude - 35.699739) < 0.0002 || Math.abs(longitude - 51.338097) < 0.0002) {
+                    this.openPopup('profile')
+                }
+            }
+            catch { }
+        }, 1000)
+    }
+    getHeaderIcons = (obj) => {
+        let { cart } = obj;
+        let res = [];
+        if (cart) {
+            let length = this.getCartLength();
+            res.push(
+                [
+                    (<><Icon path={mdiCart} size={0.8} />{length > 0 ? <div className='badge-2'>{length}</div> : undefined}</>),
+                    { className: 'header-icon', style: { background: "none", color: '#605E5C' }, onClick: () => this.openPopup('cart') }
+                ]
+            )
+        }
+        return res
+
+    }
+    getCartLength = () => {
+        let { cart } = this.getState();
+        let cartLength = 0;
+        let cartTabs = Object.keys(cart);
+        for (let i = 0; i < cartTabs.length; i++) {
+            let cartTab = cart[cartTabs[i]];
+            cartLength += Object.keys(cartTab.items).length;
+        }
+        return cartLength
+    }
+    changeCart = async ({ count, variantId, product }) => {
+        let { cart, apis } = this.getState();
+        let newCartTabItems = {};
+        let { cartId } = product;
+        let cartTab = cart[cartId];
+        //مقدار اولیه سبد خرید
+        if (!cartTab) { cartTab = { items: {} } }
+        //حذف از سبد خرید
+        if (count === 0) {
+            let res = {};
+            for (let prop in cartTab.items) {
+                if (prop.toString() !== variantId.toString()) { res[prop] = cartTab.items[prop] }
+            }
+            newCartTabItems = res;
+        }
+        else {
+            newCartTabItems = { ...cartTab.items }
+            //افزودن به سبد خرید
+            if (newCartTabItems[variantId] === undefined) {
+                newCartTabItems[variantId] = { count, product, variantId }
+            }
+            //ویرایش سبد خرید
+            else { newCartTabItems[variantId].count = count; }
+        }
+        clearTimeout(this.cartTimeout);
+        let newCart = { ...cart, [cartId]: { ...cartTab, items: newCartTabItems } };
+        this.cartTimeout = setTimeout(async () => await apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' }), 2000)
+        this.setState({ cart: newCart });
+    }
+    openPopup = async (type, parameter) => {
+        let { rsa, backOffice, Logger } = this.getState();
+        let { userInfo, updateUserInfo, baseUrl } = this.getProps();
+        let { addModal, removeModal, setNavId } = rsa;
+        if (type === 'profile') {
+            addModal({
+                position: 'fullscreen', id: type,
+                body: {
+                    render: () => {
+                        return (
+                            <Register baseUrl={baseUrl} mode='edit' locationMode={true} model={{ ...userInfo }}
+                                onSubmit={(userInfo) => updateUserInfo(userInfo)} onClose={() => rsa.removeModal()}
+                            />
+                        )
+                    }
+                },
+                header: false
+            })
+        }
+        else if (type === 'logs') {
+            addModal({ position: 'fullscreen', id: type, body: { render: () => Logger.render() }, header: { title: 'رفتار سیستم' } })
+        }
+        else if (type === 'priceList') {
+            addModal({ position: 'fullscreen', id: type, body: { render: () => <PriceList /> }, header: { title: 'لیست قیمت تولیدکنندگان', backbutton: true } })
+        }
+        else if (type === 'admin-panel') {
+            addModal({ position: 'fullscreen', id: type, body: { render: () => <BackOffice model={backOffice} phoneNumber={userInfo.userName} /> } })
+        }
+        else if (type === 'count-popup') {
+            addModal({
+                position: 'center', id: type, attrs: { style: { height: 'fit-content' } },
+                body: { render: () => <CountPopup {...parameter} /> }, header: { title: 'تعداد را وارد کنید', closeType: 'close button' }
+            })
+        }
+        else if (type === 'password') {
+            addModal({ id: type, position: 'fullscreen', body: { render: () => <PasswordPopup /> }, header: { title: 'مشاهده و ویرایش رمز عبور' } })
+        }
+        else if (type === 'peygiriye-sefareshe-kharid') {
+            addModal({ id: type, position: 'fullscreen', body: { render: () => <OrdersHistory activeTab={parameter} /> }, header: { title: 'جزيیات سفارش خرید' } })
+        }
+        if (type === 'joziate-sefareshe-kharid') {
+            addModal({ id: type, position: 'fullscreen', body: { render: () => <OrderPopup order={parameter} /> }, header: { title: 'پیگیری سفارش خرید' } })
+        }
+        else if (type === 'sabteGarantiJadid') {
+            addModal({ id: type, position: 'fullscreen', body: { render: () => <SabteGarantiJadid /> }, header: { title: 'درخواست مرجوع کالای سوخته' } })
+        }
+        else if (type === 'joziate-darkhast-haye-garanti') {
+            addModal({ id: type, position: 'fullscreen', body: { render: () => <JoziateDarkhastHayeGaranti /> }, header: { title: 'جزییات درخواست های گارانتی' } })
+        }
+        else if (type === 'payame-sabte-garanti') {
+            let { text, subtext } = parameter;
+            addModal({ id: type, position: 'center', body: { render: () => <PayameSabteGaranti text={text} subtext={subtext} onClose={() => removeModal()} /> } })
+        }
+        else if (type === 'sabte-garanti-jadid-ba-joziat') {
+            addModal({ id: type, position: 'fullscreen', body: { render: () => <SabteGarantiJadidBaJoziat /> }, header: { title: 'ثبت در خواست گارانتی جدید با جزییات' } })
+        }
+        else if (type === 'search') {
+            addModal({
+                id: type, position: 'fullscreen', body: { render: () => <Search /> }, header: { title: 'جستجو در محصولات' },
+                //header: () => <Header type='popup' popupId='search' />
+            })
+        }
+        else if (type === 'wallet') {
+            addModal({ id: type, position: 'fullscreen', body: { render: () => <Wallet onClose={() => removeModal()} /> } })
+        }
+        else if (type === 'tanzimate-kife-pool') {
+            addModal({ id: type, position: 'fullscreen', body: { render: () => <TanzimateKifePool cards={parameter.cards} onChange={parameter.onChange} /> }, header: { title: 'تنظیمات کیف پول' } })
+        }
+        else if (type === 'cart') {
+            addModal({ id: type, position: 'fullscreen', body: { render: () => <Cart cartId={parameter} /> }, header: { title: 'سبد خرید' }, id: 'cart' })
+        }
+        else if (type === 'sefareshe-ersal-shode-baraye-vizitor') {
+            addModal({
+                id: type,
+                body: {
+                    render: () => (
+                        <Sefareshe_Ersal_Shode_Baraye_Vizitor
+                            orderNumber={parameter.orderNumber} qr={parameter.qr}
+                            onShowInHistory={() => { removeModal('all'); this.openPopup('peygiriye-sefareshe-kharid', 'در حال بررسی'); }}
+                            onClose={() => { removeModal('all'); setNavId('khane') }}
+                        />
+                    )
+                }
+            })
+        }
+    }
+}

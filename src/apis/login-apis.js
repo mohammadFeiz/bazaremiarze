@@ -50,6 +50,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                 ballance: -ballance,
                 visitorMobile
             }
+            if(result.lastName === null){result.lasName = ''}
             return { result }
         }
     }

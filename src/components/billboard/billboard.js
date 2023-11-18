@@ -5,12 +5,20 @@ import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import appContext from '../../app-context';
 export default class Billboard extends Component{
     static contextType = appContext;
-    getCampaignIcon(campaign){
-        //در صورت تعریف یک کمپین باید آیکونش رو اینجا ریترن کنیم
+    constructor(props){
+        super(props);
+        this.state = {homeBillboards:[]}
+    }
+    componentDidMount(){
+        let {backOffice = {}} = this.context;
+        let {homeContent = []} = backOffice;
+        let homeBillboards = homeContent.filter((o)=>o.type === 'billboard');
+        this.setState({homeBillboards})
     }
     getItems(){
-        let {openPopup,backOffice,userInfo,Shop_Bundle,spreeCampaignIds = [],getShopById,homeBillboards,getLinkToFunction} = this.context;
+        let {backOffice,userInfo,Shop_Bundle,spreeCampaignIds = [],getShopById,actionClass} = this.context;
         let {renderIn} = this.props;
+        let {homeBillboards} = this.state;
         let items = [];
         if(renderIn === 'buy'){
             for(let i = 0; i < spreeCampaignIds.length; i++){
@@ -23,7 +31,7 @@ export default class Billboard extends Component{
         else if(renderIn === 'home'){
             for(let i = 0; i < homeBillboards.length; i++){
                 let {linkTo,url} = homeBillboards[i];
-                let onClick = linkTo?getLinkToFunction(linkTo):undefined;
+                let onClick = linkTo?()=>actionClass.openLink(linkTo):undefined;
                 items.push({billboard:url,onClick})    
             }
         }
@@ -31,7 +39,7 @@ export default class Billboard extends Component{
         if(renderIn === 'home' && !!backOffice.activeManager.garanti && userInfo.slpcode){
             items.push({
                billboard:Sookhte,
-               onClick:()=>openPopup('sabteGarantiJadid')
+               onClick:()=>actionClass.openPopup('sabteGarantiJadid')
             })
         }
         if(Shop_Bundle.active && renderIn === 'buy'){

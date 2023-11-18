@@ -32,17 +32,17 @@ export default class Wallet extends Component{
         )
     }
     async componentDidMount(){
-        let {apis,showMessage} = this.context;
+        let {apis,rsa} = this.context;
         let {fromDate}=this.state;
         let items = await apis.request({api:'wallet.walletItems',parameter:fromDate,loading:false,description:'دریافت جزییات کیف پول'});
         let cards = []; 
         let res = await apis.request({api:'wallet.ettelaate_banki'})
-        if(typeof res === 'string'){showMessage(res);}
+        if(typeof res === 'string'){rsa.addAlert({type:'error',text:'',subtext:res});}
         else{cards = res;}
         this.setState({items,cards})
     }
     header_layout(){
-        let {userInfo,openPopup} = this.context;
+        let {userInfo,actionClass} = this.context;
         let {onClose} = this.props;
         return {
             className:'blue-gradient',
@@ -59,7 +59,7 @@ export default class Wallet extends Component{
                             attrs:{
                                 onClick:()=>{
                                     let {cards} = this.state;
-                                    openPopup('tanzimate-kife-pool',{cards,onChange:(cards)=>this.setState({cards})})
+                                    actionClass.openPopup('tanzimate-kife-pool',{cards,onChange:(cards)=>this.setState({cards})})
                                 }}
                             }
                     ]
@@ -260,11 +260,11 @@ class BardashtPopup extends Component{
         this.state = {model:{amount:'',card:false},mojoodi:props.mojoodi}
     }
     async onSubmit(){
-        let {apis,showMessage} = this.context;
+        let {apis,rsa} = this.context;
         let {onClose} = this.props;
         let {model} = this.state;
         let res = await apis.request({api:'wallet.bardasht',parameter:model})
-        if(typeof res === 'string'){showMessage(res); onClose()}
+        if(typeof res === 'string'){rsa.addAlert({type:'error',text:'',subtext:res}); onClose()}
         else if(res === true){
             onClose()
         } 
@@ -313,11 +313,11 @@ class VarizPopup extends Component{
         this.state = {model:{amount:''}}
     }
     async onSubmit(){
-        let {apis,showMessage} = this.context;
+        let {apis,rsa} = this.context;
         let {onClose} = this.props;
         let {model} = this.state;
         let res = await apis.request({api:'wallet.variz',parameter:model})
-        if(typeof res === 'string'){showMessage(res); onClose()}
+        if(typeof res === 'string'){rsa.addAlert({type:'error',text:'',subtext:res}); onClose()}
         else if(res === true){
             onClose()
         }

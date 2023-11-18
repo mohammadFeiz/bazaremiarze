@@ -8,12 +8,12 @@ export default class CartButton extends Component{
     static contextType = appContext;
     openCart(e){
         e.stopPropagation();
-        let {openPopup} = this.context;
+        let {actionClass} = this.context;
         let {product} = this.props;
-        openPopup('cart',product.cartId)
+        actionClass.openPopup('cart',product.cartId)
     }
     render(){
-        let {cart,changeCart,getCartItemsByProduct} = this.context;
+        let {cart,actionClass,getCartItemsByProduct} = this.context;
         let {variantId,product,renderIn,onChange = ()=>{}} = this.props;
         if(!product){console.error(`CartButton missing product props`)}
         if(!product.cartId){console.error(`CartButton missing cartId in product props`)}
@@ -70,7 +70,7 @@ export default class CartButton extends Component{
                             html:()=>(
                                 <button 
                                     onClick={() => {
-                                        changeCart({variantId,product,count:1})
+                                        actionClass.changeCart({variantId,product,count:1})
                                         onChange(1)
                                     }} 
                                     className="button-2"
@@ -88,7 +88,7 @@ export default class CartButton extends Component{
                                 <ProductCount 
                                     value={count} 
                                     onChange={(count) => {
-                                        changeCart({product,variantId,count})
+                                        actionClass.changeCart({product,variantId,count})
                                         onChange(count)
                                     }} 
                                 />

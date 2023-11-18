@@ -67,14 +67,14 @@ export default class ShopClass {
         else { return this.getAmounts_all(cartItems, shippingOptions,container) }
     }
     getAmounts_all(cartItems, shippingOptions,container) {
-        let { getFactorDetails } = this.getAppState();
+        let { actionClass } = this.getAppState();
         let factorDetailsItems = [];
         for (let i = 0; i < cartItems.length; i++) {
             let { variantId, count, product } = cartItems[i];
             let variant = product.variants.find((o) => o.id === variantId)
             factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
         }
-        let factorDetails = getFactorDetails(factorDetailsItems, shippingOptions,container);
+        let factorDetails = actionClass.getFactorDetails(factorDetailsItems, shippingOptions,container);
         let {marketingdetails,DocumentTotal} = factorDetails;
         let {DiscountList,ClubPoints = {}} = marketingdetails;
         let {DiscountValueUsed,DiscountPercentage,PaymentDiscountPercent,PaymentDiscountValue,PromotionValueUsed} = DiscountList;
@@ -96,7 +96,7 @@ export default class ShopClass {
         return {total,discounts, payment:DocumentTotal, ClubPoints}
     }
     getAmounts_Bundle(cartItems, shippingOptions = {},container) {
-        let { getCodeDetails,backOffice } = this.getAppState();
+        let { actionClass,backOffice } = this.getAppState();
         let {PayDueDate_options} = backOffice;
         let total = 0;
         for (let i = 0; i < cartItems.length; i++) {
@@ -116,7 +116,7 @@ export default class ShopClass {
             cashPercent = PayDueDateOption.cashPercent;
             payment -= value;
         }
-        let DiscountList = getCodeDetails({discountCodeInfo,giftCodeInfo}) || {};
+        let DiscountList = actionClass.getCodeDetails({discountCodeInfo,giftCodeInfo}) || {};
         if(DiscountList.DiscountPercentage){
             let percent = DiscountList.DiscountPercentage;
             let value = payment * percent / 100;
@@ -196,7 +196,7 @@ export default class ShopClass {
     }
     payment = async (obj) => {
         //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
-        let { rsa, removeCart, openPopup } = this.getAppState();
+        let { rsa, removeCart, actionClass } = this.getAppState();
         let result;
         if (this.cartId === 'Bundle') { result = obj.SettleType === 16 ? await this.pardakht(obj) : await this.sabt(obj) }
         else { result = await this.sabt(obj); }
@@ -204,7 +204,7 @@ export default class ShopClass {
             let { orderNumber } = result;
             rsa.removeModal('all');
             removeCart(this.cartId)
-            openPopup('sefareshe-ersal-shode-baraye-vizitor', { orderNumber });
+            actionClass.openPopup('sefareshe-ersal-shode-baraye-vizitor', { orderNumber });
             return true
         }
         else { return result }
@@ -246,8 +246,8 @@ export default class ShopClass {
     }
     getOrderBody = ({ SettleType, PaymentTime, DeliveryType, PayDueDate, address,giftCodeInfo,discountCodeInfo }) => {
         let appState = this.getAppState();
-        let { userInfo,getCodeDetails } = appState;
-        let DiscountList = getCodeDetails({giftCodeInfo,discountCodeInfo})
+        let { userInfo,actionClass } = appState;
+        let DiscountList = actionClass.getCodeDetails({giftCodeInfo,discountCodeInfo})
         let marketingLines = this.getMarketingLines()
         return {
             "DiscountList":DiscountList,
@@ -298,9 +298,9 @@ export default class ShopClass {
         else { return 'ارسال برای ویزیتور' }
     }
     async openCategory(parameter) {
-        let { rsa,getHeaderIcons } = this.getAppState();
+        let { rsa,actionClass } = this.getAppState();
         let { billboard, products, description,title } = await this.getCategoryProps(parameter)
-        let buttons = getHeaderIcons({cart:true})
+        let buttons = actionClass.getHeaderIcons({cart:true})
         rsa.addModal({
             id:'shop-class-category',
             position: 'fullscreen',
@@ -343,7 +343,7 @@ export default class ShopClass {
         }
     }
     renderCard({ product, renderIn, variantId, count, details, loading, index, style, type }) {
-        let { apis, rsa, changeCart,getHeaderIcons } = this.getAppState();
+        let { apis, rsa,actionClass } = this.getAppState();
         let props = {
             title: this.name, product, renderIn, variantId, count, details, loading, index, style, type,
             onClick: async () => {
@@ -357,16 +357,16 @@ export default class ShopClass {
                 rsa.addModal({
                     position: 'fullscreen', id: 'product',
                     body: {render:() => this.renderPage(product)},
-                    header: {title: this.name, buttons:getHeaderIcons({cart:true})}
+                    header: {title: this.name, buttons:actionClass.getHeaderIcons({cart:true})}
                 })
             },
-            onRemove: () => changeCart({ count: 0, variantId: product.code, product })
+            onRemove: () => actionClass.changeCart({ count: 0, variantId: product.code, product })
         }
         let Wrapper = this.spree ? RegularCard : BundleCard;
         return (<Wrapper key={product.id || product.code} {...props} />)
     }
     renderPage(product) {
-        let { cart, openPopup, changeCart } = this.getAppState()
+        let { cart, actionClass } = this.getAppState()
         let cartTab = cart[this.cartId];
         let cartItem;
         if (cartTab) {
@@ -375,9 +375,9 @@ export default class ShopClass {
         }
         let props = {
             product, cartItem, maxCart: this.maxCart,
-            onShowCart: () => openPopup('cart'),
+            onShowCart: () => actionClass.openPopup('cart'),
             //use in bundle
-            onChangeCount: (count) => changeCart({ product, variantId: product.code, count })
+            onChangeCount: (count) => actionClass.changeCart({ product, variantId: product.code, count })
         }
         let Wrapper = this.spree ? RegularPage : BundlePage;
         return <Wrapper {...props} />

@@ -130,12 +130,12 @@ export default class Shipping extends Component {
     catch { return 0 }
   }
   codeView_layout() {
-    let { getCodeDetails } = this.context;
+    let { actionClass } = this.context;
     let { giftCodeInfo,discountCodeInfo } = this.state;
     let column = [];
     if (giftCodeInfo) {
       try {
-        let details = getCodeDetails({ giftCodeInfo })
+        let details = actionClass.getCodeDetails({ giftCodeInfo })
         if (details.PromotionValue) {
           column.push({
             style:{color:'green'},html: `کارت هدیه به مبلغ ${details.PromotionValue} روی فاکتور اعمال شد`
@@ -146,7 +146,7 @@ export default class Shipping extends Component {
     }
     if (discountCodeInfo) {
       try {
-        let details = getCodeDetails({ discountCodeInfo })
+        let details = actionClass.getCodeDetails({ discountCodeInfo })
         if (details.DiscountPercentage) {
           column.push({
             style:{color:'green'},html: `کد تخفیف ${`${details.DiscountPercentage} درصد`} تا سقف ${details.DiscountMaxValue} روی فاکتور اعمال شد `

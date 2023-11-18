@@ -23,8 +23,8 @@ export default class Profile extends Component{
             customerCode:'c19428',shopName:'فروشگاه الکتریکی تهران',visitorName:'علی محمدی',nationalCode:'0386481784',
             parts:[
                 {after:getSvg('chevronLeft'),text:'پیگیری سفارش خرید',icon:getSvg(13,{className:'theme-medium-font-color'}),onClick:()=>{
-                    let {openPopup} = this.context;
-                    openPopup('peygiriye-sefareshe-kharid')
+                    let {actionClass} = this.context;
+                    actionClass.openPopup('peygiriye-sefareshe-kharid')
                 }},
                 //{after:getSvg('chevronLeft'),text:'جایزه ها',icon:getSvg(15),onClick:()=>{}},
                 {
@@ -33,10 +33,10 @@ export default class Profile extends Component{
                     icon:getSvg(14,{className:'theme-medium-font-color'}),
                     show:()=>!!this.context.backOffice.activeManager.garanti && !!this.context.userInfo.slpcode,
                     onClick:async ()=>{
-                        let {SetState,apis,openPopup} = this.context;
+                        let {SetState,apis,actionClass} = this.context;
                         let guaranteeItems = await apis.request({api:'guaranti.garantiItems',description:'دریافت لیست کالاهای گارانتی کاربر'});
                         SetState({guaranteeItems});
-                        openPopup('joziate-darkhast-haye-garanti'); 
+                        actionClass.openPopup('joziate-darkhast-haye-garanti'); 
                     }
                 },
                 //{after:getSvg('chevronLeft'),text:'قوانین و مقررات',icon:getSvg(16),onClick:()=>{}},
@@ -49,7 +49,7 @@ export default class Profile extends Component{
         return {className:'m-h-12 of-visible',html:<Card type='card4' items={parts}/>}
     }
     getContent(){
-        let {guaranteeItems = [],userInfo,openPopup,backOffice,apis,SetState} = this.context;
+        let {guaranteeItems = [],userInfo,actionClass,backOffice,apis,SetState} = this.context;
         let slpname,slpcode;
         try{
             slpname = userInfo.slpname || 'تعیین نشده';
@@ -106,7 +106,7 @@ export default class Profile extends Component{
                                         <button 
                                             style={{background:'none',border:'none',outline:'none',fontWeight:'bold'}}
                                             className='theme-link-font-color'
-                                            onClick={()=>openPopup('password')}
+                                            onClick={()=>actionClass.openPopup('password')}
                                         >مشاهده و ویرایش</button>]]
                                 
                             ]}
@@ -139,7 +139,7 @@ export default class Profile extends Component{
                                         <AIOInput 
                                             type='button' caret={false} position='bottom' text='درخواست گارانتی جدید'
                                             style={{background:'none',color:'inherit',fontWeight:'inherit',fontSize:'inherit'}}
-                                            onClick={()=>openPopup('sabteGarantiJadid')}
+                                            onClick={()=>actionClass.openPopup('sabteGarantiJadid')}
                                         />        
                                     }
                                 />
@@ -186,8 +186,8 @@ export default class Profile extends Component{
         }
     }
     componentDidMount(){
-        // let {addAnaliticsHistory} = this.context;
-        // addAnaliticsHistory({url:'Profile',title:'Profile'})
+        // let {actionClass} = this.context;
+        // actionClass.addAnaliticsHistory({url:'Profile',title:'Profile'})
     }
     render(){
         let {showProfile,showWallet} = this.state;

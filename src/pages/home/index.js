@@ -59,8 +59,8 @@ export default class Home extends Component {
         return { html: <Billboard renderIn='home'/>,align:'h' }
     }
     cartAndWallet_layout(){
-        let {userInfo,getCartLength,openPopup,backOffice} = this.context;
-        let cartLength = getCartLength()
+        let {userInfo,actionClass,backOffice} = this.context;
+        let cartLength = actionClass.getCartLength()
         return {
             className:'of-visible theme-gap-h',
             row: [
@@ -70,7 +70,7 @@ export default class Home extends Component {
                     html:()=>(
                         <Card
                             type='card1' title='کیف پول' value={SplitNumber(Math.max(userInfo.ballance * 10,0))} unit='ریال'
-                            icon={getSvg(29,{width:30,height:30})} onClick={()=>openPopup('wallet')}
+                            icon={getSvg(29,{width:30,height:30})} onClick={()=>actionClass.openPopup('wallet')}
                         />
                     )
                 },
@@ -80,7 +80,7 @@ export default class Home extends Component {
                     html:(
                         <Card
                             type='card1' title='سبد خرید' value={cartLength} unit='کالا'
-                            icon={getSvg(28,{width:30,height:30})} onClick={()=>openPopup('cart')}
+                            icon={getSvg(28,{width:30,height:30})} onClick={()=>actionClass.openPopup('cart')}
                         />
                     )
                 }
@@ -88,7 +88,7 @@ export default class Home extends Component {
         }
     }
     preOrders_layout(){
-        let {openPopup} = this.context;
+        let {actionClass} = this.context;
         let {preOrders} = this.state;
         if(!preOrders){return false}
         return {
@@ -103,7 +103,7 @@ export default class Home extends Component {
                             html:(
                                 <Card
                                     type='card2' icon={getSvg('paperRocket')} title='پیگیری سفارشات'
-                                    onClick={()=>openPopup('peygiriye-sefareshe-kharid')}
+                                    onClick={()=>actionClass.openPopup('peygiriye-sefareshe-kharid')}
                                 />
                             )
                         }
@@ -113,7 +113,7 @@ export default class Home extends Component {
         }
     }
     garanti_layout(){
-        let {guaranteeItems = [],openPopup,backOffice,userInfo} = this.context;
+        let {guaranteeItems = [],actionClass,backOffice,userInfo} = this.context;
         if(!backOffice.activeManager.garanti || !userInfo.slpcode){return false}
         return {
             className:'theme-gap-h m-t-12 of-visible',
@@ -134,7 +134,7 @@ export default class Home extends Component {
                                     before={<Icon path={mdiPlusBox} size={0.8}/>}
                                     type='button'
                                     position='bottom'
-                                    onClick={()=>openPopup('sabteGarantiJadid')}
+                                    onClick={()=>actionClass.openPopup('sabteGarantiJadid')}
                                 />
                             )
                         }
@@ -155,7 +155,7 @@ export default class Home extends Component {
                             })
                         },
                         {
-                            attrs:{onClick:()=>openPopup('joziate-darkhast-haye-garanti')},
+                            attrs:{onClick:()=>actionClass.openPopup('joziate-darkhast-haye-garanti')},
                             size:48,html:'مشاهده جزییات درخواست های گارانتی ها',
                             className:'theme-card-bg theme-border-bottom-radius theme-link-font-color fs-12 bold',
                             align:'vh'
@@ -211,7 +211,7 @@ export default class Home extends Component {
         return {className:'of-visible theme-gap-h',html:<Bazargah renderInHome={true}/>}
     }   
     promotion_layout(){
-        let {backOffice,getLinkToFunction} = this.context;
+        let {backOffice,actionClass} = this.context;
         let {homeContent = []} = backOffice;
         if(!homeContent.length){return false}
         return {
@@ -222,7 +222,7 @@ export default class Home extends Component {
                 if(type === 'description'){return {className:'m-h-12 m-b-12 fs-12',style:{textAlign:'right'},html:text}}
                 if(type === 'image'){
                     return {
-                        className:'m-h-12 m-b-12',onClick:linkTo?getLinkToFunction(linkTo):undefined,
+                        className:'m-h-12 m-b-12',onClick:linkTo?()=>actionClass.openLink(linkTo):undefined,
                         html:(<img src={url} alt='' width='100%'/>)
                     }
                 }

@@ -1,4 +1,15 @@
 export default function loginApis({ baseUrl, helper, Axios, setToken }) {
+    function IsAdmin(userName, backOffice){
+        let { accessPhoneNumbers = [] } = backOffice;
+        if (userName === '09123534314') { return true }
+        let res = false;
+        let obj = accessPhoneNumbers.find((o) => o.phoneNumber === userName);
+        if (obj) {
+            let { access } = obj;
+            for (let prop in access) { if (access[prop] === true) { res = true; break; } }
+        }
+        return res;
+    }
     return {
         async checkIsRegistered(phoneNumber){
             let response = await Axios.get(`${baseUrl}/Users/IsUserSyncedWithB1?userName=${phoneNumber}`);
@@ -26,7 +37,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             else { result = response.data.message }
             return { response, result }
         },
-        async getUserInfo(userInfo) {
+        async getUserInfo(userInfo,{backOffice}) {
             const b1Info = await fetch(`https://b1api.burux.com/api/BRXIntLayer/GetCalcData/${userInfo.cardCode}`, {
                 mode: 'cors', headers: { 'Access-Control-Allow-Origin': '*' }
             }).then((response) => { return response.json(); }).then((data) => { return data; }).catch(function (error) { return null; });
@@ -39,8 +50,10 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                 console.error(`b1Info.customer.ballance is ${ballance} but we set it on 0`)
                 ballance = 0;
             }
+            let isAdmin = IsAdmin(userInfo.userName,backOffice)
             let result = {
                 ...userInfo,
+                isAdmin,
                 cardCode: userInfo.cardCode,
                 groupName: customer.groupName,
                 itemPrices: b1Info.itemPrices,

@@ -34,7 +34,7 @@ class App extends Component {
     else if (url.indexOf('bbeta') !== -1) { return "https://retailerapp.bbeta.ir/api/v1"; }
     else { return "https://retailerapp.bbeta.ir/api/v1"; }
   }
-  getApisInstance(baseUrl) {return new AIOService({ getApiFunctions, baseUrl, id: 'bazaremiarzeapis' });}
+  getApisInstance(baseUrl) {return new AIOService({ getApiFunctions,getState:()=>this.state, baseUrl, id: 'bazaremiarzeapis' });}
   getLoginInstance() {
     let userId;
     try { userId = new URL(window.location.href).searchParams.get("pn").toString() }
@@ -127,12 +127,8 @@ class App extends Component {
       }
       else {
         let str = window.prompt('تنظیمات اولیه اپ انجام نشده است. اگر ادمین سیستم هستید فایل تنظیمات اولیه را وارد کنید و گر نه به ادمین سیستم اطلاع دهید')
-        if (typeof str === 'string') {
-          backOffice = JSON.parse(str)
-        }
-        else {
-          window.location.reload()
-        }
+        if (typeof str === 'string') {backOffice = JSON.parse(str)}
+        else {window.location.reload()}
       }
       apis.handleCacheVersions(backOffice.versions || {});
       let landing = false;
@@ -170,7 +166,6 @@ class App extends Component {
           userInfo={userInfo}
           backOffice={backOffice}
           updateUserInfo={this.updateUserInfo.bind(this)}
-          getUserInfo={this.getUserInfo.bind(this)}
           baseUrl={baseUrl}
         />
       )

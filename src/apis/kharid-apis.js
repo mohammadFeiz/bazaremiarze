@@ -497,9 +497,9 @@ export default function kharidApis({baseUrl,helper}) {
       }
       return {result:finalResult};
     },
-    async payment(obj,{getShopById}) {
+    async payment(obj,{actionClass}) {
       let { cartId } = obj;
-      let result = getShopById(cartId).payment(obj);
+      let result = actionClass.getShopById(cartId).payment(obj);
       return {result}
     },
     async getProductFullDetail({ id, code, product },{userInfo,fixPrice,apis}) {
@@ -763,11 +763,10 @@ export default function kharidApis({baseUrl,helper}) {
       cartStorage.save({name:'cart.' + userInfo.cardCode,value:cart});
       return {result:true}
     },
-    async dargah({ amount, url },{ getUserInfo }) {
+    async dargah({ amount, url }) {
       //AIOServiceShowAlert({type:'success',text:'text',subtext:'test'})
       let res = await Axios.get(`${baseUrl}/payment/request?price=${amount}&cbu=${url}`);
       if (res.data.isSuccess) {
-        getUserInfo()
         window.location.href = res.data.data;
       }
     },

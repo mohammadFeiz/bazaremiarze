@@ -63,18 +63,6 @@ export default class ActionClass {
         let jsonUrl = UrlToJson(wrl)
         return jsonUrl.tab || 'khane'
     }
-    isAdmin = () => {
-        let { userInfo, backOffice } = this.getProps();
-        let { accessPhoneNumbers = [] } = backOffice;
-        if (userInfo.userName === '09123534314') { return true }
-        let res = false;
-        let obj = accessPhoneNumbers.find((o) => o.phoneNumber === userInfo.userName);
-        if (obj) {
-            let { access } = obj;
-            for (let prop in access) { if (access[prop] === true) { res = true; break; } }
-        }
-        return res;
-    }
     startPricing = () => {
         let { userInfo } = this.getProps();
         this.pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode, 12 * 60 * 60 * 1000)
@@ -201,7 +189,7 @@ export default class ActionClass {
         return list
     }
     openLink = (linkTo) => {
-        let { Shop_Bundle, Shop_Regular, getShopById, rsa } = this.getState();
+        let { Shop_Bundle, Shop_Regular, rsa } = this.getState();
         if (linkTo === 'Bundle') { Shop_Bundle.openCategory() }
         else if (linkTo.indexOf('category') === 0) {
             let id = linkTo.split('_')[1];
@@ -209,7 +197,7 @@ export default class ActionClass {
         }
         else if (linkTo.indexOf('spreeCampaign') === 0) {
             let id = linkTo.split('_')[1];
-            let shop = getShopById(id);
+            let shop = this.getShopById(id);
             if (!shop) { return }
             shop.openCategory();
         }
@@ -367,5 +355,59 @@ export default class ActionClass {
                 }
             })
         }
+    }
+    getGuaranteeImages = async (items) => {
+        if (!items.length) { return }
+        let { apis, images } = this.getState();
+        let itemCodes = [];
+        for (let i = 0; i < items.length; i++) {
+            let { Details = [] } = items[i];
+            for (let j = 0; j < Details.length; j++) {
+                let { Code } = Details[j];
+                if (images[Code]) { continue }
+                if (itemCodes.indexOf(Code) !== -1) { continue }
+                itemCodes.push(Code);
+            }
+        }
+        let res = await apis.request({ api: 'guaranti.daryafte_tasavire_kalahaye_garanti', parameter: itemCodes, loading: false, description: 'دریافت تصاویر کالاهای گارانتی' });
+        for (let i = 0; i < res.length; i++) {
+            images[res.ItemCode] = res.ImagesUrl;
+        }
+        this.setState({ images })
+    }
+    getGuaranteeItems = async () => {
+        let { apis, Login } = this.getState();
+        let res = await apis.request({ api: "guaranti.garantiItems", loading: false, description: 'دریافت لیست کالاهای گارانتی کاربر' });
+        if (res === false) { Login.logout(); return; }
+        //this.getGuaranteeImages(items);
+        let guaranteeExistItems = await apis.request({ api: "guaranti.kalahaye_ghabele_garanti", loading: false, description: 'کالاهای قابل گارانتی', def: [] });
+        this.setState({ guaranteeItems: res, guaranteeExistItems });
+    }
+    getBazargahOrders = async () => {
+        let { bazargahOrders, apis } = this.getState();
+        let wait_to_get = await apis.request({ api: 'bazargah.daryafte_sefareshate_bazargah', parameter: { type: 'wait_to_get' }, loading: false, description: 'دریافت سفارشات در انتظار اخذ بازارگاه' });
+        let wait_to_send = await apis.request({ api: 'bazargah.daryafte_sefareshate_bazargah', parameter: { type: 'wait_to_send' }, loading: false, description: 'دریافت سفارشات در انتظار ارسال بازارگاه' });
+        this.setState({ bazargahOrders: { ...bazargahOrders, wait_to_get, wait_to_send } })
+    }
+    getShopById = (id) => {
+        return this.getState()[`Shop_${id}`]
+    }
+    getCartItemsByProduct = (product) => {
+        let { cart } = this.getState();
+        let { cartId } = product;
+        if (!cart[cartId]) { return [] }
+        let res = [];
+        for (let i = 0; i < product.variants.length; i++) {
+            let variant = product.variants[i];
+            let cartItem = cart[cartId].items[variant.id];
+            if (cartItem) { res.push(cartItem) }
+        }
+        return res
+    }
+    removeCart = (cartId) => {
+        let { cart } = this.getState();
+        let newCart = {}
+        for (let prop in cart) {if (prop !== cartId) { newCart[prop] = cart[prop] }}
+        this.setState({ cart: newCart })
     }
 }

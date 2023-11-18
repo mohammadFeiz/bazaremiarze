@@ -95,67 +95,6 @@ export default function getSvg(type, conf = {}) {
       </svg>
     )
   }
-  if (type === 'bazargahPower') {
-    return (
-      <svg width="411" height="372" viewBox="0 0 411 372" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="411" height="372" fill="white" />
-        <rect x="61" y="43" width="289" height="286" rx="143" fill="#DEF1F9" />
-        <rect x="94.5" y="75" width="222" height="222" rx="111" fill="#C7E7F4" />
-        <circle cx="43" cy="124" r="4" fill="#005478" />
-        <circle cx="151" cy="201" r="4" fill="#00B5A5" />
-        <circle cx="348" cy="324" r="4" fill="#005478" />
-        <circle cx="115" cy="66" r="4" fill="#F15A29" />
-        <circle cx="225" cy="124" r="4" fill="#0094D4" />
-        <circle cx="348" cy="50" r="4" fill="#FDB913" />
-        <circle cx="67" cy="316" r="4" fill="#005478" />
-        <circle cx="348" cy="182" r="4" fill="#0094D4" />
-        <circle cx="225" cy="300" r="4" fill="#0094D4" />
-        <circle cx="55" cy="228" r="4" fill="#FDB913" />
-        <circle cx="300.5" cy="127.5" r="7.5" fill="#005478" />
-        <circle cx="55.5" cy="280.5" r="7.5" fill="#F15A29" />
-        <circle cx="307.5" cy="260.5" r="7.5" fill="#FDB913" />
-        <circle cx="110.5" cy="127.5" r="7.5" fill="#00B5A5" />
-        <g filter="url(#filter0_b_3331_15144)">
-          <rect x="125" y="105" width="161" height="162" rx="80.5" fill="#2BA4D8" />
-          <g filter="url(#filter1_d_3331_15144)">
-            <rect x="149.5" y="130" width="112" height="112" rx="56" fill="url(#paint0_linear_3331_15144)" shape-rendering="crispEdges" />
-            <mask id="mask0_3331_15144" style={{ maskYype: 'alpha' }} maskUnits="userSpaceOnUse" x="177" y="154" width="57" height="56">
-              <rect x="177.5" y="154" width="56" height="56" fill="#D9D9D9" />
-            </mask>
-            <g mask="url(#mask0_3331_15144)">
-              <path d="M205.5 184.042C204.761 184.042 204.139 183.789 203.633 183.284C203.128 182.778 202.875 182.137 202.875 181.359V161.817C202.875 161.117 203.128 160.495 203.633 159.95C204.139 159.406 204.761 159.134 205.5 159.134C206.278 159.134 206.92 159.406 207.425 159.95C207.931 160.495 208.183 161.117 208.183 161.817V181.359C208.183 182.137 207.921 182.778 207.396 183.284C206.871 183.789 206.239 184.042 205.5 184.042ZM205.5 203.934C202.428 203.934 199.55 203.36 196.867 202.213C194.183 201.066 191.831 199.481 189.808 197.459C187.786 195.437 186.202 193.084 185.054 190.4C183.907 187.717 183.333 184.839 183.333 181.767C183.333 179.084 183.81 176.498 184.763 174.009C185.715 171.52 187.086 169.303 188.875 167.359C189.42 166.737 190.09 166.387 190.888 166.309C191.685 166.231 192.375 166.464 192.958 167.009C193.542 167.553 193.814 168.195 193.775 168.934C193.736 169.673 193.503 170.314 193.075 170.859C191.675 172.375 190.586 174.067 189.808 175.934C189.031 177.8 188.642 179.745 188.642 181.767C188.642 186.434 190.285 190.41 193.571 193.696C196.857 196.982 200.833 198.625 205.5 198.625C210.167 198.625 214.143 196.982 217.429 193.696C220.715 190.41 222.358 186.434 222.358 181.767C222.358 179.706 221.979 177.762 221.221 175.934C220.463 174.106 219.422 172.434 218.1 170.917C217.633 170.295 217.39 169.605 217.371 168.846C217.352 168.088 217.614 167.456 218.158 166.95C218.781 166.406 219.5 166.192 220.317 166.309C221.133 166.425 221.833 166.814 222.417 167.475C224.128 169.42 225.45 171.627 226.383 174.096C227.317 176.566 227.783 179.123 227.783 181.767C227.783 184.839 227.2 187.717 226.033 190.4C224.867 193.084 223.272 195.437 221.25 197.459C219.228 199.481 216.865 201.066 214.163 202.213C211.46 203.36 208.572 203.934 205.5 203.934Z" fill="#0094D4" />
-            </g>
-            <line x1="196.5" y1="216" x2="214.5" y2="216" stroke="#A4262C" stroke-width="4" stroke-linecap="round" />
-            <rect x="150" y="130.5" width="111" height="111" rx="55.5" stroke="#EDEBE9" shape-rendering="crispEdges" />
-          </g>
-        </g>
-        <defs>
-          <filter id="filter0_b_3331_15144" x="121" y="101" width="169" height="170" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-            <feFlood floodOpacity="0" result="BackgroundImageFix" />
-            <feGaussianBlur in="BackgroundImageFix" stdDeviation="2" />
-            <feComposite in2="SourceAlpha" operator="in" result="effect1_backgroundBlur_3331_15144" />
-            <feBlend mode="normal" in="SourceGraphic" in2="effect1_backgroundBlur_3331_15144" result="shape" />
-          </filter>
-          <filter id="filter1_d_3331_15144" x="129.5" y="115" width="152" height="152" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-            <feFlood floodOpacity="0" result="BackgroundImageFix" />
-            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
-            <feOffset dy="5" />
-            <feGaussianBlur stdDeviation="10" />
-            <feComposite in2="hardAlpha" operator="out" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.43 0" />
-            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_3331_15144" />
-            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_3331_15144" result="shape" />
-          </filter>
-          <linearGradient id="paint0_linear_3331_15144" x1="205.093" y1="130" x2="176.938" y2="234.407" gradientUnits="userSpaceOnUse">
-            <stop stopColor="white" />
-            <stop offset="1" stopColor="#EDEBE9" />
-          </linearGradient>
-        </defs>
-      </svg>
-
-
-    )
-  }
   if (type === 'phone') {
     return (
       <svg style={conf.style} width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -54,21 +54,18 @@ export default function walletApis({baseUrl,helper}) {
       let result = !res.data.isSuccess?res.data.message:true;
       return {result}
     },
-    async bardasht(parameter,{getUserInfo}) {
+    async bardasht(parameter) {
       let { amount, card } = parameter;
       let res = await Axios.post(`${baseUrl}/WithdrawRequest`, { "creditCardId": card, "amount": amount })
-      getUserInfo()
       return {result:res.data.isSuccess}
     },
-    async variz({ amount },{ getUserInfo }) {
+    async variz({ amount }) {
       let res = await Axios.post(`${baseUrl}/payment/request`, {
         "Price": amount,
         "CallbackUrl": baseUrl === 'https://retailerapp.bbeta.ir/api/v1' ? 'https://uiretailerapp.bbeta.ir/' : 'https://bazar.miarze.com/'
       });
 
       if (res.data.isSuccess) {
-        getUserInfo()
-
         window.location.href = res.data.data;
       }
     }

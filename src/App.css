@@ -150,44 +150,6 @@ body{
 .theme-popup-bg{
 	height:100%;
 }
-.opacity-100 .popup-bg{
-	background:rgb(248, 248, 248,1);
-}
-.opacity-90 .popup-bg{
-	background:rgb(248, 248, 248,0.9);
-}
-.opacity-80 .popup-bg{
-	background:rgb(248, 248, 248,0.8);
-}
-.opacity-70 .popup-bg{
-	background:rgb(248, 248, 248,0.7);
-}
-.opacity-60 .popup-bg{
-	background:rgb(248, 248, 248,0.6);
-}
-.opacity-50 .popup-bg{
-	background:rgb(248, 248, 248,0.5);
-}
-.opacity-100 .rsa-sidemenu{
-	background:rgba(59, 85, 165, 1);
-}
-.opacity-90 .rsa-sidemenu{
-	background:rgba(59, 85, 165, 0.9);
-}
-.opacity-80 .rsa-sidemenu{
-	background:rgba(59, 85, 165, 0.8);
-}
-.opacity-70 .rsa-sidemenu{
-	background:rgba(59, 85, 165, 0.7);
-}
-.opacity-60 .rsa-sidemenu{
-	background:rgba(59, 85, 165, 0.6);
-}
-.opacity-50 .rsa-sidemenu{
-	background:rgba(59, 85, 165, 0.5);
-}
-
-
 
 .bottom-menu{
     background:#fff;

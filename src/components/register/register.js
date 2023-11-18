@@ -214,15 +214,6 @@ export default class Register extends Component{
         }
     }
     
-    componentDidMount(){
-        // $(this.dom.current).animate({
-        //     height: '100%',
-        //     width: '100%',
-        //     left:'0%',
-        //     top:'0%',
-        //     opacity:1
-        // }, 300);
-    }
     async changeAddress(latitude,longitude){
         //debugger;
         let {mode} = this.props;

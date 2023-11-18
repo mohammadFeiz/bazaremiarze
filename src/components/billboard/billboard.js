@@ -16,14 +16,14 @@ export default class Billboard extends Component{
         this.setState({homeBillboards})
     }
     getItems(){
-        let {backOffice,userInfo,Shop_Bundle,spreeCampaignIds = [],getShopById,actionClass} = this.context;
+        let {backOffice,userInfo,Shop_Bundle,spreeCampaignIds = [],actionClass} = this.context;
         let {renderIn} = this.props;
         let {homeBillboards} = this.state;
         let items = [];
         if(renderIn === 'buy'){
             for(let i = 0; i < spreeCampaignIds.length; i++){
                 let spreeCampaignId = spreeCampaignIds[i]
-                let Shop = getShopById(spreeCampaignId);
+                let Shop = actionClass.getShopById(spreeCampaignId);
                 let {billboard,icon,name,id} = Shop;
                 items.push({name,billboard,icon,onClick:()=>Shop.openCategory()})
             }

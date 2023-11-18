@@ -196,14 +196,14 @@ export default class ShopClass {
     }
     payment = async (obj) => {
         //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
-        let { rsa, removeCart, actionClass } = this.getAppState();
+        let { rsa, actionClass } = this.getAppState();
         let result;
         if (this.cartId === 'Bundle') { result = obj.SettleType === 16 ? await this.pardakht(obj) : await this.sabt(obj) }
         else { result = await this.sabt(obj); }
         if (typeof result === 'object') {
             let { orderNumber } = result;
             rsa.removeModal('all');
-            removeCart(this.cartId)
+            actionClass.removeCart(this.cartId)
             actionClass.openPopup('sefareshe-ersal-shode-baraye-vizitor', { orderNumber });
             return true
         }

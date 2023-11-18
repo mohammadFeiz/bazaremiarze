@@ -181,11 +181,6 @@ export default class Bazargah extends Component{
             />
         )
     }
-    // bazargahPower_layout(){
-    //     let {bazargahPower,bazargahPowerStoragte} = this.context;
-    //     if(bazargahPower){return false}
-    //     return {html:getSvg('bazargahPower'),onClick:()=>bazargahPowerStoragte('set')}
-    // }
     render(){
         if(this.props.renderInHome){return this.renderInHome()}
         return (
@@ -193,7 +188,6 @@ export default class Bazargah extends Component{
                 layout={{
                     className:'page-bg',style:{width:'100%'},
                     column:[
-                        //this.bazargahPower_layout(),
                         this.tabs_layout(),
                         {size:12},
                         this.wait_to_get_layout(),
@@ -276,14 +270,14 @@ class JoziateSefaresheBazargah extends Component{
         if(key === 'submit'){return type === 'wait_to_get' || sendStep < 3}
     }
     async onSubmit(){
-        let {apis,getBazargahOrders} = this.context;
+        let {apis,actionClass} = this.context;
         let {order} = this.props;
         let {type,orderId} = order;
         if(type === 'wait_to_get'){
             apis.request({
                 api:'bazargah.akhze_sefaresh',parameter:{orderId},description:'اخذ سفارش',message:{success:true},
                 onSuccess:async ()=>{
-                    await getBazargahOrders();
+                    await actionClass.getBazargahOrders();
                     this.props.onClose(order)
                 }
             })

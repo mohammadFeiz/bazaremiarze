@@ -13,7 +13,7 @@ export default class CartButton extends Component{
         actionClass.openPopup('cart',product.cartId)
     }
     render(){
-        let {cart,actionClass,getCartItemsByProduct} = this.context;
+        let {cart,actionClass} = this.context;
         let {variantId,product,renderIn,onChange = ()=>{}} = this.props;
         if(!product){console.error(`CartButton missing product props`)}
         if(!product.cartId){console.error(`CartButton missing cartId in product props`)}
@@ -28,7 +28,7 @@ export default class CartButton extends Component{
             if(['product','cart','category'].indexOf(renderIn) === -1){
                 console.error('missing varinatId in ProductCard Component due render in cart page or product page')
             }
-            cartItems = getCartItemsByProduct(product);
+            cartItems = actionClass.getCartItemsByProduct(product);
         }
         return (
             <RVD

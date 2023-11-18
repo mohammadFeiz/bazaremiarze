@@ -37,7 +37,7 @@ export default class Cart extends Component{
       this.setState({activeTabId,tabs})
     }
     tabs_layout(){
-      let {cart,getShopById} = this.context;
+      let {cart,actionClass} = this.context;
       let {activeTabId,tabs} = this.state;
       return {
         html:(
@@ -47,7 +47,7 @@ export default class Cart extends Component{
             style={{marginBottom:12,fontSize:12}}
             value={activeTabId} 
             optionAfter={(option)=><div className='tab-badge'>{Object.keys(cart[option].items).length}</div>}
-            optionText={(option)=>getShopById(option).name}
+            optionText={(option)=>actionClass.getShopById(option).name}
             optionValue='option'
             onChange={(activeTabId)=>this.setState({activeTabId})}
           />
@@ -67,17 +67,17 @@ export default class Cart extends Component{
     }
     products_layout(){
       let {activeTabId} = this.state;
-      let {getShopById} = this.context;
+      let {actionClass} = this.context;
       if(!activeTabId){return this.empty_layout()}
-      let productCards = getShopById(activeTabId).getCartProducts('cart');
+      let productCards = actionClass.getShopById(activeTabId).getCartProducts('cart');
       if(!productCards.length){return this.empty_layout()}
       return {flex: 1,className:'ofy-auto',gap:12,column:productCards.map((card) => {return {html:card}})}
     }
     payment_layout(){
       let {activeTabId} = this.state;
       if(!activeTabId){return false}
-      let {getShopById} = this.context;
-      let {payment} = getShopById(activeTabId).getAmounts(undefined,'cart');
+      let {actionClass} = this.context;
+      let {payment} = actionClass.getShopById(activeTabId).getAmounts(undefined,'cart');
       let {continued} = this.state;
       return {
         size: 72,className: "bgFFF p-h-12 theme-box-shadow",
@@ -104,9 +104,9 @@ export default class Cart extends Component{
     continue(){
       let {activeTabId} = this.state;
       if(!activeTabId){return false}
-      let {getShopById,rsa} = this.context;
+      let {actionClass,rsa} = this.context;
       rsa.removeModal('all');
-      getShopById(activeTabId).edameye_farayande_kharid()
+      actionClass.getShopById(activeTabId).edameye_farayande_kharid()
     }
     render(){
         return (

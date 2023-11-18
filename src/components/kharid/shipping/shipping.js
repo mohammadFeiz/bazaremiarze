@@ -115,8 +115,8 @@ export default class Shipping extends Component {
   }
   products_layout() {
     let { cartId } = this.props;
-    let { getShopById } = this.context;
-    let cards = getShopById(cartId).getCartProducts('shipping', { ...this.state });
+    let { actionClass } = this.context;
+    let cards = actionClass.getShopById(cartId).getCartProducts('shipping', { ...this.state });
     return {
       column: [
         { size: 36, align: 'v', className: 'theme-medium-font-color fs-14 bold p-h-12', html: 'محصولات' },
@@ -161,8 +161,8 @@ export default class Shipping extends Component {
   }
   amount_layout() {
     let { cartId } = this.props;
-    let { getShopById } = this.context;
-    let Shop = getShopById(cartId);
+    let { actionClass } = this.context;
+    let Shop = actionClass.getShopById(cartId);
     let { address, giftCodeInfo, discountCodeInfo } = this.state;
     let { PayDueDate, SettleType, DeliveryType, PaymentTime } = this.state;
     let { getFactorItems, getPaymentButtonText } = Shop;

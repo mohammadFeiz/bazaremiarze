@@ -25,7 +25,6 @@ export default class Main extends Component {
     super(props);
     let { baseUrl,Logger } = this.props;
     props.apis.setProperty('getState',()=>{return {...this.state}});
-    let rsa = new RSA({rtl:true,maxWidth:770})
     let actionClass = new ActionClass({
       getSelf:()=>this,
       getState:()=>this.state,
@@ -33,7 +32,57 @@ export default class Main extends Component {
       setState:(obj)=>{
         for(let prop in obj){this.state[prop] = obj[prop]}
         this.setState(obj)
-      }})
+      }
+    })
+    let rsa = new RSA({
+      rtl:true,maxWidth:770,id:'bazarmiarzersa',
+      title:(nav)=>actionClass.getAppTitle(nav),
+      nav:{
+        items:()=>{
+          let {backOffice,userInfo} = this.props;
+          return [
+            { text: "خانه", icon: () => getSvg(19), id: "khane" },
+            { text: "خرید", icon: () => getSvg('buy'), id: "kharid" },
+            { text: "بازارگاه", icon: () => getSvg(20), id: "bazargah" },
+            { text: "ویترین", icon: () => getSvg('vitrin'), id: "vitrin", show: () => !!backOffice.activeManager.vitrin },
+            { text: ()=>`${userInfo.firstName} ${userInfo.lastName}`,marquee:true, icon: () => getSvg(21), id: "profile" },
+          ]
+        },
+        id:actionClass.getInitialNavId(),
+        header:()=><div className='w-100 align-vh m-v-16'><img src={Logo5} alt='' width={200} /></div>
+      },
+      side:{
+        items:()=>{
+          let {rsa,actionClass,Login} = this.state;
+          let {userInfo,backOffice} = this.props;
+          let {setNavId} = rsa;
+          let {openPopup} = actionClass;
+          let {logout} = Login;
+          let {slpcode,isAdmin} = userInfo;
+          let {activeManager} = backOffice;
+          let icon = (path)=> <Icon path={path} size={0.8} />
+          return [
+            { text: 'بازارگاه', icon: () => icon(mdiCellphoneMarker), onClick: () => setNavId('bazargah') },
+            { text: 'پیگیری سفارش خرید', icon: () => icon(mdiClipboardList), onClick: () => openPopup('peygiriye-sefareshe-kharid') },
+            { text: 'درخواست گارانتی', icon: () => icon(mdiShieldCheck), onClick: () => openPopup('sabteGarantiJadid'), show: () => !!activeManager.garanti && slpcode },
+            { text: 'لیست قیمت', icon: () => icon(mdiCash), onClick: () => openPopup('priceList'),show: ()=>!!activeManager.priceList},
+            { text: 'پنل ادمین', icon: () => icon(mdiSecurity), onClick: () => openPopup('admin-panel'), show: () => !!isAdmin },
+            { text: 'رفتار سیستم', icon: () => icon(mdiSkullScan), onClick: () => openPopup('logs') },
+            { text: 'خروج از حساب کاربری', icon: () => icon(mdiExitToApp), className: 'colorFDB913', onClick: () => logout() }  
+          ]
+        },
+        header:() => <div style={{margin:'24px 0'}}><img src={Logo1} alt='' height={48}/></div>,
+      },
+      headerContent:({ navId }) => <Header type='page' navId={navId} />,
+      body:({ navId }) => {
+        if (navId === "khane") { return <Home />; }
+        if (navId === "kharid") { return <Buy />; }
+        if (navId === "bazargah") { return <Bazargah />; }
+        if (navId === "vitrin") { return <Vitrin/>; }
+        if (navId === "profile") { return <Profile />; }
+      },
+    })
+    
     actionClass.manageUrl();
     this.state = {
       actionClass,
@@ -91,44 +140,7 @@ export default class Main extends Component {
     let {setNavId} = rsa;
     return (
       <appContext.Provider value={this.getContext()}>
-        {rsa.render({
-          className:`rvd-rtl theme-${theme}`,
-          title:(nav) => nav.id === 'khane' ? <>{getSvg('mybrxlogo', { className: 'rvd-hide-sm rvd-hide-md rvd-hide-lg' })}<div className='rvd-hide-xs'>{nav.text}</div></> : (nav.id === 'profile' ? 'پروفایل' : nav.text),
-          navs:[
-            { text: "خانه", icon: () => getSvg(19), id: "khane" },
-            { text: "خرید", icon: () => getSvg('buy'), id: "kharid" },
-            { text: "بازارگاه", icon: () => getSvg(20), id: "bazargah" },
-            { text: "ویترین", icon: () => getSvg('vitrin'), id: "vitrin", show: () => !!backOffice.activeManager.vitrin },
-            { text: ()=>`${userInfo.firstName} ${userInfo.lastName}`,marquee:true, icon: () => getSvg(21), id: "profile" },
-          ],
-          side:{
-            items:[
-              { text: 'بازارگاه', icon: () => <Icon path={mdiCellphoneMarker} size={0.8} />, onClick: () => setNavId('bazargah') },
-              { text: 'پیگیری سفارش خرید', icon: () => <Icon path={mdiClipboardList} size={0.8} />, onClick: () => actionClass.openPopup('peygiriye-sefareshe-kharid') },
-              { text: 'درخواست گارانتی', icon: () => <Icon path={mdiShieldCheck} size={0.8} />, onClick: () => actionClass.openPopup('sabteGarantiJadid'), show: () => !!backOffice.activeManager.garanti && userInfo.slpcode },
-              { text: 'لیست قیمت', icon: () => <Icon path={mdiCash} size={0.8} />, onClick: () => actionClass.openPopup('priceList'),show: ()=>!!backOffice.activeManager.priceList},
-              { text: 'پنل ادمین', icon: () => <Icon path={mdiSecurity} size={0.8} />, onClick: () => actionClass.openPopup('admin-panel'), show: () => !!userInfo.isAdmin },
-              { text: 'رفتار سیستم', icon: () => <Icon path={mdiSkullScan} size={0.8} />, onClick: () => actionClass.openPopup('logs') },
-              { text: 'خروج از حساب کاربری', icon: () => <Icon path={mdiExitToApp} size={0.8} />, className: 'colorFDB913', onClick: () => Login.logout() }  
-            ],
-            header:() => <div style={{margin:'24px 0'}}><img src={Logo1} alt='' height={48}/></div>,
-            attrs:{
-              className:`theme-${theme}`
-            }
-          },
-          navHeader:() => <div className='w-100 align-vh m-v-16'><img src={Logo5} alt='' width={200} /></div>,
-          header:({ navId }) => <Header type='page' navId={navId} />,
-          navId:actionClass.getInitialNavId(),
-          body:({ navId, setNavId }) => {
-            if (navId === "khane") { return <Home />; }
-            if (navId === "kharid") { return <Buy />; }
-            if (navId === "bazargah") { return <Bazargah />; }
-            if (navId === "vitrin") { return <Vitrin/>; }
-            if (navId === "profile") { return <Profile />; }
-          },
-          splash:() => <Splash />,
-          splashTime:2000
-        })}
+        {rsa.render()}
       </appContext.Provider>
     );
   }

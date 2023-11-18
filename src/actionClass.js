@@ -3,6 +3,7 @@ import Pricing from './pricing';
 import ShopClass from './shop-class';
 import { Icon } from '@mdi/react';
 import { mdiCart } from "@mdi/js";
+import getSvg from './utils/getSvg';
 import Register from './components/register/register';
 import PriceList from './popups/price-list/price-list';
 import BackOffice from './back-office-panel';
@@ -24,6 +25,13 @@ export default class ActionClass {
         this.getState = getState;
         this.getProps = getProps;
         this.setState = setState;
+    }
+    getAppTitle = (nav) => {
+        if(nav.id === 'khane'){
+            return <>{getSvg('mybrxlogo', { className: 'rvd-hide-sm rvd-hide-md rvd-hide-lg' })}<div className='rvd-hide-xs'>{nav.text}</div></>
+        }
+        else if(nav.id === 'profile'){return 'پروفایل'}
+        else{return nav.text}
     }
     addAnaliticsHistory = ({ url, title, userId }) => {
         window.dataLayer = window.dataLayer || [];

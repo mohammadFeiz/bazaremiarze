@@ -17,7 +17,7 @@ import './aio-input.css';
 const AICTX = createContext();
 export default class AIOInput extends Component {
     static defaults = { 
-        validate: false, mapApiKeys: {}, popover: {} 
+        validate: false, mapApiKeys: {}, popover: {}
     };
     constructor(props) {
         super(props);
@@ -166,7 +166,7 @@ export default class AIOInput extends Component {
                 eval('value = ' + prop);
                 return value;
             }
-            catch { prop = prop }
+            catch {}
         }
         if (typeof prop === 'function' && !preventFunction) {
             let res = prop(option, this.props);
@@ -409,7 +409,7 @@ class Popover {
             let { position = 'popover', header } = popover;
             return {
                 onClose: () => this.toggle(false),
-                rtl, header, position, header,
+                rtl, header, position,
                 backdrop: this.getBackdrop(popover),
                 body,
                 popover: this.getPopover(popover, dom),
@@ -623,7 +623,7 @@ class Input extends Component {
             }
             value = res;
         }
-        catch{value = value}
+        catch{}
         return value
     }
     change(value, onChange) {
@@ -799,7 +799,7 @@ class Form extends Component {
         if (typeof field === 'string') {
             if (field.indexOf('value.') !== -1 /*|| field.indexOf('props.') !== -1*/) {
                 try { eval(`a = ${field}`); }
-                catch (err) { a = a; }
+                catch{}
             }
             else { a = field }
         }
@@ -1519,7 +1519,7 @@ class Layout extends Component {
     render() {
         let { option } = this.props;
         this.properties = this.getProperties();
-        let { checked, checkIcon = AIOInput.defaults.checkIcon, before, text, subtext, after, caret, placeholder, loading, justify,type,draggable } = this.properties;
+        let { checked, checkIcon = AIOInput.defaults.checkIcon, before, after, caret, loading,type,draggable } = this.properties;
         let content = (
             <>
                 {draggable && this.getDragIcon()}
@@ -1539,7 +1539,6 @@ class Layout extends Component {
 class CheckIcon extends Component {
     static contextType = AICTX;
     render() {
-        let { gap } = this.context;
         let { checked, checkIcon = [] } = this.props;
         if (checked === undefined) { return null }
         if (typeof checkIcon === 'function') { return checkIcon(checked) }
@@ -1854,14 +1853,14 @@ class DPBodyDay extends Component {
         var daysLength = AIODate().getMonthDaysLength({ date: [activeDate.year, activeDate.month] });
         let weekDays = AIODate().getWeekDays({ calendarType });
         return (<>
-            {weekDays.map((weekDay, i) => <DPCell_Weekday key={'weekday' + i} weekDay={weekDay} />)}
+            {weekDays.map((weekDay, i) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
             {new Array(firstDayWeekDayIndex).fill(0).map((o, i) => <div key={'space' + i} className='aio-input-datepicker-space aio-input-datepicker-cell' style={{ background: theme[1] }}></div>)}
             {new Array(daysLength).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, activeDate.month, i + 1]} />)}
             {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-datepicker-space aio-input-datepicker-cell' style={{ background: theme[1] }}></div>)}
         </>)
     }
 }
-class DPCell_Weekday extends Component {
+class DPCellWeekday extends Component {
     static contextType = DPContext;
     render() {
         let { properties, translate } = this.context;
@@ -2088,9 +2087,9 @@ export class Slider extends Component {
         this.moved = true;
     }
     increaseAll(step = this.props.step) {
-        var end = this.props.end;
-        var { max = end } = this.props;
-        var offset = Math.min(step, this.getValue(max) - this.value[this.value.length - 1]);
+        let end = this.props.end;
+        let { max = end } = this.props;
+        let offset = Math.min(step, this.getValue(max) - this.value[this.value.length - 1]);
         for (var i = 0; i < this.value.length; i++) {
             this.value[i] += offset;
             this.value[i] = this.fix(this.value[i])
@@ -2099,12 +2098,12 @@ export class Slider extends Component {
     }
     mouseDown(e, index, type) {
         e.preventDefault();
-        var { start, end, min = start, max = end, onChange, disabled } = this.props;
+        let { start, end, min = start, max = end, onChange, disabled } = this.props;
         if (!onChange || disabled) { return }
-        var { x, y } = this.getClient(e), dom = $(this.dom.current);
-        var pointContainers = dom.find('.aio-slider-point-container');
-        var size = dom.find('.aio-slider-line')[this.oriention === 'horizontal' ? 'width' : 'height']();
-        var length = this.value.length;
+        let { x, y } = this.getClient(e), dom = $(this.dom.current);
+        let pointContainers = dom.find('.aio-slider-point-container');
+        let size = dom.find('.aio-slider-line')[this.oriention === 'horizontal' ? 'width' : 'height']();
+        let length = this.value.length;
         this.eventHandler('window', 'mousemove', $.proxy(this.mouseMove, this));
         this.eventHandler('window', 'mouseup', $.proxy(this.mouseUp, this));
         this.moved = false;
@@ -2114,9 +2113,9 @@ export class Slider extends Component {
             let pointContainer = pointContainers.eq(index);
             pointContainer.css({ zIndex: 100 });
             pointContainer.find('.aio-slider-point').addClass('active');
-            var current = this.value[index];
-            var before = index === 0 ? min : this.value[index - 1];
-            var after = index === this.value.length - 1 ? max : this.value[index + 1]
+            let current = this.value[index];
+            let before = index === 0 ? min : this.value[index - 1];
+            let after = index === this.value.length - 1 ? max : this.value[index + 1]
             this.startOffset = {x, y, size, index: [index], value: [current],startLimit: before - current, endLimit: after - current}
         }
         else {
@@ -2139,9 +2138,9 @@ export class Slider extends Component {
                 }
             }
             else {
-                var point1 = this.value[index - 1], point2 = this.value[index];
-                var before = index === 1 ? min : this.value[index - 2];//مقدار قبلی رنج
-                var after = index === length - 1 ? max : this.value[index + 1]; //مقدار بعدی رنج
+                let point1 = this.value[index - 1], point2 = this.value[index];
+                let before = index === 1 ? min : this.value[index - 2];//مقدار قبلی رنج
+                let after = index === length - 1 ? max : this.value[index + 1]; //مقدار بعدی رنج
                 this.startOffset = {
                     x, y, size, index: [index - 1, index],
                     value: [point1, point2], startLimit: before - point1, endLimit: after - point2,
@@ -2197,7 +2196,7 @@ export class Slider extends Component {
     render() {
         this.value = this.getValidValue();
         this.context = this.getContext();
-        var { labelStep, scaleStep, attrs } = this.props;
+        var { labelStep, scaleStep } = this.props;
         var percents = this.getPercents();
         return (
             <SliderContext.Provider value={this.context}>
@@ -2219,7 +2218,7 @@ Slider.defaultProps = {
     direction: 'right', editLabel: (a) => a, labelStyle: {}, labelRotate: 0,
     value: [0], scaleStyle: {}, style: () => { },
     start: 0, end: 100, step: 1, activegetPointStyle: {}, getText: () => { return '' }, attrs: {},
-    pointStyle: {}, lineStyle: {}, fillStyle: {}, valueStyle: {}, textStyle: {}, editValue: (value, index) => value, textStyle: () => { }
+    pointStyle: {}, lineStyle: {}, fillStyle: {}, valueStyle: {}, editValue: (value, index) => value, textStyle: () => { }
 }
 class SliderLine extends Component {
     static contextType = SliderContext;
@@ -2304,7 +2303,7 @@ class SliderLabels extends Component {
         $(window).on('resize', this.update.bind(this))
     }
     getLabelsByStep(labelStep) {
-        var { start, label = {}, end, getStartByStep } = this.context;
+        var { start, end, getStartByStep } = this.context;
         var Labels = [];
         var value = getStartByStep(start, labelStep);
         var key = 0;
@@ -2318,21 +2317,21 @@ class SliderLabels extends Component {
     }
     getLabels(labelStep) { return labelStep.map((o) => <SliderLabel key={o} value={o} />) }
     update() {
-        var container = $(this.dom.current);
-        var labels = container.find('.aio-slider-label div');
+        let container = $(this.dom.current);
+        let labels = container.find('.aio-slider-label div');
         if (!labels.length) { return; }
-        var { direction, label = {} } = this.context;
-        var firstLabel = labels.eq(0);
-        var firstLabelThickness = firstLabel.attr('datarotated') === 'yes' ? 'height' : 'width';
+        let { direction } = this.context;
+        let firstLabel = labels.eq(0);
+        let firstLabelThickness = firstLabel.attr('datarotated') === 'yes' ? 'height' : 'width';
         if (direction === 'right') {
-            var end = firstLabel.offset().left + firstLabel[firstLabelThickness]();
-            for (var i = 1; i < labels.length; i++) {
-                var label = labels.eq(i);
+            let end = firstLabel.offset().left + firstLabel[firstLabelThickness]();
+            for (let i = 1; i < labels.length; i++) {
+                let label = labels.eq(i);
                 let thickness = label.attr('datarotated') === 'yes' ? 'height' : 'width';
                 label.css({ display: 'block' })
-                var left = label.offset().left
+                let left = label.offset().left
 
-                var width = label[thickness]();
+                let width = label[thickness]();
                 if (left < end + 5) {
                     label.css({ display: 'none' })
                 }
@@ -2341,13 +2340,13 @@ class SliderLabels extends Component {
         }
         else if (direction === 'left') {
             var end = firstLabel.offset().left;
-            for (var i = 1; i < labels.length; i++) {
-                var label = labels.eq(i);
+            for (let i = 1; i < labels.length; i++) {
+                let label = labels.eq(i);
                 let thickness = label.attr('datarotated') === 'yes' ? 'height' : 'width';
                 label.css({ display: 'block' })
-                var left = label.offset().left
-                var width = label[thickness]();
-                var right = left + width;
+                let left = label.offset().left
+                let width = label[thickness]();
+                let right = left + width;
                 if (right > end - 5) {
                     label.css({ display: 'none' })
                 }
@@ -2538,7 +2537,8 @@ class List extends Component {
         clearInterval(this.interval);
         this.moved = false;
         this.isDown = true;
-        var [x, y] = this.getClient(e);
+        let client = this.getClient(e);
+        let y = client[1]
         this.setStyle({ transition: 'unset' });
         let top = this.getTop();
         var index = this.getIndexByTop(top);
@@ -2559,7 +2559,8 @@ class List extends Component {
     }
     mouseMove(e) {
         this.moved = true;
-        var [x, y] = this.getClient(e);
+        var client = this.getClient(e);
+        let y = client[1];
         var offset = y - this.so.y;
         if (this.lastY === undefined) { this.lastY = y }
         this.deltaY = y - this.lastY;
@@ -2737,7 +2738,7 @@ class MapUnit extends Component {
     }
     //maptype: "dreamy" | 'standard-day'  
     init() {
-        let { mapApiKeys, onChange, popup, isPopup, mapConfig = {}, disabled, attrs = {} } = this.props;
+        let { mapApiKeys, onChange, mapConfig = {}, disabled, attrs = {} } = this.props;
         let { marker = true, traffic = false, zoomControl = false, maptype = 'dreamy-gold', poi = true } = mapConfig;
         let { value, zoom } = this.state;
         let config = {
@@ -2782,8 +2783,6 @@ class MapUnit extends Component {
         else { this.init() }
     }
     componentDidUpdate() {
-        let { mapConfig = {} } = this.props;
-        let { zoom: pzoom } = mapConfig;
         let { prevValue, prevZoom: szoom } = this.state;
         let { value } = this.props;
         if (
@@ -3011,7 +3010,7 @@ export function AIOValidation(props) {
             return lang === 'fa' ? dict[text] : text
         },
         getMessage(target, { be, validation, unit = '' }) {
-            let [a, b, params = {}] = validation;
+            let params = validation[2] || {}
             let { title = props.title, target: targetPresentation = target, message } = params;
             if (message) { return message }
             return `${title} ${this.translate(be)} ${JSON.stringify(targetPresentation)} ${unit}` + (props.lang === 'fa' ? ' باشد' : '')
@@ -3022,7 +3021,7 @@ export function AIOValidation(props) {
             else if (target === 'letter') { if (!/[a-zA-Z]/.test(value)) { return this.getMessage('letter', config) } }
             else if (target === 'uppercase') { if (!/[A-Z]/.test(value)) { return this.getMessage('uppercase', config) } }
             else if (target === 'lowercase') { if (!/[a-z]/.test(value)) { return this.getMessage('lowercase', config) } }
-            else if (target === 'symbol') { if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(value)) { return this.getMessage('symbol', config) } }
+            else if (target === 'symbol') { if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(value)) { return this.getMessage('symbol', config) } }
             else if (typeof target.test === 'function') { if (!target.test(value)) { return this.getMessage(target.toString(), config) } }
             else { if (value.indexOf(target) === -1 && target !== undefined) { return this.getMessage(target, config) } }
         },
@@ -3032,7 +3031,7 @@ export function AIOValidation(props) {
             else if (target === 'letter') { if (/[a-zA-Z]/.test(value)) { return this.getMessage('letter', config) } }
             else if (target === 'uppercase') { if (/[A-Z]/.test(value)) { return this.getMessage('uppercase', config) } }
             else if (target === 'lowercase') { if (/[a-z]/.test(value)) { return this.getMessage('lowercase', config) } }
-            else if (target === 'symbol') { if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(value)) { return this.getMessage('symbol', config) } }
+            else if (target === 'symbol') { if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(value)) { return this.getMessage('symbol', config) } }
             else if (typeof target.test === 'function') { if (target.test(value)) { return this.getMessage(target.toString(), config) } }
             else { if (value.indexOf(target) !== -1) { return this.getMessage(target, config) } }
         },

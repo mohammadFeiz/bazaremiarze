@@ -12,7 +12,7 @@ export function getMainProperties(props,getProp,types){
     let style = p('style');
     let onClick = p('onClick',undefined,true);
     let attrs = {...p('attrs',{})};
-    let justify = {...p('justify')};
+    let justify = p('justify');
     if(className){attrs.className = className}
     if(style){attrs.style = style}
     if(onClick){attrs.onClick = onClick}
@@ -20,7 +20,6 @@ export function getMainProperties(props,getProp,types){
         props:{...props},
         value,type,rtl,loading,disabled:loading || disabled,attrs,justify,
         onChange: p('onChange',undefined,true),
-        justify: p('justify'),
         text: p('text'),
         before: p('before'),after: p('after'),subtext: p('subtext'),label: p('label'),
         className: p('className'),style: p('style')
@@ -242,36 +241,36 @@ export class AIOInputValidate {
         if (error) { return error }
     }
     getValidateObject = (type) => {
-        let options = 'array|undefined', optionText = 'any', optionValue = 'any', optionBefore = 'any', optionAfter = 'any', optionSubtext = 'any', optionDisabled = 'any', optionAttrs = 'any', optionCheckIcon = 'any';
+        let options = 'array|undefined', optionText = 'any', optionValue = 'any', optionBefore = 'any', optionAfter = 'any', optionSubtext = 'any', optionDisabled = 'any', optionAttrs = 'any', optionCheckIcon = 'any',optionClassName = 'any',optionStyle = 'any';
         let style = 'function|object|undefined',disabled = 'boolean|undefined',subtext = 'number|string|function';
         let dic = {
             text: {
                 type: '"text"', value: 'string|number|undefined',inputAttrs: "object|undefined",placeholder: 'any',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle,
                 justNumber: "boolean|array|undefined", maxLength: 'number|undefined', filter: 'array',
                 before: 'any', after: 'any', subtext,caret: 'any',popover: 'object|undefined',disabled, loading: 'any',
             },
             textarea: {
                 type: '"textarea"', value: 'string|number|undefined',maxLength: 'number|undefined',popover: 'object|undefined',filter:'array',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,justNumber: "boolean|array|undefined", 
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle,
                 inputAttrs: "object|undefined",disabled,placeholder: 'any',caret: 'any',before: 'any', after: 'any', subtext,loading: 'any',
             },
             number: {
                 type: '"number"',swip: 'boolean|undefined',popover: 'object|undefined',placeholder: 'any',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle,
                 inputAttrs: "object|undefined",value: '""|number|undefined',caret: 'any',before: 'any', after: 'any', subtext,disabled, loading: 'any',
             },
             radio: {
                 type: '"radio"', value: 'any',multiple: 'boolean|undefined',before: 'any', after: 'any', subtext,disabled, loading: 'any',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle
             },
             tabs: {
-                type: '"tabs"', value: 'any',before: 'any', after: 'any', subtext,disabled, loading: 'any',optionAttrs: 'any',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
+                type: '"tabs"', value: 'any',before: 'any', after: 'any', subtext,disabled, loading: 'any',
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle
             },
             multiselect: {
                 type: '"multiselect"', value: 'array|undefined',before: 'any', after: 'any', subtext,text: 'any',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle,
                 popover: 'object|undefined',hideTags: 'boolean|undefined',search: 'boolean|undefined',onSwap:'function|undefined',
                 caret: 'any',disabled, loading: 'any',optionTagBefore: 'any', optionTagAfter: 'any', optionTagAttrs: 'any',
             },
@@ -291,11 +290,10 @@ export class AIOInputValidate {
             },
             select: {
                 type: '"select"', value: 'number|string|undefined',
-                caret: 'any',placeholder: 'any',options: 'array', optionText: 'any', optionValue: 'any',
-                search: 'boolean|undefined',optionAttrs: 'function|string|undefined|object',disabled, loading: 'any',
-                before: 'any', after: 'any', subtext,optionAttrs: 'any',popover: 'object|undefined',onSwap: 'function|undefined',
-                optionClose: 'any',optionChecked: 'string|function|boolean|undefined',optionDisabled: 'any',optionCheckIcon: 'any',
-                optionBefore: 'any', optionAfter: 'any', optionSubtext: 'string|number|function|undefined'
+                caret: 'any',placeholder: 'any',
+                search: 'boolean|undefined',disabled, loading: 'any',
+                before: 'any', after: 'any', subtext,popover: 'object|undefined',onSwap: 'function|undefined',
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle
             },
             file: {
                 type: '"file"', value: 'any',multiple: 'boolean',before: 'any', after: 'any', subtext,
@@ -371,3 +369,35 @@ export class AIOInputValidate {
         }
     }
 } 
+
+export function getInput(type,input,formItem){
+    function getOptions(type){
+        return {
+            militaryservice:()=>[{text:'مشمول',value:'mashmool'},{text:'معاف',value:'moaf'},{text:'پایان خدمت',value:'payan_khedmat'}],
+            gender:()=>[{text:'آقا',value:'male'},{text:'خانم',value:'female'}],
+            married:()=>[{text:'مجرد',value:false},{text:'متاهل',value:true}],
+            
+        }[type]()
+    }
+    return {
+        fullname:()=>{return {input:{type:'text',...input},label:'نام و نام خانوادگی',field:'value.fullname',...formItem,validations:[['required']]}},
+        firstname:()=>{return {input:{type:'text',...input},label:'نام',field:'value.firstname',...formItem,validations:[['required']]}},
+        lastname:()=>{return {input:{type:'text',...input},label:'نام خانوادگی',field:'value.lastname',...formItem,validations:[['required']]}},
+        username:()=>{return {input:{type:'text',...input},label:'نام کاربری',field:'value.username',...formItem,validations:[['required']]}},
+        address:()=>{return {input:{type:'text',...input},label:'آدرس',field:'value.address',...formItem,validations:[['required']]}},
+        location:()=>{return {input:{type:'map',...input},label:'موقعیت',field:'value.location',...formItem,validations:[['required']]}},
+        email:()=>{return {input:{type:'text',...input},label:'ایمیل',field:'value.email',...formItem,validations:[['required']]}},
+        phone:()=>{return {input:{type:'text',...input},label:'شماره تلفن',field:'value.phone',...formItem,validations:[['required']]}},
+        mobile:()=>{return {input:{type:'text',...input},label:'شماره همراه',field:'value.mobile',...formItem,validations:[['required']]}},
+        postal:()=>{return {input:{type:'text',...input},label:'کد پستی',field:'value.postal',...formItem,validations:[['required']]}},
+        father:()=>{return {input:{type:'text',...input},label:'نام پدر',field:'value.father',...formItem,validations:[['required']]}},
+        idcode:()=>{return {input:{type:'text',...input},label:'شماره شناسنامه',field:'value.idcode',...formItem,validations:[['required']]}},
+        nationalcode:()=>{return {input:{type:'text',...input},label:'کد ملی',field:'value.nationalcode',...formItem,validations:[['required']]}},
+        cardbank:()=>{return {input:{type:'text',...input},label:'شماره کارت',field:'value.cardbank',...formItem,validations:[['required']]}},
+        state:()=>{return {input:{type:'text',...input},label:'استان',field:'value.state',...formItem,validations:[['required']]}},
+        city:()=>{return {input:{type:'text',...input},label:'شهر',field:'value.city',...formItem,validations:[['required']]}},
+        gender:()=>{return {input:{type:'radio',...input},label:'جنسیت',field:'value.gender',...formItem,validations:[['required']]}},
+        married:()=>{return {input:{type:'radio',...input},label:'وضعیت تاهل',field:'value.married',...formItem,validations:[['required']]}},
+        militaryservice:()=>{return {input:{type:'radio',...input},label:'وضعیت خدمت',field:'value.militaryservice',...formItem,validations:[['required']]}},
+    }[type]()
+}

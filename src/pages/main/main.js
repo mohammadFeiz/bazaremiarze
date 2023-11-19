@@ -11,7 +11,7 @@ import Vitrin from '../vitrin/vitrin';
 
 //npm////////////////////////////////////////
 import { Icon } from '@mdi/react';
-import { mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList, mdiExitToApp, mdiCash, mdiSecurity, mdiSkullScan, mdiClose, mdiPageLayoutBody } from "@mdi/js";
+import { mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList, mdiExitToApp, mdiCash, mdiSecurity, mdiSkullScan, mdiClose, mdiPageLayoutBody, mdiStore, mdiHome, mdiShopping, mdiAccountBox } from "@mdi/js";
 import RSA from '../../npm/react-super-app/react-super-app';
 import getSvg from "../../utils/getSvg";
 import Logo5 from './../../images/logo5.png';
@@ -40,12 +40,13 @@ export default class Main extends Component {
       nav:{
         items:()=>{
           let {backOffice,userInfo} = this.props;
+          let icon = (path)=><Icon path={path} size={.9}/>
           return [
-            { text: "خانه", icon: () => getSvg(19), id: "khane" },
-            { text: "خرید", icon: () => getSvg('buy'), id: "kharid" },
-            { text: "بازارگاه", icon: () => getSvg(20), id: "bazargah" },
-            { text: "ویترین", icon: () => getSvg('vitrin'), id: "vitrin", show: () => !!backOffice.activeManager.vitrin },
-            { text: ()=>`${userInfo.firstName} ${userInfo.lastName}`,marquee:true, icon: () => getSvg(21), id: "profile" },
+            { text: "خرید", icon: () => icon(mdiShopping), id: "kharid" },
+            { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah" },
+            { text: "خانه", icon: () => icon(mdiHome), id: "khane" },
+            { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin", show: () => !!backOffice.activeManager.vitrin },
+            { text: ()=>`${userInfo.firstName} ${userInfo.lastName}`,marquee:true, icon: () => icon(mdiAccountBox), id: "profile" },
           ]
         },
         id:actionClass.getInitialNavId(),

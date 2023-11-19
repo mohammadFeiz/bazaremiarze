@@ -115,9 +115,23 @@ body{
 }
 .rsa-bottom-menu{
 	box-shadow: 0px 0px 12px 0px rgb(0 0 0 / 25%);
+	font-size:12px;
+}
+.rsa-bottom-menu-item{
+	color: #888;
+	
+}
+.rsa-bottom-menu-item svg{
+	transform:translateY(4px)
+	
 }
 .rsa-bottom-menu-item.active{
 	color: #3B55A5;
+	background:#3B55A510;
+	border-bottom:2px solid #3B55A5;
+}
+.rsa-bottom-menu-item.active .rsa-bottom-menu-item-text{
+	font-weight:bold;
 }
 
 .otp-code{

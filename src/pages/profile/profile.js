@@ -1,6 +1,6 @@
 import React,{Component} from 'react';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
-import headerSvg from '../../images/header-svg';
+import brxbillboard from '../../images/Burux-billboard.png';
 import getSvg from '../../utils/getSvg';
 import appContext from '../../app-context';
 import SplitNumber from './../../npm/aio-functions/split-number';
@@ -64,7 +64,7 @@ export default class Profile extends Component{
             column:[
                 {
                     className:'my-burux-header',
-                    html:headerSvg()
+                    html:<img src={brxbillboard} width='100%'/>
                 },
                 {
                     size:100,className:'of-visible',

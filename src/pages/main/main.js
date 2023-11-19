@@ -122,8 +122,45 @@ export default class Main extends Component {
     signalR.start();
     this.state.signalR = signalR;
   }
+  async getVitrinData(){
+    let {apis,userInfo} = this.state;
+    let started = await apis.request({
+      api: 'vitrin.v_getStarted',
+      description: 'دریافت وضعیت ویترین'
+    })
+    this.setState({vitrin:{started}})
+    apis.request({
+      api: 'vitrin.v_mahsoolate_entekhab_shode',description: 'دریافت آی دی های محصولات انتخاب شده ی ویترین',loading:false,
+      parameter:userInfo.cardCode,
+      onSuccess:async (selectedProductsIds)=>{
+          let selectedProductsList = selectedProductsIds.length?await apis.request({
+              api: 'vitrin.v_getProductsByIds',description: 'دریافت لیست محصولات انتخاب شده ی ویترین',loading:false,
+              parameter:selectedProductsIds.toString(),
+      
+          }):[];
+          let selectedProducts = {};
+          for(let i = 0; i < selectedProductsList.length; i++){
+              let p = selectedProductsList[i];
+              selectedProducts[p.id] = p
+          }
+          this.updateVitrin({selectedProducts})
+      }
+  });
+  }
+  getSelectedProducts(){
+    let { apis,userInfo,actionClass } = this.context;
+    //actionClass.addAnaliticsHistory({url:'Vitrin',title:'Vitrin'}) //notice
+    
+  }
+  updateVitrin(obj){
+    let {vitrin} = this.state;
+    let newVitrin = {...vitrin,...obj}
+    this.setState({vitrin:newVitrin})
+  }
+  
   async componentDidMount() {
     let { userInfo } = this.props;
+    this.getVitrinData()
     let {backOffice,actionClass} = this.state;
     await actionClass.startPricing()
     await actionClass.getShopState();
@@ -133,7 +170,7 @@ export default class Main extends Component {
     this.mounted = true;
     actionClass.handleMissedLocation()
   }
-  getContext() {return {...this.state}}
+  getContext() {return {...this.state,updateVitrin:(obj)=>this.updateVitrin(obj)}}
   render() {
     if (!this.mounted) { return null }
     let { userInfo } = this.props;

@@ -74,20 +74,17 @@ export default class Vitrin extends Component {
         this.popup = new AIOPopup();
         this.state = {
             step: 0,
-            selectedProducts: {},
-            selectedProducts_loading:true,
             lastUpdate: 'چند لحظه پیش',
             miarze_porforoosh: [],
             //miarze_categories: [],
             miarze_brands: [],
-            started: undefined,
             page: 2,
             popup:{}
         }
     }
     updateSelectedProducts(id,product) {
-        let { apis } = this.context;
-        let { selectedProducts } = this.state;
+        let { apis,vitrin } = this.context;
+        let { selectedProducts } = vitrin;
         let state = !!selectedProducts[id];
         apis.request({
             api: 'vitrin.v_updateMyVitrin',
@@ -102,7 +99,8 @@ export default class Vitrin extends Component {
                 }
             },
             onSuccess: () => {
-                let { selectedProducts } = this.state;
+                let { vitrin,updateVitrin } = this.context;
+                let { selectedProducts } = vitrin;
                 let newSelectedProducts;
                 if (!state) { newSelectedProducts = {...selectedProducts,[id]:product} }
                 else { 
@@ -111,53 +109,9 @@ export default class Vitrin extends Component {
                         if(prop !== id){newSelectedProducts[prop] = selectedProducts[prop]}
                     } 
                 }
-                this.setState({ selectedProducts: newSelectedProducts })
+                updateVitrin({ selectedProducts: newSelectedProducts })
             }
         })
-    }
-    async componentDidMount() {
-        let { apis,userInfo,actionClass } = this.context;
-        //actionClass.addAnaliticsHistory({url:'Vitrin',title:'Vitrin'})
-        let started = await apis.request({
-            api: 'vitrin.v_getStarted',
-            description: 'دریافت وضعیت ویترین'
-        })
-        apis.request({
-            api: 'vitrin.v_mahsoolate_entekhab_shode',description: 'دریافت آی دی های محصولات انتخاب شده ی ویترین',loading:false,
-            parameter:userInfo.cardCode,
-            onSuccess:async (selectedProductsIds)=>{
-                let selectedProductsList = selectedProductsIds.length?await apis.request({
-                    api: 'vitrin.v_getProductsByIds',description: 'دریافت لیست محصولات انتخاب شده ی ویترین',loading:false,
-                    parameter:selectedProductsIds.toString(),
-            
-                }):[];
-                let selectedProducts = {};
-                for(let i = 0; i < selectedProductsList.length; i++){
-                    let p = selectedProductsList[i];
-                    selectedProducts[p.id] = p
-                }
-                this.setState({selectedProducts,selectedProducts_loading:false})
-            }
-        });
-        
-        
-        
-        // await apis.request({
-        //     api: 'vitrin.v_miarze_categories',description: 'دریافت لیست دسته بندی های می ارزه',
-        //     cache: {time:24 * 60 * 60 * 1000,name:'vitrin.v_miarze_categories'},
-        //     onSuccess: (miarze_categories) => this.setState({ miarze_categories })
-        // });
-        // await apis.request({
-        //     api: 'vitrin.v_miarze_porforoosh',description: 'دریافت لیست پرفروش های می ارزه',
-        //     cache: {time:24 * 60 * 60 * 1000,name:'vitrin.v_miarze_porforoosh'},
-        //     onSuccess: (miarze_porforoosh) => this.setState({ miarze_porforoosh })
-        // });
-        // await apis.request({
-        //     api: 'vitrin.v_miarze_brands',description: 'دریافت برند های می ارزه',
-        //     cache: {time:24 * 60 * 60 * 1000,name:'vitrin.v_miarze_brands'},
-        //     onSuccess: (miarze_brands) => this.setState({ miarze_brands })
-        // });
-        this.setState({ started })
     }
     changeStep() {
         let { step } = this.state;
@@ -186,7 +140,7 @@ export default class Vitrin extends Component {
                         isFirstTime={parameter}
                         onNext={()=>{
                             removeModal();
-                            this.setState({page:2,started:true})
+                            this.setState({page:2})
                         }}
                     />
                 )}
@@ -194,14 +148,15 @@ export default class Vitrin extends Component {
         }
     }
     start(){
-        let {apis} = this.context;
+        let {apis,updateVitrin} = this.context;
         apis.request({
             api:'vitrin.v_setStarted',parameter:true,description:'شروع ویترین',
-            onSuccess:()=>this.setState({started:true},()=>this.openPopup('search',true))
+            onSuccess:()=>updateVitrin({started:true},()=>this.openPopup('search',true))
         })
     }
     landing_layout() {
-        let { started } = this.state;
+        let { vitrin } = this.context;
+        let {started} = vitrin;
         if (started === undefined) { return null }
         return (
             <RVD
@@ -243,9 +198,9 @@ export default class Vitrin extends Component {
     SetState(obj) { this.setState(obj) }
     
     getContext() {
-        let {apis} = this.context;
+        let {apis,vitrin,updateVitrin} = this.context;
         return {
-            ...this.state,apis,
+            ...this.state,apis,vitrin,updateVitrin,
             SetState: this.SetState.bind(this),
             openPopup:this.openPopup.bind(this),
             removeModal:(id)=>this.popup.removeModal(id),
@@ -266,7 +221,9 @@ export default class Vitrin extends Component {
         )
     }
     getContent() {
-        let { started, page } = this.state;
+        let {vitrin} = this.context;
+        let { started } = vitrin;
+        let { page } = this.state;
         if (started !== true) { return  }
         if (page === 1) { 
             return (
@@ -276,7 +233,19 @@ export default class Vitrin extends Component {
         if (page === 2) { return <VitrinPage2 /> }
     }
     render() {
-        let { started, page } = this.state;
+        let {vitrin} = this.context;
+        if(!vitrin){
+            return (
+                <RVD
+                    layout={{
+                        style:{position:'absolute',left:0,top:0},
+                        className:'align-vh w-100 h-100',
+                        html:'در حال بارگزاری ویترین'
+                    }}
+                />
+            )
+        }
+        let { started } = vitrin;
         return (
             <VitrinContext.Provider value={this.getContext()}>
                 {started !== true && this.landing_layout()}
@@ -295,7 +264,8 @@ class VitrinPage1 extends Component {
         }
     }
     count_layout() {
-        let { selectedProducts } = this.context;
+        let {vitrin} = this.context;
+        let { selectedProducts = {} } = vitrin;
         return {
             align: 'vh',className:'p-12',
             column: [
@@ -319,41 +289,31 @@ class VitrinPage1 extends Component {
         }
     }
     toolbar_layout() {
-        let {openPopup} = this.context;
+        let {openPopup,vitrin} = this.context;
+        let {selectedProducts} = vitrin;
         return {
             className: 'br-6 p-12 m-b-12 of-visible', style: { background: '#fff' },
             row: [
                 { html: getSvg('svg2'), style: { background: '#3b55a5', padding: 3, width: 36, height: 36, borderRadius: '100%' }, align: 'vh' },
                 {size:12},
                 { flex: 1, className: 'fs-14 bold', html: 'ویترین من', align: 'v' },
-                {html:(<button onClick={()=>openPopup('search')} className='button-2'>افزودن محصول</button>)}
+                {show:!!selectedProducts,html:(<button onClick={()=>openPopup('search')} className='button-2'>افزودن محصول</button>)}
             ]
         }
     }
     
     products_layout() {
-        let { selectedProducts,selectedProducts_loading } = this.context;
-        let items = Object.keys(selectedProducts).map((id) => selectedProducts[id]);
-        if(selectedProducts_loading){items = getMockProducts()}
-        console.log(JSON.stringify(items))
+        let {vitrin,updateSelectedProducts} = this.context;
+        let { selectedProducts } = vitrin;
+        let items;
+        if(!selectedProducts){items = getMockProducts()}
+        else{items = Object.keys(selectedProducts).map((id) => selectedProducts[id])}
         if (items.length % 2 !== 0) { items.push({}) }
         return {
             grid: items.map((o) => {
                 let { name, src, price, id } = o;
                 let props = { name, src, price, id, selected: true };
-                return {
-                    flex: 1,
-                    html: (
-                        <ProductCard
-                            loading={!!selectedProducts_loading}
-                            {...props}
-                            onSelect={(id) => {
-                                let { updateSelectedProducts } = this.context;
-                                updateSelectedProducts(id,o)
-                            }}
-                        />
-                    )
-                }
+                return {flex: 1,html: (<ProductCard loading={!selectedProducts} {...props} onSelect={(id) => updateSelectedProducts(id,o)}/>)}
             }),
             gridCols: 2
         }
@@ -479,16 +439,11 @@ class SearchProducts extends Component {
         return {
             className: 'ofy-auto',
             grid: Products.map((o) => {
-                let { selectedProducts } = this.context;
+                let {vitrin,updateSelectedProducts} = this.context;
+                let { selectedProducts } = vitrin;
                 let { name, src, price, id } = o;
                 let selected = !!selectedProducts[id];
-                let props = {
-                    name, src, price, selected, id,
-                    onSelect: (id) => {
-                        let { updateSelectedProducts } = this.context;
-                        updateSelectedProducts(id,o);
-                    }
-                };
+                let props = {name, src, price, selected, id,onSelect: (id) => updateSelectedProducts(id,o)};
                 return {
                     flex: 1,
                     html: <ProductCard {...props} loading={!products}/>
@@ -632,7 +587,8 @@ class VitrinPage2 extends Component {
         }
     }
     count_layout() {
-        let { selectedProducts } = this.context;
+        let {vitrin} = this.context;
+        let { selectedProducts = {} } = vitrin;
         return {
             align: 'vh',
             column: [
@@ -686,7 +642,8 @@ class VitrinPage2 extends Component {
         if(myVitrinType === 'slider'){
             return this.mahsoolate_vitrine_man_layout_h()
         }
-        let { selectedProducts } = this.context;
+        let {vitrin} = this.context;
+        let { selectedProducts } = vitrin;
         let items = Object.keys(selectedProducts).map((id) => selectedProducts[id]);
         if (items.length > myVitrinLength) {
             items = items.slice(0, myVitrinLength)
@@ -714,7 +671,8 @@ class VitrinPage2 extends Component {
         }
     }
     mahsoolate_vitrine_man_layout_h() {
-        let { selectedProducts, openPopup } = this.context;
+        let {vitrin} = this.context;
+        let { selectedProducts } = vitrin;
         let { myVitrinLength } = this.state;
         let items = Object.keys(selectedProducts).map((id) => selectedProducts[id]);
         if (items.length > myVitrinLength) {

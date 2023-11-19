@@ -1,3 +1,4 @@
+import React,{useState} from 'react';
 import UrlToJson from './npm/aio-functions/url-to-json';
 import Pricing from './pricing';
 import ShopClass from './shop-class';
@@ -20,6 +21,7 @@ import Wallet from './popups/wallet/wallet';
 import TanzimateKifePool from './components/kife-pool/tanzimate-kife-pool/tanzimate-kife-pool';
 import Cart from './components/kharid/cart/cart';
 import Sefareshe_Ersal_Shode_Baraye_Vizitor from './components/kharid/sefareshe-ersal-shode-baraye-vizitor/sefareshe-ersal-shode-baraye-vizitor';
+import AIOInput from './npm/aio-input/aio-input';
 export default class ActionClass {
     constructor({ getState, getProps, setState }) {
         this.getState = getState;
@@ -282,7 +284,23 @@ export default class ActionClass {
         let { rsa, backOffice, Logger } = this.getState();
         let { userInfo, updateUserInfo, baseUrl } = this.getProps();
         let { addModal, removeModal, setNavId } = rsa;
-        if (type === 'profile') {
+        if(type === 'developerModePassword'){
+            addModal({
+                position:'center',id:'devmodepass',
+                header:{title:'ورود به حالت دولوپمنت'},
+                body:{
+                    attrs:{className:'developer-mode-password-body'},
+                    render:()=>(
+                        <DeveloperModePassword onSubmit={()=>{
+                            this.setState({developerMode:true})
+                            removeModal('devmodepass')
+                        }}/>
+                    )
+                }
+
+            })
+        }
+        else if (type === 'profile') {
             addModal({
                 position: 'fullscreen', id: type,
                 body: {
@@ -418,4 +436,17 @@ export default class ActionClass {
         for (let prop in cart) {if (prop !== cartId) { newCart[prop] = cart[prop] }}
         this.setState({ cart: newCart })
     }
+}
+
+function DeveloperModePassword({onSubmit}){
+    let [code,setCode] = useState('')
+    function change(code){
+        setCode(code);
+        if(code === 'bmdevmode'){onSubmit()}
+    }
+    return (
+        <AIOInput
+            type='text' value={code} onChange={(code)=>change(code)} className='developer-mode-input'
+        />
+    )
 }

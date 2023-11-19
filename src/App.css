@@ -720,3 +720,13 @@ button{
 .aio-login .aio-input-form-error{
 	font-size:14px !important;
 }
+.developer-mode-password-body{
+	padding:12px;
+}
+.developer-mode-input{
+	border:1px solid #ddd;
+	height:48px;
+	font-size:18px !important;
+	text-align:center !important;
+	
+}

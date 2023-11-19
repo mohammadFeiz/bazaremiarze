@@ -16,6 +16,8 @@
 
 .aio-input input {
     font-family: inherit;
+    font-size:inherit;
+    text-align:inherit;
 }
 
 .aio-input input,

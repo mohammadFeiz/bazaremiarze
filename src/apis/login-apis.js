@@ -37,10 +37,11 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             else { result = response.data.message }
             return { response, result }
         },
-        async getUserInfo(userInfo,{backOffice}) {
+        async getUserInfo(userInfo,{backOffice,Logger}) {
             const b1Info = await fetch(`https://b1api.burux.com/api/BRXIntLayer/GetCalcData/${userInfo.cardCode}`, {
                 mode: 'cors', headers: { 'Access-Control-Allow-Origin': '*' }
             }).then((response) => { return response.json(); }).then((data) => { return data; }).catch(function (error) { return null; });
+            Logger.add('b1Info',{customer:b1Info.customer,salePeople:b1Info.salePeople},'b1Info')
             let { customer = {} } = b1Info;
             let ballance = customer.ballance;
             let visitorMobile;
@@ -64,6 +65,8 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                 visitorMobile
             }
             if(result.lastName === null){result.lasName = ''}
+            Logger.add('userInfo',{...result,itemPrices:'prevent show manually'},'userInfo')
+            
             return { result }
         }
     }

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import ReactDOM from 'react-dom/client';
 import { Icon } from '@mdi/react';
 import { mdiChevronDown, mdiChevronRight, mdiClose } from "@mdi/js";
 import RVD from 'react-virtual-dom';
 import AIOStorage from 'aio-storage';
 import "./aio-log.css";
+import $ from 'jquery';
 import AIOInput from "./../../npm/aio-input/aio-input";
 
 export default class Logs {
@@ -16,15 +18,41 @@ export default class Logs {
         this.logStorage.save({ name: 'logs', value: logs });
         this.logs = logs
     }
-    add(key, value, id = ('log' + Math.round(Math.random() * 100000))) {
+    add = (key, value, id = ('log' + Math.round(Math.random() * 100000))) => {
         let uniqLogs = id ? this.logs.filter((o) => o.id !== id) : this.logs;
         let newLogs = [...uniqLogs, { key, value, id }];
         this.update(newLogs)
     }
-    remove(index) {
+    remove = (index) => {
         if (!this.logs.length || !this.logs[index]) { return }
         this.update(this.logs.filter((o, i) => i !== index))
     }
+    openPopup = () => {
+        if(!$('#aio-log-container').length){
+            $('body').append('<div id="aio-log-container"></div>');
+        }
+        const root = ReactDOM.createRoot(document.getElementById('aio-log-container'));
+        root.render(
+            <RVD
+                layout={{
+                    className:'fullscreen',style:{direction:'ltr'},
+                    column:[
+                        {
+                            size:48,align:'v',style:{background:'#fff'},
+                            row:[
+                                {size:12},
+                                {flex:1,align:'v',html:'LOGGER'},
+                                {html:<Icon path={mdiClose} size={1}/>,align:'vh',size:48,onClick:()=>this.removePopup()}
+                            ]
+                        },
+                        {flex:1,html:this.render()}
+                    ]
+                }}        
+            />
+        );
+
+    }
+    removePopup = ()=>{$('#aio-log-container').remove()}
     render = () => <LogsComponent logs={this.logs} onRemove={this.remove.bind(this)} />
 }
 function LogsComponent(props) {

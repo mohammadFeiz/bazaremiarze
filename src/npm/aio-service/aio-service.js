@@ -82,6 +82,7 @@ export default class AIOservice{
     this[key] = value;
   }
   getLoading = (id) => {
+    console.log(`aio-service show loading by ${id}`)
     return (`
       <div class="aio-service-loading" id="${id}">
         <div class="aio-service-loading-0">

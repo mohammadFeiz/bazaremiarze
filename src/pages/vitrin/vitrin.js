@@ -99,7 +99,7 @@ export default class Vitrin extends Component {
                 }
             },
             onSuccess: () => {
-                let { vitrin,updateVitrin } = this.context;
+                let { vitrin } = this.context;
                 let { selectedProducts } = vitrin;
                 let newSelectedProducts;
                 if (!state) { newSelectedProducts = {...selectedProducts,[id]:product} }
@@ -109,7 +109,7 @@ export default class Vitrin extends Component {
                         if(prop !== id){newSelectedProducts[prop] = selectedProducts[prop]}
                     } 
                 }
-                updateVitrin({ selectedProducts: newSelectedProducts })
+                vitrin.update({ selectedProducts: newSelectedProducts })
             }
         })
     }
@@ -148,10 +148,10 @@ export default class Vitrin extends Component {
         }
     }
     start(){
-        let {apis,updateVitrin} = this.context;
+        let {apis,vitrin} = this.context;
         apis.request({
             api:'vitrin.v_setStarted',parameter:true,description:'شروع ویترین',
-            onSuccess:()=>updateVitrin({started:true},()=>this.openPopup('search',true))
+            onSuccess:()=>vitrin.update({started:true},()=>this.openPopup('search',true))
         })
     }
     landing_layout() {
@@ -198,9 +198,9 @@ export default class Vitrin extends Component {
     SetState(obj) { this.setState(obj) }
     
     getContext() {
-        let {apis,vitrin,updateVitrin} = this.context;
+        let {apis,vitrin} = this.context;
         return {
-            ...this.state,apis,vitrin,updateVitrin,
+            ...this.state,apis,vitrin,
             SetState: this.SetState.bind(this),
             openPopup:this.openPopup.bind(this),
             removeModal:(id)=>this.popup.removeModal(id),

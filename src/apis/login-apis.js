@@ -17,6 +17,18 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             Logger.add('IsUserSyncedWithB1',result?'true':'false','IsUserSyncedWithB1')
             return { result }
         },  
+        async profile({model,mode},{Logger}){
+            let url = {
+                'register':`${baseUrl}/Users/NewUser`,
+                'edit':`${baseUrl}/Users/UpdateUser`,
+                'location':`${baseUrl}/Users/UpdateUser`
+            }[mode];
+            Logger.add(`profile payload (mode:${mode})`,{...model,itemPrices:'hidden by logger'},'profile-payload-' + mode)
+            let response = await Axios.post(url, model);
+            let result = response.data.data;
+            Logger.add(`profile response (mode:${mode})`,result,'profile-response-' + mode)
+            return {response,result} 
+        },
         async checkToken(token) {
             setToken(token);
             let response = await Axios.get(`${baseUrl}/Users/CheckExpireToken`);

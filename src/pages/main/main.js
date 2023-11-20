@@ -37,12 +37,18 @@ export default class Main extends Component {
         footer:actionClass.getSideFooter
       },
       headerContent:({ navId }) => <Header type='page' navId={navId} />,
-      body:({ render }) => render(),
+      body:({ render }) => {
+        let {registered} = this.props;
+        let {mounted} = this.state;
+        if(!registered){actionClass.openPopup('profile','register')}
+        else if(mounted){return render()}
+        else {return null}
+      },
     })
     
     actionClass.manageUrl();
     this.state = {
-      developerMode:false,
+      developerMode:true,
       actionClass,
       Logger,
       vitrin:{
@@ -109,7 +115,8 @@ export default class Main extends Component {
     
   }
   async componentDidMount() {
-    let { userInfo } = this.props;
+    let { userInfo,registered } = this.props;
+    if(!registered){this.setState({}); return}
     let {vitrin} = this.state;
     vitrin.fetchData();
     let {backOffice,actionClass} = this.state;
@@ -117,12 +124,11 @@ export default class Main extends Component {
     await actionClass.getShopState();
     if (backOffice.activeManager.garanti && userInfo.slpcode) { actionClass.getGuaranteeItems(); }
     if (backOffice.activeManager.bazargah) { actionClass.getBazargahOrders(); }
-    this.mounted = true;
     actionClass.handleMissedLocation()
+    this.setState({mounted:true})
   }
   getContext() {return {...this.state}}
   render() {
-    if (!this.mounted) { return null }
     let { rsa} = this.state;
     return (
       <appContext.Provider value={this.getContext()}>

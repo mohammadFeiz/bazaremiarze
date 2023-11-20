@@ -718,7 +718,7 @@ button{
     justify-content: center;
 }
 .aio-login .aio-input-form-error{
-	font-size:14px !important;
+	font-size:12px !important;
 }
 .developer-mode-password-body{
 	padding:12px;
@@ -727,6 +727,25 @@ button{
 	border:1px solid #ddd;
 	height:48px;
 	font-size:18px !important;
-	text-align:center !important;
-	
+	text-align:center !important;	
+}
+.bm-profile-form{
+	padding:12px;
+	background:#3B55A5;
+	height: 100%;
+}
+.bm-profile-form .aio-input-form-footer{
+	justify-content:space-between !important;
+}
+.bm-profile-form .aio-input-form-submit-button{
+	background:#3B55A5;
+}
+.bm-profile-form .aio-input-form-close-button{
+	color:#3B55A5;
+	border:none;
+	font-weight: bold;
+	padding:0 6px;
+}
+.bm-profile-form .aio-input input{
+	text-align:right;
 }

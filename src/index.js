@@ -41,19 +41,15 @@ class App extends Component {
       onAuth: this.onAuth.bind(this)
     })
   }
-  updateUserInfo(obj) {
+  updateUserInfo(obj,mode) {
     let { userInfo, Login } = this.state;
     let newUserInfo = { ...userInfo, ...obj };
     this.setState({ userInfo: newUserInfo });
     Login.setUserInfo(newUserInfo)
+    if(mode === 'register'){window.location.reload()}
   }
   async getUserInfo(userInfo = this.state.userInfo) {
     return await this.state.apis.request({ api: 'login.getUserInfo', parameter: userInfo, description: 'دریافت اطلاعات کاربری',loading:false })
-  }
-  onRegister(userInfo){
-    let { Login } = this.state;
-    Login.setUserInfo(userInfo)
-    window.location.reload()
   }
   async checkToken(token) {
     let { apis, Login } = this.state;
@@ -146,19 +142,9 @@ class App extends Component {
     if (landing) { return <Landing onClose={() => this.setState({ landing: false })} items={landing} /> }
     if (pageError) { return <PageError {...pageError} /> }
     if (isAutenticated) {
-      if (!registered) {
-        return (
-          <Register
-            baseUrl={baseUrl} mode='register' logout={Login.logout}
-            model={{ phoneNumber: userInfo.phoneNumber }}
-            onClose={() => {Login.logout(); window.location.reload()}}
-            onSubmit={(userInfo)=>this.onRegister(userInfo)}
-          />
-        )
-      }
       return (
         <Main
-          apis={apis} Login={Login} Logger={Logger} registered={registered}
+          apis={apis} Login={Login} Logger={Logger} registered={false}
           userInfo={userInfo}
           backOffice={backOffice}
           updateUserInfo={this.updateUserInfo.bind(this)}

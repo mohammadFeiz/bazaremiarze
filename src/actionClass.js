@@ -272,7 +272,7 @@ export default class ActionClass {
                 let { userInfo } = this.getProps();
                 let { latitude, longitude, userProvince, userCity } = userInfo;
                 if (!userProvince || !userCity || !latitude || !longitude || Math.abs(latitude - 35.699739) < 0.0002 || Math.abs(longitude - 51.338097) < 0.0002) {
-                    this.openPopup('profile')
+                    this.openPopup('profile','location')
                 }
             }
             catch { }
@@ -334,7 +334,7 @@ export default class ActionClass {
     }
     openPopup = async (type, parameter) => {
         let { rsa, backOffice, Logger } = this.getState();
-        let { userInfo, updateUserInfo, baseUrl } = this.getProps();
+        let { userInfo } = this.getProps();
         let { addModal, removeModal, setNavId } = rsa;
         if (type === 'developerModePassword') {
             addModal({
@@ -353,19 +353,21 @@ export default class ActionClass {
             })
         }
         else if (type === 'profile') {
-            addModal({
-                position: 'fullscreen', id: type,
-                body: {
-                    render: () => {
-                        return (
-                            <Register baseUrl={baseUrl} mode='edit' locationMode={true} model={{ ...userInfo }}
-                                onSubmit={(userInfo) => updateUserInfo(userInfo)} onClose={() => rsa.removeModal()}
-                            />
-                        )
-                    }
-                },
-                header: false
-            })
+            let { userInfo,Login} = this.getProps();
+            let mode = parameter;
+            let title = {register:'ثبت نام',edit:'ویرایش حساب کاربری',location:'ثبت موقعیت جغرافیایی'}[parameter]
+            let subtitle = `شماره:${userInfo.phoneNumber || userInfo.userName}`
+            if(mode !== 'register'){subtitle += ` - کد : ${userInfo.cardCode}`}
+            let header = {
+                title,subtitle
+            }
+            if(mode === 'register'){
+                header.onClose = false;
+                header.buttons = [
+                    ['خروج از حساب',{onClick:()=>Login.logout(),className:'theme-link-font-color fs-12 bold'}]
+                ]
+            }
+            addModal({position: 'fullscreen', id: type,header,body: {attrs:{className:'profile-container'},render: () => <Register mode={mode}/>}})
         }
         else if (type === 'logs') {
             addModal({ position: 'fullscreen', id: type, body: { render: () => Logger.render() }, header: { title: 'رفتار سیستم' } })

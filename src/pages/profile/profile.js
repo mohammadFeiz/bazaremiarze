@@ -17,7 +17,6 @@ export default class Profile extends Component{
     constructor(props){
         super(props);
         this.state = {
-            showProfile:false,
             showWallet:false,
             user:'محمد شریف فیض',
             customerCode:'c19428',shopName:'فروشگاه الکتریکی تهران',visitorName:'علی محمدی',nationalCode:'0386481784',
@@ -110,7 +109,7 @@ export default class Profile extends Component{
                                         >مشاهده و ویرایش</button>]]
                                 
                             ]}
-                            onClick={()=>this.setState({showProfile:true})}
+                            onClick={()=>actionClass.openPopup('profile','edit')}
                         />
                     )
                 },
@@ -190,30 +189,9 @@ export default class Profile extends Component{
         // actionClass.addAnaliticsHistory({url:'Profile',title:'Profile'})
     }
     render(){
-        let {showProfile,showWallet} = this.state;
-        let {userInfo,updateUserInfo,baseUrl} = this.context;
+        let {showWallet} = this.state;
         return (<>
             <RVD layout={this.getContent()}/>
-            {
-                showProfile && 
-                (
-                    <Popup>
-                        <RVD
-                            layout={{
-                                className:'fixed',
-                                html:(
-                                    <Register baseUrl={baseUrl} mode='edit' model={{...userInfo}} 
-                                        onClose={()=>this.setState({showProfile:false})}
-                                        onSubmit={(userInfo)=>{
-                                            updateUserInfo(userInfo)
-                                        }}
-                                    />
-                                )
-                            }}
-                        />
-                    </Popup>
-                )
-            }
             {
                 showWallet && 
                 (

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import RVD from 'react-virtual-dom';
 import AIOStorage from 'aio-storage';
-import AIOInput from './../aio-input/aio-input';
+import AIOInput from 'aio-input';
 import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
 import './aio-login.css';

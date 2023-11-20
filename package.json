@@ -12,6 +12,7 @@
     "aio-date": "^4.0.0",
     "aio-input": "^2.0.2",
     "aio-popup": "^3.0.2",
+    "aio-service": "^6.1.1",
     "aio-storage": "^4.0.1",
     "aio-swip": "^2.0.0",
     "axios": "^1.2.1",

@@ -2,13 +2,11 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom/client';
 import Main from './pages/main/main';
 import Axios from 'axios';
-import Register from './components/register/register';
-import AIOInput from './npm/aio-input/aio-input';
 import PageError from './components/page-error';
 import Landing from './components/landing';
 import AIOLogin from './npm/aio-login/aio-login';
 import AIOLog from './npm/aio-log/aio-log';
-import AIOService from './npm/aio-service/aio-service';
+import AIOService from 'aio-service';
 import getApiFunctions from './apis/apis';
 import './App.css';
 import './theme.css';
@@ -88,7 +86,7 @@ class App extends Component {
     };
     if (mode === 'OTPNumber') {
       let res = await apis.request({ api: 'login.OTPNumber', parameter: model.login.userId, onCatch,loading:false })
-      if (res) {
+      if (typeof res === 'object') {
         let { id: userId } = res;
         this.setState({ userId })
         return { nextMode: 'OTPCode' }
@@ -99,7 +97,7 @@ class App extends Component {
       let phoneNumber = model.login.userId;
       let password = model.login.password;
       let res = await apis.request({ api: 'login.login', onCatch, parameter: { userId, phoneNumber, password, type: mode },loading:false })
-      if (res) {
+      if (typeof res === 'object') {
         let { accessToken } = res;
         let token = accessToken.access_token;
         let userInfo = await this.getUserInfo(res);
@@ -144,7 +142,7 @@ class App extends Component {
     if (isAutenticated) {
       return (
         <Main
-          apis={apis} Login={Login} Logger={Logger} registered={false}
+          apis={apis} Login={Login} Logger={Logger} registered={registered}
           userInfo={userInfo}
           backOffice={backOffice}
           updateUserInfo={this.updateUserInfo.bind(this)}

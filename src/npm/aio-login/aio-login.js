@@ -147,41 +147,35 @@ class AIOLOGIN extends Component {
         }
     }
     async onSubmit(model, currentMode) {
-        try {
-            let { modes, setStorage, removeToken, onSubmit } = this.props;
-            let res = await onSubmit(model, currentMode);
-            if (typeof res !== 'object') { return }
-            let { nextMode, error, token } = res;
-            if (!nextMode) { return alert('aio-login error => onSubmit should returns an object contain nextMode property') }
-            if (nextMode === currentMode) { return }
-            removeToken();
-            if (nextMode === 'error') {
-                if (error) {
-                    let text = {
-                        "OTPNumber": 'ارسال شماره همراه',
-                        "OTPCode": 'ارسال کد یکبار مصرف',
-                        "userName": 'ارسال نام کاربری و رمز عبور',
-                        "phoneNumber": 'ارسال شماره همراه و رمز عبور',
-                        "email": 'ارسال آدرس ایمیل و رمز عبور',
-                        "register": 'عملیات ثبت نام'
-                    }[currentMode]
-                    let subtext = error;
-                    new AIOPopup().addAlert({ type: 'error', text, subtext })
-                }
-                return 'error'
+        let { modes, setStorage, removeToken, onSubmit } = this.props;
+        let res = await onSubmit(model, currentMode);
+        if (typeof res !== 'object') { return }
+        let { nextMode, error, token } = res;
+        if (!nextMode) { return alert('aio-login error => onSubmit should returns an object contain nextMode property') }
+        if (nextMode === currentMode) { return }
+        removeToken();
+        if (nextMode === 'error') {
+            if (error) {
+                let text = {
+                    "OTPNumber": 'ارسال شماره همراه',
+                    "OTPCode": 'ارسال کد یکبار مصرف',
+                    "userName": 'ارسال نام کاربری و رمز عبور',
+                    "phoneNumber": 'ارسال شماره همراه و رمز عبور',
+                    "email": 'ارسال آدرس ایمیل و رمز عبور',
+                    "register": 'عملیات ثبت نام'
+                }[currentMode]
+                let subtext = error;
+                new AIOPopup().addAlert({ type: 'error', text, subtext })
             }
-            this.handleOnsubmitError(currentMode, nextMode, modes, token);
-            if (['OTPNumber', 'phoneNumber', 'userName', 'email'].indexOf(currentMode) !== -1) {
-                setStorage('userId', model.login.userId);
-            }
-            if (token) { setStorage('token', token) }
-            if (nextMode === 'auth') { this.setState({ isAuth: true }) }
-            else { return nextMode }
+            return 'error'
         }
-        catch (err) {
-            let { addLog } = this.props;
-            addLog('16', err.message)
+        this.handleOnsubmitError(currentMode, nextMode, modes, token);
+        if (['OTPNumber', 'phoneNumber', 'userName', 'email'].indexOf(currentMode) !== -1) {
+            setStorage('userId', model.login.userId);
         }
+        if (token) { setStorage('token', token) }
+        if (nextMode === 'auth') { this.setState({ isAuth: true }) }
+        else { return nextMode }
     }
     render() {
         try {

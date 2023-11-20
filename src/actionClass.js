@@ -1,9 +1,10 @@
-import React,{useState} from 'react';
+import React, { useState } from 'react';
+import RVD from 'react-virtual-dom';
 import UrlToJson from './npm/aio-functions/url-to-json';
 import Pricing from './pricing';
 import ShopClass from './shop-class';
 import { Icon } from '@mdi/react';
-import { mdiCart } from "@mdi/js";
+import { mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList,mdiCodeBraces, mdiExitToApp, mdiCash, mdiSecurity, mdiSkullScan, mdiCart,mdiStore, mdiHome, mdiShopping, mdiAccountBox } from "@mdi/js";
 import getSvg from './utils/getSvg';
 import Register from './components/register/register';
 import PriceList from './popups/price-list/price-list';
@@ -22,18 +23,69 @@ import TanzimateKifePool from './components/kife-pool/tanzimate-kife-pool/tanzim
 import Cart from './components/kharid/cart/cart';
 import Sefareshe_Ersal_Shode_Baraye_Vizitor from './components/kharid/sefareshe-ersal-shode-baraye-vizitor/sefareshe-ersal-shode-baraye-vizitor';
 import AIOInput from './npm/aio-input/aio-input';
+import Home from "./pages/home/index";
+import Buy from "./pages/buy/index";
+import Bazargah from "./pages/bazargah/bazargah";
+import Profile from "./pages/profile/profile";
+import Vitrin from './pages/vitrin/vitrin';
+
+
 export default class ActionClass {
     constructor({ getState, getProps, setState }) {
         this.getState = getState;
         this.getProps = getProps;
         this.setState = setState;
     }
+    getSideItems = () => {
+        let { userInfo, backOffice, Logger, Login } = this.getProps();
+        let { logout } = Login;
+        let { slpcode, isAdmin } = userInfo;
+        let { activeManager } = backOffice;
+        let icon = (path) => <Icon path={path} size={0.8} />
+        return [
+            { text: 'بازارگاه', icon: () => icon(mdiCellphoneMarker), onClick: () => this.getState().rsa.setNavId('bazargah') },
+            { text: 'پیگیری سفارش خرید', icon: () => icon(mdiClipboardList), onClick: () => this.openPopup('peygiriye-sefareshe-kharid') },
+            { text: 'درخواست گارانتی', icon: () => icon(mdiShieldCheck), onClick: () => this.openPopup('sabteGarantiJadid'), show: () => !!activeManager.garanti && slpcode },
+            { text: 'لیست قیمت', icon: () => icon(mdiCash), onClick: () => this.openPopup('priceList'), show: () => !!activeManager.priceList },
+            { text: 'پنل ادمین', icon: () => icon(mdiSecurity), onClick: () => this.openPopup('admin-panel'), show: () => !!isAdmin },
+            { text: 'رفتار سیستم', icon: () => icon(mdiSkullScan), onClick: () => Logger.openPopup(), show: () => !!this.getState().developerMode },
+            { text: 'خروج از حساب کاربری', icon: () => icon(mdiExitToApp), attrs: { className: 'colorFDB913' }, onClick: () => logout() }
+        ]
+    }
+    getNavItems = () => {
+        let { backOffice, userInfo } = this.getProps();
+        let icon = (path) => <Icon path={path} size={.9} />
+        return [
+            { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin", show: () => !!backOffice.activeManager.vitrin,render:()=><Vitrin/> },
+            { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=><Bazargah/> },
+            { text: "خانه", icon: () => icon(mdiHome), id: "khane",render:()=><Home/> },
+            { text: "خرید", icon: () => icon(mdiShopping), id: "kharid",render:()=><Buy/> },
+            { text: () => `${userInfo.firstName} ${userInfo.lastName}`, marquee: true, icon: () => icon(mdiAccountBox), id: "profile",render:()=><Profile/> },
+        ]
+    }
+    getSideFooter = ()=>{
+        return (
+            <RVD
+              layout={{
+                style:{height:60,color:'#fff'},
+                row:[
+                  {flex:1},
+                  {size:36,align:'vh',html:<Icon path={mdiCodeBraces} size={1}/>,onClick:()=>{
+                    let {developerMode} = this.getState();
+                    if(developerMode){this.setState({developerMode:false})}
+                    else {this.openPopup('developerModePassword')}
+                  }}
+                ]
+              }}
+            />
+          )
+    }
     getAppTitle = (nav) => {
-        if(nav.id === 'khane'){
+        if (nav.id === 'khane') {
             return <>{getSvg('mybrxlogo', { className: 'rvd-hide-sm rvd-hide-md rvd-hide-lg' })}<div className='rvd-hide-xs'>{nav.text}</div></>
         }
-        else if(nav.id === 'profile'){return 'پروفایل'}
-        else{return nav.text}
+        else if (nav.id === 'profile') { return 'پروفایل' }
+        else { return nav.text }
     }
     addAnaliticsHistory = ({ url, title, userId }) => {
         window.dataLayer = window.dataLayer || [];
@@ -284,17 +336,17 @@ export default class ActionClass {
         let { rsa, backOffice, Logger } = this.getState();
         let { userInfo, updateUserInfo, baseUrl } = this.getProps();
         let { addModal, removeModal, setNavId } = rsa;
-        if(type === 'developerModePassword'){
+        if (type === 'developerModePassword') {
             addModal({
-                position:'center',id:'devmodepass',
-                header:{title:'ورود به حالت دولوپمنت'},
-                body:{
-                    attrs:{className:'developer-mode-password-body'},
-                    render:()=>(
-                        <DeveloperModePassword onSubmit={()=>{
-                            this.setState({developerMode:true})
+                position: 'center', id: 'devmodepass',
+                header: { title: 'ورود به حالت دولوپمنت' },
+                body: {
+                    attrs: { className: 'developer-mode-password-body' },
+                    render: () => (
+                        <DeveloperModePassword onSubmit={() => {
+                            this.setState({ developerMode: true })
                             removeModal('devmodepass')
-                        }}/>
+                        }} />
                     )
                 }
 
@@ -433,20 +485,20 @@ export default class ActionClass {
     removeCart = (cartId) => {
         let { cart } = this.getState();
         let newCart = {}
-        for (let prop in cart) {if (prop !== cartId) { newCart[prop] = cart[prop] }}
+        for (let prop in cart) { if (prop !== cartId) { newCart[prop] = cart[prop] } }
         this.setState({ cart: newCart })
     }
 }
 
-function DeveloperModePassword({onSubmit}){
-    let [code,setCode] = useState('')
-    function change(code){
+function DeveloperModePassword({ onSubmit }) {
+    let [code, setCode] = useState('')
+    function change(code) {
         setCode(code);
-        if(code === 'bmdevmode'){onSubmit()}
+        if (code === 'bmdevmode') { onSubmit() }
     }
     return (
         <AIOInput
-            type='text' value={code} onChange={(code)=>change(code)} className='developer-mode-input'
+            type='text' value={code} onChange={(code) => change(code)} className='developer-mode-input'
         />
     )
 }

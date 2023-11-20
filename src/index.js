@@ -158,7 +158,7 @@ class App extends Component {
       }
       return (
         <Main
-          apis={apis} Login={Login} Logger={Logger}
+          apis={apis} Login={Login} Logger={Logger} registered={registered}
           userInfo={userInfo}
           backOffice={backOffice}
           updateUserInfo={this.updateUserInfo.bind(this)}

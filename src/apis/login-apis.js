@@ -11,9 +11,10 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
         return res;
     }
     return {
-        async checkIsRegistered(phoneNumber){
+        async checkIsRegistered(phoneNumber,{Logger}){
             let response = await Axios.get(`${baseUrl}/Users/IsUserSyncedWithB1?userName=${phoneNumber}`);
             let result = response.data.data;
+            Logger.add('IsUserSyncedWithB1',result?'true':'false','IsUserSyncedWithB1')
             return { result }
         },  
         async checkToken(token) {

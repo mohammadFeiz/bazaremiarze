@@ -321,11 +321,11 @@ class SideMenu extends Component {
     return {
       flex: 1,
       column: items.map((o, i) => {
-        let { icon = () => <div style={{ width: 12 }}></div>, text, className,style, onClick = () => { }, show = () => true } = o;
+        let { icon = () => <div style={{ width: 12 }}></div>, text, attrs = {}, onClick = () => { }, show = () => true } = o;
         let Show = show();
         return {
-          style,
-          show: Show !== false, size: 36, className: 'rsa-sidemenu-item' + (className ? ' ' + className : ''), onClick: () => { onClick(o); onClose() },
+          style:attrs.style,
+          show: Show !== false, size: 36, className: 'rsa-sidemenu-item' + (attrs.className ? ' ' + attrs.className : ''), onClick: () => { onClick(o); onClose() },
           row: [
             { size: 48, html: typeof icon === 'function'?icon():icon, align: 'vh' },
             { html: text, align: 'v' }
@@ -447,7 +447,7 @@ function RSAValidateSide(side){
       `
     }
   }
-  let sideItemError = 'each side item should be an object cointan {icon?:React.ReactNode | ()=>React.ReactNode,text:String,attrs?:object,show?:()=>boolean}'
+  let sideItemError = 'each side item should be an object cointan {icon?:React.ReactNode | ()=>React.ReactNode,text:String,attrs?:object,show?:()=>boolean,onClick:function|undefined}'
   if(!side.items || (!Array.isArray(side.items) && typeof side.items !== 'function')){
     return `
       react-super-app error => side.items should be an array of objects or function that returns array of objects 
@@ -457,7 +457,7 @@ function RSAValidateSide(side){
   for(let i = 0; i < side.items.length; i++){
     let item = side.items[i];
     let {text,show = ()=>true,attrs = {}} = item;
-    let sideItem_validProps = ['text','icon','attrs','show']
+    let sideItem_validProps = ['text','icon','attrs','show','onClick']
     for(let prop in item){
       if(sideItem_validProps.indexOf(prop) === -1){
         return `

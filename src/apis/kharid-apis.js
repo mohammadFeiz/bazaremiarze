@@ -21,11 +21,11 @@ export default function kharidApis({baseUrl,helper}) {
       const result = await Axios.get(`${baseUrl}/Users/GetEydaneStatus`);
       return { result: result.data.isSuccess && result.data.data };
     },
-    async updateProductPrice({ products, CampaignId, PriceListNum, cartId,cartName },{fixPrice}) {
+    async updateProductPrice({ products, CampaignId, PriceListNum, cartId,cartName },{actionClass}) {
       if (!products) { return {result:false} }
       if (!products.length) { return {result:[]} }
       let items = products.map(({ defaultVariant }) => {return { ItemCode: defaultVariant.code , itemCode : defaultVariant.code , ItemQty: 1 , itemQty : 1 };})
-      let fixed = fixPrice({items,CampaignId, PriceListNum})
+      let fixed = actionClass.fixPrice({items,CampaignId, PriceListNum})
       let res = products.map((o, i) => {return { ...o, ...fixed[i], cartId,cartName }})
       return {result:res};
     },
@@ -502,7 +502,7 @@ export default function kharidApis({baseUrl,helper}) {
       let result = actionClass.getShopById(cartId).payment(obj);
       return {result}
     },
-    async getProductFullDetail({ id, code, product },{userInfo,fixPrice,apis}) {
+    async getProductFullDetail({ id, code, product },{userInfo,actionClass,apis}) {
       //پروداکت رو همینجوری برای اینکه یک چیزی ریترن بشه فرستادم تو از کد و آی دی آبجکت کامل پروداکت رو بساز و ریترن کن
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
         {Ids: id,PerPage: 250,Include: "variants,option_types,product_properties,images"}
@@ -548,7 +548,7 @@ export default function kharidApis({baseUrl,helper}) {
         const srcs = variantImages.map(x => {
           return "https://spree.burux.com" + x.attributes.original_url;
         });
-        let price = fixPrice({items:[{ ItemCode: varSku, itemCode : varSku ,ItemQty: 1 , itemQty : 1}]})[0];
+        let price = actionClass.fixPrice({items:[{ ItemCode: varSku, itemCode : varSku ,ItemQty: 1 , itemQty : 1}]})[0];
         if (product.campaign) {
           price = await apis.request({api:'kharid.updateCampaignPrice',parameter:{campaignId:product.campaign.id, item:price}})
         }

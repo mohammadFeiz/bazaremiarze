@@ -20,7 +20,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
         async profile({model,mode},{Logger}){
             let url = {
                 'register':`${baseUrl}/Users/NewUser`,
-                'edit':`${baseUrl}/Users/UpdateUser`,
+                'profile':`${baseUrl}/Users/UpdateUser`,
                 'location':`${baseUrl}/Users/UpdateUser`
             }[mode];
             Logger.add(`profile payload (mode:${mode})`,{...model,itemPrices:'hidden by logger'},'profile-payload-' + mode)

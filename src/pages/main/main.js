@@ -12,7 +12,7 @@ import "./index.css";
 export default class Main extends Component {
   constructor(props) {
     super(props);
-    let { baseUrl,Logger } = this.props;
+    let { baseUrl,Logger,updateProfile } = this.props;
     props.apis.setProperty('getState',()=>{return {...this.state}});
     let actionClass = new ActionClass({
       getSelf:()=>this,
@@ -38,19 +38,15 @@ export default class Main extends Component {
       },
       headerContent:({ navId }) => <Header type='page' navId={navId} />,
       body:({ render }) => {
-        let {registered} = this.props;
         let {mounted} = this.state;
-        if(!registered){actionClass.openPopup('profile','register')}
-        else if(mounted){return render()}
+        if(mounted){return render()}
         else {return null}
       },
     })
     
     actionClass.manageUrl();
     this.state = {
-      developerMode:true,
-      actionClass,
-      Logger,
+      developerMode:true,actionClass,Logger,updateProfile,Login:props.Login,apis:props.apis,rsa,userInfo:props.userInfo,backOffice: props.backOffice,baseUrl,
       vitrin:{
         isFetch:false,
         update:(obj)=>{
@@ -84,26 +80,12 @@ export default class Main extends Component {
           });
         }
       },
-      Login:props.Login,
-      apis:props.apis,
-      rsa,
-      userInfo:props.userInfo,
-      backOffice: props.backOffice,
-      Shop_Bundle:{},
-      Shop_Regular:{},
-      baseUrl,
-      bazargahOrders: {
-        wait_to_get: undefined,
-        wait_to_send: undefined
-      },
+      Shop_Bundle:{},Shop_Regular:{},
+      bazargahOrders: {wait_to_get: undefined,wait_to_send: undefined},
       spreeCategories:{slider_type:[],icon_type:[],dic:{}},
       SetState: (obj) => this.setState(obj),
-      updateUserInfo: props.updateUserInfo,
-      allProducts: [],
       cart: {},//{variantId:{count,product,variant}}
-      guaranteeItems: [],
-      garanti_products_dic: {},
-      guaranteeExistItems: [],
+      guaranteeItems: [],garanti_products_dic: {},guaranteeExistItems: [],
     };
     let signalR = new SignalR(() => this.state);
     signalR.start();
@@ -115,8 +97,7 @@ export default class Main extends Component {
     
   }
   async componentDidMount() {
-    let { userInfo,registered } = this.props;
-    if(!registered){this.setState({}); return}
+    let { userInfo } = this.props;
     let {vitrin} = this.state;
     vitrin.fetchData();
     let {backOffice,actionClass} = this.state;

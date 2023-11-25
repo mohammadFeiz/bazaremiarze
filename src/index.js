@@ -18,7 +18,7 @@ class App extends Component {
     super(props);
     let baseUrl = this.getBaseUrl();
     this.state = {
-      apis: this.getApisInstance(baseUrl), Login: this.getLoginInstance(),registered:false,Logger:new AIOLog('bmlog'),
+      apis: this.getApisInstance(baseUrl), Login: this.getLoginInstance(),Logger:new AIOLog('bmlog'),
       baseUrl, isAutenticated: false, pageError: false, userInfo: {}, landing: false, splash: true, token: false
     }
   }
@@ -36,18 +36,71 @@ class App extends Component {
     return new AIOLogin({
       timer: 5, modes: ['OTPNumber', 'phoneNumber'], otpLength: 4, id: 'bazarmiarezelogin', userId,
       onSubmit: this.onLoginSubmit.bind(this), checkToken: this.checkToken.bind(this),
-      onAuth: this.onAuth.bind(this)
+      onAuth: this.onAuth.bind(this),
+      register:{
+        type:'mode',text:'ثبت نام در بازار می ارزه',
+        fields:[
+          ['*firstname','*lastname'],
+          ['*storeName_text_نام فروشگاه','*phone'],
+          ['password','repassword'],
+          '*location',
+          '*address',
+          ['*state','*city']
+        ]
+
+      }
     })
   }
-  updateUserInfo(obj,mode) {
-    let { userInfo, Login } = this.state;
-    let newUserInfo = { ...userInfo, ...obj };
-    this.setState({ userInfo: newUserInfo });
-    Login.setUserInfo(newUserInfo)
-    if(mode === 'register'){window.location.reload()}
-  }
+  // {html:'به خانواده بزرگ بروکس بپیوندید',className:'fs-12 theme-dark-font-color bold t-a-right'}
+  //           {html:'بیش از 8000 فروشگاه در سطح کشور عضو این خانواده هستند',className:'fs-10 theme-medium-font-color t-a-right'}
   async getUserInfo(userInfo = this.state.userInfo) {
     return await this.state.apis.request({ api: 'login.getUserInfo', parameter: userInfo, description: 'دریافت اطلاعات کاربری',loading:false })
+  }
+  async updateProfile(loginModel,mode,callback){
+    let model = {};
+    if(mode === 'register'){model = loginModel.register}
+    else if(mode === 'profile'){model = loginModel.profile}
+    else if(mode === 'location'){model = loginModel.profile}
+    let {apis,userInfo} = this.state;
+    let obj = {
+      ...userInfo,
+      landlineNumber:model.phone,
+      landline:model.phone,
+      latitude:model.location.lat,
+      longitude:model.location.lng,
+      firstName:model.firstname,
+      lastName:model.lastname,
+      password:model.password,
+      storeName:model.storeName,
+      address:model.address,
+      userProvince:model.state,
+      userCity:model.city
+    }
+    let description = {register:'ثبت نام',profile:'ویرایش حساب کاربری',location:'ثبت موقعیت جغرافیایی'}[mode]
+    let res = await apis.request({
+        api:'login.profile',parameter:{model:{...userInfo,...obj},mode},description,loading:false,
+        onCatch:(error)=>{
+            let {response,message,Message} = error;
+            if(response && response.data){
+                let {message,Message} = response.data;
+                if(message || Message){return message || Message}
+            }
+            return message || Message || 'خطای نا مشخص onCatch'
+        },
+        getError:(response)=>{
+            if(!response.data.isSuccess){
+                let {message,Message} = response.data;
+                return message || Message || 'خطای نا مشخص onError'
+            }   
+        }
+    })
+    if(typeof res === 'object'){
+      let { userInfo, Login } = this.state;
+      let newUserInfo = { ...userInfo, ...obj };
+      this.setState({ userInfo: newUserInfo });
+      Login.setUserInfo(newUserInfo)
+      callback()
+    }
   }
   async checkToken(token) {
     let { apis, Login } = this.state;
@@ -69,11 +122,10 @@ class App extends Component {
     }
     else if (res === false) { return false }
   }
-  async onAuth({ token,userId }){
+  async onAuth({ token }){
     let { apis } = this.state;
-    let registered = await apis.request({api:'login.checkIsRegistered',parameter:userId,loading:false});
     apis.setToken(token);
-    this.setState({ token, isAutenticated: true,registered })
+    this.setState({ token, isAutenticated: true })
   }
   async onLoginSubmit(model, mode) {
     let { apis, Login } = this.state;
@@ -89,7 +141,7 @@ class App extends Component {
       if (typeof res === 'object') {
         let { id: userId } = res;
         this.setState({ userId })
-        return { nextMode: 'OTPCode' }
+        Login.setMode('OTPCode')
       }
     }
     else if (mode === 'OTPCode' || mode === 'phoneNumber') {
@@ -101,14 +153,20 @@ class App extends Component {
         let { accessToken } = res;
         let token = accessToken.access_token;
         let userInfo = await this.getUserInfo(res);
-        Login.setUserInfo(userInfo);
+        let registered = await apis.request({api:'login.checkIsRegistered',parameter:phoneNumber,loading:false});
+        if(registered){
+          Login.setUserInfo(userInfo);
+          Login.setToken(token);
+          Login.setMode('auth'); 
+        }
+        else {Login.setMode('register');}
         this.setState({ userInfo });
-        return { nextMode: 'auth', token }
       }
     }
+    else if(mode === 'register'){this.updateProfile(model.register,'register',()=>window.location.reload)}
   }
   async componentDidMount() {
-    let { baseUrl, apis } = this.state;
+    let { baseUrl, apis,Login } = this.state;
     try {
       const response = await Axios.get(`${baseUrl}/BackOffice/GetLastCampaignManagement?type=backoffice`);
       let backOffice;
@@ -135,20 +193,13 @@ class App extends Component {
     this.setState({ splash: false })  
   }
   render() {
-    let { isAutenticated, userInfo, registered, pageError, landing, backOffice, splash, apis, Login, baseUrl,Logger } = this.state;
+    let { isAutenticated, userInfo, pageError, landing, backOffice, splash, apis, Login, baseUrl,Logger } = this.state;
     if (splash) { return <Splash /> }
     if (landing) { return <Landing onClose={() => this.setState({ landing: false })} items={landing} /> }
     if (pageError) { return <PageError {...pageError} /> }
     if (isAutenticated) {
-      return (
-        <Main
-          apis={apis} Login={Login} Logger={Logger} registered={registered}
-          userInfo={userInfo}
-          backOffice={backOffice}
-          updateUserInfo={this.updateUserInfo.bind(this)}
-          baseUrl={baseUrl}
-        />
-      )
+      let props = {apis,Login,Logger,userInfo,backOffice,baseUrl,updateProfile:this.updateProfile.bind(this)}
+      return (<Main {...props}/>)
     }
     //اسپلش یک پلیس هولدر هست که میتونه یک تابع برای رندر محتوی بگیره و ما اینجا براش رندر کامپوننت لاگین رو می فرستیم
     return <Splash content={()=>Login.render()}/>

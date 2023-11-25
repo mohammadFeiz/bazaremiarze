@@ -266,16 +266,19 @@ export default class ActionClass {
         else if (linkTo.indexOf('openPopup') === 0) { this.openPopup(linkTo.split('_')[1]); }
         else if (linkTo.indexOf('bottomMenu') === 0) { rsa.setNavId(linkTo.split('_')[1]) }
     }
+    isLocationMissed = () => {
+        let { userInfo:u } = this.getProps();
+        if(!u.latitude){return true}
+        if(!u.longitude){return true}
+        if(!u.userProvince){return true}
+        if(!u.userCity){return true}
+        let delta = Math.sqrt(Math.pow(Math.abs(u.latitude - 35.699739),2) + Math.pow(Math.abs(u.longitude - 51.338097),2));
+        if(delta < 0.0006){return true}
+        return false
+    }
     handleMissedLocation = () => {
         setTimeout(() => {
-            try {
-                let { userInfo } = this.getProps();
-                let { latitude, longitude, userProvince, userCity } = userInfo;
-                if (!userProvince || !userCity || !latitude || !longitude || Math.abs(latitude - 35.699739) < 0.0002 || Math.abs(longitude - 51.338097) < 0.0002) {
-                    this.openPopup('profile','location')
-                }
-            }
-            catch { }
+            try {if(this.isLocationMissed()){this.openPopup('profile','location')}} catch { }
         }, 1000)
     }
     getHeaderIcons = (obj) => {
@@ -353,21 +356,32 @@ export default class ActionClass {
             })
         }
         else if (type === 'profile') {
-            let { userInfo,Login} = this.getProps();
+            let { userInfo,Login,updateProfile} = this.getProps();
             let mode = parameter;
-            let title = {register:'ثبت نام',edit:'ویرایش حساب کاربری',location:'ثبت موقعیت جغرافیایی'}[parameter]
-            let subtitle = `شماره:${userInfo.phoneNumber || userInfo.userName}`
-            if(mode !== 'register'){subtitle += ` - کد : ${userInfo.cardCode}`}
-            let header = {
-                title,subtitle
+            let title = {profile:'ویرایش حساب کاربری',location:'ثبت موقعیت جغرافیایی'}[mode]
+            let subtitle = `شماره:${userInfo.phoneNumber || userInfo.userName} - کد : ${userInfo.cardCode}`
+            let header = {title,subtitle}
+            let model = {
+                firstname:userInfo.firstName,
+                lastname:userInfo.lastName,
+                location:{lat:userInfo.latitude,lng:userInfo.longitude},
+                storeName:userInfo.storeName,
+                phone:userInfo.landline || userInfo.landlineNumber,
+                address:userInfo.address,
+                city:userInfo.userCity,
+                state:userInfo.userProvince
             }
-            if(mode === 'register'){
-                header.onClose = false;
-                header.buttons = [
-                    ['خروج از حساب',{onClick:()=>Login.logout(),className:'theme-link-font-color fs-12 bold'}]
-                ]
+            let fields = [];
+            if(mode === 'profile'){
+                fields = [['*firstname','*lastname'],['*storeName_text_نام فروشگاه','*phone'],'*location','*address',['*state','*city']]
             }
-            addModal({position: 'fullscreen', id: type,header,body: {attrs:{className:'profile-container'},render: () => <Register mode={mode}/>}})
+            if(mode === 'location'){
+                fields = ['*location','*address',['*state','*city']]
+            }
+            let onSubmit = async (model) => await updateProfile(model,mode,()=>removeModal(type));
+            addModal({position: 'fullscreen', id: type,header,body: {attrs:{className:'profile-container'},render: () => {
+                return <Register renderLogin={()=>Login.render({profile:{model,onSubmit,fields}})} mode={mode}/>
+            }}})
         }
         else if (type === 'logs') {
             addModal({ position: 'fullscreen', id: type, body: { render: () => Logger.render() }, header: { title: 'رفتار سیستم' } })

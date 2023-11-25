@@ -109,7 +109,7 @@ export default class Profile extends Component{
                                         >مشاهده و ویرایش</button>]]
                                 
                             ]}
-                            onClick={()=>actionClass.openPopup('profile','edit')}
+                            onClick={()=>actionClass.openPopup('profile','profile')}
                         />
                     )
                 },

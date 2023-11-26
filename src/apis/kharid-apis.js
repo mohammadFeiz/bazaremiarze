@@ -6,7 +6,43 @@ import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
 
 export default function kharidApis({baseUrl,helper}) {
+  class getTaxonsTree{
+    res = []
+    getTree = (data)=>this.getTree_req(data)
+    getTree_req = (data,parentId) => data.filter((o)=>o.parentId === parentId).map((o)=>{
+      return {id:o.id,name:o.name,parentId:o.parentId,childs:this.getTree_req(data,o.id)}
+    })
+  }
   return {
+    async getSpreeTaxonomies(){
+      const response = await Axios.post(`${baseUrl}/spree/getAllCategories`,{Taxon:10673,});
+      debugger
+      let list = response.data.data.data;
+      list = list.map(({attributes,relationships,id})=>{
+        let {name,is_leaf,is_root} = attributes;
+        let {parent} = relationships;
+        let parentId = parent.data.id;
+        return {name,id,parentId}
+      })
+      list = new getTaxonsTree().getTree(list);
+      debugger
+      // return [
+      //   {
+      //     id:'0',name:'cat-0',
+      //     childs:[
+      //       {id:'00',name:'cat_00'},
+      //       {id:'01',name:'cat_01'}
+      //     ]
+      //   },
+      //   {
+      //     id:'1',name:'cat-1',
+      //     childs:[
+      //       {id:'10',name:'cat_10'},
+      //       {id:'11',name:'cat_11'}
+      //     ]
+      //   }
+      // ]
+    },
     async checkCode({type,code}){
       const response = await Axios.get(`${baseUrl}/os/couponvalidation?code=${code}`);
       if(response.data.isSuccess){
@@ -606,12 +642,7 @@ export default function kharidApis({baseUrl,helper}) {
     },
     async getSpreeProducts({ Taxons,pageSize = 250,pageNumber,ids,Name },{ userInfo,apis }) {
       let body = {
-        CardCode: userInfo.cardCode,
-        Taxons,
-        Name,
-        ids,
-        PerPage: pageSize,
-        Page:pageNumber,
+        CardCode: userInfo.cardCode,Taxons,Name,ids,PerPage: pageSize,Page:pageNumber,
         ProductFields: "id,name,type,sku,slug,default_variant,images,price",
         VariantFields: "id,sku,type,images",
         Include: "default_variant,images"
@@ -918,56 +949,6 @@ export default function kharidApis({baseUrl,helper}) {
       let result = products
       return {result}
     },
-    async getVersion() {
-      // let res = await Axios.get(`${baseUrl}/Update/NewVersion`);
-      let res = await Axios.get(`${baseUrl}/Update/GetLastVersion`);
-      let result;
-      if (res.data.isSuccess) {result =  res.data.data.version;}
-      else{result = false;}
-      return {result}
-    },
-    async changeVersion() {
-      let res = await Axios.get(`${baseUrl}/Update/NewVersion`);
-      return {result:res.data.isSuccess}
-    },
-    async kharide_eydane(undefined,{ userInfo }) {
-      // let body = {
-      //   "marketdoc":{
-      //     "CardCode":userInfo.cardCode,
-      //     "CardGroupCode": userInfo.groupCode,
-      //     "MarketingLines":[{ ItemCode: 'x1401', ItemQty: 1 }],
-      //     "DeliverAddress":userInfo.address,
-      //     "marketingdetails":{}
-      //   },
-      //   SettleType:1,
-      //   PaymentTime:5,
-      //   DeliveryType:11,
-      //   PayDueDate:1
-      // }
-      let body = {
-        "Document": {
-          "CardCode": userInfo.cardCode,
-          "CardGroupCode": userInfo.groupCode,
-          "MarketingLines": [{ ItemCode: 'x1401', ItemQty: 1 }],
-          "DeliverAddress": userInfo.address,
-          "marketingdetails": {
-            SettleType: 1,
-            PaymentTime: 5,
-            DeliveryType: 11,
-            PayDueDate: 1
-          }
-        },
-        "Price": "117021120",
-        "CallbackUrl": "https://bazar.miarze.com",
-      }
-      let res = await Axios.post(`${baseUrl}/PayMent/EydaneRequest`, body);
-      let result;
-      try {
-        window.location.href = res.data.data
-      }
-      catch { result = false }
-      return {result}
-    }
   }
 }
 

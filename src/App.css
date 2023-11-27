@@ -746,3 +746,14 @@ button{
 .bm-profile-form .aio-input input{
 	text-align:right;
 }
+
+
+.aio-input-image .aio-input-file{
+	background:none;
+}
+.aio-input-image-placeholder{
+	box-sizing:border-box;
+}
+.aio-input-file-value{
+	justify-content: center;
+}

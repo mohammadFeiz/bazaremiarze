@@ -1,7 +1,7 @@
 import React, { Component, createContext, useState,useEffect,useContext } from "react";
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import { Icon } from '@mdi/react';
-import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeft, mdiArrowLeftBold, mdiDisc, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave, mdiDelete } from '@mdi/js';
+import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeft, mdiArrowLeftBold, mdiDisc, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiImage } from '@mdi/js';
 import appContext from "./app-context";
 import AIOInput from './npm/aio-input/aio-input';
 import AIOStorage from 'aio-storage';
@@ -179,13 +179,14 @@ export default class BackOffice extends Component {
     }
   }
   getContext() {
-    let { apis } = this.context, { model, currentVersions } = this.state;
+    let { apis } = this.context, { model, currentVersions,tabs } = this.state;
     return {
       model, currentVersions, apis,
       setModel: (key, value) => {
         let newModel = { ...model, [key]: value }
         this.setState({ model: newModel })
       },
+      tabs,
       update:(model)=>this.setState({model,tabs:this.getTabs(model)}),
     }
   }
@@ -215,19 +216,8 @@ class RegularSetting extends Component {
 }
 class AccessManagement extends Component {
   static contextType = BackOfficeContext;
-  state = {
-    pn:'',
-    items:[
-      {text:'تنظیمات شیپینگ',value:'shippingOptions'},
-      {text:'لیست قیمت',value:'priceList'},
-      {text:'مدیریت محتوی',value:'contentManagement'},
-      {text:'تنظیمات اپ',value:'appsetting'},
-      {text:'مدیریت دسترسی',value:'accessmanagement'},
-      {text:'مدیریت اسپری',value:'spreeManagement'},
-      {text:'پیشنهاد ویترین',value:'vitrinSuggestion'},
-      {text:'دسته بندی ویترین',value:'vitrinCategories'}
-    ]
-  }
+  state = {pn:'',items:[]}
+  componentDidMount(){this.setState({items:this.context.tabs})}
   header_layout(){
     let {pn} = this.state;
     return {
@@ -1425,38 +1415,15 @@ class VitrinCategories extends Component{
     super(props);
     this.state = {list:[]}
   }
+  change(){
+    this.setState({});
+    let {setModel} = this.context;
+    let {list} = this.state;
+    setModel('vitrinCategories',list)
+  }
   componentDidMount(){
     let {model} = this.context;
-    let {vitrinCategories = [
-      {
-        name:'row_0',id:'0',childs:[
-            {name:'row_00',id:'00',childs:[
-              {name:'row_000',id:'000',childs:[]},
-              {name:'row_001',id:'001',childs:[]},
-              {name:'row_002',id:'002',childs:[]},
-            ]},
-            {name:'row_01',id:'01',childs:[
-              {name:'row_010',id:'010',childs:[]},
-              {name:'row_011',id:'011',childs:[]},
-              {name:'row_012',id:'012',childs:[]},
-            ]}
-        ]
-      },
-      {
-        name:'row_1',id:'1',childs:[
-            {name:'row_10',id:'10',childs:[
-              {name:'row_100',id:'100',childs:[]},
-              {name:'row_101',id:'101',childs:[]},
-              {name:'row_102',id:'102',childs:[]},
-            ]},
-            {name:'row_11',id:'11',childs:[
-              {name:'row_110',id:'110',childs:[]},
-              {name:'row_111',id:'111',childs:[]},
-              {name:'row_112',id:'112',childs:[]},
-            ]}
-        ]
-      }
-    ]} = model;
+    let {vitrinCategories = []} = model;
     this.setState({list:vitrinCategories});
   }
   getColumn(){
@@ -1469,49 +1436,80 @@ class VitrinCategories extends Component{
       return {
         style:{paddingRight:level * 12},
         column:[
-          this.row_layout(o,parent,i),
+          this.row_layout(o,parent,i,!childs.length),
           {show:!!childs.length && o.open !== false,column:this.getColumn_req(childs,level + 1,o)}
         ]
       }
     })
   }
-  row_layout(o,parent,index){
+  add(o){
+    let id = window.prompt('آی دی دسته بندی را وارد کنید');
+    if(typeof id === 'string'){
+      let obj = {name:'',id:+id,open:true,childs:[]}
+      if(o){o.childs.push(obj); }
+      else{this.state.list.push(obj)}
+      this.change()
+    }
+  }
+  remove(o,parent,index){
+    if(!parent){this.state.list = this.state.list.filter((o,i)=>index !== i)}
+    else{parent.childs = parent.childs.filter((o,i)=>i !== index); }
+    this.change()
+  }
+  row_layout(o,parent,index,isLeaf){
     let toggle = o.childs.length?<Icon path={o.open === false?mdiChevronLeft:mdiChevronDown} size={1}/>:''
-    let add = <Icon path={mdiPlusThick} size={1}/>;
-    let remove = <Icon path={mdiDelete} size={1}/>;
+    let options = ()=>(
+      <AIOInput
+        type='select' caret={false} style={{background:'none'}}
+        options={[
+          {text:'افزودن زیر شاخه',value:'add',before:<Icon path={mdiPlusThick} size={1}/>},
+          {text:'حذف شاخه',value:'remove',disabled:!isLeaf,before:<Icon path={mdiDelete} size={1}/>},
+        ]}
+        text={<Icon path={mdiDotsHorizontal} size={1}/>}
+        onChange={(v)=>this[v](o,parent,index)}
+      />
+    )
     return {
-      style:{height:48,color:'#fff'},gap:6,
+      style:{border:'1px solid #343e5d'},
+      className:'h-72 br-6 m-b-6',
       row:[
-        {size:32,align:'vh',html:toggle,onClick:()=>{o.open = o.open === undefined?false:!o.open; this.setState({})}},
-        {size:32,align:'vh',html:add,onClick:()=>{o.childs.push({name:'',id:'',open:true,childs:[]}); this.setState({})}},
+        {size:32,align:'vh',html:toggle,onClick:()=>{o.open = o.open === undefined?false:!o.open; this.change()}},
         {
-          flex:1,align:'vh',html:(
-            <AIOInput
-              type='text' className='h-36' style={{background:'rgba(0,0,0,0.2)',textAlign:'right'}}
-              value={o.name}
-              onChange={(value)=>{o.name = value; this.setState({})}}
+          size:72,align:'vh',html:(
+            <Image
+              id={'categoryimage-' + o.id}
+              style={{border:'1px solid #343e5d',background:'none',width:72,height:72}}
+              value={o.imageUrl}
+              onChange={(url)=>{
+                o.imageUrl = url;
+                this.change()
+              }}
+              placeholder={<Icon path={mdiImage} size={2}/>}
             />
           )
         },
+        {size:6},
         {
-          size:60,align:'vh',html:(
-            <AIOInput
-              type='text' className='h-36' style={{background:'rgba(0,0,0,0.2)'}}
-              value={o.id}
-              onChange={(value)=>{o.id = value; this.setState({})}}
-            />
-          )
-        },
-        {size:32,align:'vh',html:remove,onClick:()=>{
-          if(!parent){
-            this.setState({list:this.state.list.filter((o,i)=>index !== i)})
-          }
-          else{
-            parent.childs = parent.childs.filter((o,i)=>i !== index); 
-            this.setState({})
-          }
-          
-        }},
+          flex:1,
+          column:[
+            {
+              flex:1,
+              row:[
+                {flex:1,align:'v',html:`آی دی دسته بندی: ${o.id}`,className:'t-a-right fs-12'},
+                {size:32,align:'vh',html:options()}
+              ]
+            },
+            {
+              flex:1,align:'vh',html:(
+                <AIOInput
+                  type='text' className='h-100' style={{background:'rgba(0,0,0,0.2)',textAlign:'right'}}
+                  value={o.name}
+                  onChange={(value)=>{o.name = value; this.change()}}
+                />
+              )
+            },
+          ]
+        }
       ]
     }
   }
@@ -1519,8 +1517,22 @@ class VitrinCategories extends Component{
     return (
       <RVD
         layout={{
-          className:'p-12 ofy-auto',
-          column:this.getColumn()
+          className:'p-h-12',style:{color:'#fff'},
+          column:[
+            {
+              size:48,align:'v',
+              html:(
+                <button 
+                  onClick={()=>this.add()} className='align-v p-h-12 br-6' 
+                  style={{gap:4,background:'dodgerblue',color:'#fff',border:'none'}}
+                ><Icon path={mdiPlusThick} size={.8}/>افزودن دسته بندی</button>
+              )
+            },
+            {
+              flex:1,className:'ofy-auto',
+              column:this.getColumn()
+            }
+          ]
         }}
       />
     )

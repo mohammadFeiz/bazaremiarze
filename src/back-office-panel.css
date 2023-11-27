@@ -173,6 +173,14 @@
     font-size:12px;
     width:100%;
 }
+.back-office .aio-input-select-option.disabled,.back-office .aio-input-multiselect-option.disabled{
+    background:#324354;
+    opacity:1;
+    color:#4f6579;
+    height:30px;
+    font-size:12px;
+    width:100%;
+}
 .back-office-content-activity{
     color:#fff;
     background: var(--bo-color-6);

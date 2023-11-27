@@ -128,6 +128,7 @@ class App extends Component {
     this.setState({ token, isAutenticated: true })
   }
   async onLoginSubmit(model, mode) {
+    debugger
     let { apis, Login } = this.state;
     let onCatch = (error) => {
       try { return error.response.data.Message }
@@ -163,7 +164,7 @@ class App extends Component {
         this.setState({ userInfo });
       }
     }
-    else if(mode === 'register'){this.updateProfile(model.register,'register',()=>window.location.reload)}
+    else if(mode === 'register'){this.updateProfile(model.register,'register',()=>window.location.reload())}
   }
   async componentDidMount() {
     let { baseUrl, apis,Login } = this.state;

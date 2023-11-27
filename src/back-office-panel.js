@@ -111,6 +111,9 @@ export default class BackOffice extends Component {
       { text: 'دسته بندی ویترین', value: 'vitrinCategories', show: this.hasAccess('vitrinCategories',model) }
     ]
   }
+  async removeImage(){
+    return true
+  }
   hasAccess(tab,model){
     let {phoneNumber} = this.props;
     let {accessPhoneNumbers = []} = model;
@@ -181,7 +184,7 @@ export default class BackOffice extends Component {
   getContext() {
     let { apis } = this.context, { model, currentVersions,tabs } = this.state;
     return {
-      model, currentVersions, apis,
+      model, currentVersions, apis,tabs,
       setModel: (key, value) => {
         let newModel = { ...model, [key]: value }
         this.setState({ model: newModel })
@@ -1419,6 +1422,7 @@ class VitrinCategories extends Component{
     this.setState({});
     let {setModel} = this.context;
     let {list} = this.state;
+    debugger
     setModel('vitrinCategories',list)
   }
   componentDidMount(){
@@ -1451,10 +1455,14 @@ class VitrinCategories extends Component{
       this.change()
     }
   }
-  remove(o,parent,index){
-    if(!parent){this.state.list = this.state.list.filter((o,i)=>index !== i)}
-    else{parent.childs = parent.childs.filter((o,i)=>i !== index); }
-    this.change()
+  async remove(o,parent,index){
+    let {removeImage} = this.context;
+    let res = await removeImage('categoryimage-' + o.id);
+    if(res === true){
+      if(!parent){this.state.list = this.state.list.filter((o,i)=>index !== i)}
+      else{parent.childs = parent.childs.filter((o,i)=>i !== index); }
+      this.change()
+    }
   }
   row_layout(o,parent,index,isLeaf){
     let toggle = o.childs.length?<Icon path={o.open === false?mdiChevronLeft:mdiChevronDown} size={1}/>:''
@@ -1470,8 +1478,7 @@ class VitrinCategories extends Component{
       />
     )
     return {
-      style:{border:'1px solid #343e5d'},
-      className:'h-72 br-6 m-b-6',
+      style:{border:'1px solid #343e5d'},className:'h-72 br-6 m-b-6',
       row:[
         {size:32,align:'vh',html:toggle,onClick:()=>{o.open = o.open === undefined?false:!o.open; this.change()}},
         {
@@ -1479,7 +1486,7 @@ class VitrinCategories extends Component{
             <Image
               id={'categoryimage-' + o.id}
               style={{border:'1px solid #343e5d',background:'none',width:72,height:72}}
-              value={o.imageUrl}
+              url={o.imageUrl}
               onChange={(url)=>{
                 o.imageUrl = url;
                 this.change()

@@ -640,8 +640,9 @@ export default function kharidApis({baseUrl,helper}) {
       let result = await apis.request({api:'kharid.getMappedAllProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data, loadType }})
       return {result};
     },
-    async getSpreeProducts({ Taxons,pageSize = 250,pageNumber,ids,Name },{ userInfo,apis }) {
+    async getSpreeProducts({ Taxons,pageSize = 250,pageNumber,ids,Name,vitrin },{ userInfo,apis }) {
       let body = {
+        vitrin,
         CardCode: userInfo.cardCode,Taxons,Name,ids,PerPage: pageSize,Page:pageNumber,
         ProductFields: "id,name,type,sku,slug,default_variant,images,price",
         VariantFields: "id,sku,type,images",

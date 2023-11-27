@@ -268,6 +268,7 @@ export default class ActionClass {
     }
     isLocationMissed = () => {
         let { userInfo:u } = this.getProps();
+        debugger
         if(!u.latitude){return true}
         if(!u.longitude){return true}
         if(!u.userProvince){return true}

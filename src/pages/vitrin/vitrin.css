@@ -9,3 +9,35 @@
     background:#3B55A5;
     
 }
+.vitrin-category-sibling-items{
+    overflow-x:auto; 
+    padding:6px; 
+    font-weight:bold;
+    height:40px;
+}
+.vitrin-category-sibling-items::-webkit-scrollbar {
+    display: none;
+}
+.vitrin-category-path-item{
+    color:#3B55A5;
+    padding:3px;
+    font-size:11px;
+    border:1px solid #ddd;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    border-radius:4px;
+}
+
+.vitrin-category-sibling-item{
+    background:#3B55A5;
+    color:#fff;
+    padding:6px;
+    border-radius:6px;
+    font-size:11px;
+}
+.vitrin-category-path-item.is-last{
+    color:#333;
+    font-size:12px;
+    border:none;
+}

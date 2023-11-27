@@ -19,14 +19,14 @@ export default function vitrinApis({baseUrl,helper}) {
             return {result:res.data.message}
         },
         async v_updateMyVitrin({id,state,product}){
-            let res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrin` , {ProductId : id , state : !state , B1Code : product.code});
+            let res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrin` , {ProductId : id , state : !state , B1Code : product.code,Price:product.price});
             if(res.data.isSuccess === true){
                 return {result:true}
             }
             else {return res.data.message}
         },
         async v_kolle_mahsoolat({pageSize,pageNumber,searchValue},{apis}){
-            let products = await apis.request({api:'kharid.getSpreeProducts',loading:false,parameter:{ Taxons: '10673',pageSize,pageNumber,Name:searchValue, }});
+            let products = await apis.request({api:'kharid.getSpreeProducts',loading:false,parameter:{ Taxons: '10673',vitrin:true,pageSize,pageNumber,Name:searchValue, }});
             let allProducts;
             allProducts = products.map((o)=>{return {id : o.id , name : o.name , price:o.FinalPrice / 10 , src:o.srcs[0] , inStock:true , code : o.defaultVariant?o.defaultVariant.code:o.code}  });
             return {result:allProducts}
@@ -37,7 +37,7 @@ export default function vitrinApis({baseUrl,helper}) {
             return {result:ids}
         },
         async v_getProductsByIds(ids,{apis}){
-            let products = await apis.request({api:'kharid.getSpreeProducts',loading:false,parameter:{ ids,Taxons:'10673' }});
+            let products = await apis.request({api:'kharid.getSpreeProducts',loading:false,parameter:{ ids,vitrin:true,Taxons:'10673' }});
             //products = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, cartId: 'Regular' }});
             products = products.map((o)=>{return {id : o.id , name : o.name , price:o.FinalPrice , src:o.srcs[0] , inStock:true , code : o.defaultVariant?o.defaultVariant.code:o.code}  });
             return {result:products}

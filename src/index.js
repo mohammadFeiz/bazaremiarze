@@ -57,6 +57,7 @@ class App extends Component {
     return await this.state.apis.request({ api: 'login.getUserInfo', parameter: userInfo, description: 'دریافت اطلاعات کاربری',loading:false })
   }
   async updateProfile(loginModel,mode,callback){
+    debugger
     let model = {};
     if(mode === 'register'){model = loginModel.register}
     else if(mode === 'profile'){model = loginModel.profile}
@@ -164,7 +165,7 @@ class App extends Component {
         this.setState({ userInfo });
       }
     }
-    else if(mode === 'register'){this.updateProfile(model.register,'register',()=>window.location.reload())}
+    else if(mode === 'register'){this.updateProfile(model,'register',()=>window.location.reload())}
   }
   async componentDidMount() {
     let { baseUrl, apis,Login } = this.state;

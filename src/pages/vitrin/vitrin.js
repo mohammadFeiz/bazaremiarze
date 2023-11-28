@@ -9,8 +9,7 @@ import SplitNumber from './../../npm/aio-functions/split-number';
 import appContext from "../../app-context";
 import Icon from "@mdi/react";
 import vbsrc from './../../images/vitrin-bazargah.png';
-import { mdiCamera, mdiChevronLeft, mdiClose, mdiFilter, mdiMagnify, mdiMenu, mdiPlus, mdiPlusThick } from "@mdi/js";
-import vitrin_niazsanji_src from './../../images/vitrin-niazsanji.jpg';
+import { mdiCamera, mdiChevronLeft, mdiClose, mdiMagnify, mdiPlus } from "@mdi/js";
 import VitrinContext from "../../vitrin-context";
 import './vitrin.css';
 function getMockProducts(){
@@ -78,8 +77,8 @@ export default class Vitrin extends Component {
             miarze_porforoosh: [],
             //miarze_categories: [],
             miarze_brands: [],
-            page: 2,
-            popup:{}
+            popup:{},
+            viewProducts:'list'
         }
     }
     updateSelectedProducts(id,product) {
@@ -123,27 +122,14 @@ export default class Vitrin extends Component {
         if (name === 1) {
             addModal({
                 id: name,position: 'fullscreen',header:{title: 'بروزرسانی ویترین من'},
-                body: {render:() => <VitrinPage1 isWizard={false}/>}
+                body: {render:() => <VitrinPage1/>}
             })
-        }
-        else if (name === 2) {
-            addModal({id:name,position: 'fullscreen',header:{title: 'ویترین من'},body: {render:() => <VitrinPage2 />}})
         }
         else if (name === 'search'){
             addModal({
-                id:name,
-                position: 'fullscreen', 
+                id:name,position: 'fullscreen', 
                 header:{title: 'افزودن محصول به ویترین من',attrs:{className:'vitrin-search-popup-header'}},
-                body: {render:() => (
-                    <SearchProducts 
-                        onClose={() => removeModal()} 
-                        isFirstTime={parameter}
-                        onNext={()=>{
-                            removeModal();
-                            this.setState({page:2})
-                        }}
-                    />
-                )}
+                body: {render:() => (<SearchProducts onClose={() => removeModal()} isFirstTime={parameter}/>)}
             })
         }
     }
@@ -155,14 +141,12 @@ export default class Vitrin extends Component {
         })
     }
     landing_layout() {
-        let { vitrin } = this.context;
-        let {started} = vitrin;
+        let { vitrin } = this.context,{started} = vitrin;
         if (started === undefined) { return null }
         return (
             <RVD
                 layout={{
-                    className: 'page-bg ofy-auto',
-                    style:{background:'#fff'},
+                    className: 'page-bg ofy-auto',style:{background:'#fff'},
                     column: [
                         { html: (<img src={image_src} alt='' width='240' height='259' />), align: 'vh' },
                         { size: 12 },
@@ -175,21 +159,13 @@ export default class Vitrin extends Component {
                         {size:36},
                         
                         {
-                            show: started === false,
-                            align: 'vh',
-                            className:'p-h-24',
+                            show: started === false,align: 'vh',className:'p-h-24',
                             html: (<button style={{ width: '100%', borderRadius: 24,height:48 }} className="button-2" onClick={() => this.start()}>شروع کن</button>)
                         },
-                        {
-                            html:<img src={vitlan2} width='100%' alt=''/>
-                        },
+                        {html:<img src={vitlan2} width='100%' alt=''/>},
                         {size:24},
-                        {
-                            html:<img src={vitlan1} width='100%' alt=''/>
-                        },
-                        {size:24},
-                        
-
+                        {html:<img src={vitlan1} width='100%' alt=''/>},
+                        {size:24}
                     ]
                 }}
             />
@@ -207,44 +183,9 @@ export default class Vitrin extends Component {
             updateSelectedProducts: this.updateSelectedProducts.bind(this)
         }
     }
-    header() {
-        return (
-            <RVD
-                layout={{
-                    row: [
-                        { flex: 1 },
-                        this.exit_layout(),
-                        { size: 12 }
-                    ]
-                }}
-            />
-        )
-    }
-    getContent() {
-        let {vitrin} = this.context;
-        let { started } = vitrin;
-        let { page } = this.state;
-        if (started !== true) { return  }
-        if (page === 1) { 
-            return (
-                <VitrinPage1 isWizard={true}/>
-            ) 
-        }
-        if (page === 2) { return <VitrinPage2 /> }
-    }
     render() {
         let {vitrin} = this.context;
-        if(!vitrin){
-            return (
-                <RVD
-                    layout={{
-                        style:{position:'absolute',left:0,top:0},
-                        className:'align-vh w-100 h-100',
-                        html:'در حال بارگزاری ویترین'
-                    }}
-                />
-            )
-        }
+        if(!vitrin){return (<RVD layout={{style:{position:'absolute',left:0,top:0},className:'align-vh w-100 h-100',html:'در حال بارگزاری ویترین'}}/>)}
         let { started } = vitrin;
         return (
             <VitrinContext.Provider value={this.getContext()}>
@@ -303,24 +244,10 @@ class VitrinPage1 extends Component {
     }
     
     products_layout() {
-        let {vitrin,updateSelectedProducts} = this.context;
+        let {vitrin} = this.context;
         let { selectedProducts } = vitrin;
-        let items;
-        if(!selectedProducts){items = getMockProducts()}
-        else{items = Object.keys(selectedProducts).map((id) => selectedProducts[id])}
-        if (items.length % 2 !== 0) { items.push({}) }
-        return {
-            grid: items.map((o) => {
-                let { name, src, price, id } = o;
-                let props = { name, src, price, id, selected: true };
-                return {flex: 1,html: (<ProductCard loading={!selectedProducts} {...props} onSelect={(id) => updateSelectedProducts(id,o)}/>)}
-            }),
-            gridCols: 2
-        }
-    }
-    next(){
-        let {SetState} = this.context;
-        SetState({page:2})
+        let products = selectedProducts?Object.keys(selectedProducts).map((id) => selectedProducts[id]):undefined
+        return {html:<Products products={products}/>}
     }
     render() {
         return (
@@ -423,36 +350,11 @@ class SearchProducts extends Component {
     
     products_layout() {
         let {products,paging} = this.state;
-        let Products;
-        if(!products){Products = getMockProducts()}
-        else {
-            Products = products;
-            if (Products.length % 2 !== 0) {Products.push({})}
-        }
         return {
             html:(
                 <AIOInput
-                    type='table'
-                    value={products}
-                    paging={paging}
-                    rowsTemplate={()=>{
-                        return (
-                            <RVD
-                                layout={{
-                                    className: 'ofy-auto',
-                                    grid: Products.map((o) => {
-                                        let {vitrin,updateSelectedProducts} = this.context;
-                                        let { selectedProducts } = vitrin;
-                                        let { name, src, price, id } = o;
-                                        let selected = !!selectedProducts[id];
-                                        let props = {name, src, price, selected, id,onSelect: (id) => updateSelectedProducts(id,o)};
-                                        return {flex: 1,html: <ProductCard {...props} loading={!products}/>}
-                                    }),
-                                    gridCols: 2
-                                }}
-                            />
-                        )
-                    }}
+                    type='table' value={products} paging={paging}
+                    rowsTemplate={()=><Products products={products}/>}
                 />
             )
         }
@@ -606,190 +508,69 @@ class TreeCategories extends Component{
         )
     }
 }
-class VitrinPage2 extends Component {
+class Products extends Component{
     static contextType = VitrinContext;
-    constructor(props) {
-        super(props);
-        this.state = {
-            myVitrinLength: 8,
-            myVitrinType:'slider',
+    render(){
+        let {viewProducts} = this.context
+        let {products} = this.props;
+        let Products;
+        if(!products){Products = getMockProducts()}
+        else {
+            Products = products;
+            if (viewProducts === 'tile' && Products.length % 2 !== 0) {Products.push({})}
         }
-    }
-    count_layout() {
-        let {vitrin} = this.context;
-        let { selectedProducts = {} } = vitrin;
-        return {
-            align: 'vh',
-            column: [
-                {
-                    className: 'w-144 h-144 br-6', style: { border: '1px solid #eee' },
-                    column: [
-                        { flex: 1 },
-                        { html: getSvg('svg1'), align: 'vh' },
-                        { size: 6 },
-                        { html: `${Object.keys(selectedProducts).length} کالا`, align: 'vh', className: 'bold fs-14 theme-dark-font-color', size: 24 },
-                        { html: 'در ویترین شما', className: 'theme-medium-font-color fs-10', align: 'h' },
-                        { flex: 1 }
-                    ]
-                }
-            ]
-        }
-    }
-    update_layout() {
-        let { openPopup } = this.context;
-        return {
-            className: 'm-h-12',
-            html: (
-                <Box
-                    onClick={() => openPopup(1)}
-                    styleType={1}
-                    icon={getSvg('svg2')}
-                    after={<Icon path={mdiChevronLeft} size={1} />}
-                    texts={[
-                        { html: 'بروزرسانی ویترین من', className: 'fs-14 bold' },
-                        { html: 'برای افزودن یا حدف کردن محصولات از ویترینتان همین الان بروزرسانی کنید', className: 't-a-right fs-12' }
-                    ]}
-                />
-            )
-        }
-    }
-    lastUpdate_layout() {
-        return false 
-        let { lastUpdate } = this.context;
-        return {
-            html: `اخرین بروزرسانی : ${lastUpdate}`, className: 'fs-10 m-h-12', size: 24, align: 'v'
-        }
-    }
-    niazSanji_layout() {
-        return {
-            className: 'm-h-12',
-            html: <img src={vitrin_niazsanji_src} alt='' width='100%' />
-        }
-    }
-    mahsoolate_vitrine_man_layout() {
-        let { myVitrinLength,myVitrinType } = this.state;
-        if(myVitrinType === 'slider'){
-            return this.mahsoolate_vitrine_man_layout_h()
-        }
-        let {vitrin} = this.context;
-        let { selectedProducts } = vitrin;
-        let items = Object.keys(selectedProducts).map((id) => selectedProducts[id]);
-        if (items.length > myVitrinLength) {
-            items = items.slice(0, myVitrinLength)
-        }
-        if (items.length % 2 !== 0) { items.push({}) }
-        return {
-            column: [
-                {
-                    className: 'm-h-12',
-                    row: [
-                        { html: getSvg('svg2'), style: { background: '#3b55a5', padding: 3, width: 36, height: 36, borderRadius: '100%' }, align: 'vh' },
-                        { size: 12 },
-                        { html: 'محصولات ویترین من', align: 'v', className: 'bold fs-14',flex:1 }
-                    ]
-                },
-                {
-                    gridCols: 2, grid: items.map((o) => {
-                        return { flex: 1, html: <ProductCard {...o} /> }
-                    })
-                },
-                {
-                    size: 48, html: 'مشاهده کامل ویترین من', className: 'theme-link-font-color fs-14 bold', align: 'vh'
-                }
-            ]
-        }
-    }
-    mahsoolate_vitrine_man_layout_h() {
-        let {vitrin} = this.context;
-        let { selectedProducts } = vitrin;
-        let { myVitrinLength } = this.state;
-        let items = Object.keys(selectedProducts).map((id) => selectedProducts[id]);
-        if (items.length > myVitrinLength) {
-            items = items.slice(0, myVitrinLength)
-        }
-        return {
-            column: [
-                {
-                    className: 'm-h-12',
-                    row: [
-                        { html: getSvg('svg2'), style: { background: '#3b55a5', padding: 3, width: 36, height: 36, borderRadius: '100%' }, align: 'vh' },
-                        { size: 12 },
-                        { html: 'محصولات ویترین من', align: 'v', className: 'bold fs-14',flex:1 }
-                    ]
-                },
-                {
-                    className:'ofx-auto',
-                    row: items.map((o) => {
-                        return { size:192,html: <ProductCard {...o} /> }
-                    })
-                }
-            ]
-        }
-    }
-    render() {
-        return (
-            <RVD
-                layout={{
-                    className: 'ofy-auto theme-popup-bg',
-                    style: { height: '100%' },
-                    column: [
-                        { size: 12 },
-                        this.count_layout(),
-                        { size: 24 },
-                        this.update_layout(),
-                        this.lastUpdate_layout(),
-                        { size: 24 },
-                        // this.niazSanji_layout(),
-                        // { size: 24 },
-                        this.mahsoolate_vitrine_man_layout(),
-                        { size: 12 },
-                    ]
-                }}
-            />
-        )
+        let list = Products.map((o) => {
+            let {vitrin,updateSelectedProducts} = this.context;
+            let { selectedProducts } = vitrin;
+            let { name, src, price, id } = o;
+            let selected = !!selectedProducts[id];
+            let props = {name, src, price, selected,type:viewProducts === 'tile'?'v':'h', id,onSelect: (id) => updateSelectedProducts(id,o)};
+            return {flex: 1,html: <ProductCard {...props} loading={!products}/>}
+        })
+        let layout;
+        if(viewProducts === 'tile'){layout = {className: 'ofy-auto',grid: list,gridCols: 2}}
+        else {layout = {className:'ofy-auto',column:list}}
+        return (<RVD layout={layout}/>)
     }
 }
-
 class ProductCard extends Component {
     image_layout() {
-        let { src } = this.props;
+        let { src,type = 'v' } = this.props;
         if (!src) { return false }
-        return {
-            className:'m-b-6',size: 120, html: <img src={src} alt='' height='100%' className='br-8'/>, align: 'vh'
-        }
+        let imageStyle = type === 'v'?{height:'100%'}:{width:'100%'};
+        let size = type === 'v'?120:60;
+        return {className:'m-b-6',size, html: <img src={src} alt='' {...imageStyle} className='br-8'/>, align: 'vh'}
     }
     name_layout() {
         let { name } = this.props;
         if (!name) { return false }
-        return {
-            html: name, className: 'theme-dark-font-color fs-14 p-h-12 t-a-right'
-        }
+        return {html: name, className: `theme-dark-font-color fs-12 p-h-12 t-a-right`}
     }
     price_layout() {
-        let { price } = this.props;
+        let { price,type = 'v' } = this.props;
         price = isNaN(price)?0:price;
         if(price < 500){price = 0}
+        let priceFontSize = type === 'v'?18:14;
         return {
             row: [
                 { show:!price,html: 'در حال تامین', className: 'fs-12 bold',style:{color:'red'}, align: 'v' },
-                { show:!!price,html: ()=>SplitNumber(price), className: 'theme-dark-font-color fs-18 bold', align: 'v' },
+                { show:!!price,html: ()=>SplitNumber(price), className: `theme-dark-font-color fs-${priceFontSize} bold`, align: 'v' },
                 { size: 3 },
                 { show:!!price,html: 'تومان', className: 'theme-light-font-color fs-10', align: 'v' }
             ]
         }
     }
     plus_layout() {
-        let { price, selected, onSelect, id,loading } = this.props;
+        let { price, selected, onSelect, id,loading,type = 'v' } = this.props;
         price = isNaN(price)?0:price;
         if(price < 500){price = 0}
         if (!price && !selected) { return false }
         if (!onSelect) { return false }
+        let padding = type === 'v'?8:0;
         return {
             html: <Icon path={selected ? mdiClose : mdiPlus} size={1} />,
             style: { border: loading?undefined:'2px solid', color: selected ? 'orange' : '#3B55A5' },
-            className: 'br-100 p-8',
-            align: 'vh',
-            onClick: () => onSelect(id)
+            className: `br-100 p-${padding}`,align: 'vh',onClick: () => onSelect(id)
         }
     }
     id_layout() {
@@ -797,35 +578,33 @@ class ProductCard extends Component {
         return { html: id }
     }
     render() {
-        let {loading,name} = this.props;
+        let {loading,name,type = 'v'} = this.props;
         if(!name){return null}
-        return (
-            <RVD
-                loading={loading}
-                layout={{
-                    style: { height: 260, borderBottom: '1px solid #ddd', borderLeft: '1px solid #ddd' },
-                    column: [
-                        { size: 12 },
-                        this.image_layout(),
-                        this.name_layout(),
-                        { flex: 1 },
-                        //this.id_layout(),
-                        {
-                            className: 'p-h-12',
-                            row: [
-                                this.price_layout(),
-                                { flex: 1 },
-                                this.plus_layout(),
-                            ]
-                        },
-                        { size: 12 }
-                    ]
-                }}
-            />
-        )
+        let style = { height: type === 'v'?260:undefined, borderBottom: '1px solid #ddd', borderLeft: '1px solid #ddd' }
+        let layout;
+        if(type === 'v'){
+            layout = {
+                column: [
+                    { size: 12 },this.image_layout(),this.name_layout(),{ flex: 1 },
+                    {className: 'p-h-12',row: [this.price_layout(),{ flex: 1 },this.plus_layout()]},
+                    { size: 12 }
+                ]
+            }
+        }
+        else {
+            layout = {
+                row:[
+                    this.image_layout(),
+                    {
+                        flex:1,className:'p-6',
+                        column:[this.name_layout(),{flex:1},{row: [this.price_layout(),{ flex: 1 },this.plus_layout(),]},]
+                    }
+                ]
+            }
+        }
+        return (<RVD loading={loading} layout={{style,...layout}}/>)
     }
 }
-
 class Box extends Component {
     getStyle() {
         let { styleType = 0 } = this.props;

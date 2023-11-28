@@ -97,7 +97,7 @@ body{
 	z-index:10;
 	border-bottom:none;
 	font-size:16px;
-	height:60px !important;
+	height:60px;
 }
 .aio-popup-header svg{
 	border-radius: 100%;
@@ -745,4 +745,7 @@ button{
 }
 .bm-profile-form .aio-input input{
 	text-align:right;
+}
+.aio-input-table-paging-button.active{
+	background:#3B55A5;
 }

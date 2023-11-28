@@ -133,7 +133,7 @@ export default class Vitrin extends Component {
             addModal({
                 id:name,
                 position: 'fullscreen', 
-                header:{title: 'افزودن محصول به ویترین من'},
+                header:{title: 'افزودن محصول به ویترین من',attrs:{className:'vitrin-search-popup-header'}},
                 body: {render:() => (
                     <SearchProducts 
                         onClose={() => removeModal()} 
@@ -344,60 +344,27 @@ class SearchProducts extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            categories:[],
-            activeCategory:[],
-            searchValue: '',
-            products: undefined,
-            pageNumber:1,
-            pageSize:10,
-            suggestion:{
-                name:'',
-                file:undefined,
-                brand:''
+            categories:[],taxon:false,searchValue: '',products: undefined,pageNumber:1,pageSize:10,suggestion:{name:'',file:undefined,brand:''},
+            paging:{
+                number:1,
+                size:10,
+                sizes:[10,20,30,40,50],
+                serverSide:true,
+                length:0,
+                onChange:(obj)=>{
+                    let {paging} = this.state;
+                    this.setState({paging:{...paging,...obj}},()=>this.updateProducts())
+                }
             }
-        
         }
     }
-    getCategoriesDetails(){
-        let {categories,activeCategory} = this.state;
-        let res = JSON.parse(JSON.stringify(categories));
-        let path = [{level:0,name:'دسته بندی ها'}];
-        let taxon;
-        let siblings = [];
-        if(!activeCategory.length){
-            return {path:[],siblings:categories.map(({name},i)=>{return {name,index:i}})}
-        }
-        for(let i = 0; i < activeCategory.length; i++){
-            let index = activeCategory[i];
-            let category = res[index]; 
-            res = category.childs;
-            path.push({name:category.name,level:i + 1});
-            taxon = category.id;
-            if(i === activeCategory.length - 1){
-                siblings = category.childs.map(({name},i)=>{
-                    return {name,index:i}
-                })
-            }
-            
-        }
-        return {path,taxon,siblings}
+    category_layout(){
+        let {categories} = this.state;
+        if(!categories.length){return false}
+        return {html:<TreeCategories categories={categories} onChange={(taxon)=>this.setState({taxon},()=>this.updateProducts())}/>}
     }
-    // getFakeCategories(level = 0,index = ''){
-    //     if(level >= 4){return []}
-    //     let res = []
-    //     for(let i = 0; i < 4; i++){
-    //         let newIndex = index + '/' + i;
-    //         res.push({
-    //             id:'aa' + Math.round(Math.random() * 10000),
-    //             name:'دسته بندی' + newIndex,
-    //             childs:this.getFakeCategories(level + 1,newIndex)
-    //         })
-    //     }
-    //     return res
-    // }
     addSuggestion(){
-        let {apis} = this.context;
-        let {suggestion} = this.state
+        let {apis} = this.context,{suggestion} = this.state
         apis.request({
             api:'vitrin.addSuggestion',description:'پیشنهاد افزودن محصول به ویترین',parameter:suggestion,message:{success:true},
             onSuccess:()=>this.setState({suggestion:{name:'',file:undefined,brand:''}})
@@ -405,20 +372,17 @@ class SearchProducts extends Component {
     }
     async updateProducts(){
         let { apis } = this.context;
-        let {pageNumber,pageSize,searchValue} = this.state;
+        let {pageNumber,pageSize,searchValue,taxon} = this.state;
         this.setState({products:undefined})
-        let products = await apis.request({
+        let {products,total} = await apis.request({
             api: 'vitrin.v_kolle_mahsoolat',description: 'دریافت لیست محصولات قابل انتخاب ویترین',loading:false,
-            //cache: {time:24 * 60 * 60 * 1000,name:'vitrin.v_kolle_mahsoolat'},
-            parameter:{pageSize,pageNumber,searchValue}
+            parameter:{pageSize,pageNumber,searchValue,taxon:taxon || '10673'}
         })
-        this.setState({products})
+        this.setState({products,paging:{...this.state.paging,length:total}})
     }
     componentDidMount(){
         let {backOffice} = this.context;
-        debugger
-        this.setState({categories:backOffice.vitrinCategories})
-        this.updateProducts()
+        this.setState({categories:backOffice.vitrinCategories},()=>this.updateProducts())
     }
     changePageNumber(dir){
         let {pageNumber,products} = this.state;
@@ -444,107 +408,64 @@ class SearchProducts extends Component {
     changeSearch(value){
         this.setState({searchValue:value,pageNumber:1},()=>this.updateProducts())
     }
-    toolbar_layout() {
+    search_layout(){
         return {
-            column:[
-                {
-                    className:'p-h-12',
-                    html: (
-                        <AIOInput
-                            style={{ border: '1px solid #ddd',background:'#fff' }}
-                            before={<Icon path={mdiMagnify} size={1} />}
-                            type='text' onChange={(value)=>this.changeSearch(value)}
-                            placeholder="جستجو"
-                            className='w-100 br-6 h-36 p-h-12'
-                        />
-                    )
-                },
-                {
-                    show:!!this.categoryDetails.path.length,className:'ofx-auto p-6 bold',gap:16,gapHtml:()=><Icon path={mdiChevronLeft} size={1}/>,gapAttrs:{className:'align-vh'},
-                    row:this.categoryDetails.path.map(({name,level},i)=>{
-                        let isLast = this.categoryDetails.path.length - 1 === i;
-                        return {
-                            className:`vitrin-category-path-item${isLast?' is-last':''}`,
-                            html:name,
-                            onClick:isLast?undefined:()=>this.setState({activeCategory:this.state.activeCategory.slice(0,level)})
-                        }
-                    })
-                },
-                {
-                    className:'vitrin-category-sibling-items',gap:6,
-                    row:this.categoryDetails.siblings.map(({name,index},i)=>{
-                        return {
-                            className:`vitrin-category-sibling-item`,
-                            html:name,
-                            onClick:()=>{
-                                let {activeCategory} = this.state;
-                                this.setState({activeCategory:activeCategory.concat(index)});
-                            }
-                        }
-                    })
-                }
-            ]
+            className:'p-h-12',
+            html: (
+                <AIOInput
+                    style={{ border: '1px solid #ddd',background:'#fff' }} before={<Icon path={mdiMagnify} size={1} />}
+                    type='text' placeholder="جستجو در محصولات" className='w-100 br-6 h-36 p-h-12 t-a-right'
+                    onChange={(value)=>this.changeSearch(value)}
+                />
+            )
         }
     }
+    
     products_layout() {
-        let {products} = this.state;
+        let {products,paging} = this.state;
         let Products;
-        if(!products){
-            Products = getMockProducts()
-        }
+        if(!products){Products = getMockProducts()}
         else {
             Products = products;
-            if (Products.length % 2 !== 0) {
-                Products.push({})
-            }
+            if (Products.length % 2 !== 0) {Products.push({})}
         }
-        
         return {
-            className: 'ofy-auto',
-            grid: Products.map((o) => {
-                let {vitrin,updateSelectedProducts} = this.context;
-                let { selectedProducts } = vitrin;
-                let { name, src, price, id } = o;
-                let selected = !!selectedProducts[id];
-                let props = {name, src, price, selected, id,onSelect: (id) => updateSelectedProducts(id,o)};
-                return {
-                    flex: 1,
-                    html: <ProductCard {...props} loading={!products}/>
-                }
-            }),
-            gridCols: 2
-        }
-    }
-    paging_layout(){
-        let {pageNumber} = this.context;
-        let {products} = this.state;
-        if(!products){return false}
-        return {
-            size:36,className:'fs-12 bold',
-            row:[
-                {flex:1},
-                {html:'صفحه ی قبل',align:'vh',onClick:()=>this.changePageNumber(-1)},
-                {
-                    size:48,html:pageNumber,align:'vh',
-                },
-                {html:'صفحه ی بعد',align:'vh',onClick:()=>this.changePageNumber(1)},
-                {flex:1}
-            ]
+            html:(
+                <AIOInput
+                    type='table'
+                    value={products}
+                    paging={paging}
+                    rowsTemplate={()=>{
+                        return (
+                            <RVD
+                                layout={{
+                                    className: 'ofy-auto',
+                                    grid: Products.map((o) => {
+                                        let {vitrin,updateSelectedProducts} = this.context;
+                                        let { selectedProducts } = vitrin;
+                                        let { name, src, price, id } = o;
+                                        let selected = !!selectedProducts[id];
+                                        let props = {name, src, price, selected, id,onSelect: (id) => updateSelectedProducts(id,o)};
+                                        return {flex: 1,html: <ProductCard {...props} loading={!products}/>}
+                                    }),
+                                    gridCols: 2
+                                }}
+                            />
+                        )
+                    }}
+                />
+            )
         }
     }
     add_layout() {
-        let {isFirstTime} = this.props;
+        let {isFirstTime} = this.props,{ suggestion } = this.state;
         if(isFirstTime){return false}
-        let { suggestion } = this.state;
         let form = (
             <AIOInput
-                type='form' lang='fa'
-                value={suggestion}
+                type='form' lang='fa' value={suggestion} submitText='ثبت' inputStyle={{border:'none'}}
                 onChange={(suggestion)=>this.setState({suggestion})}
                 footerAttrs={{className:'vitrin-suggestion-footer'}}
                 onSubmit={()=>this.addSuggestion()}
-                submitText='ثبت'
-                inputStyle={{border:'none'}}
                 inputs={{
                     column:[
                         { html: 'درخواست افزودن محصول', className: 'fs-18 bold theme-dark-font-color' },
@@ -566,40 +487,7 @@ class SearchProducts extends Component {
                 }}
             />
         )
-        return {
-            className:'p-24',
-            style:{background:'#eee'},
-            html:form
-
-        }
-        // return {
-        //     column: [
-        //         {
-        //             html: (
-        //                 <AIOInput
-        //                     style={{width: '100%',height: 'fit-content',display: 'flex',flexDirection: 'column',color: '#888'}}
-        //                     before={suggestion_image?undefined:<Icon path={mdiCamera} size={1} />} type='file'
-        //                     onChange={(files)=>{
-        //                         var fr = new FileReader();
-        //                         fr.onload = () => {
-        //                             this.setState({suggestion_image:fr.result,suggestion_file:files[0].file})
-        //                         }
-        //                         fr.readAsDataURL(files[0].file);
-        //                     }}
-        //                     text={suggestion_image?(
-        //                         <img src={suggestion_image} alt='' width='100%'/>
-        //                     ):'افزودن تصویر محصول'}
-        //                 />
-        //             )
-        //         },
-        //         { size: 12 },
-        //         {
-        //             html: (
-        //                 <button className='button-2' onClick={()=>this.addSuggestion()}>ثبت</button>
-        //             )
-        //         }
-        //     ]
-        // }
+        return {className:'p-24',style:{background:'#eee'},html:form}
     }
     first_submit_layout(){
         let {isFirstTime} = this.props;
@@ -608,29 +496,20 @@ class SearchProducts extends Component {
         return {
             className: 'm-12',
             html:<button onClick={()=>removeModal()} className='button-2'>تایید و ورود به ویترین من</button>,align:'vh'
-            
         }
     }
     render() {
-        this.categoryDetails = this.getCategoriesDetails()
         return (
             <RVD
                 layout={{
                     className: 'theme-popup-bg',
                     column: [
+                        {size:12},
                         this.box_layout(),
                         {
                             flex:1,
                             column:[
-                                this.toolbar_layout(),
-                                {
-                                    flex:1,className:'ofy-auto',
-                                    column:[
-                                        this.products_layout(),
-                                        this.paging_layout(),
-                                        this.add_layout()
-                                    ]
-                                },
+                                {flex:1,className:'ofy-auto',column:[this.search_layout(),this.category_layout(),this.products_layout(),this.add_layout()]},
                                 this.first_submit_layout()
                             ]
                         }
@@ -640,7 +519,93 @@ class SearchProducts extends Component {
         )
     }
 }
-
+class TreeCategories extends Component{
+    constructor(props){
+        super(props);
+        this.state = {path:[],childs:[],activeIndexes:[]}
+    }
+    // getFakeCategories(level = 0,index = ''){
+    //     if(level >= 4){return []}
+    //     let res = []
+    //     for(let i = 0; i < 4; i++){
+    //         let newIndex = index + '/' + i;
+    //         res.push({
+    //             id:'aa' + Math.round(Math.random() * 10000),
+    //             name:'دسته بندی' + newIndex,
+    //             childs:this.getFakeCategories(level + 1,newIndex)
+    //         })
+    //     }
+    //     return res
+    // }
+    componentDidMount(){
+        this.changeActiveIndexes([],true)
+    }
+    changeActiveIndexes(indexes,initial){
+        let {categories,onChange} = this.props;
+        let tree = JSON.parse(JSON.stringify(categories));
+        let path = [{level:0,name:'همه کالا ها'}];
+        let id = false;
+        let childs = [];
+        let activeIndexes = [];
+        if(!indexes.length){
+            childs = tree.map(({name},i)=>{return {name,index:i}});
+        }
+        else {
+            for(let i = 0; i < indexes.length; i++){
+                let index = indexes[i],category = tree[index]; 
+                tree = category.childs;
+                path.push({name:category.name,level:i + 1});
+                id = category.id;
+                if(i === activeIndexes.length - 1){
+                    childs = category.childs.map(({name},i)=>{return {name,index:i}})
+                }   
+            }
+        }
+        onChange(id);
+        this.setState({path,childs,activeIndexes})
+    }
+    
+    addLevel(index){
+        let {activeIndexes} = this.state;
+        let newActiveIndexes = [...activeIndexes,index];
+        this.changeActiveIndexes(newActiveIndexes)
+    }
+    goToLevel(level){
+        let {activeIndexes} = this.state;
+        let newActiveIndexes = activeIndexes.slice(0,level);
+        this.changeActiveIndexes(newActiveIndexes)
+    }
+    childs_layout(){
+        let {childs} = this.state;
+        if(!childs.length){return false}
+        let className = 'vitrin-category-sibling-items';
+        return {className,gap:6,row:childs.map(({name,index},i)=>this.child_layout(name,index))}
+    }
+    child_layout(name,index){
+        let className = `vitrin-category-sibling-item`;
+        return {className,html:name,onClick:()=>this.addLevel(index)}
+    }
+    path_layout(){
+        let {path} = this.state;
+        let gap = {gap:16,gapHtml:()=><Icon path={mdiChevronLeft} size={1}/>,gapAttrs:{className:'align-vh'}}
+        return {className:'vitrin-category-path',...gap,row:path.map((o,i)=>this.pathItem_layout(o,i))}
+    }
+    pathItem_layout(pathItem,pathIndex){
+        let {path} = this.state;
+        let isLast = pathIndex === path.length - 1;
+        let className = `vitrin-category-path-item${isLast?' is-last':''}`
+        return {className,html:pathItem.name,onClick:isLast?undefined:()=>this.goToLevel(pathItem.level)}
+    }
+    render(){
+        return (
+            <RVD
+                layout={{
+                    column:[this.childs_layout(),this.path_layout()]
+                }}
+            />
+        )
+    }
+}
 class VitrinPage2 extends Component {
     static contextType = VitrinContext;
     constructor(props) {

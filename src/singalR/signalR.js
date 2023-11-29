@@ -42,6 +42,7 @@ export default function SignalR(getState) {
                 }
                 SetState({bazargahOrders})
             });
+            connection.on("ReloadAllUsers", async (order)=> window.location.reload())
             
             connection.start().then(function () {
                 // document.getElementById("sendButton").disabled = false;

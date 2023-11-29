@@ -19,7 +19,8 @@ export default function vitrinApis({ baseUrl, helper }) {
             return { result: res.data.message }
         },
         async v_updateMyVitrin({ id, state, product }) {
-            let res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrin`, { ProductId: id, state: !state, B1Code: product.code, Price: product.price });
+            debugger
+            let res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrin`, { ProductId: id, state: !state, B1Code: product.sku, Price: product.price });
             if (res.data.isSuccess === true) {
                 return { result: true }
             }
@@ -40,9 +41,11 @@ export default function vitrinApis({ baseUrl, helper }) {
             ]
             let response = await Axios.post(`${baseUrl}/miarze/GetProducts`, body);
             let data = response.data.data.data;
+            debugger
             let meta = response.data.data.meta;
             let total = meta.totalCount;
             let products = data.map((o) => {
+                debugger
                 let price, src;
                 try { price = o.price.current / 10 } catch { price = 0 }
                 try { src = o.images[0].styles[9].url } catch { src = '' }
@@ -58,7 +61,7 @@ export default function vitrinApis({ baseUrl, helper }) {
         async v_getProductsByIds(ids, { apis }) {
             let products = await apis.request({ api: 'kharid.getSpreeProducts', loading: false, parameter: { ids, vitrin: true, Taxons: '10673' } });
             //products = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, cartId: 'Regular' }});
-            products = products.map((o) => { return { id: o.id, name: o.name, price: o.FinalPrice, src: o.srcs[0], inStock: true, code: o.defaultVariant ? o.defaultVariant.code : o.code } });
+            products = products.map((o) => { return { id: o.id, name: o.name, price: o.FinalPrice, src: o.srcs[0], inStock: true, sku: o.defaultVariant ? o.defaultVariant.code : o.code } });
             return { result: products }
         },
         async v_category_options(parameter, { apis }) {

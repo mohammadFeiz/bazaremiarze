@@ -746,6 +746,10 @@ button{
 .bm-profile-form .aio-input input{
 	text-align:right;
 }
+.aio-input-table-paging-button{
+	color:#000;
+	border:1px solid #888;
+}
 .aio-input-table-paging-button.active{
 	background:#3B55A5;
 }

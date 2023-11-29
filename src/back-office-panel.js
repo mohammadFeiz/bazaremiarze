@@ -25,79 +25,7 @@ export default class BackOffice extends Component {
   }
   fixInitialModel(model){
     return model;
-    // let newModel = {
-    //   ...model,
-    //   PayDueDate_options:model.PayDueDate_options.map((o)=>{
-    //     let {percent,value,discountPercent,cashPercent,days,text} = o;
-    //     if(discountPercent === undefined){discountPercent = percent}
-    //     if(cashPercent === undefined){
-    //       if(value === 1){cashPercent = 100;}//
-    //       if(value === 2){cashPercent = 0;}//
-    //       if(value === 3){cashPercent = 0;}//
-    //       if(value === 4){cashPercent = 0;}//
-    //       if(value === 6){cashPercent = 0;}//
-    //       if(value === 7){cashPercent = 0;}//
-    //       if(value === 8){cashPercent = 0;}//
-    //       if(value === 9){cashPercent = 0;}//
-    //       if(value === 10){cashPercent = 0;}//
-    //       if(value === 11){cashPercent = 0;}//
-    //       if(value === 12){cashPercent = 0;}//
-    //       if(value === 13){cashPercent = 0;}//
-    //       if(value === 14){cashPercent = 0;}//
-    //       if(value === 15){cashPercent = 25;}//
-    //       if(value === 16){cashPercent = 50;}//
-    //       if(value === 17){cashPercent = 20;}//
-    //       if(value === 18){cashPercent = 30;}//
-    //       if(value === 19){cashPercent = 50;}//
-    //       if(value === 20){cashPercent = 10;}//
-    //       if(value === 21){cashPercent = 10;}//
-    //       if(value === 22){cashPercent = 10;}//
-    //       if(value === 23){cashPercent = 10;}//
-    //       if(value === 24){cashPercent = 50;}//
-    //       if(value === 25){cashPercent = 30;}//
-    //       if(value === 26){cashPercent = 40;}//
-    //       if(value === 27){cashPercent = 50;}//
-    //       if(value === 28){cashPercent = 20;}//
-    //       if(value === 28){cashPercent = 20;}//
-    //       if(value === 38){cashPercent = 40;}//
-    //       if(value === 37){cashPercent = 30;}//
-
-    //     }
-    //     if(days === undefined){
-    //       if(value === 1){days = 0;}//
-    //       if(value === 2){days = 15;}//
-    //       if(value === 3){days = 30;}//
-    //       if(value === 4){days = 45;}//
-    //       if(value === 6){days = 60;}//
-    //       if(value === 7){days = 70;}//
-    //       if(value === 8){days = 90;}//
-    //       if(value === 9){days = 105;}//
-    //       if(value === 10){days = 120;}//
-    //       if(value === 11){days = 135;}//
-    //       if(value === 12){days = 150;}//
-    //       if(value === 13){days = 165;}//
-    //       if(value === 14){days = 180;}//
-    //       if(value === 15){days = 60;}//
-    //       if(value === 16){days = 90;}//
-    //       if(value === 17){days = 90;}//
-    //       if(value === 18){days = 120;}//
-    //       if(value === 19){days = 150;}//
-    //       if(value === 20){days = 30;}//
-    //       if(value === 22){days = 90;}//
-    //       if(value === 21){days = 60;}//
-    //       if(value === 23){days = 120;}//
-    //       if(value === 24){days = 30;}//
-    //       if(value === 25){days = 60;}//
-    //       if(value === 26){days = 90;}//
-    //       if(value === 27){days = 120;}//
-    //       if(value === 28){days = 60;}//
-    //       if(value === 38){days = 120;}//
-    //       if(value === 37){days = 90;}//
-    //     }
-    //     return {value,discountPercent,cashPercent,days,text};
-    //   })
-    // }
-    // return newModel;
+    
   }
   getTabs(model){
     return [
@@ -176,8 +104,9 @@ export default class BackOffice extends Component {
     return {
       html: <button className='back-office-submit-button' onClick={() => {
         let { model } = this.state;
+        let admins = model.accessPhoneNumbers.map((o)=>o.phoneNumber)
         model = this.modelCorrection(model);
-        apis.request({ api: 'backOffice.set_backoffice', parameter: model, message: {success:true}, description: 'بروزرسانی پنل کمپین', onSuccess: () => {window.location.reload()} })
+        apis.request({ api: 'backOffice.set_backoffice', parameter: {model,admins}, message: {success:true}, description: 'بروزرسانی پنل کمپین', onSuccess: () => {window.location.reload()} })
       }}>بروزرسانی</button>
     }
   }

@@ -230,6 +230,9 @@ export default class Home extends Component {
             })
         }
     }
+    test_layout(){
+        return false
+    }
     getContent() {
         let {testedChance} = this.state;
         return {
@@ -241,6 +244,7 @@ export default class Home extends Component {
                     column: [
                         this.billboard_layout(),
                         { className: 'theme-vertical-gap'},
+                        this.test_layout(),
                         this.promotion_layout(),
                         this.cartAndWallet_layout(),
                         { className: 'theme-vertical-gap'},

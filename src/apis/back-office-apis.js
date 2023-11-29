@@ -106,8 +106,8 @@ export default function backOfficeApis({helper,baseUrl}) {
             }
             return { result: false }
         },
-        async set_backoffice(JsonData) {
-            const response = await Axios.post(`${baseUrl}/BackOffice/UpdateCampaignManagement`, { JsonData: JSON.stringify(JsonData), type: 'backoffice' });
+        async set_backoffice({model,admins}) {
+            const response = await Axios.post(`${baseUrl}/BackOffice/UpdateCampaignManagement`, { JsonData: JSON.stringify(model), type: 'backoffice',admins });
             let result;
             if (!!response.data.isSuccess) {
                 result = true

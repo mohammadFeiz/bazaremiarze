@@ -9,7 +9,7 @@ import SplitNumber from './../../npm/aio-functions/split-number';
 import appContext from "../../app-context";
 import Icon from "@mdi/react";
 import vbsrc from './../../images/vitrin-bazargah.png';
-import { mdiCamera, mdiChevronLeft, mdiClose, mdiMagnify, mdiPlus } from "@mdi/js";
+import { mdiCamera, mdiChevronLeft, mdiClose, mdiDotsVertical, mdiMagnify, mdiPlus } from "@mdi/js";
 import VitrinContext from "../../vitrin-context";
 import './vitrin.css';
 function getMockProducts(){
@@ -78,7 +78,7 @@ export default class Vitrin extends Component {
             //miarze_categories: [],
             miarze_brands: [],
             popup:{},
-            viewProducts:'list'
+            viewProducts:'tile'
         }
     }
     updateSelectedProducts(id,product) {
@@ -205,7 +205,7 @@ class VitrinPage1 extends Component {
         }
     }
     count_layout() {
-        let {vitrin} = this.context;
+        let {vitrin,viewProducts,SetState} = this.context;
         let { selectedProducts = {} } = vitrin;
         return {
             align: 'vh',className:'p-12',
@@ -218,8 +218,25 @@ class VitrinPage1 extends Component {
                         { size: 6 },
                         { html: `${Object.keys(selectedProducts).length} کالا`, align: 'vh', className: 'bold fs-14 theme-dark-font-color', size: 24 },
                         { html: 'در ویترین شما', className: 'theme-medium-font-color fs-10', align: 'h' },
-                        { flex: 1 }
+                        { flex: 1 },
+                        
                     ]
+                },
+                {
+                    style:{position:'absolute',left:6,top:6},
+                    html:(
+                        <AIOInput
+                            type='select' caret={false}
+                            optionCheckIcon={{
+                                background:'#3B55A5',
+                                color:'#3B55A5'
+                            }}
+                            text={<Icon path={mdiDotsVertical} size={1}/>}
+                            options={[
+                                {text:'نمایش به صورت لیست',checked:viewProducts === 'list',onClick:()=>SetState({viewProducts:viewProducts === 'list'?'tile':'list'})}
+                            ]}
+                        />
+                    )
                 }
             ]
         }
@@ -288,7 +305,7 @@ class SearchProducts extends Component {
     category_layout(){
         let {categories} = this.state;
         if(!categories.length){return false}
-        return {html:<TreeCategories categories={categories} onChange={(taxon)=>this.setState({taxon},()=>this.updateProducts())}/>}
+        return {html:<TreeCategories categories={categories} onChange={(taxon)=>this.setState({taxon,paging:{...this.state.paging,number:1}},()=>this.updateProducts())}/>}
     }
     addSuggestion(){
         let {apis} = this.context,{suggestion} = this.state
@@ -299,11 +316,11 @@ class SearchProducts extends Component {
     }
     async updateProducts(){
         let { apis } = this.context;
-        let {pageNumber,pageSize,searchValue,taxon} = this.state;
+        let {paging,searchValue,taxon} = this.state;
         this.setState({products:undefined})
         let {products,total} = await apis.request({
             api: 'vitrin.v_kolle_mahsoolat',description: 'دریافت لیست محصولات قابل انتخاب ویترین',loading:false,
-            parameter:{pageSize,pageNumber,searchValue,taxon:taxon || '10673'}
+            parameter:{pageSize:paging.size,pageNumber:paging.number,searchValue,taxon:taxon || '10673'}
         })
         this.setState({products,paging:{...this.state.paging,length:total}})
     }
@@ -448,7 +465,6 @@ class TreeCategories extends Component{
         let path = [{level:0,name:'همه کالا ها'}];
         let id = false;
         let childs = [];
-        let activeIndexes = [];
         if(!indexes.length){
             childs = tree.map(({name},i)=>{return {name,index:i}});
         }
@@ -458,13 +474,13 @@ class TreeCategories extends Component{
                 tree = category.childs;
                 path.push({name:category.name,level:i + 1});
                 id = category.id;
-                if(i === activeIndexes.length - 1){
+                if(i === indexes.length - 1){
                     childs = category.childs.map(({name},i)=>{return {name,index:i}})
                 }   
             }
         }
         onChange(id);
-        this.setState({path,childs,activeIndexes})
+        this.setState({path,childs,activeIndexes:indexes})
     }
     
     addLevel(index){
@@ -521,7 +537,7 @@ class Products extends Component{
         }
         let list = Products.map((o) => {
             let {vitrin,updateSelectedProducts} = this.context;
-            let { selectedProducts } = vitrin;
+            let { selectedProducts = {} } = vitrin;
             let { name, src, price, id } = o;
             let selected = !!selectedProducts[id];
             let props = {name, src, price, selected,type:viewProducts === 'tile'?'v':'h', id,onSelect: (id) => updateSelectedProducts(id,o)};

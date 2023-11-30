@@ -51,7 +51,7 @@ export default class Buy extends Component {
     this.setState({sliders})
   }
   tabs(){
-    let {view,tabs,activeTabId} = this.state;
+    let {view} = this.state;
     return {
       flex: 1,style:{overflow:'hidden'},show:view.type === 'main',
       column: [
@@ -97,8 +97,7 @@ export default class Buy extends Component {
     return {html:<Billboard renderIn='buy'/>}
   }
   sliders_layout(){
-    let {Shop_Regular,spreeCategories} = this.context;
-    let {slider_type} = spreeCategories;
+    let {Shop_Regular} = this.context;
     let {sliders} = this.state;
     return {
       className:'of-visible',

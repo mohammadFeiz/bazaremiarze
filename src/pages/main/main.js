@@ -91,11 +91,6 @@ export default class Main extends Component {
     signalR.start();
     this.state.signalR = signalR;
   }
-  getSelectedProducts(){
-    let { apis,userInfo,actionClass } = this.context;
-    //actionClass.addAnaliticsHistory({url:'Vitrin',title:'Vitrin'}) //notice
-    
-  }
   async componentDidMount() {
     let { userInfo } = this.props;
     let {vitrin} = this.state;

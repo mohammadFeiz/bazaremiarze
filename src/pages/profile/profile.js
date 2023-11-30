@@ -8,7 +8,6 @@ import {Icon} from '@mdi/react';
 import {mdiAccountCircle} from '@mdi/js';
 import AIOInput from '../../npm/aio-input/aio-input';
 import Popup from '../../components/popup/popup';
-import Register from '../../components/register/register';
 import Card from '../../components/card/card';
 import Wallet from '../../popups/wallet/wallet';
 import './profile.css';
@@ -63,7 +62,7 @@ export default class Profile extends Component{
             column:[
                 {
                     className:'my-burux-header',
-                    html:<img src={brxbillboard} width='100%'/>
+                    html:<img src={brxbillboard} width='100%' alt=''/>
                 },
                 {
                     size:100,className:'of-visible',

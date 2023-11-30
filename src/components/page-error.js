@@ -15,7 +15,7 @@ export default function PageError({text,subtext}){
               className: 'page-error-image',
               column: [
                 { flex: 3 },
-                { html: <img src={EPSrc} width='100%' /> },
+                { html: <img src={EPSrc} width='100%' alt=''/> },
                 { size: 24 },
                 { html: <Icon path={mdiAlert} size={4} />, align: 'h' },
                 { html: text, align: 'h' },

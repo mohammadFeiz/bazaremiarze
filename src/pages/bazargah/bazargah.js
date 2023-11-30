@@ -56,7 +56,7 @@ export default class Bazargah extends Component{
         }
         if(wait_to_get.length === 0){
             return {
-                size:400,html:<img src={bazargahNoItemSrc}/>,align:'vh'
+                size:400,html:<img src={bazargahNoItemSrc} alt=''/>,align:'vh'
             }
         }
         return {
@@ -148,7 +148,7 @@ export default class Bazargah extends Component{
                             column:[
                                 {size:12},
                                 {
-                                    html:<img src={bazargahBlankSrc} height={120}/>,align:'vh'
+                                    html:<img src={bazargahBlankSrc} height={120} alt=''/>,align:'vh'
                                 },
                                 {
                                     size:48,align:'vh',style:{marginBottom:12},
@@ -245,7 +245,7 @@ class JoziateSefaresheBazargah extends Component{
         let {sendStatus} = this.state;
         sendStatus = JSON.parse(JSON.stringify(sendStatus));
         sendStatus[key] = value;
-        let res = await apis.request({api:'bazargah.taghire_vaziate_ersale_sefaresh',parameter:{orderId,sendStatus}})
+        await apis.request({api:'bazargah.taghire_vaziate_ersale_sefaresh',parameter:{orderId,sendStatus}})
         // if(!res){
         //     alert('تغییرات موفقیت آمیز نبود')
         //     return false
@@ -399,7 +399,7 @@ class JoziateSefaresheBazargah extends Component{
     details_layout(){
         if(!this.getVisibility('details')){return false}
         let {order} = this.props;
-        let {orderId,createdDate,receiverName,receiverNumber,shippingAddress,amount,benefit,city,orderNumber} = order;
+        let {createdDate,receiverName,shippingAddress,amount,city,orderNumber} = order;
         return {
             className:'theme-card-bg theme-border-radius theme-gap-h theme-box-shadow theme-gap-b',
             column:[
@@ -509,7 +509,7 @@ class JoziateSefaresheBazargah extends Component{
                     className:'theme-card-bg theme-border-radius theme-gap-h theme-box-shadow',
                     attrs:{onClick},
                     row:[
-                        {size:90,html:<img src={src} width='100%'/>,className:'padding-3'},
+                        {size:90,html:<img src={src} width='100%' alt=''/>,className:'padding-3'},
                         {size:6},
                         {
                             flex:1,
@@ -860,9 +860,9 @@ class JoziateSefaresheBazargah extends Component{
         }
     }
     render(){
-        let {sendStatus,ecoDeliverer} = this.state;
-        let {onClose} = this.props;
-        let searchEco = sendStatus.delivererType === 'eco' && !ecoDeliverer && sendStatus.isFinal;
+        //let {sendStatus,ecoDeliverer} = this.state;
+        //let {onClose} = this.props;
+        //let searchEco = sendStatus.delivererType === 'eco' && !ecoDeliverer && sendStatus.isFinal;
         return (
             <>
                 <RVD
@@ -1003,16 +1003,16 @@ class BazargahCard extends Component{
     }
     benefit_layout(benefit){
         return false;
-        if(!benefit){return false}
-        return {
-            gap:4,
-            row:[
-                {html:getSvg('benefit'),size:36,align:'vh'},
-                {html:'سود:',className:'fs-14 colorF15A29',align:'v'},
-                {html:SplitNumber(benefit),align:'v',className:'bold colorF15A29 fs-14'},
-                {html:'ریال',align:'v',className:'colorF15A29 fs-12'}
-            ]
-        }
+        // if(!benefit){return false}
+        // return {
+        //     gap:4,
+        //     row:[
+        //         {html:getSvg('benefit'),size:36,align:'vh'},
+        //         {html:'سود:',className:'fs-14 colorF15A29',align:'v'},
+        //         {html:SplitNumber(benefit),align:'v',className:'bold colorF15A29 fs-14'},
+        //         {html:'ریال',align:'v',className:'colorF15A29 fs-12'}
+        //     ]
+        // }
     }
     time_layout(totalTime,orderDate){
         let {onExpired = ()=>{},id} = this.props;
@@ -1033,7 +1033,7 @@ class BazargahCard extends Component{
                 layout={{
                     style:{height:60,border:'1px solid #ddd',borderRadius:6,overflow:'hidden'},
                     row:[
-                        {size:60,html:<img src={src} width='100%'/>,className:'padding-3'},
+                        {size:60,html:<img src={src} width='100%' alt=''/>,className:'padding-3'},
                         {size:12},
                         {
                             column:[

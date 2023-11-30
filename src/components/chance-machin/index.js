@@ -2,7 +2,6 @@ import React, { Component, createRef } from 'react';
 import frame1 from './frame1.png';
 import frame2 from './frame2.png';
 import RDragList from './../r-drag-list/index';
-import $ from 'jquery';
 import './index.css';
 export default class ChanceMachin extends Component {
     constructor(props) {

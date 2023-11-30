@@ -1,4 +1,3 @@
-import { configure } from '@testing-library/react';
 import React from 'react';
 export default function getSvg(type, conf = {}) {
   let style1 = {};

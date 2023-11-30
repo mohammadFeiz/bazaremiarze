@@ -45,7 +45,7 @@ export default class CartButton extends Component{
                             ]
                         },
                         {
-                            show:!!cartItems.length,align:'h',align:'vh',
+                            show:!!cartItems.length,align:'vh',
                             className:'fs-12 color3B55A5',
                             onClick:(e)=>this.openCart(e),
                             size:36,

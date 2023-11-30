@@ -68,7 +68,7 @@ export default class OrderPopup extends Component {
     async pardakht(){
       let {apis} = this.context;
       let {order} = this.props;
-      let res = await apis.request({api:'kharid.pardakhte_kharid',parameter:{order},description:'پرداخت خرید عادی'})
+      await apis.request({api:'kharid.pardakhte_kharid',parameter:{order},description:'پرداخت خرید عادی'})
     }
     splitter_layout(){
       return {

@@ -168,7 +168,7 @@ class App extends Component {
     else if(mode === 'register'){this.updateProfile(model,'register',()=>window.location.reload())}
   }
   async componentDidMount() {
-    let { baseUrl, apis,Login } = this.state;
+    let { baseUrl, apis } = this.state;
     try {
       const response = await Axios.get(`${baseUrl}/BackOffice/GetLastCampaignManagement?type=backoffice`);
       let backOffice;

@@ -5,16 +5,16 @@ export default function SignalR(getState) {
     let {userName} = userInfo;
     let addr = baseUrl.indexOf('retailerapp') !== -1?`https://retailerapp.bbeta.ir/hubclient?username=${userName}`:`https://apimy.burux.com/hubclient?username=${userName}`;
     var connection = new HubConnectionBuilder().withUrl(addr).build();
-    const orderStatuses=
-    {
-        Pending : 1,
-        Taken : 2,
-        DeliveredToCustomer : 3,
-        CancelledByCustomer : 4,
-        CancelledByElectricCustomer : 5,
-        DeliveredToDeliverer : 6,
-        Preparing : 7
-    }
+    // const orderStatuses=
+    // {
+    //     Pending : 1,
+    //     Taken : 2,
+    //     DeliveredToCustomer : 3,
+    //     CancelledByCustomer : 4,
+    //     CancelledByElectricCustomer : 5,
+    //     DeliveredToDeliverer : 6,
+    //     Preparing : 7
+    // }
 
     let $$={
         start(){

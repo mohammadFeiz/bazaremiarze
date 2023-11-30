@@ -4,7 +4,7 @@ import appContext from "./../../../app-context";
 import ProductCount from "./../../../components/kharid/product-count/product-count";
 import AIOInput from "../../../npm/aio-input/aio-input";
 import {Icon} from '@mdi/react';
-import {mdiChevronLeft,mdiClose} from '@mdi/js';
+import {mdiChevronLeft} from '@mdi/js';
 export default class SabteGarantiJadidBaJoziat extends Component {
     static contextType = appContext;
     constructor(props) {

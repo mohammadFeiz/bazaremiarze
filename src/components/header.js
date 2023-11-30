@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Icon } from '@mdi/react';
-import { mdiCart, mdiPower, mdiMagnify } from "@mdi/js";
+import { mdiCart, mdiMagnify } from "@mdi/js";
 import RVD from './../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from "../npm/aio-input/aio-input";
 import appContext from "./../app-context";

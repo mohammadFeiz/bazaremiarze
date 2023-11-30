@@ -86,7 +86,6 @@ export default class ReactHTMLSlider extends Component {
     this.isDown = false;
     this.eventHandler('window','mousemove',this.mouseMove,'unbind');
     this.eventHandler('window','mouseup',this.mouseUp,'unbind');
-    let {swipMethod} = this.props;
     let {left,lastLeft} = this.state;
     if(left === lastLeft){
       this.stopScroll(0);

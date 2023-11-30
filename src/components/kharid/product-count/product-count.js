@@ -69,7 +69,7 @@ export default class ProductCount extends Component{
       }
     render(){
         let {value,prevValue} = this.state;
-        let {min = 0,onChange,max = Infinity,style} = this.props;
+        let {onChange,max = Infinity,style} = this.props;
         if(this.props.value !== prevValue){setTimeout(()=>this.setState({value:this.props.value,prevValue:this.props.value}),0)}
         let touch = 'ontouchstart' in document.documentElement;
         return (

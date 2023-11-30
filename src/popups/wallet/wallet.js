@@ -139,11 +139,13 @@ export default class Wallet extends Component{
     }
     filter_layout(){
         let {apis}=this.context;
-        let {fromDate,toDate,items = []} = this.state;
-        //if(!items.length){return false}
+        let {
+            fromDate,
+            //toDate
+        } = this.state;
         let style = {borderRadius:24,width:100,height:24,border:'1px solid #605E5C'}
         let fromStyle = !fromDate?{color:'#605E5C'}:{border:'1px solid #605E5C',color:'#fff',background:'#605E5C'}
-        let toStyle = toDate === false?{color:'#605E5C'}:{border:'1px solid #605E5C',color:'#fff',background:'#605E5C'}
+        //let toStyle = toDate === false?{color:'#605E5C'}:{border:'1px solid #605E5C',color:'#fff',background:'#605E5C'}
         return {
             size:36,align:'v',
             row:[

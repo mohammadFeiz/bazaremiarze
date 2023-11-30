@@ -7,7 +7,7 @@ export default class Register extends Component{
     logo_layout(){
         let {mode} = this.props;
         if(mode !== 'profile'){return false}
-        return {html:<img src={bmsrc1} width={120}/>,align:'vh'}
+        return {html:<img src={bmsrc1} width={120} alt=''/>,align:'vh'}
     }
     header_layout(){
         let {mode} = this.props;
@@ -15,7 +15,7 @@ export default class Register extends Component{
         return {
             className:'br-12 p-12 m-b-12',style:{background:'#eff5f9',maxWidth:360},gap:12,
             row:[
-                {html:<img src={bmsrc} width={68}/>,align:'vh'},
+                {html:<img src={bmsrc} width={68} alt=''/>,align:'vh'},
                 {flex:1,align:'v',props:{gap:6},column:[this.text_layout(),this.subtext_layout()]}
             ]
         }

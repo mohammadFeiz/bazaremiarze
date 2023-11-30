@@ -17,7 +17,7 @@ export default class Vitrin extends Component {
     constructor(props) {
         super(props);
         this.popup = new AIOPopup();
-        this.state = {viewProducts: 'tile'}
+        this.state = {viewProducts: 'list'}
     }
     updateSelectedProducts(id, product) {
         let { apis, vitrin } = this.context,{ selectedProducts } = vitrin;

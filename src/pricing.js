@@ -4,7 +4,6 @@
 "use strict";
 
 export default class Pricing {
-    "use strict";
     //dbrequest = {};
     updateInterval = 100 * 60 * 1000; // 100min
     ndbrequest = {};
@@ -419,7 +418,7 @@ export default class Pricing {
         for (i = 0; i < gm; ++i) {
             g_day_no += daysMonthGregorian[i];
         }
-        if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0))) {
+        if (gm > 1 && ((gy % 4 === 0 && gy % 100 != 0) || (gy % 400 === 0))) {
             // leap and after Feb
             g_day_no++;
         }
@@ -472,7 +471,7 @@ export default class Pricing {
 
     CalculateCommission(qty, commission, docdate, paydate, settleType
         , linetotal, slpcode, cardgroupcode, countsku) {
-        if (qty == 0 || commission == 0 || slpcode < 1) {
+        if (qty === 0 || commission === 0 || slpcode < 1) {
             return null;
         }
         let result = {};
@@ -502,7 +501,7 @@ export default class Pricing {
                 result.ApplyDate.setDate(docdate + 90);
                 break;
         }
-        if (settleType == 1) {
+        if (settleType === 1) {
             result.ApplyDate = docdate;
         }
 
@@ -562,15 +561,15 @@ export default class Pricing {
     }
 
     CalculatePaymentDiscount(MD) {
-        if (MD.marketingdetails.SettleType == null) {
+        if (MD.marketingdetails.SettleType === null) {
             MD.marketingdetails.SettleType = 1;
         }
-        if (MD.marketingdetails.PaymentTime == null) {
+        if (MD.marketingdetails.PaymentTime === null) {
             MD.marketingdetails.PaymentTime = 1;
         }
         MD.marketingdetails.DocumentDiscountPercent = 0;
 
-        if (MD.marketingdetails.PayDueDate == null) {
+        if (MD.marketingdetails.PayDueDate === null) {
             MD.marketingdetails.PayDueDate = 1;
         }
         switch (parseInt(MD.marketingdetails.PayDueDate)) {
@@ -669,12 +668,12 @@ export default class Pricing {
         /// اضافه شده برای تغییر تخفیف ماهانه از 3 به 4.5
         MD.marketingdetails.DocumentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent * 1.5;
 
-        if (MD.marketingdetails.DiscountList == null) {
+        if (MD.marketingdetails.DiscountList === null) {
             MD.marketingdetails.DiscountList = {};
         }
         MD.marketingdetails.DiscountList.PaymentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent;
         let docSum = 0;
-        if (MD.MarketingLines == null) {
+        if (MD.MarketingLines === null) {
             return MD;
         }
         for (let line of MD.MarketingLines) {
@@ -713,14 +712,14 @@ export default class Pricing {
 
     CalculatePriceDiscount(docdate, cardcode, cardgroupcode, lines,
         listnum, Items, DisRules, marketingdetails = null, SlpCodes = null) {
-        if (lines == null) {
+        if (lines === null) {
             return null;
         }
-        if (listnum == null) listnum = 2;
-        if (cardcode == null) {
+        if (listnum === null) listnum = 2;
+        if (cardcode === null) {
             cardgroupcode = 100;
         }
-        if (docdate == null) {
+        if (docdate === null) {
             docdate = new Date();
         }
         const itemcodes = [];
@@ -741,18 +740,18 @@ export default class Pricing {
             && itemcodes.indexOf(x.itemCode) > -1);
 
         for (let item of DisRules) {
-            if ((item.cardCode == cardcode || item.cardGroupCode == cardgroupcode || item.priceList == listnum)
+            if ((item.cardCode === cardcode || item.cardGroupCode === cardgroupcode || item.priceList === listnum)
                 && ((!item.validFrom || docdate >= item.validFrom) && (!item.validTo || docdate <= item.validTo))) {
                 for (let item1 of shortitem) {
-                    if (item1.itemCode == item.itemCode || item1.groupCode == item.itemGroupCode) {
+                    if (item1.itemCode === item.itemCode || item1.groupCode === item.itemGroupCode) {
                         shortrules.push(item);
                     }
                 }
 
             }
         }
-        //shortrules = DisRules.filter((x) => (x.cardcode == cardcode || x.cardGroupCode == cardgroupcode || x.priceList == listnum)
-        //    && (shortitem.indexOf((y) => y.itemCode == x.itemCode || y.groupCode == x.itemGroupCode) > -1)
+        //shortrules = DisRules.filter((x) => (x.cardcode === cardcode || x.cardGroupCode === cardgroupcode || x.priceList === listnum)
+        //    && (shortitem.indexOf((y) => y.itemCode === x.itemCode || y.groupCode === x.itemGroupCode) > -1)
         //    && (!x.validFrom || docdate >= x.validFrom) && (!x.validTo || docdate <= x.validTo));
 
         for (let item of lines) {
@@ -768,11 +767,11 @@ export default class Pricing {
                 continue;
             }
             let price = null;
-            if (shortitem.indexOf((x) => x.itemCode == res.ItemCode && x.noDiscount == 'Y') > -1) {
+            if (shortitem.indexOf((x) => x.itemCode === res.ItemCode && x.noDiscount === 'Y') > -1) {
                 let foundprice = -1;
                 let maxprice = -1;
                 for (let itemrules of shortitem) {
-                    if (itemrules.itemCode == res.ItemCode
+                    if (itemrules.itemCode === res.ItemCode
                         && (foundprice = this.GetPriceFromListNum(itemrules.listNums, listnum) > maxprice)) {
                         maxprice = foundprice;
                     }
@@ -788,7 +787,7 @@ export default class Pricing {
                 results.push(this.FilllineMarketing(res));
                 continue;
             }
-            price = shortitem.filter((x) => x.itemCode == res.ItemCode);
+            price = shortitem.filter((x) => x.itemCode === res.ItemCode);
             if (price != null) {
                 res.SecondQty = res.ItemQty / Math.min(price[0]?.qtyinBox ?? 1, 1);
                 res.UnitOfMeasure = price[0]?.saleMeasureUnit;
@@ -797,8 +796,8 @@ export default class Pricing {
 
             //Blanket Agreement
             disctemp = [];
-            disctemp = shortrules.filter(x => x.type == 66 &&
-                (!(cardcode) ? false : x.cardCode == cardcode) && (x.itemCode == res.ItemCode));
+            disctemp = shortrules.filter(x => x.type === 66 &&
+                (!(cardcode) ? false : x.cardCode === cardcode) && (x.itemCode === res.ItemCode));
             if (disctemp.length > 0) {
                 let temp = 0;
                 let temprule;
@@ -820,9 +819,9 @@ export default class Pricing {
 
             //Speical Price for BP
             disctemp = [];
-            disctemp = shortrules.filter((x) => x.type == 83 && ((!cardcode) ? false : x.cardCode == cardcode)
-                && (x.itemCode === res.ItemCode) && (x.minQty == null ? true : res.ItemQty >= x.minQty)
-                && (x.maxQty == null ? true : res.ItemQty < x.maxQty));
+            disctemp = shortrules.filter((x) => x.type === 83 && ((!cardcode) ? false : x.cardCode === cardcode)
+                && (x.itemCode === res.ItemCode) && (x.minQty === null ? true : res.ItemQty >= x.minQty)
+                && (x.maxQty === null ? true : res.ItemQty < x.maxQty));
             if (disctemp.length > 0) {
                 let temprule;
                 let temp = 0;
@@ -848,7 +847,7 @@ export default class Pricing {
             let havepv = false;
             let pvdisount = 0;
             disctemp = [];
-            disctemp = shortrules.filter((x) => x.type == 80 && x.priceList == listnum && (x.itemCode === res.ItemCode) &&
+            disctemp = shortrules.filter((x) => x.type === 80 && x.priceList === listnum && (x.itemCode === res.ItemCode) &&
                 ((!x.minQty) ? true : res.ItemQty >= x.minQty) && ((!x.maxQty) ? true : res.ItemQty < x.maxQty));
             res.Price = null;
             if (disctemp.length > 0) {
@@ -871,7 +870,7 @@ export default class Pricing {
             //Finidding Price
             //Price List
             if (!havepv) {
-                let shortitem1 = shortitem.filter((x) => (x.itemCode == res.ItemCode) && this.isListNumExist(x.listNums, listnum));
+                let shortitem1 = shortitem.filter((x) => (x.itemCode === res.ItemCode) && this.isListNumExist(x.listNums, listnum));
                 if (shortitem1.length > 0) {
                     // Price List Founded
                     let foundedMax = -1;
@@ -897,8 +896,8 @@ export default class Pricing {
             //Disount Group Code
             res.DiscountPercent = 0;
             disctemp = [];
-            disctemp = shortrules.filter((x) => x.type == 68 &&
-                (((!res.ItemCode) ? false : x.itemCode === res.ItemCode) || ((!res.ItemGroupCode) ? false : x.itemGroupCode == res.ItemGroupCode)) &&
+            disctemp = shortrules.filter((x) => x.type === 68 &&
+                (((!res.ItemCode) ? false : x.itemCode === res.ItemCode) || ((!res.ItemGroupCode) ? false : x.itemGroupCode === res.ItemGroupCode)) &&
                 ((!x.minQty) || res.ItemQty >= x.minQty) && ((!x.maxQty) || res.ItemQty < x.maxQty));
             if (disctemp.length > 0) {
                 let temprule;
@@ -942,12 +941,12 @@ export default class Pricing {
         let needcommission = true;
         let havesku = false;
         let countsku = "";
-        if (!marketingdetails || marketingdetails.SlpCode == -1) {
+        if (!marketingdetails || marketingdetails.SlpCode === -1) {
             needcommission = false;
         }
         else {
             if (SlpCodes && SlpCodes.length > 1
-                && SlpCodes.indexOf(x => x.slpCode == marketingdetails.SlpCode && (countsku = x.countSku) != null) > -1) {
+                && SlpCodes.indexOf(x => x.slpCode === marketingdetails.SlpCode && (countsku = x.countSku) != null) > -1) {
                 havesku = true;
             }
         }
@@ -960,7 +959,7 @@ export default class Pricing {
                 // اضافه کردن پورسانت
                 commission = 0;
                 for (let itemcom of shortitem) {
-                    if (itemcom.itemCode == item.ItemCode) {
+                    if (itemcom.itemCode === item.ItemCode) {
                         commission = itemcom.commission;
                         let com = this.CalculateCommission(item.ItemQty, commission, docdate, marketingdetails.PayDueDate, marketingdetails.SettleType
                             , item.LineTotal, marketingdetails.SlpCode, cardgroupcode, havesku ? countsku : "");
@@ -995,12 +994,12 @@ export default class Pricing {
         let shortrules = [];
         let disctemp = [];
         //shortrules = DisRules.filter((x) => {
-        //    return (x.CardCode == MD.CardCode || x.CardGroupCode == MD.CardGroupCode || x.PriceList == MD.marketingdetails.PriceList)
-        //        && (x.ValidFrom == null ? true : MD.DocTime >= x.ValidFrom) && (x.ValidTo == null ? true : MD.DocTime <= x.ValidTo)
+        //    return (x.CardCode === MD.CardCode || x.CardGroupCode === MD.CardGroupCode || x.PriceList === MD.marketingdetails.PriceList)
+        //        && (x.ValidFrom === null ? true : MD.DocTime >= x.ValidFrom) && (x.ValidTo === null ? true : MD.DocTime <= x.ValidTo)
         //});
         shortrules = DisRules.filter(checkshortrules);
         function checkshortrules(disrules) {
-            return (disrules.cardCode == MD.CardCode || disrules.cardGroupCode == MD.CardGroupCode || disrules.priceList == MD.marketingdetails.PriceList)
+            return (disrules.cardCode === MD.CardCode || disrules.cardGroupCode === MD.CardGroupCode || disrules.priceList === MD.marketingdetails.PriceList)
                 && (!disrules.validFrom || MD.DocTime >= disrules.validFrom) && (!disrules.validTo || MD.DocTime <= disrules.validTo);
         }
         results.MarketingLines = this.CalculatePriceDiscount(MD.DocTime, MD.CardCode, MD.CardGroupCode, MD.MarketingLines
@@ -1052,7 +1051,7 @@ export default class Pricing {
         if (MD.marketingdetails.Campaign != null && (MD.marketingdetails?.Campaign ?? null) != null
             && MD.marketingdetails.Campaign != -1) {
             for (let item of campaignRules) {
-                if (item.campaignId == MD.marketingdetails.Campaign) {
+                if (item.campaignId === MD.marketingdetails.Campaign) {
                     camrule = item;
                     break;
                 }
@@ -1083,11 +1082,11 @@ export default class Pricing {
             return MD;
         }
 
-        if (MD.marketingdetails.PriceList == null) MD.marketingdetails.PriceList = 2;
-        if (MD.CardCode == null) {
+        if (MD.marketingdetails.PriceList === null) MD.marketingdetails.PriceList = 2;
+        if (MD.CardCode === null) {
             MD.CardGroupCode = 100;
         }
-        if (MD.DocTime == null) {
+        if (MD.DocTime === null) {
             MD.DocTime = new Date();
         }
         let results = {};
@@ -1100,27 +1099,27 @@ export default class Pricing {
 
         // ساخت لیست قواعد مربوط به مشتری یا گروه مشتری
         for (let itemrules of campaignRules) {
-            if ((itemrules.campaignId == (MD.marketingdetails.Campaign))
-                && (itemrules.camType == "B")
+            if ((itemrules.campaignId === (MD.marketingdetails.Campaign))
+                && (itemrules.camType === "B")
                 && (!itemrules.camCardCode || (itemrules.camCardCode.indexOf("," + MD.CardCode + ",")) > -1)
                 && (!itemrules.camCardGroupCode || (itemrules.camCardGroupCode.indexOf("," + MD.CardGroupCode + ",")) > -1)
                 && (!itemrules.camValidFrom || MD.DocTime >= itemrules.camValidFrom)
                 && (!itemrules.camValidTo || MD.DocTime <= itemrules.camValidTo)
-                //&& (!itemrules.camSettleType || (itemrules.camSettleType == MD.marketingdetails.SettleType || itemrules.camSettleType == 2))
-                && (!itemrules.camSalesChannel || (itemrules.camSalesChannel == MD.marketingdetails.SaleChannel || itemrules.camSalesChannel == 1))
+                //&& (!itemrules.camSettleType || (itemrules.camSettleType === MD.marketingdetails.SettleType || itemrules.camSettleType === 2))
+                && (!itemrules.camSalesChannel || (itemrules.camSalesChannel === MD.marketingdetails.SaleChannel || itemrules.camSalesChannel === 1))
             ) {
                 shortrules.push(itemrules);
             }
         }
         //shortrules = campaignRules.filter((x) =>
-        //    (x.campaignId == (MD.marketingdetails.campaign))
-        //    && (x.camType == "B")
+        //    (x.campaignId === (MD.marketingdetails.campaign))
+        //    && (x.camType === "B")
         //    && (!x.camCardCode || (x.camCardCode.indexOf("," + MD.cardCode + ",")) > -1)
         //    && (!x.camCardGroupCode || (x.camCardGroupCode.indexOf("," + MD.cardGroupCode + ",")) > -1)
         //    && (!x.camValidFrom || MD.docTime >= x.camValidFrom)
         //    && (!x.camValidTo || MD.docTime <= x.camValidTo)
-        //    && (!x.camSettleType || (x.camSettleType == MD.marketingdetails.settleType || x.camSettleType == 2))
-        //    && (!x.camSalesChannel || (x.camSalesChannel == MD.marketingdetails.saleChannel || x.camSalesChannel == 1))
+        //    && (!x.camSettleType || (x.camSettleType === MD.marketingdetails.settleType || x.camSettleType === 2))
+        //    && (!x.camSalesChannel || (x.camSalesChannel === MD.marketingdetails.saleChannel || x.camSalesChannel === 1))
         //);
         let bri = [];
         let PrssdLine = [];
@@ -1162,7 +1161,7 @@ export default class Pricing {
                         // پردازش قواعد کمپین
                         // قاعده حداکثر تعداد
                         if (item.lineMaxReqQty != null) {
-                            if (br.qty == item.lineMaxReqQty || br.isFull) {
+                            if (br.qty === item.lineMaxReqQty || br.isFull) {
                                 line.SecondQty = 0;
                                 line.CampaignDetails.Status = 0;
                                 line.CampaignDetails.Information += "مقدار تقاضا شده این خط بیشتر از مقدار مجاز (" + item.lineMaxReqQty + ") است. این خط حذف میشود.";
@@ -1243,9 +1242,9 @@ export default class Pricing {
                 for (linenum = 0; linenum < maxline; linenum++) {
                     let lineMD = MD.MarketingLines[linenum];
                     if (br.lines.indexOf(linenum) > -1)
-                        if (lineMD.CampaignDetails.Status == 1 || lineMD.CampaignDetails.Status == 2
+                        if (lineMD.CampaignDetails.Status === 1 || lineMD.CampaignDetails.Status === 2
                             || (KeepOthers ?? false)) {
-                            if ((item.lineBasePrice ?? 0) > 0 && (lineMD.Price ?? 0) == 0) {
+                            if ((item.lineBasePrice ?? 0) > 0 && (lineMD.Price ?? 0) === 0) {
                                 lineMD.Price = item.lineBasePrice ?? 0;
                             } else if (!lineMD.Price) {
                                 lineMD.CampaignDetails.Information += "اطلاعات قیمت کالا موجود نمی باشد.";
@@ -1283,7 +1282,7 @@ export default class Pricing {
                 if (sumreq < sumnoreq) {
                     results.MarketingLines = MD.marketingLines;
                     for (let line of results.MarketingLines) {
-                        if (line.CampaignDetails == null) { line.CampaignDetails = {}; }
+                        if (line.CampaignDetails === null) { line.CampaignDetails = {}; }
                         line.CampaignDetails.Status = -1;
                         line.CampaignDetails.Information = "شرط اقلام کمپین برآورده نشده است.";
                     };
@@ -1334,7 +1333,7 @@ export default class Pricing {
                     CommissionEffect = x.commissionEffect;
                 }
             }
-            if (CommissionEffect == 101) {
+            if (CommissionEffect === 101) {
                 CommissionEffect = 0;
             }
             //محاسبه جمع فاکتور و اعمال تخفیف اقلامی
@@ -1347,11 +1346,11 @@ export default class Pricing {
                 if (!lineMD) {
                     continue;
                 }
-                if (lineMD.CampaignDetails == null) {
+                if (lineMD.CampaignDetails === null) {
                     lineMD.CampaignDetails = { Status: -2 };
                 }
-                if (lineMD.CampaignDetails.Status == 1
-                    || lineMD.CampaignDetails.Status == 2) {
+                if (lineMD.CampaignDetails.Status === 1
+                    || lineMD.CampaignDetails.Status === 2) {
                     // اعمال تخفیف تعداد اقلام بر روی هر خط فاکتور
                     lineMD.CampaignDetails.CamDiscount = DocDis;
                     lineMD.CampaignDetails.ExDiscount = lineMD.DiscountPercent;
@@ -1359,7 +1358,7 @@ export default class Pricing {
                     lineMD = this.FilllineMarketing(lineMD);
                     sum += lineMD.LineTotal ?? 0;
                 }
-                else if (lineMD.CampaignDetails.Status == -2) {
+                else if (lineMD.CampaignDetails.Status === -2) {
                     lineMD.CampaignDetails.RequestedQty = lineMD.ItemQty;
                     if (!KeepOthers) this.ZerolineMarketing(lineMD);
                     lineMD.CampaignDetails.Information += "این قلم کالا مشمول کمپین نمی باشد.";
@@ -1400,17 +1399,17 @@ export default class Pricing {
 
     CalculateClubPoint(MD) {
         let result = 0;
-        if (MD == null) {
+        if (MD === null) {
             return 0;
         }
-        if (MD.marketingdetails == null) {
+        if (MD.marketingdetails === null) {
             MD.marketingdetails = {};
         }
-        if (MD.marketingdetails.PayDueDate == null) {
+        if (MD.marketingdetails.PayDueDate === null) {
             MD.marketingdetails.PayDueDate = 0;
         }
 
-        if (MD.marketingdetails.ClubPoints == null) {
+        if (MD.marketingdetails.ClubPoints === null) {
             MD.marketingdetails.ClubPoints = {};
         }
         MD.marketingdetails.ClubPoints.PurchasePoint = 0;
@@ -1481,8 +1480,8 @@ export default class Pricing {
                 CashRate = 0;
                 break;
         }
-        if ((MD.marketingdetails?.PaymentTime ?? 1) == 5
-            && (MD.marketingdetails?.SettleType ?? 3) == 1) {
+        if ((MD.marketingdetails?.PaymentTime ?? 1) === 5
+            && (MD.marketingdetails?.SettleType ?? 3) === 1) {
             CashRate = 100;
         }
         let CashPoint = 2 * Math.floor(((MD?.DocumentTotal ?? 0) * CashRate / 100 / 10000000));
@@ -1759,14 +1758,14 @@ export default class Pricing {
                 }
             ];
 
-        if (MD.MarketingLines == null || MD.MarketingLines.length == 0) {
+        if (MD.MarketingLines === null || MD.MarketingLines.length === 0) {
             return result;
         }
         for (let item of clubPoints) {
             item.TotalQty = 0;
         }
         for (let line of MD.MarketingLines) {
-            if (line == null || (line?.ItemCode == null) || (line?.ItemQty ?? 0) == 0) {
+            if (line === null || (line?.ItemCode === null) || (line?.ItemQty ?? 0) === 0) {
                 continue;
             }
             for (let item of clubPoints) {
@@ -1789,7 +1788,7 @@ export default class Pricing {
             }
         }
 
-        if (MD.marketingdetails.Campaign == 46) {
+        if (MD.marketingdetails.Campaign === 46) {
             let productPoint = 0;
             let countLevel = 0;
             let i = 0;
@@ -1821,7 +1820,7 @@ export default class Pricing {
             MD.marketingdetails.ClubPoints.CampaignPoint = productPoint;
             result += productPoint;
         }
-        else if (MD.marketingdetails.Campaign == 49) {
+        else if (MD.marketingdetails.Campaign === 49) {
             if (MD.DocumentTotal ?? 0 > 300000001) {
                 MD.marketingdetails.ClubPoints.CampaignPoint = 50;
             } else if (MD.DocumentTotal ?? 0 > 200000001) {
@@ -1849,7 +1848,7 @@ export default class Pricing {
         if (CurrentDoc) {
             doctocalc = CurrentDoc;
         }
-        if (ItemCodes == null) {
+        if (ItemCodes === null) {
             if (CurrentDoc.MarketingLines != null && CurrentDoc.MarketingLines.length > 0) {
                 ItemCodes = [];
                 for (var LineItem = 0; LineItem < CurrentDoc.MarketingLines.length; LineItem++) {
@@ -1884,7 +1883,7 @@ export default class Pricing {
         if (doctocalc.marketingdetails.Campaign) {
             let camrul = {};
             for (camrul of campaignRules)
-                if (camrul.campaignId == doctocalc.marketingdetails.Campaign) {
+                if (camrul.campaignId === doctocalc.marketingdetails.Campaign) {
                     isneedb1 = camrul.camCanHaveB1Dis;
                     break;
                 }
@@ -1902,11 +1901,11 @@ export default class Pricing {
         for (let item of ItemCodes) {
             onhand = null;
             for (let item1 of Items) {
-                if (item1.itemCode == item && item1.inventory && item1.inventory.length >= 1) {
+                if (item1.itemCode === item && item1.inventory && item1.inventory.length >= 1) {
                     SaleMeasureUnit = item1.saleMeasureUnit ?? "";
                     NumInsale = item1.numInSale ?? 1;
                     for (let iteminv of item1.inventory) {
-                        if (iteminv.whsCode == doctocalc.WhsCode && iteminv.qtyLevRel) {
+                        if (iteminv.whsCode === doctocalc.WhsCode && iteminv.qtyLevRel) {
                             onhand = iteminv;
                         }
                     }
@@ -1921,7 +1920,7 @@ export default class Pricing {
             });
             let isfound = 0;
             for (let item1 of doctocalc.MarketingLines) {
-                if (item1.ItemCode == item) {
+                if (item1.ItemCode === item) {
                     isfound = 1;
                     break;
                 }
@@ -1940,7 +1939,7 @@ export default class Pricing {
         if (isneedb1) {
             DocAfterB1 = this.CalculateDocumentByB1(doctocalc, Items, DisRules, SlpCodes);
 
-            if (DocAfterB1 == null || DocAfterB1.MarketingLines == null) {
+            if (DocAfterB1 === null || DocAfterB1.MarketingLines === null) {
                 error += "خطا در محاسبه تخفیفات در بی وان";
                 return null;
             }
@@ -1949,7 +1948,7 @@ export default class Pricing {
             for (let item of DocAfterB1.MarketingLines) {
                 lp = {};
                 for (let itemresult of result) {
-                    if (itemresult.ItemCode == item.ItemCode) {
+                    if (itemresult.ItemCode === item.ItemCode) {
                         lp = itemresult;
                         lp.Price = item.Price ?? 0;
                         lp.B1Dscnt = item.DiscountPercent ?? 0;
@@ -1968,7 +1967,7 @@ export default class Pricing {
             for (let item of DocAfterCa.MarketingLines) {
                 lp = {};
                 for (let itemresult of result) {
-                    if (itemresult.ItemCode == item.ItemCode) {
+                    if (itemresult.ItemCode === item.ItemCode) {
                         lp = itemresult;
                         lp.Price = item.Price ?? 0;
                         lp.FinalPrice = parseInt(item.PriceAfterVat ?? 0);
@@ -1997,7 +1996,7 @@ export default class Pricing {
                     newarray.push(this.CaseDownPropOfDoc(j))
                 }
                 newMD[newpropname] = newarray;
-            } else if (typeof MD[prop] == 'object') {
+            } else if (typeof MD[prop] === 'object') {
                 newMD[newpropname] = this.CaseDownPropOfDoc(MD[prop]);
             } else {
                 newMD[newpropname] = MD[prop];
@@ -2011,7 +2010,7 @@ export default class Pricing {
         let newpropname = "";
         for (let prop in MD) {
             newpropname = prop.substring(0, 1).toUpperCase() + prop.substring(1);
-            if (prop.toLowerCase() == 'marketingdetails') {
+            if (prop.toLowerCase() === 'marketingdetails') {
                 newpropname = prop;
             }
             if (Array.isArray(MD[prop])) {
@@ -2020,7 +2019,7 @@ export default class Pricing {
                     newarray.push(this.CaseDownPropOfDoc(j))
                 }
                 newMD[newpropname] = newarray;
-            } else if (typeof MD[prop] == 'object') {
+            } else if (typeof MD[prop] === 'object') {
                 newMD[newpropname] = this.CaseDownPropOfDoc(MD[prop]);
             } else {
                 newMD[newpropname] = MD[prop];

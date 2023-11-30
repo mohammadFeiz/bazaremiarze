@@ -169,30 +169,30 @@ export default class ShopClass {
     }
     fillAuto = () => {
         return;
-        let {cart} = this.getAppState()
-        let items = cart.Bundle.items;
-        for(let prop in items){
-          let {count,product,variantId} = items[prop];
-          let total = 0;
-          for(let x in count.qtyInPacks){
-              for(let i = 0; i < count.qtyInPacks[x].length; i++){
-                  let o = count.qtyInPacks[x][i];
-                  total += o.count;
-              }
-          }
-          let v = product.variants[0];
-          let qty = v.qty;
-          let delta = qty - total;
-          if(delta){
-            let a = count.qtyInPacks[v.id];
-            let b = a.find(({optionValueName})=>optionValueName === 'مهتابی')
-            if(!b)
-            {
-              b = a[0];
-            }
-            b.count = b.count + delta
-          }
-        }
+        // let {cart} = this.getAppState()
+        // let items = cart.Bundle.items;
+        // for(let prop in items){
+        //   let {count,product,variantId} = items[prop];
+        //   let total = 0;
+        //   for(let x in count.qtyInPacks){
+        //       for(let i = 0; i < count.qtyInPacks[x].length; i++){
+        //           let o = count.qtyInPacks[x][i];
+        //           total += o.count;
+        //       }
+        //   }
+        //   let v = product.variants[0];
+        //   let qty = v.qty;
+        //   let delta = qty - total;
+        //   if(delta){
+        //     let a = count.qtyInPacks[v.id];
+        //     let b = a.find(({optionValueName})=>optionValueName === 'مهتابی')
+        //     if(!b)
+        //     {
+        //       b = a[0];
+        //     }
+        //     b.count = b.count + delta
+        //   }
+        // }
     }
     payment = async (obj) => {
         //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
@@ -404,8 +404,8 @@ class RegularCard extends Component {
         return { html: name, className: 'fs-12 theme-medium-font-color bold', style: { whiteSpace: 'normal', textAlign: 'right' } }
     }
     discount_layout() {
-        let { product, count = 1 } = this.props;
-        let { inStock, Price, B1Dscnt = 0, CmpgnDscnt = 0, PymntDscnt = 0, FinalPrice } = product;
+        let { product} = this.props;
+        let { inStock, Price, B1Dscnt = 0, CmpgnDscnt = 0, PymntDscnt = 0 } = product;
 
         if (!Price || !inStock) { return false }
         return {
@@ -655,7 +655,6 @@ class BundleCard extends Component {
     remove_layout() {
         let { removeMode } = this.state;
         if (!removeMode) { return false }
-        let { onRemove } = this.props
         let space = { flex: 1, onClick: () => this.cancelRemoveMode() };
         return {
             style: { zIndex: 10, position: 'absolute', width: '100%', height: '100%', left: 0, top: 0, background: 'rgba(255,255,255,0.9)' },

@@ -1,5 +1,4 @@
 import React,{Component} from "react";
-import DownloadUrl from './../../npm/aio-functions/download-url';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import Icon from "@mdi/react";
 import { mdiDownload } from "@mdi/js";

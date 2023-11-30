@@ -54,7 +54,6 @@ export default class Awards extends Component {
     if(!this.mounted){return null;}
     let { awards,chanceResult,chanceIndex,showUserAwards,userAwards } = this.state;
     let {onClose} = this.props;
-    let {SetState} = this.context;
     
     return (
       <>
@@ -293,7 +292,7 @@ class UserAwards extends Component{
                             row:[
                               {html:code,align:'v',style:{fontSize:12}},
                               {flex:1},
-                              {show:remaining !== undefined,html:'انقضا' + ' ' + remaining + ' ' + 'روز',align:'v',style:{fontSize:12,color:remaining < 7?'red':undefined}}
+                              {show:remaining !== undefined,html:`انقضا ${remaining} روز`,align:'v',style:{fontSize:12,color:remaining < 7?'red':undefined}}
                             ]
                           }
                         ]

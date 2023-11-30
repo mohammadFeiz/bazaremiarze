@@ -2,7 +2,7 @@ import React,{Component} from "react";
 import appContext from "../../../app-context";
 import AIOInput from "../../../npm/aio-input/aio-input";
 import RVD from './../../../npm/react-virtual-dom/react-virtual-dom';
-import CreaditCard,{ getCardDetail } from "./../credit-card/credit-card";
+import CreaditCard from "./../credit-card/credit-card";
 import './index.css';
 
 export default class TanzimateKifePool extends Component{
@@ -76,10 +76,10 @@ class AddCard extends Component{
         this.state = {model:{name:'',number:'62198610'}}
     }
     async onSubmit(){
-        let {apis,rsa} = this.context;
+        let {apis} = this.context;
         let {onClose,onAdd} = this.props;
         let {model} = this.state;
-        let res = await apis.request({
+        await apis.request({
             api:'wallet.afzoozane_cart',parameter:model,description:'افزودن کارت',
             onSuccess:()=>{
                 onAdd(model);
@@ -89,8 +89,8 @@ class AddCard extends Component{
     }
     render(){
         let {model} = this.state;
-        let {className} = getCardDetail(model.number || '')
-        let cls = 'affix-logo card-logo' + (className?' ' + className:'')
+        //let {className} = getCardDetail(model.number || '')
+        //let cls = 'affix-logo card-logo' + (className?' ' + className:'')
         return (
             <AIOInput
                 type='form' rtl={true} lang={'fa'}

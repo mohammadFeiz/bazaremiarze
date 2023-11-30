@@ -1,6 +1,5 @@
 import React,{Component} from 'react';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import dotsloading from './../../images/simple_loading.gif';
 import Logo5 from './../../images/logo5.png';
 
 export default class Splash extends Component{

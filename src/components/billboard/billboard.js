@@ -24,7 +24,7 @@ export default class Billboard extends Component{
             for(let i = 0; i < spreeCampaignIds.length; i++){
                 let spreeCampaignId = spreeCampaignIds[i]
                 let Shop = actionClass.getShopById(spreeCampaignId);
-                let {billboard,icon,name,id} = Shop;
+                let {billboard,icon,name} = Shop;
                 items.push({name,billboard,icon,onClick:()=>Shop.openCategory()})
             }
         }

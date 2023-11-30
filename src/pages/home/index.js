@@ -169,7 +169,7 @@ export default class Home extends Component {
                         {size:24},
                         {
                             gap:1,column:[
-                                {html:<img src={blankGuarantee}/>,align:'vh'}
+                                {html:<img src={blankGuarantee} alt=''/>,align:'vh'}
                             ]
                         },
                         {size:12},

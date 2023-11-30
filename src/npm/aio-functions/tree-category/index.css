@@ -1,0 +1,42 @@
+.tree-category {
+    padding: 6px;
+    gap: 6px;
+    direction:ltr;
+}
+.tree-category.rtl{
+    direction:rtl;
+}
+
+.tree-category-row {
+    overflow-x: auto;
+}
+
+.tree-category-row::-webkit-scrollbar {
+    display: none;
+}
+
+.tree-category-button {
+    background: #DCE1FF;
+    font-size: 10px;
+    color: #000;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-weight: bold;
+    height: 24px;
+}
+
+.tree-category-titr {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    height: 24px;
+    font-size: 10px;
+    border: none;
+    background: none;
+    padding: 0;
+    font-weight: bold;
+}

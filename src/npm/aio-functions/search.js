@@ -8,6 +8,6 @@ export default function Search(items,searchValue,getValue = (o) =>o){
         return true
     }
     let keys = searchValue.split(' ');
-    return items.filter((o)=>isMatch(keys,getValue(o)))
+    return items.filter((o,i)=>isMatch(keys,getValue(o,i)))
 }
 

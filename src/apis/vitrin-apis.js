@@ -41,11 +41,9 @@ export default function vitrinApis({ baseUrl, helper }) {
             ]
             let response = await Axios.post(`${baseUrl}/miarze/GetProducts`, body);
             let data = response.data.data.data;
-            debugger
             let meta = response.data.data.meta;
             let total = meta.totalCount;
             let products = data.map((o) => {
-                debugger
                 let price, src;
                 try { price = o.price.current / 10 } catch { price = 0 }
                 try { src = o.images[0].styles[9].url } catch { src = '' }

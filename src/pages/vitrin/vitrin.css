@@ -9,38 +9,10 @@
     background:#3B55A5;
     
 }
-.vitrin-category-sibling-items{
-    overflow-x:auto; 
-    padding:6px 12px; 
-    height:40px;
-}
-.vitrin-category-path{
-    padding:6px 12px; 
-}
-.vitrin-category-sibling-items::-webkit-scrollbar {
-    display: none;
-}
-.vitrin-category-path-item{
-    color:#3B55A5;
-    font-size:11px;
-    display:flex;
-    align-items: center;
-    justify-content: center;
-    border-radius:4px;
-    font-weight:bold;
-}
-
-.vitrin-category-sibling-item{
-    background:#3B55A5;
-    color:#fff;
-    padding:6px;
-    border-radius:6px;
-    font-size:11px;
-}
-.vitrin-category-path-item.is-last{
-    color:#333;
-    font-size:12px;
-    border:none;
+.vitrin-search-box{
+    height:48px;
+    text-align:right;
+    border-bottom:3px solid #eff1ee;
 }
 .vitrin-serach-popup-header{
     box-shadow: 0 0 12px 1px rgba(0,0,0,0.3) !important;

@@ -14,6 +14,7 @@ export default class Search extends Component {
         super(props);
         this.state = {
             categories: [], taxon: false, searchValue: '', products: undefined, pageNumber: 1, pageSize: 10,total: false,
+            brands:[],selectedBrands:[],
             paging: {
                 number: 1,size: 20,sizes: [10, 20, 40, 100],serverSide: true,length: 0,
                 onChange: (obj) => {
@@ -35,7 +36,10 @@ export default class Search extends Component {
     }
     componentDidMount() {
         let { backOffice } = this.context;
-        this.setState({ categories: backOffice.vitrinCategories }, () => this.updateProducts())
+        let brands = [
+            'بروکس','پارس شهاب','سایروکس','خزرشید','کملیون','مازی نور'
+        ]
+        this.setState({ categories: backOffice.vitrinCategories,brands }, () => this.updateProducts())
     }
     changePageNumber(dir) {
         let { pageNumber, products } = this.state;
@@ -54,6 +58,24 @@ export default class Search extends Component {
         let { isFirstTime } = this.props
         return !isFirstTime?false:{html: <Box type='description'/>}
     }
+    // brands_layout(){
+    //     let {brands} = this.state;
+    //     let options = brands.map((brand)=>{
+    //         return {
+    //             text:brand,
+    //             value:brand,
+
+    //         }
+    //     })
+    //     return {
+    //         html:(
+    //             <AIOInput
+    //                 type='select'
+    //                 options={options}
+    //             />
+    //         )
+    //     }
+    // }
     body_layout(){
         let { removeModal } = this.context,{ isFirstTime } = this.props;
         let { products, paging,categories, total } = this.state;
@@ -65,6 +87,7 @@ export default class Search extends Component {
                     column: [
                         this.search_layout(), 
                         this.categories_layout(categories, total), 
+                        //this.brands_layout(),
                         this.products_layout(products,paging),
                         this.suggestion_layout(isFirstTime)
                     ] 

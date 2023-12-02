@@ -171,6 +171,9 @@ class App extends Component {
   }
   async componentDidMount() {
     let { baseUrl, apis } = this.state;
+    window.history.pushState({}, '')
+    window.history.pushState({}, '')
+    window.onpopstate = function(event) {window.history.pushState({}, '')};
     try {
       const response = await Axios.get(`${baseUrl}/BackOffice/GetLastCampaignManagement?type=backoffice`);
       let backOffice;

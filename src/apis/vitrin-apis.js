@@ -19,7 +19,6 @@ export default function vitrinApis({ baseUrl, helper }) {
             return { result: res.data.message }
         },
         async v_updateMyVitrin({ id, state, product }) {
-            debugger
             let res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrin`, { ProductId: id, state: !state, B1Code: product.sku, Price: product.price });
             if (res.data.isSuccess === true) {
                 return { result: true }

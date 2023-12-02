@@ -69,6 +69,7 @@ export default class Vitrin extends Component {
     SetState(obj) { this.setState(obj) }
     getContext() {
         let { apis, vitrin, backOffice } = this.context;
+        console.log(backOffice.vitrinCategories)
         return {
             ...this.state, apis, vitrin, backOffice,
             SetState: this.SetState.bind(this),

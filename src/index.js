@@ -99,7 +99,7 @@ class App extends Component {
       let { userInfo, Login } = this.state;
       let newUserInfo = { ...userInfo, ...obj };
       this.setState({ userInfo: newUserInfo });
-      Login.setUserInfo(newUserInfo)
+      Login.setStorage('userInfo',newUserInfo)
       callback()
     }
   }
@@ -110,7 +110,7 @@ class App extends Component {
       onCatch: () => 'خطای 10037.این کد خطا را به پشتیبانی اعلام کنید'
     })
     if (res === true) {
-      let userInfo = Login.getUserInfo();
+      let userInfo = Login.getStorage('userInfo');
       if(typeof userInfo !== 'object' || !userInfo.cardCode || typeof userInfo.cardCode !== 'string'){
         return false;
       }
@@ -143,6 +143,7 @@ class App extends Component {
       if (typeof res === 'object') {
         let { id: userId } = res;
         this.setState({ userId })
+        Login.setStorage('userId',model.login.userId);
         Login.setMode('OTPCode')
       }
     }
@@ -157,8 +158,9 @@ class App extends Component {
         let userInfo = await this.getUserInfo(res);
         let registered = await apis.request({api:'login.checkIsRegistered',parameter:phoneNumber,loading:false});
         if(registered){
-          Login.setUserInfo(userInfo);
-          Login.setToken(token);
+          Login.setStorage('userInfo',userInfo);
+          Login.setStorage('userId',model.login.userId);
+          Login.setStorage('token',token);
           Login.setMode('auth'); 
         }
         else {Login.setMode('register');}

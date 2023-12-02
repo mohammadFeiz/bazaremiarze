@@ -1,5 +1,5 @@
-﻿///***Version 1.1.19 ****///
-//Edited: 2023-11-14
+﻿///***Version 1.1.20 ****///
+//Edited: 2023-12-2
 
 "use strict";
 
@@ -666,7 +666,8 @@ export default class Pricing {
         }
 
         /// اضافه شده برای تغییر تخفیف ماهانه از 3 به 4.5
-        MD.marketingdetails.DocumentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent * 1.5;
+            MD.marketingdetails.DocumentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent * 1.5;
+        }
 
         if (MD.marketingdetails.DiscountList === null) {
             MD.marketingdetails.DiscountList = {};
@@ -698,7 +699,7 @@ export default class Pricing {
                 MD.marketingdetails.DiscountList.DiscountValueUsed = extra;
             }
             if (docSum > 0) {
-                let newDisc = ((MD.marketingdetails?.DocumentDiscount ?? 0) + (prom + extra) ) / docSum * 100;
+                let newDisc = ((MD.marketingdetails?.DocumentDiscount ?? 0) + (prom + extra) / 1.09) / docSum * 100;
                 if (newDisc >= 99) {
                     newDisc = 99;
                 }

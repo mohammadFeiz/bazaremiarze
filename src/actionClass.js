@@ -105,7 +105,7 @@ export default class ActionClass {
     }
 
     manageUrl = () => {
-        let { userInfo } = this.getProps()
+        //let { userInfo } = this.getProps()
         let wrl = window.location.href;
         //this.addAnaliticsHistory({userId:userInfo.phoneNumber})
         let jsonUrl = UrlToJson(wrl)
@@ -227,6 +227,7 @@ export default class ActionClass {
     }
     fixPrice = ({ items, CampaignId, PriceListNum }) => {
         let { userInfo } = this.getProps();
+        let {Logger} = this.getState();
         if (!userInfo.groupCode) { console.error('fixPrice missing userInfo.groupCode') }
         if (!userInfo.cardCode) { console.error('fixPrice missing userInfo.cardCode') }
         if (!userInfo.slpcode) { console.error('fixPrice missing userInfo.slpcode') }
@@ -241,6 +242,7 @@ export default class ActionClass {
             "MarketingLines": items
         }
         let list = items.map(({ itemCode }) => itemCode);
+        debugger
         try {
             list = this.pricing.autoPriceList(list, data);
         }
@@ -433,7 +435,7 @@ export default class ActionClass {
             addModal({ id: type, position: 'fullscreen', body: { render: () => <TanzimateKifePool cards={parameter.cards} onChange={parameter.onChange} /> }, header: { title: 'تنظیمات کیف پول' } })
         }
         else if (type === 'cart') {
-            addModal({ id: type, position: 'fullscreen', body: { render: () => <Cart cartId={parameter} /> }, header: { title: 'سبد خرید' }, id: 'cart' })
+            addModal({ id: type, position: 'fullscreen', body: { render: () => <Cart cartId={parameter} /> }, header: { title: 'سبد خرید' } })
         }
         else if (type === 'sefareshe-ersal-shode-baraye-vizitor') {
             addModal({

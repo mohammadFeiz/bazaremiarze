@@ -1,12 +1,11 @@
 import React, { Component, createContext, useState,useEffect,useContext } from "react";
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import { Icon } from '@mdi/react';
-import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeft, mdiArrowLeftBold, mdiDisc, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiImage } from '@mdi/js';
+import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeftBold, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiImage } from '@mdi/js';
 import appContext from "./app-context";
 import AIOInput from './npm/aio-input/aio-input';
 import AIOStorage from 'aio-storage';
 import AIOPopup from './npm/aio-popup/aio-popup';
-import backofficebackup from "./back-office-backup";
 import './back-office-panel.css';
 const BackOfficeContext = createContext();
 export default class BackOffice extends Component {
@@ -118,7 +117,6 @@ export default class BackOffice extends Component {
         let newModel = { ...model, [key]: value }
         this.setState({ model: newModel })
       },
-      tabs,
       update:(model)=>this.setState({model,tabs:this.getTabs(model)}),
     }
   }
@@ -532,7 +530,7 @@ class Content extends Component {
           flex: 1,
           html: (
             <textarea
-              value={text} style={{ width: '100%', color: 'inherit', minHeight: 'fit-content', resize: 'vertical', background: 'none', border: 'none', minHeight: 96, padding: 6, fontFamily: 'inherit' }}
+              value={text} style={{ width: '100%', color: 'inherit', resize: 'vertical', background: 'none', border: 'none', minHeight: 96, padding: 6, fontFamily: 'inherit' }}
               onChange={(e) => this.setEntity(index, 'text', e.target.value)} placeholder="متن مورد نظر را وارد کنید"
             />
           )

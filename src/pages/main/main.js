@@ -46,7 +46,7 @@ export default class Main extends Component {
     
     actionClass.manageUrl();
     this.state = {
-      developerMode:true,actionClass,Logger,updateProfile,Login:props.Login,apis:props.apis,rsa,userInfo:props.userInfo,backOffice: props.backOffice,baseUrl,
+      developerMode:false,actionClass,Logger,updateProfile,Login:props.Login,apis:props.apis,rsa,userInfo:props.userInfo,backOffice: props.backOffice,baseUrl,
       vitrin:{
         isFetch:false,
         update:(obj)=>{

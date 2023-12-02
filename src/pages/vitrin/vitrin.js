@@ -81,7 +81,7 @@ export default class Vitrin extends Component {
         let { vitrin } = this.context,{ started } = vitrin;
         return (
             <VitrinContext.Provider value={this.getContext()}>
-                {started === true?<VitrinPage1 />:<Landing/>}
+                {started === true?<VitrinPage1 />:<Landing start={()=>this.start()}/>}
                 {this.popup.render()}
             </VitrinContext.Provider>
         )

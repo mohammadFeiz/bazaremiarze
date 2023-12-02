@@ -242,9 +242,11 @@ export default class ActionClass {
             "MarketingLines": items
         }
         let list = items.map(({ itemCode }) => itemCode);
-        debugger
+        Logger.add(`autoPriceList payload`, data, 'autoPriceList_payload')
+        
         try {
             list = this.pricing.autoPriceList(list, data);
+            Logger.add(`autoPriceList response`, data, 'autoPriceList_response')
         }
         catch (err) {
             alert('Pricing در محاسبات دچار مشکل شد . لطفا این مساله را با ادمین سیستم در میان بگذارید')

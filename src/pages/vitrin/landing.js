@@ -4,7 +4,7 @@ import image_src from './../../images/vitrin-landing.png';
 import vitlan1 from './../../images/vitrin-landing-1.png';
 import vitlan2 from './../../images/vitrin-landing-2.png';
 import appContext from "../../app-context";
-export default function Landing(){
+export default function Landing(props){
     let { vitrin } = useContext(appContext), { started } = vitrin;
     return (
         <RVD
@@ -23,7 +23,7 @@ export default function Landing(){
 
                     {
                         show: started === false, align: 'vh', className: 'p-h-24',
-                        html: (<button style={{ width: '100%', borderRadius: 24, height: 48 }} className="button-2" onClick={() => this.start()}>شروع کن</button>)
+                        html: (<button style={{ width: '100%', borderRadius: 24, height: 48 }} className="button-2" onClick={() => props.start()}>شروع کن</button>)
                     },
                     { html: <img src={vitlan2} width='100%' alt='' /> },
                     { size: 24 },

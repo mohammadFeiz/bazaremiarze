@@ -17,3 +17,61 @@
 .vitrin-serach-popup-header{
     box-shadow: 0 0 12px 1px rgba(0,0,0,0.3) !important;
 }
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    color: black;
+    background-color: white;
+    direction:rtl;
+  }
+  .categories-popup{
+    user-select:none;
+    height:100%;
+    width:100%;
+    left:0;
+    top:0;
+    position:absolute;
+  }
+  .categories-level-0{
+    width:100px; 
+    overflow-y:auto;
+  }
+  .categories-level-0-item{
+    padding:6px;
+    min-height:90px;
+    box-sizing: border-box;
+    border-bottom:1px solid #ccc;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    font-weight:bold;
+    background:#e2e6ff;
+  }
+  .categories-level-0-item.active{
+    background:#fff;
+    color:#5778db;
+    border-bottom:3px solid;
+  }
+  .categories-level-0-item-text{
+    text-align: center;
+    font-size:12px
+  }
+  .categories-level-1{
+    overflow-y:auto;
+  }
+  .categories-level-1-item{
+    border-bottom:1px solid #ddd;
+    height:48px;
+    font-weight:bold;
+    font-size:12px;
+    padding:0 6px;
+  }
+  .categories-level-2-item{
+    border-bottom:1px solid #ddd;
+    height:48px;
+    font-weight:bold;
+    font-size:12px;
+    padding:0 6px;
+    background:#eeeef7;
+    color:#5778db;
+  }

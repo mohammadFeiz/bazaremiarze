@@ -48,11 +48,39 @@ export default class Main extends Component {
     this.state = {
       developerMode:false,actionClass,Logger,updateProfile,Login:props.Login,apis:props.apis,rsa,userInfo:props.userInfo,backOffice: props.backOffice,baseUrl,
       vitrin:{
+        viewProducts:'list',
         isFetch:false,
         update:(obj)=>{
           let {vitrin} = this.state;
           let newVitrin = {...vitrin,...obj}
           this.setState({vitrin:newVitrin})
+        },
+        updateSelectedProducts:(id,product)=>{
+          let { apis, vitrin } = this.state,{ selectedProducts } = vitrin;
+          let state = !!selectedProducts[id];
+          apis.request({
+              api: 'vitrin.v_updateMyVitrin',parameter: { id, state, product },
+              onCatch: (error) => {
+                  try {
+                      let { message, Message } = error.response.data;
+                      return message || Message
+                  }
+                  catch {return 'خطای 1133'}
+              },
+              onSuccess: () => {
+                  let { vitrin } = this.context;
+                  let { selectedProducts } = vitrin;
+                  let newSelectedProducts;
+                  if (!state) { newSelectedProducts = { ...selectedProducts, [id]: product } }
+                  else {
+                      newSelectedProducts = {}
+                      for (let prop in selectedProducts) {
+                          if (prop !== id) { newSelectedProducts[prop] = selectedProducts[prop] }
+                      }
+                  }
+                  vitrin.update({ selectedProducts: newSelectedProducts })
+              }
+          })
         },
         fetchData:async ()=>{
           let {apis,userInfo,vitrin} = this.state;
@@ -93,7 +121,7 @@ export default class Main extends Component {
   }
   async componentDidMount() {
     let { userInfo } = this.props;
-    let {vitrin} = this.state;
+    let {vitrin,rsa} = this.state;
     vitrin.fetchData();
     let {backOffice,actionClass} = this.state;
     await actionClass.startPricing()

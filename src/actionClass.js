@@ -343,6 +343,18 @@ export default class ActionClass {
         let { rsa, backOffice, Logger } = this.getState();
         let { userInfo } = this.getProps();
         let { addModal, removeModal, setNavId } = rsa;
+        if (type === 'vitrin-search') {
+            let {render} = parameter;
+            addModal({
+                id: type,
+                header: { title: 'افزودن محصول به ویترین من', attrs: { className: 'vitrin-search-popup-header' } },
+                body: { render }
+            })
+        }
+        else if(type === 'vitrin-categories'){
+            let {render} = parameter;
+            addModal({body: {render},id: 'categories',header: { title: 'دسته بندی محصولات' }})
+        }
         if (type === 'developerModePassword') {
             addModal({
                 position: 'center', id: 'devmodepass',

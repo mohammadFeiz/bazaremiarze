@@ -22,7 +22,13 @@ export default class RSA {
         this.closeSide = closeSide;
         this.SetState = SetState;
       }
-    }  
+    }
+    window.history.pushState({}, '')
+    window.history.pushState({}, '')
+    window.onpopstate = () => {
+      window.history.pushState({}, '');
+      this.removeModal()
+    };  
   }
   render = () => <RSAAPP {...this.props}/>
   addModal = (obj) => this.props.popup.addModal(obj);

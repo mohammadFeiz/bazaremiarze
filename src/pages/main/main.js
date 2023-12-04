@@ -3,7 +3,7 @@ import Header from "../../components/header";
 //actions////////////////////////////////
 import ActionClass from "../../actionClass";
 //npm////////////////////////////////////////
-import RSA from '../../npm/react-super-app/react-super-app';
+import RSA from 'react-super-app';
 import Logo5 from './../../images/logo5.png';
 import Logo1 from './../../images/logo1.png';
 import appContext from "../../app-context";

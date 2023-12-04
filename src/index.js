@@ -5,7 +5,7 @@ import Axios from 'axios';
 import PageError from './components/page-error';
 import Landing from './components/landing';
 import AIOLogin from './npm/aio-login/aio-login';
-import AIOLog from './npm/aio-log/aio-log';
+import AIOLog from 'aio-log';
 import AIOService from 'aio-service';
 import getApiFunctions from './apis/apis';
 import './App.css';

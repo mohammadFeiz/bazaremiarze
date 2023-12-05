@@ -316,7 +316,7 @@ export default class ShopClass {
     async getCategoryProducts(id,count){
         let {apis} = this.getAppState();
         return await apis.request({ 
-            api: 'kharid.getCategoryProducts', parameter: {id,count},description:'دریافت محصولات دسته بندی',
+            api: 'kharid.getCategoryProducts', parameter: {id,count},description:'دریافت محصولات دسته بندی',def:[],
             cache: {time:30 * 24 * 60 * 60 * 1000, name: 'categories.categoryProducts.item_' + id + (count?count:'') }
         });
     }

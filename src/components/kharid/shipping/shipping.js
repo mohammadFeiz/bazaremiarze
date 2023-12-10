@@ -50,7 +50,7 @@ export default class Shipping extends Component {
     this.setState({
       PayDueDate, PaymentTime, DeliveryType, SettleType,
       PayDueDate_options, PaymentTime_options, SettleType_options, DeliveryType_options,
-      campaign: cartId,
+      campaign: cartId === 'Regular'?'خرید عادی':cartId,
       name: `${userInfo.firstName} ${userInfo.lastName}`,
       code: userInfo.cardCode,
       address: userInfo.address,

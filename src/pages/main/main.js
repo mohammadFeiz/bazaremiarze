@@ -141,4 +141,3 @@ export default class Main extends Component {
     );
   }
 }
-Main.defaultProps = { userInfo: { cardCode: 'c50000' } }

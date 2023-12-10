@@ -26,30 +26,10 @@ export default function vitrinApis({ baseUrl, helper }) {
             else { return res.data.message }
         },
         async v_kolle_mahsoolat({ pageSize, pageNumber, searchValue, filter = [] ,taxon}, { apis }) {
-            let body = [
-                {
-                    "categoryId": taxon,
-                    "term": searchValue || '',
-                    "optionTypeFilters": [],
-                    "productPropertyFilters": filter,
-                    "page": pageNumber,
-                    "itemsPerPage": pageSize,
-                    "sort": "-updated_at",
-                    "sort_by": "default"
-                }
-            ]
-            let response = await Axios.post(`${baseUrl}/miarze/GetProducts`, body);
-            let data = response.data.data.data;
-            let meta = response.data.data.meta;
-            let total = meta.totalCount;
-            debugger
-            let products = data.map((o) => {
-                let price, src;
-                try { price = o.price.current / 10 } catch { price = 0 }
-                try { src = o.images[0].styles[9].url } catch { src = '' }
-                return { price, src, id: o._productId, variantId: o._variantId, sku: o.sku, name: o.name, inStock: o.inStock, slug: o.slug }
-            })
-            return { result: {products,total} }
+            let products = await apis.request({api:'kharid.getSpreeProducts',loading:false,parameter:{ Taxons: taxon,pageSize,pageNumber,Name:searchValue, }});
+            let allProducts;
+            allProducts = products.map((o)=>{return {id : o.id , name : o.name , price:o.FinalPrice / 10 , src:o.srcs[0] , inStock:true , sku : o.defaultVariant?o.defaultVariant.code:o.code}  });
+            return {result:{products:allProducts,total:100}}
         },
         async v_mahsoolate_entekhab_shode(cardCode) {
             let res = await Axios.get(`${baseUrl}/vitrin/GetVitrinProductsByCardCode?cardCode=${cardCode}`);

@@ -37,7 +37,13 @@ export default class Main extends Component {
         footer:actionClass.getSideFooter
       },
       headerContent:({ navId }) => <Header type='page' navId={navId} />,
-      body:({ render }) => {
+      body:({ render,id }) => {
+        if(id !== this.lastNavId){
+          let {report} = this.props;
+          report({action:'tab',result:id})  
+        }
+        this.lastNavId = id;
+
         let {mounted} = this.state;
         if(mounted){return render()}
         else {return null}
@@ -46,7 +52,7 @@ export default class Main extends Component {
     
     actionClass.manageUrl();
     this.state = {
-      developerMode:false,actionClass,Logger,updateProfile,Login:props.Login,apis:props.apis,rsa,userInfo:props.userInfo,backOffice: props.backOffice,baseUrl,
+      developerMode:false,actionClass,Logger,updateProfile,Login:props.Login,apis:props.apis,rsa,userInfo:props.userInfo,backOffice: props.backOffice,baseUrl,report:props.report,
       vitrin:{
         viewProducts:'list',
         isFetch:false,
@@ -68,7 +74,7 @@ export default class Main extends Component {
                   catch {return 'خطای 1133'}
               },
               onSuccess: () => {
-                  let { vitrin } = this.context;
+                  let { vitrin } = this.state;
                   let { selectedProducts } = vitrin;
                   let newSelectedProducts;
                   if (!state) { newSelectedProducts = { ...selectedProducts, [id]: product } }

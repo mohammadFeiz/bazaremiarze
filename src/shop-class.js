@@ -298,8 +298,9 @@ export default class ShopClass {
         else { return 'ارسال برای ویزیتور' }
     }
     async openCategory(parameter) {
-        let { rsa,actionClass } = this.getAppState();
+        let { rsa,actionClass,report } = this.getAppState();
         let { billboard, products, description,title } = await this.getCategoryProps(parameter)
+        report({action:'category',result:parameter})
         let buttons = actionClass.getHeaderIcons({cart:true})
         rsa.addModal({
             id:'shop-class-category',

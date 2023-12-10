@@ -649,6 +649,7 @@ export default function kharidApis({baseUrl,helper}) {
         Include: "default_variant,images"
       }
       let res = await Axios.post(`${baseUrl}/Spree/Products`,body);
+      debugger
       if(!res.data.isSuccess){return {result:res.data.message}}
       const spreeData = res.data.data;
       

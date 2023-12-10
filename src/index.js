@@ -56,6 +56,9 @@ class App extends Component {
   async getUserInfo(userInfo = this.state.userInfo) {
     return await this.state.apis.request({ api: 'login.getUserInfo', parameter: userInfo, description: 'دریافت اطلاعات کاربری',loading:false })
   }
+  report(obj){
+
+  }
   async updateProfile(loginModel,mode,callback){
     debugger
     let model = {};
@@ -164,7 +167,11 @@ class App extends Component {
           Login.setMode('auth'); 
         }
         else {Login.setMode('register');}
+        this.report({action:`login by ${mode}`,result:'success'})
         this.setState({ userInfo });
+      }
+      else {
+        this.report({action:`login by ${mode}`,result:'unsuccess',reason:res})
       }
     }
     else if(mode === 'register'){this.updateProfile(model,'register',()=>window.location.reload())}
@@ -202,7 +209,7 @@ class App extends Component {
     if (landing) { return <Landing onClose={() => this.setState({ landing: false })} items={landing} /> }
     if (pageError) { return <PageError {...pageError} /> }
     if (isAutenticated) {
-      let props = {apis,Login,Logger,userInfo,backOffice,baseUrl,updateProfile:this.updateProfile.bind(this)}
+      let props = {apis,Login,Logger,userInfo,backOffice,baseUrl,updateProfile:this.updateProfile.bind(this),report:this.report.bind(this)}
       return (<Main {...props}/>)
     }
     //اسپلش یک پلیس هولدر هست که میتونه یک تابع برای رندر محتوی بگیره و ما اینجا براش رندر کامپوننت لاگین رو می فرستیم

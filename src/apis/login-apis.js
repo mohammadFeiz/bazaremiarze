@@ -79,7 +79,6 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             }
             if(result.lastName === null){result.lasName = ''}
             Logger.add('userInfo',{...result,itemPrices:'prevent show manually'},'userInfo')
-            
             return { result }
         }
     }

@@ -42,6 +42,7 @@ export default function vitrinApis({ baseUrl, helper }) {
             let data = response.data.data.data;
             let meta = response.data.data.meta;
             let total = meta.totalCount;
+            debugger
             let products = data.map((o) => {
                 let price, src;
                 try { price = o.price.current / 10 } catch { price = 0 }

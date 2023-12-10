@@ -129,7 +129,6 @@ class App extends Component {
     this.setState({ token, isAutenticated: true })
   }
   async onLoginSubmit(model, mode) {
-    debugger
     let { apis, Login } = this.state;
     let onCatch = (error) => {
       try { return error.response.data.Message }
@@ -156,6 +155,7 @@ class App extends Component {
         let { accessToken } = res;
         let token = accessToken.access_token;
         let userInfo = await this.getUserInfo(res);
+        if(!userInfo){return}
         let registered = await apis.request({api:'login.checkIsRegistered',parameter:phoneNumber,loading:false});
         if(registered){
           Login.setStorage('userInfo',userInfo);

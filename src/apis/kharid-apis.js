@@ -16,7 +16,6 @@ export default function kharidApis({baseUrl,helper}) {
   return {
     async getSpreeTaxonomies(){
       const response = await Axios.post(`${baseUrl}/spree/getAllCategories`,{Taxon:10673,});
-      debugger
       let list = response.data.data.data;
       list = list.map(({attributes,relationships,id})=>{
         let {name,is_leaf,is_root} = attributes;
@@ -25,7 +24,6 @@ export default function kharidApis({baseUrl,helper}) {
         return {name,id,parentId}
       })
       list = new getTaxonsTree().getTree(list);
-      debugger
       // return [
       //   {
       //     id:'0',name:'cat-0',
@@ -649,10 +647,9 @@ export default function kharidApis({baseUrl,helper}) {
         Include: "default_variant,images"
       }
       let res = await Axios.post(`${baseUrl}/Spree/Products`,body);
-      debugger
       if(!res.data.isSuccess){return {result:res.data.message}}
       const spreeData = res.data.data;
-      
+      if(!spreeData){return {result:'خطا در دریافت اطلاعات اسپری'}}
       let b1Data;
       if(Taxons !== '10673'){
         if(!userInfo.itemPrices){

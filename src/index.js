@@ -56,11 +56,19 @@ class App extends Component {
   async getUserInfo(userInfo = this.state.userInfo) {
     return await this.state.apis.request({ api: 'login.getUserInfo', parameter: userInfo, description: 'دریافت اطلاعات کاربری',loading:false })
   }
-  report(obj){
-
+  msfReport(obj,userId){
+    let {userInfo = {},apis} = this.state;
+    userId = userId === undefined?userInfo.id:userId;
+    this.msfreports = this.msfReports || [];
+    let res = {...obj,userId}
+    this.msfreports.push(res);
+    console.log(this.msfreports);
+    apis.request({
+      api:'backOffice.report',
+      parameter:res,description:'ارسال گزارش'
+    })
   }
   async updateProfile(loginModel,mode,callback){
-    debugger
     let model = {};
     if(mode === 'register'){model = loginModel.register}
     else if(mode === 'profile'){model = loginModel.profile}
@@ -120,6 +128,8 @@ class App extends Component {
       else {
         let updatedUserInfo = await this.getUserInfo(userInfo);
         this.setState({ userInfo: updatedUserInfo })
+        apis.setToken(token);
+        this.msfReport({actionName:'login by cache',actionId:9,result:'success',eventName:'action',tagName:'user authentication'},updatedUserInfo.id)
         return true
       }
       
@@ -167,14 +177,17 @@ class App extends Component {
           Login.setMode('auth'); 
         }
         else {Login.setMode('register');}
-        this.report({action:`login by ${mode}`,result:'success'})
+        this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'success',tagName:'user authentication',eventName:'action'})
         this.setState({ userInfo });
       }
       else {
-        this.report({action:`login by ${mode}`,result:'unsuccess',reason:res})
+        this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'unsuccess',message:res,tagName:'user authentication',eventName:'action'})
       }
     }
-    else if(mode === 'register'){this.updateProfile(model,'register',()=>window.location.reload())}
+    else if(mode === 'register'){
+      this.msfReport({actionName:`register`,actionId:3,result:'success',tagName:'user authentication',eventName:'action'})
+      this.updateProfile(model,'register',()=>window.location.reload())
+    }
   }
   async componentDidMount() {
     let { baseUrl, apis } = this.state;
@@ -209,7 +222,7 @@ class App extends Component {
     if (landing) { return <Landing onClose={() => this.setState({ landing: false })} items={landing} /> }
     if (pageError) { return <PageError {...pageError} /> }
     if (isAutenticated) {
-      let props = {apis,Login,Logger,userInfo,backOffice,baseUrl,updateProfile:this.updateProfile.bind(this),report:this.report.bind(this)}
+      let props = {apis,Login,Logger,userInfo,backOffice,baseUrl,updateProfile:this.updateProfile.bind(this),msfReport:this.msfReport.bind(this)}
       return (<Main {...props}/>)
     }
     //اسپلش یک پلیس هولدر هست که میتونه یک تابع برای رندر محتوی بگیره و ما اینجا براش رندر کامپوننت لاگین رو می فرستیم

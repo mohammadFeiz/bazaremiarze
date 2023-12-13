@@ -117,6 +117,7 @@ export default class BackOffice extends Component {
         let newModel = { ...model, [key]: value }
         this.setState({ model: newModel })
       },
+      removeImage:this.removeImage.bind(this),
       update:(model)=>this.setState({model,tabs:this.getTabs(model)}),
     }
   }
@@ -269,6 +270,11 @@ function VitrinSuggestion(){
         {
           flex:1,align:'v',className:'p-12',
           column:[
+            {
+              row:[
+                {html:`${(typeof item.vendorName === 'string'?item.vendorName:'').slice(0,12)} ( ${item.cardCode || ''} ) ( ${item.phoneNumber || ''} )`,align:'v',flex:1,className:'fs-12'},
+              ]
+            },
             {
               row:[
                 {html:'نام',size:60,aling:'v',style:{opacity:0.7,fontSize:10}},
@@ -1349,7 +1355,6 @@ class VitrinCategories extends Component{
     this.setState({});
     let {setModel} = this.context;
     let {list} = this.state;
-    debugger
     setModel('vitrinCategories',list)
   }
   componentDidMount(){

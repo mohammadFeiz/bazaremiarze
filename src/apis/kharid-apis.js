@@ -651,7 +651,7 @@ export default function kharidApis({baseUrl,helper}) {
       const spreeData = res.data.data;
       if(!spreeData){return {result:'خطا در دریافت اطلاعات اسپری'}}
       let b1Data;
-      if(Taxons !== '10673'){
+      if(!vitrin){
         if(!userInfo.itemPrices){
           helper.showAlert({type:'error',text:`userInfo.itemPrices is not valid`})
           return {result:[]}
@@ -676,14 +676,14 @@ export default function kharidApis({baseUrl,helper}) {
         });
       }
       
-      let result = await apis.request({api:'kharid.getModifiedProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data,Taxons }})
+      let result = await apis.request({api:'kharid.getModifiedProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data,Taxons,vitrin }})
       if(!Array.isArray(result)){result = []}
       return {result}
     },
-    async getModifiedProducts({ spreeResult, b1Result,Taxons }) {
+    async getModifiedProducts({ spreeResult, b1Result,Taxons,vitrin }) {
       let images = spreeResult.included.filter(({type})=>type === 'image')
       function getImagesDic(){
-        let baseImageUrl = Taxons === '10673'?"https://shopback.miarze.com":"https://spree.burux.com"
+        let baseImageUrl = vitrin?"https://shopback.miarze.com":"https://spree.burux.com"
         let images_dic = {};
         for(let i = 0; i < images.length; i++){let {attributes,id} = images[i]; images_dic[id.toString()] = baseImageUrl + attributes.styles[9].url;}
         return images_dic
@@ -733,7 +733,7 @@ export default function kharidApis({baseUrl,helper}) {
           "isDefault": true
         };
         let productProps = {}
-        if(Taxons === '10673'){
+        if(vitrin){
           let price = product.attributes.price;
           productProps = {
             inStock:defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs:iimages,

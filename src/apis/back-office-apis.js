@@ -1,6 +1,10 @@
 import Axios from "axios";
 export default function backOfficeApis({helper,baseUrl}) {
     return {
+        async report(obj){
+            let response = await Axios.post(`${baseUrl}/UserActivity/Create`,obj);
+            return {response,result:true} 
+        },
         async price_list_download({ url, fileName, id, date }) {
             await Axios({
                 url: `${baseUrl}/BackOffice/DownloadPdf/${id}`, //your url
@@ -141,7 +145,7 @@ export default function backOfficeApis({helper,baseUrl}) {
             let response = await Axios.get(`${baseUrl}/ProductSuggestion/GetAllProductSuggestion`);
             let result;
             if(response.data.isSuccess){
-                result = response.data.data.map((o) => {return {id : o.id , name : o.name , brand : o.brand , url : `${baseUrl}/ProductSuggestion/GetImage?imageName=${o.newName}`}})
+                result = response.data.data.map((o) => {return {phoneNumber:o.phoneNumber,cardCode:o.cardCode,vendorName:o.vendorName,id : o.id , name : o.name , brand : o.brand , url : `${baseUrl}/ProductSuggestion/GetImage?imageName=${o.newName}`}})
             }else{
                 result = response.data.message;
             }

@@ -26,7 +26,7 @@ export default function vitrinApis({ baseUrl, helper }) {
             else { return res.data.message }
         },
         async v_kolle_mahsoolat({ pageSize, pageNumber, searchValue, filter = [] ,taxon}, { apis }) {
-            let products = await apis.request({api:'kharid.getSpreeProducts',loading:false,parameter:{ Taxons: taxon,pageSize,pageNumber,Name:searchValue, }});
+            let products = await apis.request({api:'kharid.getSpreeProducts',loading:false,parameter:{ Taxons: taxon,pageSize,pageNumber,Name:searchValue,vitrin:true }});
             let allProducts;
             allProducts = products.map((o)=>{return {id : o.id , name : o.name , price:o.FinalPrice / 10 , src:o.srcs[0] , inStock:true , sku : o.defaultVariant?o.defaultVariant.code:o.code}  });
             return {result:{products:allProducts,total:100}}
@@ -73,11 +73,12 @@ export default function vitrinApis({ baseUrl, helper }) {
         },
         async addSuggestion(suggestion, { userInfo }) {
             let { brand, image, name } = suggestion;
+            let {cardCode} = userInfo;
             let formdata = new FormData();
             formdata.append("Image", image.file);
             formdata.append("Brand", brand);
             formdata.append("Name", name);
-            formdata.append("CardCode", userInfo.cardCode);
+            formdata.append("CardCode", cardCode);
             let response = await Axios.post(`${baseUrl}/ProductSuggestion/CreateProductSuggestion`, formdata);
             let result;
             if (response.data.isSuccess === true) { result = true }

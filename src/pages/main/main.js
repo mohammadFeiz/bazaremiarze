@@ -37,10 +37,10 @@ export default class Main extends Component {
         footer:actionClass.getSideFooter
       },
       headerContent:({ navId }) => <Header type='page' navId={navId} />,
-      body:({ render,id }) => {
+      body:({ render,id,text }) => {
         if(id !== this.lastNavId){
-          let {report} = this.props;
-          report({action:'tab',result:id})  
+          let {msfReport} = this.props;
+          msfReport({actionName:'tab',actionId:7,targetName:text,targetId:id,tagName:'id',eventName:'page view'})  
         }
         this.lastNavId = id;
 
@@ -52,7 +52,7 @@ export default class Main extends Component {
     
     actionClass.manageUrl();
     this.state = {
-      developerMode:false,actionClass,Logger,updateProfile,Login:props.Login,apis:props.apis,rsa,userInfo:props.userInfo,backOffice: props.backOffice,baseUrl,report:props.report,
+      developerMode:false,actionClass,Logger,updateProfile,Login:props.Login,apis:props.apis,rsa,userInfo:props.userInfo,backOffice: props.backOffice,baseUrl,msfReport:props.msfReport,
       vitrin:{
         viewProducts:'list',
         isFetch:false,

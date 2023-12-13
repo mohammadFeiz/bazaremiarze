@@ -298,9 +298,9 @@ export default class ShopClass {
         else { return 'ارسال برای ویزیتور' }
     }
     async openCategory(parameter) {
-        let { rsa,actionClass,report } = this.getAppState();
+        let { rsa,actionClass,msfReport } = this.getAppState();
         let { billboard, products, description,title } = await this.getCategoryProps(parameter)
-        report({action:'category',result:parameter})
+        msfReport({actionName:'open category',actionId:4,targetName:title,targetId:parameter,tagName:'kharid',eventName:'page view'})
         let buttons = actionClass.getHeaderIcons({cart:true})
         rsa.addModal({
             id:'shop-class-category',
@@ -344,7 +344,8 @@ export default class ShopClass {
         }
     }
     renderCard({ product, renderIn, variantId, count, details, loading, index, style, type }) {
-        let { apis, rsa,actionClass } = this.getAppState();
+        let { apis, rsa,actionClass,msfReport } = this.getAppState();
+
         let props = {
             title: this.name, product, renderIn, variantId, count, details, loading, index, style, type,
             onClick: async () => {
@@ -355,6 +356,7 @@ export default class ShopClass {
                     })
                     product.hasFullDetail = true;
                 }
+                msfReport({actionName:'open product',actionId:5,targetName:product.name,targetId:product.id,tagName:'kharid',eventName:'page view'})
                 rsa.addModal({
                     position: 'fullscreen', id: 'product',
                     body: {render:() => this.renderPage(product)},

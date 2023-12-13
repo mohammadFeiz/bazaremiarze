@@ -221,7 +221,7 @@ class Search extends Component {
     }
     search_layout() {
         let className = 'vitrin-search-box', placeholder = "جستجو در محصولات", before = <Icon path={mdiMagnify} size={1} />
-        let props = { type: 'text', className, placeholder, before, onChange: (value) => this.changeSearch(value) }
+        let props = { type: 'text', className, placeholder, before, onChange: (value) => {console.log(value); this.changeSearch(value)},delay:1200 }
         return { html: <AIOInput {...props} /> }
     }
     // categories_layout(categories,total){
@@ -484,7 +484,6 @@ class ProductCard extends Component {
         let { price, selected, onSelect, id, loading, type = 'v' } = this.props;
         price = isNaN(price) ? 0 : price;
         if (price < 500) { price = 0 }
-        if (!price && !selected) { return false }
         if (!onSelect) { return false }
         let padding = type === 'v' ? 8 : 0;
         return {

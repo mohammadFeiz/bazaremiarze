@@ -26,10 +26,10 @@ export default function vitrinApis({ baseUrl, helper }) {
             else { return res.data.message }
         },
         async v_kolle_mahsoolat({ pageSize, pageNumber, searchValue, filter = [] ,taxon}, { apis }) {
-            let products = await apis.request({api:'kharid.getSpreeProducts',loading:false,parameter:{ Taxons: taxon,pageSize,pageNumber,Name:searchValue,vitrin:true }});
+            let {products,total} = await apis.request({api:'kharid.getSpreeProducts',loading:false,parameter:{ Taxons: taxon,pageSize,pageNumber,Name:searchValue,vitrin:true }});
             let allProducts;
             allProducts = products.map((o)=>{return {id : o.id , name : o.name , price:o.FinalPrice / 10 , src:o.srcs[0] , inStock:true , sku : o.defaultVariant?o.defaultVariant.code:o.code}  });
-            return {result:{products:allProducts,total:100}}
+            return {result:{products:allProducts,total}}
         },
         async v_mahsoolate_entekhab_shode(cardCode) {
             let res = await Axios.get(`${baseUrl}/vitrin/GetVitrinProductsByCardCode?cardCode=${cardCode}`);
@@ -37,7 +37,7 @@ export default function vitrinApis({ baseUrl, helper }) {
             return { result: ids }
         },
         async v_getProductsByIds(ids, { apis }) {
-            let products = await apis.request({ api: 'kharid.getSpreeProducts', loading: false, parameter: { ids, vitrin: true, Taxons: '10673' } });
+            let {products} = await apis.request({ api: 'kharid.getSpreeProducts', loading: false, parameter: { ids, vitrin: true, Taxons: '10673' } });
             //products = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, cartId: 'Regular' }});
             products = products.map((o) => { return { id: o.id, name: o.name, price: o.FinalPrice, src: o.srcs[0], inStock: true, sku: o.defaultVariant ? o.defaultVariant.code : o.code } });
             return { result: products }

@@ -58,7 +58,7 @@ export default class ActionClass {
         return [
             { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin", show: () => !!backOffice.activeManager.vitrin,render:()=><Vitrin/> },
             { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=><Bazargah/> },
-            { text: "خانه", icon: () => icon(mdiHome), id: "khane",render:()=><Home/> },
+            { text: "خانه", icon: () => getSvg('home'), id: "khane",render:()=><Home/> },
             { text: "خرید", icon: () => icon(mdiShopping), id: "kharid",render:()=><Buy/> },
             { text: () => `${userInfo.firstName} ${userInfo.lastName}`, marquee: true, icon: () => icon(mdiAccountBox), id: "profile",render:()=><Profile/> },
         ]
@@ -311,7 +311,7 @@ export default class ActionClass {
         return cartLength
     }
     changeCart = async ({ count, variantId, product }) => {
-        let { cart, apis } = this.getState();
+        let { cart, apis,msfReport } = this.getState();
         let newCartTabItems = {};
         let { cartId } = product;
         let cartTab = cart[cartId];
@@ -319,6 +319,7 @@ export default class ActionClass {
         if (!cartTab) { cartTab = { items: {} } }
         //حذف از سبد خرید
         if (count === 0) {
+            msfReport({actionName:'remove from cart',actionId:23,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
             let res = {};
             for (let prop in cartTab.items) {
                 if (prop.toString() !== variantId.toString()) { res[prop] = cartTab.items[prop] }
@@ -329,6 +330,7 @@ export default class ActionClass {
             newCartTabItems = { ...cartTab.items }
             //افزودن به سبد خرید
             if (newCartTabItems[variantId] === undefined) {
+                msfReport({actionName:'add to cart',actionId:24,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
                 newCartTabItems[variantId] = { count, product, variantId }
             }
             //ویرایش سبد خرید
@@ -340,10 +342,11 @@ export default class ActionClass {
         this.setState({ cart: newCart });
     }
     openPopup = async (type, parameter) => {
-        let { rsa, backOffice, Logger } = this.getState();
+        let { rsa, backOffice, Logger,msfReport } = this.getState();
         let { userInfo } = this.getProps();
         let { addModal, removeModal, setNavId } = rsa;
         if (type === 'vitrin-search') {
+            msfReport({actionName:'open vitrin search',actionId:18,tagName:'vitrin',eventName:'page view'})
             let {render} = parameter;
             addModal({
                 id: type,
@@ -353,6 +356,7 @@ export default class ActionClass {
         }
         else if(type === 'vitrin-categories'){
             let {render} = parameter;
+            msfReport({actionName:'open vitrin categories',actionId:19,tagName:'vitrin',eventName:'page view'})
             addModal({body: {render},id: 'categories',header: { title: 'دسته بندی محصولات' }})
         }
         if (type === 'developerModePassword') {
@@ -373,6 +377,7 @@ export default class ActionClass {
         }
         else if (type === 'profile') {
             let { userInfo,Login,updateProfile} = this.getProps();
+            msfReport({actionName:'open profile',actionId:20,tagName:'profile',eventName:'page view'})
             let mode = parameter;
             let title = {profile:'ویرایش حساب کاربری',location:'ثبت موقعیت جغرافیایی'}[mode]
             let subtitle = `شماره:${userInfo.phoneNumber || userInfo.userName} - کد : ${userInfo.cardCode}`
@@ -403,21 +408,26 @@ export default class ActionClass {
             addModal({ position: 'fullscreen', id: type, body: { render: () => Logger.render() }, header: { title: 'رفتار سیستم' } })
         }
         else if (type === 'priceList') {
+            msfReport({actionName:'open price list',actionId:21,tagName:'other',eventName:'page view'})
             addModal({ position: 'fullscreen', id: type, body: { render: () => <PriceList /> }, header: { title: 'لیست قیمت تولیدکنندگان', backbutton: true } })
         }
         else if (type === 'admin-panel') {
+            msfReport({actionName:'open admin panel',actionId:22,tagName:'other',eventName:'page view'})
             addModal({ position: 'fullscreen', id: type, body: { render: () => <BackOffice model={backOffice} phoneNumber={userInfo.userName} /> } })
         }
         else if (type === 'count-popup') {
+            msfReport({actionName:'open product count popup',actionId:23,tagName:'kharid',eventName:'page view'})
             addModal({
                 position: 'center', id: type, attrs: { style: { height: 'fit-content' } },
                 body: { render: () => <CountPopup {...parameter} /> }, header: { title: 'تعداد را وارد کنید', closeType: 'close button' }
             })
         }
         else if (type === 'password') {
+            msfReport({actionName:'open password popup',actionId:24,tagName:'prodile',eventName:'page view'})
             addModal({ id: type, position: 'fullscreen', body: { render: () => <PasswordPopup /> }, header: { title: 'مشاهده و ویرایش رمز عبور' } })
         }
         else if (type === 'peygiriye-sefareshe-kharid') {
+            msfReport({actionName:'open order follow up popup',actionId:25,tagName:'kharid',eventName:'page view'})
             addModal({ id: type, position: 'fullscreen', body: { render: () => <OrdersHistory activeTab={parameter} /> }, header: { title: 'جزيیات سفارش خرید' } })
         }
         if (type === 'joziate-sefareshe-kharid') {
@@ -437,6 +447,8 @@ export default class ActionClass {
             addModal({ id: type, position: 'fullscreen', body: { render: () => <SabteGarantiJadidBaJoziat /> }, header: { title: 'ثبت در خواست گارانتی جدید با جزییات' } })
         }
         else if (type === 'search') {
+            msfReport({actionName:'open search popup',actionId:26,tagName:'kharid',eventName:'page view'})
+            
             addModal({
                 id: type, position: 'fullscreen', body: { render: () => <Search /> }, header: { title: 'جستجو در محصولات' },
                 //header: () => <Header type='popup' popupId='search' />
@@ -449,6 +461,7 @@ export default class ActionClass {
             addModal({ id: type, position: 'fullscreen', body: { render: () => <TanzimateKifePool cards={parameter.cards} onChange={parameter.onChange} /> }, header: { title: 'تنظیمات کیف پول' } })
         }
         else if (type === 'cart') {
+            msfReport({actionName:'open cart',actionId:27,tagName:'kharid',eventName:'page view'})
             addModal({ id: type, position: 'fullscreen', body: { render: () => <Cart cartId={parameter} /> }, header: { title: 'سبد خرید' } })
         }
         else if (type === 'sefareshe-ersal-shode-baraye-vizitor') {

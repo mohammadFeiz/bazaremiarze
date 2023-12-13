@@ -83,3 +83,14 @@ body {
     background:#fff;
     color:#5778db;
   }
+  .vitrin-card-list-exist{
+    color:#00fa53;
+    font-Size:10px;
+  }
+  .vitrin-card-list-not-exist{
+    background:#3B55A5;
+    color:#fff;
+    font-size:10px;
+    padding:0 6px;
+    border-radius:4px;
+  }

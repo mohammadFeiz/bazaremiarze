@@ -1,11 +1,12 @@
 import React, { useContext,Component,useState } from "react";
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import {renderCard} from 'react-virtual-dom';
 import AIOInput from "../../npm/aio-input/aio-input";
 import getSvg from "./getSvg";
 import appContext from "../../app-context";
 import Icon from "@mdi/react";
 import vbsrc from './../../images/vitrin-bazargah.png';
-import { mdiClose, mdiPlus,mdiCamera,mdiDotsVertical,mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu } from "@mdi/js";
+import { mdiClose, mdiPlus,mdiCamera,mdiDotsVertical,mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu, mdiCheck, mdiPlusThick, mdiStoreCheck, mdiMarkerCheck, mdiClockCheck } from "@mdi/js";
 import './vitrin.css';
 import imgph from './../../images/imgph.png';
 import image_src from './../../images/vitrin-landing.png';
@@ -80,18 +81,18 @@ class VitrinPage1 extends Component {
                         { html: 'در ویترین شما', className: 'theme-medium-font-color fs-10', align: 'h' }
                     ]
                 },
-                {
-                    style: { position: 'absolute', left: 6, top: 6 },
-                    html: (
-                        <AIOInput
-                            type='select' caret={false} optionCheckIcon={{background: '#3B55A5',color: '#3B55A5'}}
-                            text={<Icon path={mdiDotsVertical} size={1} />}
-                            options={[
-                                { text: 'نمایش به صورت لیست', checked: vitrin.viewProducts === 'list', onClick: () => vitrin.update({ viewProducts: vitrin.viewProducts === 'list' ? 'tile' : 'list' }) }
-                            ]}
-                        />
-                    )
-                }
+                // {
+                //     style: { position: 'absolute', left: 6, top: 6 },
+                //     html: (
+                //         <AIOInput
+                //             type='select' caret={false} optionCheckIcon={{background: '#3B55A5',color: '#3B55A5'}}
+                //             text={<Icon path={mdiDotsVertical} size={1} />}
+                //             options={[
+                //                 { text: 'نمایش به صورت لیست', checked: vitrin.viewProducts === 'list', onClick: () => vitrin.update({ viewProducts: vitrin.viewProducts === 'list' ? 'tile' : 'list' }) }
+                //             ]}
+                //         />
+                //     )
+                // }
             ]
         }
     }
@@ -170,11 +171,17 @@ class Search extends Component {
         this.setState({ pageNumber: pageNumber + dir }, () => this.updateProducts())
     }
     changeSearch(value) {
+        let {msfReport} = this.context;
+        if(value.length > 3){
+            msfReport({actionName:'vitrin search',actionId:56,targetName:value,tagName:'vitrin',eventName:'action'})
+        }
         this.setState({ searchValue: value, pageNumber: 1 }, () => this.updateProducts())
     }
     changeCategory(path) {
+        let {msfReport} = this.context;
         let { paging } = this.state;
         let taxon = path[path.length - 1].id;
+        msfReport({actionName:'vitrin filter by category',actionId:57,targetName:path.join('/'),targetId:taxon,tagName:'vitrin',eventName:'action'})
         this.setState({ taxon,categoryPath:path, total: false, paging: { ...paging, number: 1 } }, () => this.updateProducts())
     }
     header_layout() {
@@ -446,19 +453,17 @@ class Products extends Component {
             let { name, src, price, id } = o;
             let selected = !!selectedProducts[id];
             let props = { name, src, price, selected, type: vitrin.viewProducts === 'tile' ? 'v' : 'h', id, onSelect: (id) => updateSelectedProducts(id, o) };
-            return { flex: 1, html: <ProductCard {...props} loading={!products} /> }
+            return { html: <ProductCard {...props} loading={!products} /> }
         })
-        let layout;
-        if (vitrin.viewProducts === 'tile') { layout = { className: 'ofy-auto', grid: list, gridCols: 2 } }
-        else { layout = { className: 'ofy-auto', column: list } }
+        let layout = { className: 'ofy-auto', column: list } 
         return (<RVD layout={layout} />)
     }
 }
 class ProductCard extends Component {
     image_layout() {
-        let { src = imgph, type = 'v' } = this.props;
-        let imageStyle = type === 'v' ? { height: '100%' } : { width: '100%' };
-        let size = type === 'v' ? 120 : 60;
+        let { src = imgph } = this.props;
+        let imageStyle = { width: '100%' };
+        let size = 60;
         return { className: 'm-b-6', size, html: <img src={src} alt='' {...imageStyle} className='br-8' />, align: 'vh' }
     }
     name_layout() {
@@ -467,10 +472,10 @@ class ProductCard extends Component {
         return { html: name, className: `theme-dark-font-color fs-12 p-h-12 t-a-right` }
     }
     price_layout() {
-        let { price, type = 'v' } = this.props;
+        let { price } = this.props;
         price = isNaN(price) ? 0 : price;
         if (price < 500) { price = 0 }
-        let priceFontSize = type === 'v' ? 18 : 14;
+        let priceFontSize = 14;
         return {
             row: [
                 { show: !price, html: 'در حال تامین', className: 'fs-12 bold', style: { color: 'red' }, align: 'v' },
@@ -481,46 +486,162 @@ class ProductCard extends Component {
         }
     }
     plus_layout() {
-        let { price, selected, onSelect, id, loading, type = 'v' } = this.props;
+        let { price, selected, onSelect, id,loading } = this.props;
+        if (!onSelect || loading) { return false }
         price = isNaN(price) ? 0 : price;
         if (price < 500) { price = 0 }
-        if (!onSelect) { return false }
-        let padding = type === 'v' ? 8 : 0;
+        if(selected){
+            return {
+                html: 'موجود در ویترین',
+                className:'vitrin-card-list-exist',
+                align: 'vh', onClick: () => onSelect(id)
+            }    
+        }
         return {
-            html: <Icon path={selected ? mdiClose : mdiPlus} size={1} />,
-            style: { border: loading ? undefined : '2px solid', color: selected ? 'orange' : '#3B55A5' },
-            className: `br-100 p-${padding}`, align: 'vh', onClick: () => onSelect(id)
+            html: 'افزودن به ویترین',
+            className:'vitrin-card-list-not-exist',
+            align: 'vh', onClick: () => onSelect(id)
         }
     }
     id_layout() {
         let { id } = this.props;
         return { html: id }
     }
+    variant_layout(){
+        let { selected } = this.props;
+        if(!selected){return false}
+        let variants = [
+            'رنگ قرمز - سایز 12',
+            'رنگ قرمز - سایز 12',
+            'رنگ قرمز - سایز 12'
+        ]
+        return {
+            className:'fs-10 m-t-6',
+            column:variants.map((o)=>{
+                return {
+                    align:'v',
+                    row:[
+                        {html:<Icon path={mdiMarkerCheck} size={0.6} />,style:{color:'#8de7ab'}},
+                        {html:o}
+                    ]
+                }
+            })
+        }
+    }
     render() {
         let { loading, name, type = 'v' } = this.props;
+        if(type === 'v'){return <ProductCardV {...this.props}/>}
         if (!name) { return null }
-        let style = { height: type === 'v' ? 260 : undefined, borderBottom: '1px solid #ddd', borderLeft: '1px solid #ddd' }
-        let layout;
-        if (type === 'v') {
-            layout = {
-                column: [
-                    { size: 12 }, this.image_layout(), this.name_layout(), { flex: 1 },
-                    { className: 'p-h-12', row: [this.price_layout(), { flex: 1 }, this.plus_layout()] },
-                    { size: 12 }
-                ]
-            }
-        }
-        else {
-            layout = {
-                row: [
-                    this.image_layout(),
-                    {
-                        flex: 1, className: 'p-6',
-                        column: [this.name_layout(), { flex: 1 }, { row: [this.price_layout(), { flex: 1 }, this.plus_layout(),] },]
-                    }
-                ]
-            }
+        let r = Math.random();
+        this.selected = r < 0.5
+        let style = { borderBottom: '1px solid #ddd', borderLeft: '1px solid #ddd' }
+        let layout = {
+            row: [
+                this.image_layout(),
+                {
+                    flex: 1, className: 'p-6',
+                    column: [
+                        this.name_layout(), 
+                        { flex: 1 }, 
+                        { row: [this.price_layout(), { flex: 1 }, this.plus_layout()]},
+                        this.variant_layout()
+                    ]
+                }
+            ]
         }
         return (<RVD loading={loading} layout={{ style, ...layout }} />)
     }
+}
+
+function ProductCardV(props = {}){
+    let {name,src = imgph,price} = props;
+    function plus_layout() {
+        let { price, selected, onSelect, id } = props;
+        price = isNaN(price) ? 0 : price;
+        if (price < 500) { price = 0 }
+        if (!onSelect) { return false }
+        let text = selected ? 'موجود در ویترین' : 'افزودن به ویترین';
+        let style = selected?{color:'#2BBA8F',background:'#fff',border:'1px solid'}:{background:'#3B55A5',color:'#fff',border:'none'}
+        return (
+            <button style={{...style,borderRadius:4,height:32,padding:'0 12px'}} className='align-v' onClick={()=>onSelect(id)}>
+                <Icon path={selected?mdiCheck:mdiPlusThick} size={.8}/>
+                {text}
+            </button>
+        )
+    }
+    function price_layout() {
+        price = isNaN(price) ? 0 : price;
+        if (price < 500) { price = 0 }
+        let priceFontSize = 14;
+        return (
+            <RVD
+                layout={{
+                    row: [
+                        { show: !price, html: 'در حال تامین', className: 'fs-12 bold', style: { color: 'red' }, align: 'v' },
+                        { show: !!price, html: () => SplitNumber(price), className: `theme-dark-font-color fs-${priceFontSize} bold`, align: 'v' },
+                        { size: 3 },
+                        { show: !!price, html: 'تومان', className: 'theme-light-font-color fs-10', align: 'v' }
+                    ]
+                }}
+            />
+        )
+    }
+    function variants_layout(){
+        let variants = [
+            'رنگ قرمز - سایز 12',
+            'رنگ قرمز - سایز 12',
+            'رنگ قرمز - سایز 12'
+        ]
+        return {
+            style:{color:'#666',border:'1px dashed #333'},
+            className:'p-12 m-t-12 br-16',
+            column:[
+                {
+                    style:{color:'#2BBA8F'},
+                    className:'fs-14 m-b-12 bold',
+                    row:[
+                        {html:'موجود در ویترین',align:'v'}
+                    ]
+                },
+                {
+                    className:'fs-12 bold',gap:12,
+                    column:variants.map((o)=>{
+                        return {
+                            align:'v',gap:6,
+                            row:[
+                                {html:<Icon path={mdiMarkerCheck} size={0.6} />,style:{color:'#8de7ab'}},
+                                {html:o}
+                            ]
+                        }
+                    })
+                }
+            ]
+        }
+    }
+    function footer_layout(){
+        return (
+            <RVD
+                layout={{
+                    column:[
+                        {
+                            row:[
+                                {html:plus_layout(),flex:1},
+                                {html:price_layout()}
+                            ]
+                        },
+                        //variants_layout()
+                    ]
+                }}
+            />
+        )
+    }
+    if(!name){return null}
+
+    return renderCard({
+        attrs:{className:'bg-32 border-224 border-b br-0'},
+        classes:{text:`theme-dark-font-color fs-12 p-h-12 t-a-right bold`},
+        text:name,
+        after:<img src={src} alt='' width='72' className='br-8' />,
+        footer:footer_layout()
+    })
 }

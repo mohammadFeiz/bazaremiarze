@@ -113,8 +113,13 @@ body{
 	background:linear-gradient(180deg, #0033a9, #0039b2);
 }
 .rsa-bottom-menu{
-	box-shadow: 0px 0px 12px 0px rgb(0 0 0 / 25%);
+	box-shadow: 0px 0px 4px 1px rgb(0 0 0 / 10%);
 	font-size:12px;
+	height:60px;
+	overflow:visible;
+	background:#eaeaea;
+	margin:0;
+	border-radius:0;
 }
 .rsa-bottom-menu-item{
 	color: #888;
@@ -126,7 +131,6 @@ body{
 }
 .rsa-bottom-menu-item.active{
 	color: #3B55A5;
-	background:#3B55A510;
 	border-bottom:2px solid #3B55A5;
 }
 .rsa-bottom-menu-item.active .rsa-bottom-menu-item-text{
@@ -751,4 +755,37 @@ button{
 }
 .aio-input-table-paging-button.active{
 	background:#3B55A5;
+}
+.rsa-bottom-menu-item:nth-child(3) svg{
+	transform: unset;
+
+}
+.rsa-bottom-menu-item:nth-child(3) .rsa-bottom-menu-item-icon{
+	position:absolute;
+	width:54px;
+	height:54px;
+	border-radius:100%;
+	background:#f2f2f2;
+	display:flex;
+	color:#888;
+	align-items: center;
+	justify-content: center;
+	left:calc(50% - 27px);
+	top:-27px;
+	box-shadow: 0 0 4px 2px rgba(0,0,0,0.22);
+
+}
+.rsa-bottom-menu-item:nth-child(3).active .rsa-bottom-menu-item-icon{
+	background:#3B55A5;
+	color:#fff;
+}
+.rsa-bottom-menu-item:nth-child(3).active .rsa-bottom-menu-item-icon svg{
+	fill:#fff !important;
+}
+.rsa-bottom-menu-item:nth-child(3){
+	border:none !important;
+	flex:0.5 !important;
+}
+.rsa-bottom-menu-item:nth-child(3) .rsa-bottom-menu-item-text{
+	display:none;
 }

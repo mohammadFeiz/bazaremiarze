@@ -302,13 +302,13 @@ export default function kharidApis({baseUrl,helper}) {
       return { result: campaigns };
     },
     async getCampaignProducts({id,CampaignId,PriceListNum,name},{apis}) {
-      let products = await apis.request({api:'kharid.getSpreeProducts',parameter:{ Taxons: id }});
+      let {products} = await apis.request({api:'kharid.getSpreeProducts',parameter:{ Taxons: id }});
       let result = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, CampaignId,PriceListNum, cartId: id,cartName:name }});
       return { result };
     },
     async getCategoryProducts({id,count},{apis,Shop_Regular}) {
       let {cartId,name} = Shop_Regular;
-      let products = await apis.request({api:'kharid.getSpreeProducts',parameter:{ Taxons: id.toString(),pageSize:count }});
+      let {products} = await apis.request({api:'kharid.getSpreeProducts',parameter:{ Taxons: id.toString(),pageSize:count }});
       let result = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, cartId,cartName:name }})
       return {result}
     },
@@ -676,8 +676,10 @@ export default function kharidApis({baseUrl,helper}) {
         });
       }
       
-      let result = await apis.request({api:'kharid.getModifiedProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data,Taxons,vitrin }})
-      if(!Array.isArray(result)){result = []}
+      let products = await apis.request({api:'kharid.getModifiedProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data,Taxons,vitrin }})
+      let total = spreeData.meta.total_count
+      let result = {products:[],total:0};
+      if(Array.isArray(products)){result = {products,total}}
       return {result}
     },
     async getModifiedProducts({ spreeResult, b1Result,Taxons,vitrin }) {

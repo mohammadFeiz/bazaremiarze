@@ -1,7 +1,7 @@
 import React, { Component, createContext, useState,useEffect,useContext } from "react";
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import { Icon } from '@mdi/react';
-import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeftBold, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiImage } from '@mdi/js';
+import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeftBold, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiImage, mdiPhone, mdiAccount, mdiArchive, mdiTag } from '@mdi/js';
 import appContext from "./app-context";
 import AIOInput from './npm/aio-input/aio-input';
 import AIOStorage from 'aio-storage';
@@ -250,10 +250,9 @@ function VitrinSuggestion(){
   function item_layout(item){
     return {
       className:'back-office-panel of-visible',
-      style:{height:72},
       row:[
         {
-          size:72,html:<img src={item.url} width='100%' alt=''/>,
+          size:108,html:<img src={item.url} width='100%' height='108'  alt=''/>,
           onClick:()=>{
             popup.addModal({
               header:{title:item.name},position:'top',
@@ -268,23 +267,34 @@ function VitrinSuggestion(){
           }
         },
         {
-          flex:1,align:'v',className:'p-12',
+          flex:1,align:'v',className:'p-12 p-r-3',gap:6,
           column:[
             {
+              gap:6,
               row:[
-                {html:`${(typeof item.vendorName === 'string'?item.vendorName:'').slice(0,12)} ( ${item.cardCode || ''} ) ( ${item.phoneNumber || ''} )`,align:'v',flex:1,className:'fs-12'},
+                {html:<Icon path={mdiAccount} size={.8}/>,align:'vh'},
+                {flex:1,html:`${(typeof item.vendorName === 'string'?item.vendorName:'').slice(0,12)} ( ${item.cardCode || ''} )`,align:'v',className:'fs-12 t-a-right'},
               ]
             },
             {
+              gap:6,
               row:[
-                {html:'نام',size:60,aling:'v',style:{opacity:0.7,fontSize:10}},
-                {html:item.name,align:'v',flex:1,className:'fs-12'},
+                {html:<Icon path={mdiPhone} size={.8}/>,align:'vh'},
+                {flex:1,html:item.phoneNumber || '',align:'v',className:'fs-12 t-a-right'}
               ]
             },
             {
+              gap:6,
               row:[
-                {html:'برند',flex:1,aling:'v',size:60,style:{opacity:0.7,fontSize:10}},
-                {html:item.brand,align:'v',flex:1,className:'fs-12'},
+                {html:<Icon path={mdiArchive} size={.8}/>,align:'vh'},
+                {flex:1,html:item.name,align:'v',className:'fs-12 t-a-right'},
+              ]
+            },
+            {
+              gap:6,
+              row:[
+                {html:<Icon path={mdiTag} size={.8}/>,align:'vh'},
+                {html:item.brand,align:'v',flex:1,className:'fs-12 t-a-right'},
               ]
             }
             

@@ -56,11 +56,11 @@ class App extends Component {
   async getUserInfo(userInfo = this.state.userInfo) {
     return await this.state.apis.request({ api: 'login.getUserInfo', parameter: userInfo, description: 'دریافت اطلاعات کاربری',loading:false })
   }
-  msfReport(obj,userId){
+  msfReport(obj,phoneNumber){
     let {userInfo = {},apis} = this.state;
-    userId = userId === undefined?userInfo.id:userId;
+    phoneNumber = phoneNumber === undefined?userInfo.phoneNumber:phoneNumber;
     this.msfreports = this.msfReports || [];
-    let res = {...obj,userId}
+    let res = {...obj,phoneNumber,userId:userInfo.id}
     this.msfreports.push(res);
     console.log(this.msfreports);
     apis.request({
@@ -128,8 +128,7 @@ class App extends Component {
       else {
         let updatedUserInfo = await this.getUserInfo(userInfo);
         this.setState({ userInfo: updatedUserInfo })
-        apis.setToken(token);
-        this.msfReport({actionName:'login by cache',actionId:9,result:'success',eventName:'action',tagName:'user authentication'},updatedUserInfo.id)
+        this.msfReport({actionName:'login by cache',actionId:9,result:'success',eventName:'action',tagName:'user authentication'},updatedUserInfo.phoneNumber)
         return true
       }
       
@@ -177,15 +176,15 @@ class App extends Component {
           Login.setMode('auth'); 
         }
         else {Login.setMode('register');}
-        this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'success',tagName:'user authentication',eventName:'action'})
+        this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'success',tagName:'user authentication',eventName:'action'},model.login.userId)
         this.setState({ userInfo });
       }
       else {
-        this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'unsuccess',message:res,tagName:'user authentication',eventName:'action'})
+        this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'unsuccess',message:res,tagName:'user authentication',eventName:'action'},model.login.userId)
       }
     }
     else if(mode === 'register'){
-      this.msfReport({actionName:`register`,actionId:3,result:'success',tagName:'user authentication',eventName:'action'})
+      this.msfReport({actionName:`register`,actionId:3,result:'success',tagName:'user authentication',eventName:'action'},model.login.userId)
       this.updateProfile(model,'register',()=>window.location.reload())
     }
   }

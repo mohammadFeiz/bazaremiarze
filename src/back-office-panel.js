@@ -1292,7 +1292,7 @@ class ShippingOptions extends Component {
       return [
         { ...base,title: 'درصد نقدی', value: 'row.cashPercent',width:70,input:{type: 'text',before:<div style={badgeStyle}>%</div>}},
         { ...base,title: 'مدت چک(روز)', value: 'row.days',input:{type: 'text',before:({row})=><div style={badgeStyle}>{`${((row.days || 0) / 30).toFixed(1)} ماهه`}</div>}},
-        { ...base,title: 'درصد تخفیف', value: 'row.discountPercent', width: 72, input:{type: 'number',before:<div style={badgeStyle}>%</div>} },
+        { ...base,title: 'درصد تخفیف', value: 'row.discountPercent', width: 72, input:{type: 'number',spin:false,before:<div style={badgeStyle}>%</div>} },
         { ...base,title: 'v', value: 'row.value', width: 60, input:{type: 'number'} },
       ]
     }
@@ -1306,6 +1306,11 @@ class ShippingOptions extends Component {
   table_layout() {
     let { activeTabId } = this.state;
     let { model,setModel } = this.context;
+    let rows = model[activeTabId] || [];
+    rows = rows.map((o)=>{
+      let {id = 't' + Math.round(Math.random() * 1000000)} = o;
+      return {...o,id}
+    })
     return {
       flex: 1,
       html: (
@@ -1316,16 +1321,17 @@ class ShippingOptions extends Component {
           onAdd={()=>{
             let { model } = this.context;
             let newRow;
+            let id = 't' + Math.round(Math.random() * 1000000)
             if(activeTabId === 'PayDueDate_options'){
-              newRow = {value:'',discountPercent:'',cashPercent:'',days:''}
+              newRow = {value:'',discountPercent:'',cashPercent:'',days:'',id}
             }
             else {
-              newRow = {text:'',value:''}
+              newRow = {text:'',value:'',id}
             }
             setModel(activeTabId, [...model[activeTabId],newRow])
           }}
           key={activeTabId}
-          value={model[activeTabId] || []}
+          value={rows}
           columns={this.getColumns(activeTabId)}
           onChange={(list) => {
             if(activeTabId === 'PayDueDate_options'){

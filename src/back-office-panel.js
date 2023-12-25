@@ -609,7 +609,7 @@ class FormSetting extends Component {
   }
   render() {
     let { model } = this.context;
-    let { SettleType_options, PayDueDate_options, DeliveryType_options, PaymentTime_options } = model;
+    let { PayDueDate_options, DeliveryType_options, PaymentTime_options } = model;
     let { data, type, onChange, id } = this.props;
     return (
       <AIOInput
@@ -693,14 +693,6 @@ class FormSetting extends Component {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
               input:{type: 'select',options: this.getSelectedPayDueDates(),popover:{fitHorizontal:true}}, 
               label: 'پیشفرض نوع پرداخت چکی', field: 'value.PayDueDate'
-            },
-            {
-              show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1, field: 'value.SettleTypes',
-              input:{type: 'multiselect',options: SettleType_options, text: 'نحوه های پرداخت'},
-            },
-            {
-              show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
-              input:{type: 'select',options: SettleType_options,popover:{fitHorizontal:true}}, label: 'پیشفرض نحوه پرداخت', field: 'value.SettleType',
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1,
@@ -1277,7 +1269,6 @@ class ShippingOptions extends Component {
           options={[
             { text: 'PayDueDate', value: 'PayDueDate_options' },
             { text: 'PaymentTime', value: 'PaymentTime_options' },
-            { text: 'SettleType', value: 'SettleType_options' },
             { text: 'DeliveryType', value: 'DeliveryType_options' },
           ]}
           onChange={(activeTabId) => this.setState({ activeTabId })}

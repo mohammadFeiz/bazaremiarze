@@ -208,10 +208,11 @@ export default class ActionClass {
         return DiscountList
     }
     getFactorDetails = (items, obj = {}, container) => {
-        let { SettleType, PaymentTime, PayDueDate, DeliveryType, giftCodeInfo, discountCodeInfo } = obj;
+        let { PaymentTime, PayDueDate, DeliveryType, giftCodeInfo, discountCodeInfo } = obj;
         let DiscountList = this.getCodeDetails({ giftCodeInfo, discountCodeInfo });
         let { userInfo } = this.getProps();
-        let { Logger } = this.getState();
+        let { Logger,getSettleType } = this.getState();
+        let SettleType = getSettleType(PayDueDate)
         let config = {
             "CardCode": userInfo.cardCode,
             "CardGroupCode": userInfo.groupCode,

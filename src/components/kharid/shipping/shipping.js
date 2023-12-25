@@ -39,17 +39,16 @@ export default class Shipping extends Component {
     if(!defaultShipping){
       defaultShipping = backOffice.spreeCampaigns.find((o)=>o.id === cartId)
     }
-    let { PayDueDate, PaymentTime, DeliveryType, SettleType,
-      PayDueDates = [], PaymentTimes = [], SettleTypes = [], DeliveryTypes = []
+    let { PayDueDate, PaymentTime, DeliveryType, 
+      PayDueDates = [], PaymentTimes = [], DeliveryTypes = []
     } = defaultShipping;
     let PayDueDate_options = backOffice.PayDueDate_options.filter(({ value }) => PayDueDates.indexOf(value) !== -1);
     let PaymentTime_options = backOffice.PaymentTime_options.filter(({ value }) => PaymentTimes.indexOf(value) !== -1);
-    let SettleType_options = backOffice.SettleType_options.filter(({ value }) => SettleTypes.indexOf(value) !== -1);
     let DeliveryType_options = backOffice.DeliveryType_options.filter(({ value }) => DeliveryTypes.indexOf(value) !== -1)
     this.mounted = true;
     this.setState({
-      PayDueDate, PaymentTime, DeliveryType, SettleType,
-      PayDueDate_options, PaymentTime_options, SettleType_options, DeliveryType_options,
+      PayDueDate, PaymentTime, DeliveryType,
+      PayDueDate_options, PaymentTime_options, DeliveryType_options,
       campaign: cartId === 'Regular'?'خرید عادی':cartId,
       name: `${userInfo.firstName} ${userInfo.lastName}`,
       code: userInfo.cardCode,
@@ -161,11 +160,13 @@ export default class Shipping extends Component {
   }
   amount_layout() {
     let { cartId } = this.props;
-    let { actionClass,msfReport } = this.context;
+    let { actionClass,msfReport,getSettleType } = this.context;
     let Shop = actionClass.getShopById(cartId);
     let { address, giftCodeInfo, discountCodeInfo } = this.state;
-    let { PayDueDate, SettleType, DeliveryType, PaymentTime } = this.state;
+    let { PayDueDate, DeliveryType, PaymentTime } = this.state;
     let { getFactorItems, getPaymentButtonText } = Shop;
+    let SettleType = getSettleType(PayDueDate);
+    debugger
     let factorItems = getFactorItems({ PayDueDate, SettleType, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo },'shipping')
     let Details = this.details_layout(factorItems);
     return {
@@ -180,8 +181,9 @@ export default class Shipping extends Component {
             <button
               className="button-2"
               onClick={async () => {
-                let { apis } = this.context;
-                let { PayDueDate, SettleType, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo } = this.state;
+                let { apis,getSettleType } = this.context;
+                let { PayDueDate, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo } = this.state;
+                let SettleType = getSettleType(PayDueDate);
                 let { cartId } = this.props;
                 await apis.request({
                   api: "kharid.payment", description: 'عملیات ثبت و پرداخت',
@@ -193,8 +195,6 @@ export default class Shipping extends Component {
                     msfReport({actionName:'send to visitor',actionId:234,tagName:'kharid',result:'unsuccess',message,eventName:'action'})
                   }
                 })
-
-
               }}
             >{getPaymentButtonText({ PayDueDate, SettleType, DeliveryType, PaymentTime, address })}</button>
           )
@@ -297,8 +297,6 @@ export default class Shipping extends Component {
                   this.options_layout('PaymentTime', 'زمان پرداخت',),
                   { size: 12 },
                   this.options_layout('PayDueDate', 'مهلت تسویه', PaymentTime !== 5),
-                  { size: 12 },
-                  this.options_layout('SettleType', 'نحوه پرداخت'),
                   { size: 12 },
                   this.code_layout('giftCode'),
                   { size: 12 },

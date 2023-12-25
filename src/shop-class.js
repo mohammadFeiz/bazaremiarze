@@ -199,7 +199,7 @@ export default class ShopClass {
         //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
         let { rsa, actionClass } = this.getAppState();
         let result;
-        if (this.cartId === 'Bundle') { result = obj.SettleType === 16 ? await this.pardakht(obj) : await this.sabt(obj) }
+        if (this.cartId === 'Bundle') { result = obj.SettleType !== 2 ? await this.pardakht(obj) : await this.sabt(obj) }
         else { result = await this.sabt(obj); }
         if (typeof result === 'object') {
             let { orderNumber } = result;
@@ -245,11 +245,12 @@ export default class ShopClass {
         if (result.data.isSuccess) { window.location.href = result.data.data }
         else { return result.data.message }
     }
-    getOrderBody = ({ SettleType, PaymentTime, DeliveryType, PayDueDate, address,giftCodeInfo,discountCodeInfo }) => {
+    getOrderBody = ({ PaymentTime, DeliveryType, PayDueDate, address,giftCodeInfo,discountCodeInfo }) => {
         let appState = this.getAppState();
-        let { userInfo,actionClass } = appState;
+        let { userInfo,actionClass,getSettleType } = appState;
         let DiscountList = actionClass.getCodeDetails({giftCodeInfo,discountCodeInfo})
         let marketingLines = this.getMarketingLines()
+        let SettleType = getSettleType(PayDueDate)
         return {
             "DiscountList":DiscountList,
             "marketdoc": {
@@ -295,7 +296,7 @@ export default class ShopClass {
         })
     }
     getPaymentButtonText = (shippingOptions) => {
-        if (this.cartId === 'Bundle') { return shippingOptions.SettleType === 16 ? 'پرداخت' : 'ثبت' }
+        if (this.cartId === 'Bundle') { return shippingOptions.SettleType !== 2 ? 'پرداخت' : 'ثبت' }
         else { return 'ارسال برای ویزیتور' }
     }
     async openCategory(parameter) {

@@ -370,6 +370,7 @@ class JoziateSefaresheBazargah extends Component{
                     return Object.keys(itemsChecked).filter((o)=>!!itemsChecked[o]).length !== items.length
                 }
                 if(sendStep === 2){
+                    return false
                     if(delivererType === 'shakhsi'){return !delivererId}
                 }
             }

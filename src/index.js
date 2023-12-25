@@ -41,7 +41,7 @@ class App extends Component {
         type:'mode',text:'ثبت نام در بازار می ارزه',
         fields:[
           ['*firstname','*lastname'],
-          ['*storeName_text_نام فروشگاه','*phone'],
+          ['*storeName_text_نام فروشگاه',{input:{type:'text'},field:'value.phone',label:'شماره تلفن ثابت',validations:[['required'],['length>',10]]}],
           ['password','repassword'],
           '*location',
           '*address',

@@ -119,6 +119,21 @@ export default class Main extends Component {
           });
         }
       },
+      getSettleType:(PayDueDate)=>{
+        if(PayDueDate === undefined){return}
+        let {backOffice} = this.props;
+        let PayDueDateOption = backOffice.PayDueDate_options.find((o)=>o.value === PayDueDate);
+        if(!PayDueDateOption){return}
+        let {cashPercent,days} = PayDueDateOption;
+        if(days){
+          if(cashPercent){return 4}
+          else{return 2}
+        }
+        else{
+          if(cashPercent){return 1}
+          else{return}
+        }
+      },
       Shop_Bundle:{},Shop_Regular:{},
       bazargahOrders: {wait_to_get: undefined,wait_to_send: undefined},
       spreeCategories:{slider_type:[],icon_type:[],dic:{}},

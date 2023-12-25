@@ -53,6 +53,11 @@ export default class Main extends Component {
     actionClass.manageUrl();
     this.state = {
       developerMode:false,actionClass,Logger,updateProfile,Login:props.Login,apis:props.apis,rsa,userInfo:props.userInfo,backOffice: props.backOffice,baseUrl,msfReport:props.msfReport,
+      logout:()=>{
+        let {Login,msfReport} = this.props;
+        msfReport({actionName:'logout',actionId:875,tagName:'user auth',eventName:'action'});
+        Login.logout();
+      },
       vitrin:{
         viewProducts:'tile',
         isFetch:false,

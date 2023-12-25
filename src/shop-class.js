@@ -163,8 +163,9 @@ export default class ShopClass {
         return res
     }
     edameye_farayande_kharid = () => {
-        let { rsa } = this.getAppState();
+        let { rsa,msfReport } = this.getAppState();
         if (this.cartId === 'Bundle') { this.fillAuto() }
+        msfReport({actionName:'open checkout page',actionId:754,targetName:this.cartId,targetId:this.cartId,tagName:'kharid',eventName:'page view'})
         rsa.addModal({ id:'edameye_farayande_kharid',position: 'fullscreen', body: {render:() => <Shipping cartId={this.cartId} /> }, header:{title: 'ادامه فرایند خرید'}})
     }
     fillAuto = () => {

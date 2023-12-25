@@ -37,8 +37,8 @@ export default class ActionClass {
         this.setState = setState;
     }
     getSideItems = () => {
-        let { userInfo, backOffice, Logger, Login } = this.getProps();
-        let { logout } = Login;
+        let { userInfo, backOffice, Logger } = this.getProps();
+        let { logout } = this.getState();
         let { slpcode, isAdmin } = userInfo;
         let { activeManager } = backOffice;
         let icon = (path) => <Icon path={path} size={0.8} />

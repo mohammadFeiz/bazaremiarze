@@ -161,7 +161,7 @@ export default class Shipping extends Component {
   }
   amount_layout() {
     let { cartId } = this.props;
-    let { actionClass } = this.context;
+    let { actionClass,msfReport } = this.context;
     let Shop = actionClass.getShopById(cartId);
     let { address, giftCodeInfo, discountCodeInfo } = this.state;
     let { PayDueDate, SettleType, DeliveryType, PaymentTime } = this.state;
@@ -185,7 +185,13 @@ export default class Shipping extends Component {
                 let { cartId } = this.props;
                 await apis.request({
                   api: "kharid.payment", description: 'عملیات ثبت و پرداخت',
-                  parameter: { address, SettleType, PaymentTime, DeliveryType, PayDueDate, cartId, giftCodeInfo, discountCodeInfo }
+                  parameter: { address, SettleType, PaymentTime, DeliveryType, PayDueDate, cartId, giftCodeInfo, discountCodeInfo },
+                  onSuccess:()=>{
+                    msfReport({actionName:'send to visitor',actionId:234,tagName:'kharid',result:'success',eventName:'action'})
+                  },
+                  onError:(message)=>{
+                    msfReport({actionName:'send to visitor',actionId:234,tagName:'kharid',result:'unsuccess',message,eventName:'action'})
+                  }
                 })
 
 

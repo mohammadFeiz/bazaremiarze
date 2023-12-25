@@ -19,17 +19,24 @@ export default class PriceList extends Component{
             onSuccess:(list)=>this.setState({list})
         })
     }
-    download(url,fileName,id,date){
-        let {apis} = this.context;
+    download({brand,date,url,fileName,id}){
+        let {apis,msfReport} = this.context;
         apis.request({
             api:'backOffice.price_list_download',
             description:'دانلود لیست قیمت',
-            parameter:{url,fileName,id,date}
+            parameter:{brand,date,url,fileName,id},
+            onSuccess:()=>{
+                msfReport({actionName:'download price list',actionId:154,targetName:`${brand} - (${date})`,targetId:id,tagName:'other',result:'success',eventName:'action'})
+            },
+            onError:(message)=>{
+                msfReport({actionName:'download price list',actionId:154,targetName:`${brand} - (${date})`,targetId:id,tagName:'other',result:'unsuccess',message,eventName:'action'})
+
+            }
         })
     }
     row_layout({brand,date,url,fileName,id},index){
         return {
-            html:<Card {...{brand,date,url,fileName,id}} index={index} onDownload={()=>this.download(date,brand,id,date)}/>
+            html:<Card {...{brand,date,url,fileName,id}} index={index} onDownload={()=>this.download({brand,date,url,fileName,id})}/>
         }
     }
     render(){
@@ -53,14 +60,14 @@ class Card extends Component{
             this.setState({className:'mounted'})
         },index * 100)
     }
-    download(url){
+    download(){
         let {onDownload} = this.props;
         //let fileName = window.prompt('نام فایل را وارد کنید')
-        onDownload(url)
+        onDownload()
         //DownloadUrl(url,fileName)
     }
     render(){
-        let {brand,date,url,fileName,id} = this.props;
+        let {brand,date} = this.props;
         let {className} = this.state;
         return (
             <RVD
@@ -83,7 +90,7 @@ class Card extends Component{
                             ]
                         },
                         {
-                            onClick:()=>this.download(url,fileName,id),
+                            onClick:()=>this.download(),
                             align:'vh',
                             html:(
                                 <div

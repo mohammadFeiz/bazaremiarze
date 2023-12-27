@@ -17,8 +17,7 @@ export default class Buy extends Component {
         { text: "نمایشگاه", value: "1" },
         { text: "دسته بندی کالاها", value: "2"},
       ],
-      activeTabId: "1",
-      activeCartTabId:'Regular',
+      category:false,
       categories: [],
       sliders:[]
     };
@@ -52,16 +51,28 @@ export default class Buy extends Component {
   }
   tabs(){
     let {view} = this.state;
+    let {Shop_Regular} = this.context;
     return {
       flex: 1,style:{overflow:'hidden'},show:view.type === 'main',
       column: [
         {
-          flex: 1,className: "ofy-auto",
+          flex: 1,
           column: [
-            this.billboard_layout(),
-            {size:24},
-            this.categories_layout(),
-            this.sliders_layout()
+            // {
+            //   html:()=>{
+            //     return Shop_Regular.renderCartFactor(false)
+            //   }
+            // },
+            {
+              className: "ofy-auto",
+              flex:1,column:[
+                this.billboard_layout(),
+                {size:24},
+                this.categories_layout(),
+                this.sliders_layout(),
+                //this.category_layout()
+              ]
+            }
           ]
         }
       ],
@@ -82,6 +93,10 @@ export default class Buy extends Component {
             return {
               flex:1,align:'vh',style:{maxWidth:220},
               onClick:()=>Shop_Regular.openCategory(id),
+              // onClick:async ()=>{
+              //   let category = await Shop_Regular.getCategoryProps(id)
+              //   this.setState({category})
+              // },
               column:[
                 {html:<img src={icon} width='100%' alt=''/>,align:'vh'},
                 {size:6},
@@ -91,6 +106,14 @@ export default class Buy extends Component {
           })
         }
       ]
+    }
+  }
+  category_layout(){
+    let {Shop_Regular} = this.context;
+    let {category} = this.state
+    if(!category){return false}
+    return {
+      html:Shop_Regular.getCategory(category)
     }
   }
   billboard_layout(){

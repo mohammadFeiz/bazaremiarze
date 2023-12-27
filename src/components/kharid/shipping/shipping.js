@@ -166,7 +166,6 @@ export default class Shipping extends Component {
     let { PayDueDate, DeliveryType, PaymentTime } = this.state;
     let { getFactorItems, getPaymentButtonText } = Shop;
     let SettleType = getSettleType(PayDueDate);
-    debugger
     let factorItems = getFactorItems({ PayDueDate, SettleType, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo },'shipping')
     let Details = this.details_layout(factorItems);
     return {

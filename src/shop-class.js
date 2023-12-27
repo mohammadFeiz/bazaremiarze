@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from "react";
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
-import CategoryView from "./components/kharid/category-view/category-view";
 import { Icon } from '@mdi/react';
 import { mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiDelete, mdiPlus, mdiMinus } from "@mdi/js";
 import Axios from 'axios';
@@ -12,6 +11,11 @@ import getSvg from "./utils/getSvg";
 import AIOInput from "./npm/aio-input/aio-input";
 import $ from 'jquery';
 import bundleBoxSrc from './images/bundle-box.jpg';
+import SearchBox from './components/search-box/index';
+
+import appContext from './app-context';
+import noItemSrc from './images/not-found.png';
+
 
 export default class ShopClass {
     constructor({ getAppState, config }) {
@@ -25,14 +29,14 @@ export default class ShopClass {
         if (!cartTab) { return [] }
         let { items = {} } = cartTab;
         return Object.keys(items).map((o) => items[o])
-    } 
-    getCartProducts = (renderIn,shippingOptions) => {
+    }
+    getCartProducts = (renderIn, shippingOptions) => {
         let { cart } = this.getAppState();
         let cartTab = cart[this.cartId];
         if (!cartTab) { return [] }
         let cartItems = this.getCartItems();
         if (this.cartId === 'Bundle') { return this.getCartProducts_Bundle(cartItems, renderIn) }
-        else { return this.getCartProducts_all(cartItems, renderIn,shippingOptions) }
+        else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions) }
     }
     getCartProducts_Bundle = (cartItems, renderIn) => {
         return cartItems.map(({ product, count, variantId }) => this.renderCard({ product, count, variantId, renderIn }))
@@ -54,19 +58,19 @@ export default class ShopClass {
             return this.renderCard(props)
         })
     }
-    fix(value,v = 0) {
+    fix(value, v = 0) {
         try { return +value.toFixed(v) }
         catch { return 0 }
     }
-    getAmounts = (shippingOptions,container) => {
+    getAmounts = (shippingOptions, container) => {
         let { cart } = this.getAppState();
         let cartTab = cart[this.cartId];
         if (!cartTab) { return {} }
         let cartItems = this.getCartItems();
-        if (this.cartId === 'Bundle') {return this.getAmounts_Bundle(cartItems, shippingOptions,container)}
-        else { return this.getAmounts_all(cartItems, shippingOptions,container) }
+        if (this.cartId === 'Bundle') { return this.getAmounts_Bundle(cartItems, shippingOptions, container) }
+        else { return this.getAmounts_all(cartItems, shippingOptions, container) }
     }
-    getAmounts_all(cartItems, shippingOptions,container) {
+    getAmounts_all(cartItems, shippingOptions, container) {
         let { actionClass } = this.getAppState();
         let factorDetailsItems = [];
         for (let i = 0; i < cartItems.length; i++) {
@@ -74,87 +78,87 @@ export default class ShopClass {
             let variant = product.variants.find((o) => o.id === variantId)
             factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
         }
-        let factorDetails = actionClass.getFactorDetails(factorDetailsItems, shippingOptions,container);
-        let {marketingdetails,DocumentTotal} = factorDetails;
-        let {DiscountList,ClubPoints = {}} = marketingdetails;
-        let {DiscountValueUsed,DiscountPercentage,PaymentDiscountPercent,PaymentDiscountValue,PromotionValueUsed} = DiscountList;
+        let factorDetails = actionClass.getFactorDetails(factorDetailsItems, shippingOptions, container);
+        let { marketingdetails, DocumentTotal } = factorDetails;
+        let { DiscountList, ClubPoints = {} } = marketingdetails;
+        let { DiscountValueUsed, DiscountPercentage, PaymentDiscountPercent, PaymentDiscountValue, PromotionValueUsed } = DiscountList;
         let total = 0;
         for (let i = 0; i < factorDetails.MarketingLines.length; i++) {
             let o = factorDetails.MarketingLines[i];
             total += o.Price * o.ItemQty;
         }
         let discounts = []
-        if(PaymentDiscountPercent && PaymentDiscountValue){
-            discounts.push({percent:PaymentDiscountPercent,value:PaymentDiscountValue,title:'تخفیف نحوه پرداخت'})
+        if (PaymentDiscountPercent && PaymentDiscountValue) {
+            discounts.push({ percent: PaymentDiscountPercent, value: PaymentDiscountValue, title: 'تخفیف نحوه پرداخت' })
         }
-        if(DiscountValueUsed && DiscountPercentage){
-            discounts.push({percent:DiscountPercentage,value:DiscountValueUsed,title:'کد تخفیف'})
+        if (DiscountValueUsed && DiscountPercentage) {
+            discounts.push({ percent: DiscountPercentage, value: DiscountValueUsed, title: 'کد تخفیف' })
         }
-        if(PromotionValueUsed){
-            discounts.push({value:PromotionValueUsed,title:'کارت هدیه'})
+        if (PromotionValueUsed) {
+            discounts.push({ value: PromotionValueUsed, title: 'کارت هدیه' })
         }
-        return {total,discounts, payment:DocumentTotal, ClubPoints}
+        return { total, discounts, payment: DocumentTotal, ClubPoints }
     }
-    getAmounts_Bundle(cartItems, shippingOptions = {},container) {
-        let { actionClass,backOffice } = this.getAppState();
-        let {PayDueDate_options} = backOffice;
+    getAmounts_Bundle(cartItems, shippingOptions = {}, container) {
+        let { actionClass, backOffice } = this.getAppState();
+        let { PayDueDate_options } = backOffice;
         let total = 0;
         for (let i = 0; i < cartItems.length; i++) {
             let { count, product } = cartItems[i];
             total += count.packQty * product.price;
         }
         let payment = total;
-        let { PayDueDate,discountCodeInfo,giftCodeInfo} = shippingOptions;
+        let { PayDueDate, discountCodeInfo, giftCodeInfo } = shippingOptions;
         let cashPercent = 100;
         let discounts = [];
-        if(PayDueDate){
-            let PayDueDateOption = PayDueDate_options.find((o)=>o.value === PayDueDate);
+        if (PayDueDate) {
+            let PayDueDateOption = PayDueDate_options.find((o) => o.value === PayDueDate);
             let percent = PayDueDateOption.discountPercent;
             let value = total * percent / 100;
             let title = 'نخفیف نحوه پرداخت';
-            discounts.push({percent,value,title});
+            discounts.push({ percent, value, title });
             cashPercent = PayDueDateOption.cashPercent;
             payment -= value;
         }
-        let DiscountList = actionClass.getCodeDetails({discountCodeInfo,giftCodeInfo}) || {};
-        if(DiscountList.DiscountPercentage){
+        let DiscountList = actionClass.getCodeDetails({ discountCodeInfo, giftCodeInfo }) || {};
+        if (DiscountList.DiscountPercentage) {
             let percent = DiscountList.DiscountPercentage;
             let value = payment * percent / 100;
             let title = 'کد تخفیف';
-            discounts.push({percent,value,title})
+            discounts.push({ percent, value, title })
             payment -= value;
         }
-        if(DiscountList.PromotionValue){
+        if (DiscountList.PromotionValue) {
             let value = DiscountList.PromotionValue;
             let title = 'کارت هدیه';
-            discounts.push({title,value});
+            discounts.push({ title, value });
             payment -= value;
         }
         payment = payment * cashPercent / 100;
-        return { total, discounts, payment,ClubPoints:{} };//notice // ClubPoints!!!!
+        return { total, discounts, payment, ClubPoints: {} };//notice // ClubPoints!!!!
     }
-    getFactorItems = (shippingOptions,container) => {
-        let amounts = this.getAmounts(shippingOptions,container);
-        let { total, payment,discounts,ClubPoints } = amounts;
-        if(!total){alert('missing total in ShopClass.getFactorItems')}
-        if(!payment){alert('missing payment in ShopClass.getFactorItems')}
-        if(!ClubPoints){alert('missing ClubPoints in ShopClass.getFactorItems')}
+    getFactorItems = (shippingOptions, container) => {
+        let amounts = this.getAmounts(shippingOptions, container);
+        let { total, payment, discounts, ClubPoints } = amounts;
+        if (!total) { alert('missing total in ShopClass.getFactorItems') }
+        if (!payment) { alert('missing payment in ShopClass.getFactorItems') }
+        if (!ClubPoints) { alert('missing ClubPoints in ShopClass.getFactorItems') }
         let res = [];
-        if(ClubPoints.CampaignPoint){
+        if (ClubPoints.CampaignPoint) {
             res.push({ key: 'امتیاز خرید جشنواره', value: ClubPoints.CampaignPoint, className: 'theme-medium-font-color fs-14' },)
         }
-        if(ClubPoints.CashPoint){
+        if (ClubPoints.CashPoint) {
             res.push({ key: 'امتیاز خرید نقدی', value: ClubPoints.CashPoint, className: 'theme-medium-font-color fs-14' },)
         }
-        if(ClubPoints.PurchasePoint){
+        if (ClubPoints.PurchasePoint) {
             res.push({ key: 'امتیاز خرید', value: ClubPoints.PurchasePoint, className: 'theme-medium-font-color fs-14' },)
         }
         res.push({ key: 'قیمت کالاها', value: SplitNumber(this.fix(total)) + ' ریال', className: 'theme-medium-font-color fs-14' })
-        for(let i = 0; i < discounts.length; i++){
-            let {title,percent,value} = discounts[i];
-            if(!title){alert('missing discount.title in ShopClass.getFactorItems')}
-            if(!value){alert('missing discount.value in ShopClass.getFactorItems')}
-            let text = `${percent?`${percent}% - `:''}${SplitNumber(value)} ریال`
+        for (let i = 0; i < discounts.length; i++) {
+            let { title, percent, value } = discounts[i];
+            if (!title) { alert('missing discount.title in ShopClass.getFactorItems') }
+            if (!value) { alert('missing discount.value in ShopClass.getFactorItems') }
+            let text = `${percent ? `${percent}% - ` : ''}${SplitNumber(value)} ریال`
             res.push({ key: title, value: text, className: 'colorFDB913 fs-14' })
         }
         res.push(
@@ -163,10 +167,10 @@ export default class ShopClass {
         return res
     }
     edameye_farayande_kharid = () => {
-        let { rsa,msfReport } = this.getAppState();
+        let { rsa, msfReport } = this.getAppState();
         if (this.cartId === 'Bundle') { this.fillAuto() }
-        msfReport({actionName:'open checkout page',actionId:754,targetName:this.cartId,targetId:this.cartId,tagName:'kharid',eventName:'page view'})
-        rsa.addModal({ id:'edameye_farayande_kharid',position: 'fullscreen', body: {render:() => <Shipping cartId={this.cartId} /> }, header:{title: 'ادامه فرایند خرید'}})
+        msfReport({ actionName: 'open checkout page', actionId: 754, targetName: this.cartId, targetId: this.cartId, tagName: 'kharid', eventName: 'page view' })
+        rsa.addModal({ id: 'edameye_farayande_kharid', position: 'fullscreen', body: { render: () => <Shipping cartId={this.cartId} /> }, header: { title: 'ادامه فرایند خرید' } })
     }
     fillAuto = () => {
         return;
@@ -236,7 +240,7 @@ export default class ShopClass {
             return 'BOne/AddNewOrder not compatible response'
         }
         let result = await Axios.post(`${baseUrl}/payment/request`, {
-            "Price": Math.round(this.getAmounts(obj,'payment').payment),
+            "Price": Math.round(this.getAmounts(obj, 'payment').payment),
             "IsDraft": registredOrder.isDraft,
             "DocNum": registredOrder.docNum,
             "DocEntry": registredOrder.docEntry,
@@ -245,16 +249,16 @@ export default class ShopClass {
         if (result.data.isSuccess) { window.location.href = result.data.data }
         else { return result.data.message }
     }
-    getOrderBody = ({ PaymentTime, DeliveryType, PayDueDate, address,giftCodeInfo,discountCodeInfo }) => {
+    getOrderBody = ({ PaymentTime, DeliveryType, PayDueDate, address, giftCodeInfo, discountCodeInfo }) => {
         let appState = this.getAppState();
-        let { userInfo,actionClass,getSettleType } = appState;
-        let DiscountList = actionClass.getCodeDetails({giftCodeInfo,discountCodeInfo})
+        let { userInfo, actionClass, getSettleType } = appState;
+        let DiscountList = actionClass.getCodeDetails({ giftCodeInfo, discountCodeInfo })
         let marketingLines = this.getMarketingLines()
         let SettleType = getSettleType(PayDueDate)
         return {
-            "DiscountList":DiscountList,
+            "DiscountList": DiscountList,
             "marketdoc": {
-                "DiscountList":DiscountList,
+                "DiscountList": DiscountList,
                 "DocType": this.cartId === 'Bundle' ? 17 : undefined,
                 "CardCode": userInfo.cardCode,
                 "CardGroupCode": userInfo.groupCode,
@@ -299,54 +303,57 @@ export default class ShopClass {
         if (this.cartId === 'Bundle') { return shippingOptions.SettleType !== 2 ? 'پرداخت' : 'ثبت' }
         else { return 'ارسال برای ویزیتور' }
     }
-    async openCategory(parameter) {
-        let { rsa,actionClass,msfReport } = this.getAppState();
-        let { billboard, products, description,title } = await this.getCategoryProps(parameter)
-        msfReport({actionName:'open category',actionId:4,targetName:title,targetId:parameter,tagName:'kharid',eventName:'page view'})
-        let buttons = actionClass.getHeaderIcons({cart:true})
+    getCategory = ({ products, billboard, description }) => {
+        return (
+            <CategoryView
+                renderProductCard={(product, index) => this.renderCard({ product, index, renderIn: 'category' })}
+                billboard={billboard} products={products} description={description}
+            />
+        )
+    }
+    async openCategory(id) {
+        let { rsa, actionClass, msfReport } = this.getAppState();
+        let res = await this.getCategoryProps(id)
+        msfReport({ actionName: 'open category', actionId: 4, targetName: res.title, targetId: id, tagName: 'kharid', eventName: 'page view' })
+        let buttons = actionClass.getHeaderIcons({ cart: true })
         rsa.addModal({
-            id:'shop-class-category',
+            id: 'shop-class-category',
             position: 'fullscreen',
-            body: {render:() => (
-                <CategoryView
-                    renderProductCard={(product, index) => this.renderCard({ product, index, renderIn: 'category' })}
-                    billboard={billboard} products={products} description={description}
-                />
-            )},
-            header: {title,buttons}
+            body: { render: () => this.getCategory(res) },
+            header: { title: res.title, buttons }
         })
     }
-    async getCategoryProducts(id,count){
-        let {apis} = this.getAppState();
-        return await apis.request({ 
-            api: 'kharid.getCategoryProducts', parameter: {id,count},description:'دریافت محصولات دسته بندی',def:[],
-            cache: {time:30 * 24 * 60 * 60 * 1000, name: 'categories.categoryProducts.item_' + id + (count?count:'') }
+    async getCategoryProducts(id, count) {
+        let { apis } = this.getAppState();
+        return await apis.request({
+            api: 'kharid.getCategoryProducts', parameter: { id, count }, description: 'دریافت محصولات دسته بندی', def: [],
+            cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'categories.categoryProducts.item_' + id + (count ? count : '') }
         });
     }
     async getCategoryProps(id) {
         let { apis } = this.getAppState();
         if (this.cartId === 'Bundle') {
-            return { billboard: this.billboard, products: this.products, description: this.description,title:this.name }
+            return { billboard: this.billboard, products: this.products, description: this.description, title: this.name }
         }
         if (this.spreeCampaign) {
             if (!this.products) {
                 this.products = await apis.request({
                     api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
                     parameter: { id: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
-                    cache:{time:30 * 24 * 60 * 60 * 1000,name:'campaignProducts.item_' + this.cartId}
+                    cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'campaignProducts.item_' + this.cartId }
                 });
             }
-            return { billboard: this.billboard, products: this.products, description: this.description,title:this.name }
+            return { billboard: this.billboard, products: this.products, description: this.description, title: this.name }
         }
         if (this.cartId === 'Regular') {
-            let {spreeCategories} = this.getAppState();
+            let { spreeCategories } = this.getAppState();
             let products = await this.getCategoryProducts(id);
-            let {billboard,name,description} = spreeCategories.dic[id];
-            return { billboard, products, description,title:name }
+            let { billboard, name, description } = spreeCategories.dic[id];
+            return { billboard, products, description, title: name }
         }
     }
     renderCard({ product, renderIn, variantId, count, details, loading, index, style, type }) {
-        let { apis, rsa,actionClass,msfReport } = this.getAppState();
+        let { apis, rsa, actionClass, msfReport } = this.getAppState();
 
         let props = {
             title: this.name, product, renderIn, variantId, count, details, loading, index, style, type,
@@ -358,11 +365,11 @@ export default class ShopClass {
                     })
                     product.hasFullDetail = true;
                 }
-                msfReport({actionName:'open product',actionId:5,targetName:product.name,targetId:product.id,tagName:'kharid',eventName:'page view'})
+                msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
                 rsa.addModal({
                     position: 'fullscreen', id: 'product',
-                    body: {render:() => this.renderPage(product)},
-                    header: {title: this.name, buttons:actionClass.getHeaderIcons({cart:true})}
+                    body: { render: () => this.renderPage(product) },
+                    header: { title: this.name, buttons: actionClass.getHeaderIcons({ cart: true }) }
                 })
             },
             onRemove: () => actionClass.changeCart({ count: 0, variantId: product.code, product })
@@ -387,6 +394,131 @@ export default class ShopClass {
         let Wrapper = this.spree ? RegularPage : BundlePage;
         return <Wrapper {...props} />
     }
+    renderCartFactor = (button = true) => {
+        let res = this.getAmounts(undefined, 'cart');
+        let { payment } = res;
+        if(!button){
+            return (
+                <RVD
+                    layout={{
+                        size: 72, className: "bgFFF p-h-12 theme-box-shadow",
+                        row: [
+                            { flex:1,align: "v", html: "جمع سبد خرید", className: "theme-medium-font-color fs-12" },
+                            {
+                                row: [
+                                    { align: "v", html: SplitNumber(payment), className: "theme-dark-font-color fs-20 bold" },
+                                    { size: 4 },
+                                    { align: "v", html: " ریال", className: "theme-dark-font-color fs-12" }
+                                ]
+                            }
+                        ]
+                    }}
+                />
+            )
+        }
+        return (
+            <RVD
+                layout={{
+                    size: 72, className: "bgFFF p-h-12 theme-box-shadow",
+                    row: [
+                        {
+                            flex: 1,
+                            column: [
+                                { flex: 1 },
+                                { align: "v", html: "مبلغ قابل پرداخت", className: "theme-medium-font-color fs-12" },
+                                {
+                                    row: [
+                                        { align: "v", html: SplitNumber(payment), className: "theme-dark-font-color fs-20 bold" },
+                                        { size: 4 },
+                                        { align: "v", html: " ریال", className: "theme-dark-font-color fs-12" }
+                                    ]
+                                },
+                                { flex: 1 },
+                            ],
+                        },
+                        { 
+                            html: ()=>(
+                                <button 
+                                    onClick={() => {
+                                        let {rsa} = this.getAppState();
+                                        rsa.removeModal('all');
+                                        this.edameye_farayande_kharid()
+                                    }} 
+                                    className="button-2" style={{ height: 36, padding: '0 12px' }}
+                                >ادامه فرایند خرید</button>
+                            ), 
+                            align: "v" 
+                        },
+                    ],
+                }}
+            />
+        )
+    }
+}
+//props
+//billboard
+//description
+//products
+//renderProductCard function
+class CategoryView extends Component {
+    constructor(props) {
+        super(props);
+        this.state = { searchValue: '' }
+    }
+    search_layout() {
+        let { searchValue } = this.state;
+        return { html: <SearchBox value={searchValue} onChange={(searchValue) => this.setState({ searchValue })} /> }
+    }
+    banner_layout() {
+        let { billboard } = this.props;
+        if (!billboard) { return false }
+        return { html: <img src={billboard} alt='' width='100%' /> }
+    }
+    description_layout() {
+        let { description } = this.props;
+        if (!description) { return false }
+        return { html: description, style: { textAlign: 'right', padding: '0 12px' } }
+    }
+    product_layout(product, index) {
+        let { searchValue } = this.state;
+        let { renderProductCard } = this.props;
+        if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
+        return { html: renderProductCard(product, index), className: 'of-visible' }
+    }
+    getProductsBySearch(products) {
+        let { searchValue } = this.state;
+        return products.filter((o) => {
+            if (!searchValue) { return true }
+            return o.name.indexOf(searchValue) !== -1
+        })
+    }
+    render() {
+        let { products = [] } = this.props;
+        return (
+            <RVD
+                layout={{
+                    className: 'theme-popup-bg',
+                    column: [
+                        this.search_layout(),
+                        {
+                            flex: 1, className: 'ofy-auto',
+                            column: [
+                                this.banner_layout(),
+                                { size: 12 },
+                                this.description_layout(),
+                                { size: 12 },
+                                {
+                                    gap: 12,
+                                    column: this.getProductsBySearch(products).map((product, index) => this.product_layout(product, index))
+                                }
+                            ]
+                        },
+                        { size: 12 }
+                    ],
+                }}
+            />
+        )
+    }
 }
 class RegularCard extends Component {
     state = { mounted: false }
@@ -409,7 +541,7 @@ class RegularCard extends Component {
         return { html: name, className: 'fs-12 theme-medium-font-color bold', style: { whiteSpace: 'normal', textAlign: 'right' } }
     }
     discount_layout() {
-        let { product} = this.props;
+        let { product } = this.props;
         let { inStock, Price, B1Dscnt = 0, CmpgnDscnt = 0, PymntDscnt = 0 } = product;
 
         if (!Price || !inStock) { return false }
@@ -583,35 +715,39 @@ class BundleCard extends Component {
                 }
                 str += ' *** '
             }
-            return { column: [
-                {html:str},
-                {
-                    show:!!product.clubpoint,
-                    gap:3,className:'fs-9 m-t-12 bold',align:'v',
-                    row:[
-                        {html:'با خرید این محصول'},
-                        {html:product.clubpoint,className:'fs-12',style:{color:'orange'}},
-                        {html:'امتیاز باشگاه مشتریان دریافت کنید'},
-                        
-                    ]
-                }
-            ], className: 'fs-12 theme-medium-font-color', style: { textAlign: 'right' } }
+            return {
+                column: [
+                    { html: str },
+                    {
+                        show: !!product.clubpoint,
+                        gap: 3, className: 'fs-9 m-t-12 bold', align: 'v',
+                        row: [
+                            { html: 'با خرید این محصول' },
+                            { html: product.clubpoint, className: 'fs-12', style: { color: 'orange' } },
+                            { html: 'امتیاز باشگاه مشتریان دریافت کنید' },
+
+                        ]
+                    }
+                ], className: 'fs-12 theme-medium-font-color', style: { textAlign: 'right' }
+            }
 
         }
         let names = variants.map(({ name }) => name);
-        return { column: [
-            {html:names.join(' - ')},
-            {
-                show:!!product.clubpoint,
-                gap:3,className:'fs-9 m-t-12 bold',align:'v',
-                row:[
-                    {html:'با خرید این محصول'},
-                    {html:product.clubpoint,className:'fs-12',style:{color:'orange'}},
-                    {html:'امتیاز باشگاه مشتریان دریافت کنید'},
-                    
-                ]
-            }
-        ], className: 'fs-12 theme-medium-font-color', style: { textAlign: 'right' } }
+        return {
+            column: [
+                { html: names.join(' - ') },
+                {
+                    show: !!product.clubpoint,
+                    gap: 3, className: 'fs-9 m-t-12 bold', align: 'v',
+                    row: [
+                        { html: 'با خرید این محصول' },
+                        { html: product.clubpoint, className: 'fs-12', style: { color: 'orange' } },
+                        { html: 'امتیاز باشگاه مشتریان دریافت کنید' },
+
+                    ]
+                }
+            ], className: 'fs-12 theme-medium-font-color', style: { textAlign: 'right' }
+        }
     }
     price_layout() {
         let { product } = this.props;
@@ -881,11 +1017,11 @@ class RegularPage extends Component {
                     html: (
                         <AIOInput
                             type='select' className='product-exist-options'
-                            style={{ width: '100%',fontSize:12 }}
+                            style={{ width: '100%', fontSize: 12 }}
                             options={this.options}
-                            popover={{fitHorizontal:true}}
+                            popover={{ fitHorizontal: true }}
                             value={selectedVariant ? selectedVariant.id : undefined}
-                            optionStyle={{height:28,fontSize:12}}
+                            optionStyle={{ height: 28, fontSize: 12 }}
                             onChange={(value, obj) => {
                                 this.changeOptionType(obj.option.variant.optionValues)
                             }}
@@ -1108,15 +1244,15 @@ class BundlePage extends Component {
             ]
         };
     }
-    clubpoint_layout(){
+    clubpoint_layout() {
         let { product } = this.props;
-        if(!product.clubpoint){return false}
+        if (!product.clubpoint) { return false }
         return {
-            gap:3, className: "theme-box-shadow theme-card-bg theme-border-radius m-h-12 fs-10 bold p-12",align:'v',
-            row:[
-                {html:'با خرید این محصول'},
-                {html:product.clubpoint,className:'fs-12',style:{color:'orange'}},
-                {html:'امتیاز باشگاه مشتریان دریافت کنید'}   
+            gap: 3, className: "theme-box-shadow theme-card-bg theme-border-radius m-h-12 fs-10 bold p-12", align: 'v',
+            row: [
+                { html: 'با خرید این محصول' },
+                { html: product.clubpoint, className: 'fs-12', style: { color: 'orange' } },
+                { html: 'امتیاز باشگاه مشتریان دریافت کنید' }
             ]
         };
     }
@@ -1236,7 +1372,7 @@ class BundlePage extends Component {
                 let { qty, name, id } = variant;
                 qty *= packQty;
                 let qtyInPack = qtyInPacks[id]
-                if(qtyInPack.length < 2){
+                if (qtyInPack.length < 2) {
                     return false
                 }
                 let selectedCount = this.getSelectedCount(id);
@@ -1443,7 +1579,7 @@ class ForoosheVijeSlider extends Component {
                                                 display: 'flex', alignItems: 'center', fontSize: 12
                                             }}
                                             pointStyle={{ background: '#2BBA8F', width: 16, height: 16, zIndex: 1000 }}
-                                            onChange={(count) => {this.setState({ count}); onChange(count)}}
+                                            onChange={(count) => { this.setState({ count }); onChange(count) }}
                                             after={<div style={{ padding: '0 3px', color: '#666', width: 24, borderRadius: 6, fontSize: 10 }}>{percent + '%'}</div>}
                                         />
                                     ),

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import RVD from "./../../../npm/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
 import AIOInput from "../../../npm/aio-input/aio-input";
-import SplitNumber from "../../../npm/aio-functions/split-number";
+import {SplitNumber} from "../../../npm/aio-utils/aio-utils";
 export default class OrdersHistory extends Component {
     static contextType = appContext;
     constructor(props) {

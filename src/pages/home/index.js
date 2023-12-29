@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import getSvg from './../../utils/getSvg';
 import appContext from '../../app-context';
-import SplitNumber from '../../npm/aio-functions/split-number';
+import {SplitNumber} from '../../npm/aio-utils/aio-utils';
 import GarantiCard from '../../components/garanti/garanti-card/garanti-card';
 import AIOInput from '../../npm/aio-input/aio-input';
 import Awards from './../awards/index';

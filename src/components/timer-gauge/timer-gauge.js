@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import Gauge from './../../npm/aio-gauge/aio-gauge';
+import {Gauge} from './../../npm/aio-chart/aio-chart';
 export default class TimerGauge extends Component{
     constructor(props){
         super(props);

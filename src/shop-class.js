@@ -3,7 +3,7 @@ import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import { Icon } from '@mdi/react';
 import { mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiDelete, mdiPlus, mdiMinus } from "@mdi/js";
 import Axios from 'axios';
-import SplitNumber from "./npm/aio-functions/split-number";
+import {SplitNumber} from "./npm/aio-utils/aio-utils";
 import Shipping from "./components/kharid/shipping/shipping";
 import NoSrc from './images/no-src.png';
 import CartButton from './components/kharid/cart-button';

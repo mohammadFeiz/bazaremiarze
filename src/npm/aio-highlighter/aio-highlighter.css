@@ -1,0 +1,65 @@
+.aio-highlighter {
+    font-size: 24px;
+    pointer-events: none;
+    direction:ltr;
+    color: rgba(255, 255, 255, 0.5);
+
+}
+
+.aio-highlighter-mask {
+    background: rgba(0, 0, 0, 0.8);
+    pointer-events: all;
+}
+
+.aio-highlighter-focus {
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 0 0 24px rgba(0, 0, 0, 0.8);
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+.aio-highlighter-html{
+    background:rgba(0,0,0,0.2);
+    padding:12px;
+    box-sizing: border-box;
+}
+.aio-highlight-arrow-bottom {
+    fill: rgba(255, 255, 255, 1);
+    animation-name: puls;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+
+}
+
+.aio-highlight-arrow-top {
+    fill: rgba(255, 255, 255, 1);
+    animation-name: puls1;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+
+
+}
+
+@keyframes puls {
+    0% {
+        transform: translateY(12px);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(0px);
+        opacity: 0;
+    }
+}
+
+@keyframes puls1 {
+    0% {
+        transform: translateY(0px) rotate(180deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(12px) rotate(180deg);
+        opacity: 0;
+    }
+}

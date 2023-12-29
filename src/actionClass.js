@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import RVD from 'react-virtual-dom';
-import UrlToJson from './npm/aio-functions/url-to-json';
+import {URLToJSON} from './npm/aio-utils/aio-utils';
 import Pricing from './pricing';
 import ShopClass from './shop-class';
 import { Icon } from '@mdi/react';
@@ -108,7 +108,7 @@ export default class ActionClass {
         //let { userInfo } = this.getProps()
         let wrl = window.location.href;
         //this.addAnaliticsHistory({userId:userInfo.phoneNumber})
-        let jsonUrl = UrlToJson(wrl)
+        let jsonUrl = URLToJSON(wrl)
         if (jsonUrl.status === '2') {
             alert('خطا در پرداخت')
             //window.location.href = wrl.slice(0,wrl.indexOf('/?status')) 
@@ -122,7 +122,7 @@ export default class ActionClass {
     }
     getInitialNavId = () => {
         let wrl = window.location.href;
-        let jsonUrl = UrlToJson(wrl)
+        let jsonUrl = URLToJSON(wrl)
         return jsonUrl.tab || 'khane'
     }
     startPricing = () => {
@@ -283,7 +283,7 @@ export default class ActionClass {
     }
     handleMissedLocation = () => {
         setTimeout(() => {
-            try {if(this.isLocationMissed()){this.openPopup('profile','location')}} catch { }
+            try {if(this.isLocationMissed() || true){this.openPopup('profile','location')}} catch { }
         }, 1000)
     }
     getHeaderIcons = (obj) => {

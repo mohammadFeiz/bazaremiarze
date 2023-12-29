@@ -8,7 +8,7 @@ import AIOContentSlider from './../../npm/aio-content-slider/aio-content-slider'
 import {Icon} from '@mdi/react';
 import {mdiCheck, mdiChevronRight, mdiDeleteOutline} from '@mdi/js';
 import bazargahBlankSrc from './../../images/bazargah-no-order.png';
-import SplitNumber from '../../npm/aio-functions/split-number';
+import {SplitNumber} from '../../npm/aio-utils/aio-utils';
 import TimerGauge from '../../components/timer-gauge/timer-gauge';
 import './bazargah.css';
 

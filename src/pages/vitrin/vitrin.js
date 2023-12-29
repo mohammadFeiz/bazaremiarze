@@ -12,8 +12,8 @@ import imgph from './../../images/imgph.png';
 import image_src from './../../images/vitrin-landing.png';
 import vitlan1 from './../../images/vitrin-landing-1.png';
 import vitlan2 from './../../images/vitrin-landing-2.png';
-import SplitNumber from './../../npm/aio-functions/split-number';
-import TreeCategories from './../../npm/aio-functions/tree-category/index';
+import {SplitNumber} from './../../npm/aio-utils/aio-utils';
+//import TreeCategories from './../../npm/aio-functions/tree-category/index';
 
 export default class Vitrin extends Component {
     static contextType = appContext

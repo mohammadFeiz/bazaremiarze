@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import RVD from "./../../../npm/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
-import SplitNumber from "../../../npm/aio-functions/split-number";
+import {SplitNumber} from "../../../npm/aio-utils/aio-utils";
 import NoSrc from './../../../images/no-src.png';
 // code:25965
 // date:"1401/11/24"

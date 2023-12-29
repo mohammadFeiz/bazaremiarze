@@ -3,7 +3,7 @@ import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
 import brxbillboard from '../../images/Burux-billboard.png';
 import getSvg from '../../utils/getSvg';
 import appContext from '../../app-context';
-import SplitNumber from './../../npm/aio-functions/split-number';
+import {SplitNumber} from './../../npm/aio-utils/aio-utils';
 import {Icon} from '@mdi/react';
 import {mdiAccountCircle} from '@mdi/js';
 import AIOInput from '../../npm/aio-input/aio-input';

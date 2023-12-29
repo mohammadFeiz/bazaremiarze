@@ -1,0 +1,52 @@
+
+.json-builder{
+    background:#eee;
+    width:100%;
+  }
+  .text-field-text{
+    min-width:12px;
+    height:16px;
+    line-height: 16px;
+  }
+  .text-field-input{
+    border:none;
+    height:calc(100% - 2px);
+    margin:0;
+    width:100%;
+    outline:none;
+  }
+  .json-builder-button{
+    height:100%;
+    width:100%;
+    color:#666;
+    overflow: hidden;
+    background:none;
+  }
+
+  .json-builder-add{
+    background:none;
+    height:100%;
+    opacity:0.6;
+  }
+  .json-builder-header{
+    background:rgba(138, 166, 216, 0.1);
+    color:#666;
+    font-size:10px;
+  }
+  
+  .json-builder-submit{
+    background:#fff;
+    border:none;
+    color:orange;
+    padding:6px 24px;
+  
+  }
+  .json-builder-close{
+    background:none;
+    border:none;
+    color:#fff;
+  }
+  .json-builder pre{
+    height:100%;
+    width:100%;
+  }

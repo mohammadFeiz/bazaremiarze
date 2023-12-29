@@ -283,7 +283,7 @@ export default class ActionClass {
     }
     handleMissedLocation = () => {
         setTimeout(() => {
-            try {if(this.isLocationMissed() || true){this.openPopup('profile','location')}} catch { }
+            try {if(this.isLocationMissed()){this.openPopup('profile','location')}} catch { }
         }, 1000)
     }
     getHeaderIcons = (obj) => {

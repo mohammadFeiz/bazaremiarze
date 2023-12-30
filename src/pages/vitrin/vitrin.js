@@ -151,6 +151,10 @@ class Search extends Component {
         let { apis } = this.context;
         let { paging, searchValue, taxon } = this.state;
         this.setState({ products: undefined })
+        let res = await apis.request({
+            api: 'vitrin.v_getProducts', description: 'دریافت لیست محصولات قابل انتخاب ویترین', loading: false,
+            parameter: { pageSize: paging.size, pageNumber: paging.number, searchValue }
+        })
         let { products, total } = await apis.request({
             api: 'vitrin.v_kolle_mahsoolat', description: 'دریافت لیست محصولات قابل انتخاب ویترین', loading: false,
             parameter: { pageSize: paging.size, pageNumber: paging.number, searchValue, taxon: taxon || '10673' }

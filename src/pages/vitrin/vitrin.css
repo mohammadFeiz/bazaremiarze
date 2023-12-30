@@ -94,3 +94,78 @@ body {
     padding:0 6px;
     border-radius:4px;
   }
+  .v-product-card{
+    padding:12px;
+    border-bottom:1px solid #ddd;
+  }
+  .v-product-card-name{
+    font-size:12px;
+    font-weight: bold;
+  }
+  .v-product-card-price{
+    font-size:12px;
+    gap:1px;
+    font-weight: bold;
+    color:#000;
+  }
+  .v-product-card-no-price{
+    color:red;
+  }
+  .v-product-card-unit{
+    font-size:70%;
+    opacity:0.7;
+    font-weight: normal;
+  }
+  .v-product-card-image{
+
+  }
+  .v-product-card-image img{
+    max-height:72px;
+  }
+  .v-product-card-add-button{
+    color:#3B55A5;
+    background:none;
+    border:1px solid;
+    border-radius:4px;
+    font-size:12px;
+    font-weight:bold;
+
+  }
+  .v-product-card-price-problem{
+    font-size:12px;
+    background:none;
+    border:none;
+  }
+  .v-product-card-add-button{
+    
+  }
+  .v-product-card-variants{
+    padding:6px;
+    border:1px dashed #aaa;
+    margin-top:12px;
+    border-radius:12px;
+  }
+  .v-product-card-options{
+    font-size:10px;
+    gap:6px;
+  }
+  .v-product-card-variants-label{
+    color:#2BBA8F;
+    font-size:12px;
+  }
+  .v-product-card-options-bullet{
+    width:8px;
+    height:8px;
+    background:#ddd;
+    border-radius:100%;
+    margin:6px;
+  }
+  .v-product-card-option{
+    gap:6px;
+  }
+  .v-product-card-variant-option-name{
+    opacity:0.7;
+  }
+  .v-product-card-variant-option-value{
+    font-weight: bold;
+  }

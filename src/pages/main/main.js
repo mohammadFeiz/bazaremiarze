@@ -59,6 +59,13 @@ export default class Main extends Component {
         Login.logout();
       },
       vitrin:{
+        // vitrinSelected:{
+        //   productId:{
+        //     product:{...},
+        //     variantIds:[1,2,3]
+        //   },
+        //   ...
+        // }
         viewProducts:'tile',
         isFetch:false,
         update:(obj)=>{
@@ -66,11 +73,57 @@ export default class Main extends Component {
           let newVitrin = {...vitrin,...obj}
           this.setState({vitrin:newVitrin})
         },
-        updateSelectedProducts:(id,product)=>{
-          let { apis, vitrin } = this.state,{ selectedProducts } = vitrin;
-          let state = !!selectedProducts[id];
+        removeSelectedProduct:(productId)=>{
+          let { vitrin } = this.state,{ vitrinSelected = {},update } = vitrin;
+          let newVitrinSelected = {}
+          for(let prop in vitrinSelected){
+            if(prop !== productId.toString()){
+              newVitrinSelected[prop] = vitrinSelected[prop]
+            }
+          }
+          update({vitrinSelected:newVitrinSelected})
+        },
+        getIsSelected:(productId,variantId)=>{
+          let { vitrin } = this.state,{ vitrinSelected = {} } = vitrin;
+          if(!vitrinSelected[productId.toString()]){return false}
+          if(!variantId){return true}
+          return !!vitrinSelected[productId.toString()].variantIds.find((o)=>o === variantId)
+        },
+        add:(product,variantId)=>{
+          let { vitrin } = this.state,{ vitrinSelected,getIsSelected,update } = vitrin;
+          if(getIsSelected(product,variantId)){return}
+          let pstrid = product.id.toString();
+          let newVitrinSelected = {};
+          if(getIsSelected(product.id)){
+            let newVariantIds = [...vitrinSelected[pstrid].variantIds,variantId]
+            newVitrinSelected = {...vitrinSelected,[pstrid]:{...vitrinSelected[pstrid],variantIds:newVariantIds}}
+          }
+          else {
+            newVitrinSelected = {...vitrinSelected,[pstrid]:{product,variantIds:[variantId]}}
+          }
+          update({vitrinSelected:newVitrinSelected})
+        },
+        remove:(product,variantId)=>{
+          let { vitrin } = this.state,{ vitrinSelected,getIsSelected,update } = vitrin;
+          if(!getIsSelected(product,variantId)){return}
+          let pstrid = product.id.toString();
+          let newVitrinSelected = {};
+          let newVariantIds = vitrinSelected[pstrid].variantIds.filter((vi)=>vi !== variantId)
+          for(let pid in vitrinSelected){
+            if(pid !== pstrid){
+              newVitrinSelected[pid] = vitrinSelected[pid]
+            }
+            else if(newVariantIds.length){
+              newVitrinSelected[pid] = {...vitrinSelected[pid],variantIds:newVariantIds}
+            }
+          }
+          update({vitrinSelected:newVitrinSelected})
+        },
+        updateVitrinSelected:(product,variantId)=>{
+          let { apis, vitrin } = this.state,{ add,remove,getIsSelected } = vitrin;
+          let isSelected = getIsSelected(product.id,variantId)
           apis.request({
-              api: 'vitrin.v_updateMyVitrin',parameter: { id, state, product },
+              api: 'vitrin.v_updateMyVitrin',parameter: { isSelected, product,variantId },
               onCatch: (error) => {
                   try {
                       let { message, Message } = error.response.data;
@@ -79,43 +132,19 @@ export default class Main extends Component {
                   catch {return 'خطای 1133'}
               },
               onSuccess: () => {
-                  let { vitrin } = this.state;
-                  let { selectedProducts } = vitrin;
-                  let newSelectedProducts;
-                  if (!state) { newSelectedProducts = { ...selectedProducts, [id]: product } }
-                  else {
-                      newSelectedProducts = {}
-                      for (let prop in selectedProducts) {
-                          if (prop !== id) { newSelectedProducts[prop] = selectedProducts[prop] }
-                      }
-                  }
-                  vitrin.update({ selectedProducts: newSelectedProducts })
+                  if (getIsSelected(product,variantId)) { remove(product,variantId)}
+                  else {add(product,variantId)}
               }
           })
         },
         fetchData:async ()=>{
           let {apis,userInfo,vitrin} = this.state;
-          let started = await apis.request({
-            api: 'vitrin.v_getStarted',loading:false,
-            description: 'دریافت وضعیت ویترین'
-          })
-          this.setState({vitrin:{...vitrin,started}})
+          let started = await apis.request({api: 'vitrin.v_getStarted',loading:false,description: 'دریافت وضعیت ویترین'})
+          this.state.vitrin.started = started;
           apis.request({
-            api: 'vitrin.v_mahsoolate_entekhab_shode',description: 'دریافت آی دی های محصولات انتخاب شده ی ویترین',loading:false,
-            parameter:userInfo.cardCode,
-            onSuccess:async (selectedProductsIds)=>{
-                let selectedProductsList = selectedProductsIds.length?await apis.request({
-                    api: 'vitrin.v_getProductsByIds',description: 'دریافت لیست محصولات انتخاب شده ی ویترین',loading:false,def:[],
-                    parameter:selectedProductsIds.toString(),
-            
-                }):[];
-                let selectedProducts = {};
-                for(let i = 0; i < selectedProductsList.length; i++){
-                    let p = selectedProductsList[i];
-                    selectedProducts[p.id] = p
-                }
-                vitrin.update({selectedProducts})
-            }
+            api: 'vitrin.v_selected',description: 'دریافت محصولات انتخاب شده ی ویترین',loading:false,
+            parameter:userInfo.cardCode,def:[],
+            onSuccess:async (vitrinSelected)=>vitrin.update({vitrinSelected})
           });
         }
       },

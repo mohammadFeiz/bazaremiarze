@@ -14,7 +14,7 @@ import vitlan1 from './../../images/vitrin-landing-1.png';
 import vitlan2 from './../../images/vitrin-landing-2.png';
 import SplitNumber from './../../npm/aio-functions/split-number';
 import TreeCategories from './../../npm/aio-functions/tree-category/index';
-
+import { vitrinMock } from "../../apis/vitrin-apis";
 export default class Vitrin extends Component {
     static contextType = appContext
     start() {
@@ -68,7 +68,7 @@ class VitrinPage1 extends Component {
     state = {searchValue: ''}
     count_layout() {
         let { vitrin } = this.context;
-        let { selectedProducts = {} } = vitrin;
+        let { vitrinSelected = {} } = vitrin;
         return {
             align: 'vh', className: 'p-12',
             column: [
@@ -77,7 +77,7 @@ class VitrinPage1 extends Component {
                     column: [
                         { html: getSvg('svg1'), align: 'vh' },
                         { size: 6 },
-                        { html: `${Object.keys(selectedProducts).length} کالا`, align: 'vh', className: 'bold fs-14 theme-dark-font-color', size: 24 },
+                        { html: `${Object.keys(vitrinSelected).length} کالا`, align: 'vh', className: 'bold fs-14 theme-dark-font-color', size: 24 },
                         { html: 'در ویترین شما', className: 'theme-medium-font-color fs-10', align: 'h' }
                     ]
                 },
@@ -100,14 +100,14 @@ class VitrinPage1 extends Component {
         return {html: <img src={vbsrc} width='100%' alt='' />, align: 'vh', className: 'm-h-12'}
     }
     toolbar_layout() {
-        let { actionClass, vitrin } = this.context,{ selectedProducts } = vitrin;
+        let { actionClass, vitrin } = this.context,{ vitrinSelected } = vitrin;
         return {
             className: 'br-6 p-12 m-b-12 of-visible', style: { background: '#fff' },
             row: [
                 { html: getSvg('svg2'), style: { background: '#3b55a5', padding: 3, width: 36, height: 36, borderRadius: '100%' }, align: 'vh' },
                 { size: 12 },
                 { flex: 1, className: 'fs-14 bold', html: 'ویترین من', align: 'v' },
-                { show: !!selectedProducts, html: (<button onClick={() => {
+                { show: !!vitrinSelected, html: (<button onClick={() => {
                     let render = () => (<Search/>)
                     actionClass.openPopup('vitrin-search',{render})
                 }} className='button-2'>افزودن محصول</button>) }
@@ -116,9 +116,7 @@ class VitrinPage1 extends Component {
     }
 
     products_layout() {
-        let { vitrin } = this.context,{ selectedProducts } = vitrin;
-        let products = selectedProducts ? Object.keys(selectedProducts).map((id) => selectedProducts[id]) : undefined
-        return { html: <Products products={products} /> }
+        return { html: <SelectedProducts/> }
     }
     render() {
         return (
@@ -151,10 +149,6 @@ class Search extends Component {
         let { apis } = this.context;
         let { paging, searchValue, taxon } = this.state;
         this.setState({ products: undefined })
-        let res = await apis.request({
-            api: 'vitrin.v_getProducts', description: 'دریافت لیست محصولات قابل انتخاب ویترین', loading: false,
-            parameter: { pageSize: paging.size, pageNumber: paging.number, searchValue }
-        })
         let { products, total } = await apis.request({
             api: 'vitrin.v_kolle_mahsoolat', description: 'دریافت لیست محصولات قابل انتخاب ویترین', loading: false,
             parameter: { pageSize: paging.size, pageNumber: paging.number, searchValue, taxon: taxon || '10673' }
@@ -438,7 +432,13 @@ function Suggestion() {
         />
     )
 }
-function getMockProducts(){return new Array(6).fill(0).map(()=>{return {"name": "لامپ ال ای دی شمعی 7 وات پایه E14", "price": 257840}})}
+function getMockProducts(){
+    let {result} = vitrinMock().v_getProducts()
+    return result.products
+}
+function getMockVitrinSelected(){
+    return vitrinMock().v_mockVitrinSelected()
+}
 class Products extends Component {
     static contextType = appContext;
     render() {
@@ -446,48 +446,56 @@ class Products extends Component {
         let { products } = this.props;
         let Products;
         if (!products) { Products = getMockProducts() }
-        else {
-            Products = products;
-            if (vitrin.viewProducts === 'tile' && Products.length % 2 !== 0) { Products.push({}) }
-        }
+        else {Products = products}
         let list = Products.map((o) => {
-            let { vitrin } = this.context;
-            let { updateSelectedProducts } = vitrin;
-            let { selectedProducts = {} } = vitrin;
-            let { name, src, price, id } = o;
-            let selected = !!selectedProducts[id];
-            let props = { name, src, price, selected, type: vitrin.viewProducts === 'tile' ? 'v' : 'h', id, onSelect: (id) => updateSelectedProducts(id, o) };
-            return { html: <ProductCard {...props} loading={!products} /> }
+            let { vitrinSelected = {} } = vitrin;
+            let variantIds;
+            try{variantIds = vitrinSelected[o.id.toString()].variantIds}
+            catch{variantIds = []}
+            return { html: <ProductCard product={o} variantIds={variantIds} loading={!products} /> }
         })
         let layout = { className: 'ofy-auto', column: list } 
         return (<RVD layout={layout} />)
     }
 }
+class SelectedProducts extends Component {
+    static contextType = appContext;
+    render() {
+        let { vitrin } = this.context
+        let { vitrinSelected } = vitrin;
+        let loading = !vitrinSelected;
+        vitrinSelected = vitrinSelected || getMockVitrinSelected();
+        let column = Object.keys(vitrinSelected).map((key) => {
+            let {product,variantIds} = vitrinSelected[key];
+            return { html: <ProductCard product={product} variantIds={variantIds} loading={loading} /> }
+        })
+        let layout = { className: 'ofy-auto', column } 
+        return (<RVD layout={layout} />)
+    }
+}
 class ProductCard extends Component {
-    image_layout() {
-        let { src = imgph } = this.props;
-        let imageStyle = { width: '100%' };
-        let size = 60;
-        return { className: 'm-b-6', size, html: <img src={src} alt='' {...imageStyle} className='br-8' />, align: 'vh' }
+    openPopup(){
+
     }
-    name_layout() {
-        let { name } = this.props;
-        if (!name) { return false }
-        return { html: name, className: `theme-dark-font-color fs-12 p-h-12 t-a-right` }
+    name_layout(name) {
+        return { html: name, className: `v-product-card-name` }
     }
-    price_layout() {
-        let { price } = this.props;
+    price_layout(price) {
         price = isNaN(price) ? 0 : price;
         if (price < 500) { price = 0 }
-        let priceFontSize = 14;
         return {
+            align: 'v',className:'v-product-card-price',
             row: [
-                { show: !price, html: 'در حال تامین', className: 'fs-12 bold', style: { color: 'red' }, align: 'v' },
-                { show: !!price, html: () => SplitNumber(price), className: `theme-dark-font-color fs-${priceFontSize} bold`, align: 'v' },
+                { show: !price, html: 'در حال تامین', className: 'v-product-card-no-price' },
+                { show: !!price, html: () => SplitNumber(price)},
                 { size: 3 },
-                { show: !!price, html: 'تومان', className: 'theme-light-font-color fs-10', align: 'v' }
+                { show: !!price, html: 'تومان', className: 'v-product-card-unit' }
             ]
         }
+    }
+    
+    image_layout(image) {
+        return { className: 'v-product-card-image', size:72, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
     }
     plus_layout() {
         let { price, selected, onSelect, id,loading } = this.props;
@@ -511,141 +519,166 @@ class ProductCard extends Component {
         let { id } = this.props;
         return { html: id }
     }
-    variant_layout(){
-        let { selected } = this.props;
-        if(!selected){return false}
-        let variants = [
-            'رنگ قرمز - سایز 12',
-            'رنگ قرمز - سایز 12',
-            'رنگ قرمز - سایز 12'
-        ]
+    variants_layout(variantIds,variants,optionTypes){
+        if(!variantIds || !variantIds.length){return false}
+        let variantoptions = this.getVariantOptions(variantIds,variants,optionTypes)
         return {
-            className:'fs-10 m-t-6',
-            column:variants.map((o)=>{
-                return {
-                    align:'v',
-                    row:[
-                        {html:<Icon path={mdiMarkerCheck} size={0.6} />,style:{color:'#8de7ab'}},
-                        {html:o}
-                    ]
-                }
-            })
-        }
-    }
-    render() {
-        let { loading, name, type = 'v' } = this.props;
-        if(type === 'v'){return <ProductCardV {...this.props}/>}
-        if (!name) { return null }
-        let r = Math.random();
-        this.selected = r < 0.5
-        let style = { borderBottom: '1px solid #ddd', borderLeft: '1px solid #ddd' }
-        let layout = {
-            row: [
-                this.image_layout(),
-                {
-                    flex: 1, className: 'p-6',
-                    column: [
-                        this.name_layout(), 
-                        { flex: 1 }, 
-                        { row: [this.price_layout(), { flex: 1 }, this.plus_layout()]},
-                        this.variant_layout()
-                    ]
-                }
+            className:'v-product-card-variants',
+            column:[
+                {className:'v-product-card-variants-label',html:'موجود در ویترین'},
+                variantoptions
             ]
         }
-        return (<RVD loading={loading} layout={{ style, ...layout }} />)
     }
-}
-
-function ProductCardV(props = {}){
-    let {name,src = imgph,price} = props;
-    function plus_layout() {
-        let { price, selected, onSelect, id } = props;
-        price = isNaN(price) ? 0 : price;
-        if (price < 500) { price = 0 }
-        if (!onSelect) { return false }
-        let text = selected ? 'موجود در ویترین' : 'افزودن به ویترین';
-        let style = selected?{color:'#2BBA8F',background:'#fff',border:'1px solid'}:{background:'#3B55A5',color:'#fff',border:'none'}
-        return (
-            <button style={{...style,borderRadius:4,height:32,padding:'0 12px'}} className='align-v' onClick={()=>onSelect(id)}>
-                <Icon path={selected?mdiCheck:mdiPlusThick} size={.8}/>
-                {text}
-            </button>
-        )
-    }
-    function price_layout() {
-        price = isNaN(price) ? 0 : price;
-        if (price < 500) { price = 0 }
-        let priceFontSize = 14;
-        return (
-            <RVD
-                layout={{
-                    row: [
-                        { show: !price, html: 'در حال تامین', className: 'fs-12 bold', style: { color: 'red' }, align: 'v' },
-                        { show: !!price, html: () => SplitNumber(price), className: `theme-dark-font-color fs-${priceFontSize} bold`, align: 'v' },
-                        { size: 3 },
-                        { show: !!price, html: 'تومان', className: 'theme-light-font-color fs-10', align: 'v' }
-                    ]
-                }}
-            />
-        )
-    }
-    function variants_layout(){
-        let variants = [
-            'رنگ قرمز - سایز 12',
-            'رنگ قرمز - سایز 12',
-            'رنگ قرمز - سایز 12'
-        ]
+    getVariantOptions(variantIds,variants,optionTypes){
         return {
-            style:{color:'#666',border:'1px dashed #333'},
-            className:'p-12 m-t-12 br-16',
-            column:[
+            align:'v',
+            row:[
                 {
-                    style:{color:'#2BBA8F'},
-                    className:'fs-14 m-b-12 bold',
-                    row:[
-                        {html:'موجود در ویترین',align:'v'}
-                    ]
+                    html:<div className='v-product-card-options-bullet'></div>
                 },
                 {
-                    className:'fs-12 bold',gap:12,
-                    column:variants.map((o)=>{
-                        return {
-                            align:'v',gap:6,
-                            row:[
-                                {html:<Icon path={mdiMarkerCheck} size={0.6} />,style:{color:'#8de7ab'}},
-                                {html:o}
-                            ]
+                    row:variantIds.map((variantId)=>{
+                        let variant = variants.find((o)=>o.id === variantId);
+                        if(!variant){
+                            console.error(
+                                `
+                                    vitrin error =>
+                                    selected variant ids is => ${variantIds.toString()}
+                                    but we cannot find variant with id = ${variantId} in product.variants
+                                `
+                            )
+                            console.error('product is =>',this.props.product);
+                            return false
                         }
+                        let res = []
+                        let {keys} = variant;
+                        if(!keys || !Array.isArray(keys)){
+                            console.error(
+                                `
+                                    vitrin error =>
+                                    variant keys is invalid
+                                `
+                            )
+                            console.error('product is =>',this.props.product);
+                            console.error('variant is =>',variant);
+                            return false
+                        }
+                        for(let i = 0; i < keys.length; i++){
+                            let key = keys[i];
+                            let optionType = optionTypes[i];
+                            if(!optionType){
+                                console.error(
+                                    `
+                                        vitrin error =>
+                                        cannot find option type object in index = ${i} by variant keys
+                                    `
+                                )
+                                console.error('product is =>',this.props.product);
+                                console.error('variant is =>',variant);
+                                return false
+                            }
+                            let {name:optionTypeName,optionValues} = optionType;
+                            if(!optionTypeName){
+                                console.error(
+                                    `
+                                        vitrin error =>
+                                        cannot find option type name in index = ${i}
+                                    `
+                                )
+                                console.error('product is =>',this.props.product);
+                                console.error('variant is =>',variant);
+                                return false
+                            }
+                            if(!optionValues || !optionValues.length){
+                                console.error(
+                                    `
+                                        vitrin error =>
+                                        cannot find option type values in index = ${i}
+                                    
+                                    `
+                                )
+                                console.error('product is =>',this.props.product);
+                                console.error('variant is =>',variant);
+                                return false
+                            }
+                            let optionValue = optionValues.find((ov)=>ov.id === key)
+                            if(!optionValue){
+                                console.error(
+                                    `
+                                        vitrin error =>
+                                        cannot find option value by variant keys
+                                    `
+                                )
+                                console.error('product is =>',this.props.product);
+                                console.error('variant is =>',variant);
+                                return false
+                            } 
+                            res.push({
+                                className:'v-product-card-option',
+                                row:[
+                                    {html:optionTypeName,className:'v-product-card-variant-option-name'},
+                                    {html:optionValue.name,className:'v-product-card-variant-option-value'}
+                                ]
+                            })
+                        }
+                        return {className:'v-product-card-options',
+                        row:res}
                     })
                 }
             ]
         }
     }
-    function footer_layout(){
+    render() {
+        let { loading, product,variantIds = [] } = this.props;
+        let {image = imgph,name,price,optionTypes,variants} = product;
+        image = imgph
         return (
-            <RVD
+            <RVD 
+                loading={loading} 
                 layout={{
+                    className:'v-product-card',
                     column:[
                         {
                             row:[
-                                {html:plus_layout(),flex:1},
-                                {html:price_layout()}
+                                {
+                                    flex:1,
+                                    column:[
+                                        this.name_layout(name),
+                                        {flex:1},
+                                        this.price_layout(price)
+                                    ]
+                                },
+                                this.image_layout(image)
                             ]
                         },
-                        //variants_layout()
+                        {size:6},
+                        {
+                            row:[
+                                {
+                                    html:(
+                                        <button
+                                            className='v-product-card-add-button'
+                                            onClick={()=>this.openPopup()}
+                                        >مشاهده و افزودن</button>
+                                    )
+                                },
+                                {flex:1},
+                                {
+                                    html:(
+                                        <button
+                                            className='v-product-card-price-problem'
+                                            onClick={()=>this.openPopup()}
+                                        >با قیمت موافق نیستم</button>
+                                    )
+                                },
+                            ]
+                        },
+                        this.variants_layout(variantIds,variants,optionTypes)
                     ]
-                }}
+                }} 
             />
         )
     }
-    if(!name){return null}
-
-    return renderCard({
-        attrs:{className:'bg-32 border-224 border-b br-0'},
-        classes:{text:`theme-dark-font-color fs-12 p-h-12 t-a-right bold`},
-        text:name,
-        after:<img src={src} alt='' width='72' className='br-8' />,
-        footer:footer_layout()
-    })
 }
+

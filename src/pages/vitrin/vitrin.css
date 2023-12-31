@@ -168,6 +168,7 @@ body {
   .v-product-card-variants-label{
     color:#2BBA8F;
     font-size:12px;
+    font-weight: bold;
   }
   .v-product-card-options-bullet{
     width:8px;

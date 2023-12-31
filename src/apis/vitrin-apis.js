@@ -118,8 +118,8 @@ export function vitrinMock() {
                         ],
                         "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg",
                         "optionTypes": [
-                            { "id": 82067, "name": "طول سیم", "optioValues": [{ "id": 54345, "name": "5 متری" }, { "id": 65453, "name": "10 متری" }] },
-                            { "id": 34867, "name": "برند", "optioValues": [{ "id": 43234, "name": "بروکس" }, { "id": 63453, "name": "ممد کابل ساز" }] }
+                            { "id": 82067, "name": "طول سیم", "optionValues": [{ "id": 54345, "name": "5 متری" }, { "id": 65453, "name": "10 متری" }] },
+                            { "id": 34867, "name": "برند", "optionValues": [{ "id": 43234, "name": "بروکس" }, { "id": 63453, "name": "ممد کابل ساز" }] }
                         ]
                     },
                     variantIds: ['546345345']
@@ -139,8 +139,8 @@ export function vitrinMock() {
                         ],
                         "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg",
                         "optionTypes": [
-                            { "id": 82067, "name": "رنگ نور", "optioValues": [{ "id": 6546, "name": "آفتابی" }, { "id": 5346453, "name": "مهتابی" }] },
-                            { "id": 34867, "name": "برند", "optioValues": [{ "id": 544433, "name": "بروکس" }, { "id": 765456, "name": "ممد لامپ ساز" }] }
+                            { "id": 82067, "name": "رنگ نور", "optionValues": [{ "id": 6546, "name": "آفتابی" }, { "id": 5346453, "name": "مهتابی" }] },
+                            { "id": 34867, "name": "برند", "optionValues": [{ "id": 544433, "name": "بروکس" }, { "id": 765456, "name": "ممد لامپ ساز" }] }
                         ]
                     },
                     variantIds:["5645645744"]
@@ -170,8 +170,8 @@ export function vitrinMock() {
                                 ],
                                 "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg",
                                 "optionTypes": [
-                                    { "id": 82067, "name": "طول سیم", "optioValues": [{ "id": 54345, "name": "5 متری" }, { "id": 65453, "name": "10 متری" }] },
-                                    { "id": 34867, "name": "برند", "optioValues": [{ "id": 43234, "name": "بروکس" }, { "id": 63453, "name": "ممد کابل ساز" }] }
+                                    { "id": 82067, "name": "طول سیم", "optionValues": [{ "id": 54345, "name": "5 متری" }, { "id": 65453, "name": "10 متری" }] },
+                                    { "id": 34867, "name": "برند", "optionValues": [{ "id": 43234, "name": "بروکس" }, { "id": 63453, "name": "ممد کابل ساز" }] }
                                 ]
                             },
                             {
@@ -188,8 +188,8 @@ export function vitrinMock() {
                                 ],
                                 "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg",
                                 "optionTypes": [
-                                    { "id": 82067, "name": "رنگ نور", "optioValues": [{ "id": 6546, "name": "آفتابی" }, { "id": 5346453, "name": "مهتابی" }] },
-                                    { "id": 34867, "name": "برند", "optioValues": [{ "id": 544433, "name": "بروکس" }, { "id": 765456, "name": "ممد لامپ ساز" }] }
+                                    { "id": 82067, "name": "رنگ نور", "optionValues": [{ "id": 6546, "name": "آفتابی" }, { "id": 5346453, "name": "مهتابی" }] },
+                                    { "id": 34867, "name": "برند", "optionValues": [{ "id": 544433, "name": "بروکس" }, { "id": 765456, "name": "ممد لامپ ساز" }] }
                                 ]
                             }
                         ]
@@ -270,29 +270,29 @@ export function vitrinMock() {
                             { "id": 34867, "name": "برند", "optionValues": [{ "id": 43234, "name": "بروکس" }, { "id": 63453, "name": "ممد کابل ساز" }] }
                         ]
                     },
-                    variantIds: ['546345345']
+                    variantIds: ['546345345',"45523452"]
                 },
-                '64525345': {
-                    product: {
-                        "id": '64525345', "name": "لامپ حبابی 10 وات", "description": "توضیحات","price": 2900000,
-                        "variants": [
-                            {
-                                "id": "53453534", "inStock": 100000, "price": 2900000, "keys": [6546, 544433],
-                                "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg"
-                            },
-                            {
-                                "id": "5645645744", "inStock": 100000, "price": 2900000, "keys": [5346453, 765456],
-                                "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg"
-                            }
-                        ],
-                        "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg",
-                        "optionTypes": [
-                            { "id": 82067, "name": "رنگ نور", "optionValues": [{ "id": 6546, "name": "آفتابی" }, { "id": 5346453, "name": "مهتابی" }] },
-                            { "id": 34867, "name": "برند", "optionValues": [{ "id": 544433, "name": "بروکس" }, { "id": 765456, "name": "ممد لامپ ساز" }] }
-                        ]
-                    },
-                    variantIds:["5645645744"]
-                }
+                // '64525345': {
+                //     product: {
+                //         "id": '64525345', "name": "لامپ حبابی 10 وات", "description": "توضیحات","price": 2900000,
+                //         "variants": [
+                //             {
+                //                 "id": "53453534", "inStock": 100000, "price": 2900000, "keys": [6546, 544433],
+                //                 "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg"
+                //             },
+                //             {
+                //                 "id": "5645645744", "inStock": 100000, "price": 2900000, "keys": [5346453, 765456],
+                //                 "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg"
+                //             }
+                //         ],
+                //         "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg",
+                //         "optionTypes": [
+                //             { "id": 82067, "name": "رنگ نور", "optionValues": [{ "id": 6546, "name": "آفتابی" }, { "id": 5346453, "name": "مهتابی" }] },
+                //             { "id": 34867, "name": "برند", "optionValues": [{ "id": 544433, "name": "بروکس" }, { "id": 765456, "name": "ممد لامپ ساز" }] }
+                //         ]
+                //     },
+                //     variantIds:["5645645744","53453534"]
+                // }
             }
             return { result }
         },

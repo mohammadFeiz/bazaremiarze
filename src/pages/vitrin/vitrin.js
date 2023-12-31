@@ -1,12 +1,12 @@
-import React, { useContext,Component,useState } from "react";
+import React, { useContext, Component, useState } from "react";
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import {renderCard} from 'react-virtual-dom';
+import { renderCard } from 'react-virtual-dom';
 import AIOInput from "../../npm/aio-input/aio-input";
 import getSvg from "./getSvg";
 import appContext from "../../app-context";
 import Icon from "@mdi/react";
 import vbsrc from './../../images/vitrin-bazargah.png';
-import { mdiClose, mdiPlus,mdiCamera,mdiDotsVertical,mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu, mdiCheck, mdiPlusThick, mdiStoreCheck, mdiMarkerCheck, mdiClockCheck } from "@mdi/js";
+import { mdiClose, mdiPlus, mdiCamera, mdiDotsVertical, mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu, mdiCheck, mdiPlusThick, mdiStoreCheck, mdiMarkerCheck, mdiClockCheck } from "@mdi/js";
 import './vitrin.css';
 import imgph from './../../images/imgph.png';
 import image_src from './../../images/vitrin-landing.png';
@@ -18,21 +18,21 @@ import { vitrinMock } from "../../apis/vitrin-apis";
 export default class Vitrin extends Component {
     static contextType = appContext
     start() {
-        let { apis, vitrin,actionClass } = this.context;
+        let { apis, vitrin, actionClass } = this.context;
         apis.request({
             api: 'vitrin.v_setStarted', parameter: true, description: 'شروع ویترین',
             onSuccess: () => vitrin.update({ started: true }, () => {
                 let render = () => (<Search isFirstTime={true} />)
-                actionClass.openPopup('vitrin-search', {render})
+                actionClass.openPopup('vitrin-search', { render })
             })
         })
     }
     render() {
-        let { vitrin } = this.context,{ started } = vitrin;
-        return started === true?<VitrinPage1 />:<Landing start={()=>this.start()}/>
+        let { vitrin } = this.context, { started } = vitrin;
+        return started === true ? <VitrinPage1 /> : <Landing start={() => this.start()} />
     }
 }
-function Landing(props){
+function Landing(props) {
     let { vitrin } = useContext(appContext), { started } = vitrin;
     return (
         <RVD
@@ -65,7 +65,7 @@ function Landing(props){
 
 class VitrinPage1 extends Component {
     static contextType = appContext;
-    state = {searchValue: ''}
+    state = { searchValue: '' }
     count_layout() {
         let { vitrin } = this.context;
         let { vitrinSelected = {} } = vitrin;
@@ -73,7 +73,7 @@ class VitrinPage1 extends Component {
             align: 'vh', className: 'p-12',
             column: [
                 {
-                    className: 'w-144 h-144 br-6', style: { border: '1px solid #eee' },align:'v',
+                    className: 'w-144 h-144 br-6', style: { border: '1px solid #eee' }, align: 'v',
                     column: [
                         { html: getSvg('svg1'), align: 'vh' },
                         { size: 6 },
@@ -97,33 +97,40 @@ class VitrinPage1 extends Component {
         }
     }
     bazargah_billboard_layout() {
-        return {html: <img src={vbsrc} width='100%' alt='' />, align: 'vh', className: 'm-h-12'}
+        return { html: <img src={vbsrc} width='100%' alt='' />, align: 'vh', className: 'm-h-12' }
     }
     toolbar_layout() {
-        let { actionClass, vitrin } = this.context,{ vitrinSelected } = vitrin;
+        let { actionClass, vitrin } = this.context, { vitrinSelected } = vitrin;
         return {
             className: 'br-6 p-12 m-b-12 of-visible', style: { background: '#fff' },
             row: [
                 { html: getSvg('svg2'), style: { background: '#3b55a5', padding: 3, width: 36, height: 36, borderRadius: '100%' }, align: 'vh' },
                 { size: 12 },
                 { flex: 1, className: 'fs-14 bold', html: 'ویترین من', align: 'v' },
-                { show: !!vitrinSelected, html: (<button onClick={() => {
-                    let render = () => (<Search/>)
-                    actionClass.openPopup('vitrin-search',{render})
-                }} className='button-2'>افزودن محصول</button>) }
+                {
+                    show: !!vitrinSelected, html: (<button onClick={() => {
+                        let render = () => (<Search />)
+                        actionClass.openPopup('vitrin-search', { render })
+                    }} className='button-2'>افزودن محصول</button>)
+                }
             ]
         }
     }
 
     products_layout() {
-        return { html: <SelectedProducts/> }
+        return { html: <SelectedProducts /> }
     }
     render() {
         return (
             <RVD
                 layout={{
                     className: 'theme-popup-bg ofy-auto m-b-24', flex: 1,
-                    column: [this.count_layout(),this.bazargah_billboard_layout(),this.toolbar_layout(),this.products_layout()]
+                    column: [
+                        this.count_layout(), 
+                        this.bazargah_billboard_layout(), 
+                        this.toolbar_layout(), 
+                        this.products_layout()
+                    ]
                 }}
             />
         )
@@ -134,7 +141,7 @@ class Search extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            categories: [], taxon: false, categoryPath:[],searchValue: '', products: undefined, pageNumber: 1, pageSize: 10, total: false,
+            categories: [], taxon: false, categoryPath: [], searchValue: '', products: undefined, pageNumber: 1, pageSize: 10, total: false,
             brands: [], selectedBrands: [],
             paging: {
                 number: 1, size: 20, sizes: [10, 20, 40, 100], serverSide: true, length: 0,
@@ -169,18 +176,18 @@ class Search extends Component {
         this.setState({ pageNumber: pageNumber + dir }, () => this.updateProducts())
     }
     changeSearch(value) {
-        let {msfReport} = this.context;
-        if(value.length > 3){
-            msfReport({actionName:'vitrin search',actionId:56,targetName:value,tagName:'vitrin',eventName:'action'})
+        let { msfReport } = this.context;
+        if (value.length > 3) {
+            msfReport({ actionName: 'vitrin search', actionId: 56, targetName: value, tagName: 'vitrin', eventName: 'action' })
         }
         this.setState({ searchValue: value, pageNumber: 1 }, () => this.updateProducts())
     }
     changeCategory(path) {
-        let {msfReport} = this.context;
+        let { msfReport } = this.context;
         let { paging } = this.state;
         let taxon = path[path.length - 1].id;
-        msfReport({actionName:'vitrin filter by category',actionId:57,targetName:path.join('/'),targetId:taxon,tagName:'vitrin',eventName:'action'})
-        this.setState({ taxon,categoryPath:path, total: false, paging: { ...paging, number: 1 } }, () => this.updateProducts())
+        msfReport({ actionName: 'vitrin filter by category', actionId: 57, targetName: path.join('/'), targetId: taxon, tagName: 'vitrin', eventName: 'action' })
+        this.setState({ taxon, categoryPath: path, total: false, paging: { ...paging, number: 1 } }, () => this.updateProducts())
     }
     header_layout() {
         let { isFirstTime } = this.props
@@ -226,20 +233,20 @@ class Search extends Component {
     }
     search_layout() {
         let className = 'vitrin-search-box', placeholder = "جستجو در محصولات", before = <Icon path={mdiMagnify} size={1} />
-        let props = { type: 'text', className, placeholder, before, onChange: (value) => {console.log(value); this.changeSearch(value)},delay:1200 }
+        let props = { type: 'text', className, placeholder, before, onChange: (value) => { console.log(value); this.changeSearch(value) }, delay: 1200 }
         return { html: <AIOInput {...props} /> }
     }
     // categories_layout(categories,total){
     //     let props = {rtl:true,total,categories,onChange:(taxon) => this.changeCategory(taxon)}
     //     return !categories.length?false:{className: 'm-h-6',html: <TreeCategories {...props} />}
     // }
-    getCategoryTitle(){
-        let {categoryPath} = this.state;
-        if(!categoryPath.length){return 'دسته بندی محصولات'}
+    getCategoryTitle() {
+        let { categoryPath } = this.state;
+        if (!categoryPath.length) { return 'دسته بندی محصولات' }
         let res = [];
-        for(let i = 0; i < categoryPath.length; i++){
+        for (let i = 0; i < categoryPath.length; i++) {
             let o = categoryPath[i];
-            if(o.show !== false){
+            if (o.show !== false) {
                 res.push(o.name)
             }
         }
@@ -249,11 +256,11 @@ class Search extends Component {
         if (!categories.length) { return false }
         return {
             className: 'p-6 bg-32',
-            column:[
+            column: [
                 {
                     html: <AIOInput
                         type='button'
-                        style={{ width: 'fit-content', minHeight: 30, padding: '0 12px',textAlign:'right' }}
+                        style={{ width: 'fit-content', minHeight: 30, padding: '0 12px', textAlign: 'right' }}
                         className='button-2'
                         text={this.getCategoryTitle()}
                         before={<Icon path={mdiMenu} size={1} />}
@@ -261,16 +268,16 @@ class Search extends Component {
                     />
                 },
             ]
-            
+
         }
     }
     openCategories(categories, total) {
-        let {rsa,actionClass} = this.context;
+        let { rsa, actionClass } = this.context;
         let render = () => {
             let props = { rtl: true, total, categories, onChange: (taxon) => { this.changeCategory(taxon); rsa.removeModal() } }
             return <Categories {...props} />
         }
-        actionClass.openPopup('vitrin-categories',{render})
+        actionClass.openPopup('vitrin-categories', { render })
     }
     products_layout(products, paging) {
         let props = { type: 'table', value: products, paging, rowsTemplate: () => <Products products={products} /> }
@@ -315,22 +322,22 @@ function Categories(props = {}) {
         let childs = [...(item.childs || [])]
         return {
             flex: 1, className: 'categories-level-1',
-            column:[
-                level2_item({ childs: [], name: `کل دسته بندی ${item.name}`, id:item.id,show:false },true),
-                {column: childs.map((o) => level1_item(o))}
+            column: [
+                level2_item({ childs: [], name: `کل دسته بندی ${item.name}`, id: item.id, show: false }, true),
+                { column: childs.map((o) => level1_item(o)) }
             ]
         }
     }
     function level1_item(obj) {
         let { name, id } = obj;
-        let childs = [{ childs: [], name: `کل دسته بندی ${obj.name}`, id,show:false }, ...obj.childs]
-        let level1Id = path[1]?path[1].id:false;
+        let childs = [{ childs: [], name: `کل دسته بندی ${obj.name}`, id, show: false }, ...obj.childs]
+        let level1Id = path[1] ? path[1].id : false;
         console.log(level1Id);
         let showChilds = obj.id === level1Id;
         return {
             onClick: () => {
                 if (path[1] && path[1].id === id) { setPath([path[0]]) }
-                else { setPath([{...path[0]},{...obj}]) }
+                else { setPath([{ ...path[0] }, { ...obj }]) }
             },
             column: [
                 {
@@ -341,24 +348,24 @@ function Categories(props = {}) {
                     ]
                 },
                 {
-                    show:showChilds,
+                    show: showChilds,
                     flex: 1, className: 'categories-level-2',
                     column: childs.map((o) => level2_item(o))
                 }
             ]
         }
     }
-    function level2_item(obj,isRoot) {
+    function level2_item(obj, isRoot) {
         let { name } = obj;
         return {
-            className: 'categories-level-2-item' + (isRoot?' is-root':''),
+            className: 'categories-level-2-item' + (isRoot ? ' is-root' : ''),
             onClick: () => onChange(path.concat(obj)),
             row: [
                 { align: 'v', html: name, flex: 1 }
             ]
         }
     }
-    return (<RVD layout={{className: 'categories-popup',row: [level0_layout(),level1_layout()]}}/>);
+    return (<RVD layout={{ className: 'categories-popup', row: [level0_layout(), level1_layout()] }} />);
 }
 class Box extends Component {
     getStyle() {
@@ -368,9 +375,9 @@ class Box extends Component {
             { background: 'linear-gradient(270deg, #405AAA -4.27%, #617CD0 105.33%)', color: '#fff', borderRadius: 12 }
         ][styleType];
     }
-    getProps(){
-        let { type,icon, texts, after, onClick } = this.props;
-        if(type === 'description'){
+    getProps() {
+        let { type, icon, texts, after, onClick } = this.props;
+        if (type === 'description') {
             texts = [
                 { className: 'fs-14 bold', html: 'گام اول: انتخاب محصولات' },
                 { className: 'fs-16 bold', html: 'محصولات مورد نظرتان را به ویترین اضافه کنید' },
@@ -398,17 +405,17 @@ class Box extends Component {
     }
 }
 function Suggestion() {
-    let {apis} = useContext(appContext);
+    let { apis } = useContext(appContext);
     async function addSuggestion() {
         apis.request({
             api: 'vitrin.addSuggestion', description: 'پیشنهاد افزودن محصول به ویترین', parameter: suggestion, message: { success: true },
             onSuccess: () => setSuggestion({ name: '', file: undefined, brand: '' })
         })
     }
-    let [suggestion,setSuggestion] = useState({ name: '', file: undefined, brand: '' });
+    let [suggestion, setSuggestion] = useState({ name: '', file: undefined, brand: '' });
     return (
         <AIOInput
-            type='form' lang='fa' value={{...suggestion}} submitText='ثبت' inputStyle={{ border: 'none' }}
+            type='form' lang='fa' value={{ ...suggestion }} submitText='ثبت' inputStyle={{ border: 'none' }}
             onChange={(obj) => setSuggestion(obj)}
             footerAttrs={{ className: 'vitrin-suggestion-footer' }}
             onSubmit={() => addSuggestion()}
@@ -424,7 +431,7 @@ function Suggestion() {
                     { input: { type: 'text', placeholder: 'نام کامل محصول' }, label: 'نام محصول', field: 'value.name', validations: [['required']] },
                     { input: { type: 'text', placeholder: 'برند محصول' }, label: 'برند محصول', field: 'value.brand', validations: [['required']] },
                     {
-                        input: {type: 'image', placeholder: <Icon path={mdiCamera} size={1} />, width: '100%'},
+                        input: { type: 'image', placeholder: <Icon path={mdiCamera} size={1} />, width: '100%' },
                         label: 'تصویر محصول', field: 'value.image', validations: [['required']]
                     },
                 ]
@@ -432,11 +439,11 @@ function Suggestion() {
         />
     )
 }
-function getMockProducts(){
-    let {result} = vitrinMock().v_getProducts()
+function getMockProducts() {
+    let { result } = vitrinMock().v_getProducts()
     return result.products
 }
-function getMockVitrinSelected(){
+function getMockVitrinSelected() {
     return vitrinMock().v_mockVitrinSelected()
 }
 class Products extends Component {
@@ -446,15 +453,15 @@ class Products extends Component {
         let { products } = this.props;
         let Products;
         if (!products) { Products = getMockProducts() }
-        else {Products = products}
+        else { Products = products }
         let list = Products.map((o) => {
             let { vitrinSelected = {} } = vitrin;
             let variantIds;
-            try{variantIds = vitrinSelected[o.id.toString()].variantIds}
-            catch{variantIds = []}
+            try { variantIds = vitrinSelected[o.id.toString()].variantIds }
+            catch { variantIds = [] }
             return { html: <ProductCard product={o} variantIds={variantIds} loading={!products} /> }
         })
-        let layout = { className: 'ofy-auto', column: list } 
+        let layout = { className: 'ofy-auto', column: list }
         return (<RVD layout={layout} />)
     }
 }
@@ -466,16 +473,19 @@ class SelectedProducts extends Component {
         let loading = !vitrinSelected;
         vitrinSelected = vitrinSelected || getMockVitrinSelected();
         let column = Object.keys(vitrinSelected).map((key) => {
-            let {product,variantIds} = vitrinSelected[key];
-            return { html: <ProductCard product={product} variantIds={variantIds} loading={loading} /> }
+            let { product, variantIds } = vitrinSelected[key];
+            return { html: <ProductCard product={product} variantIds={variantIds} loading={loading} renderIn='my-vitrin'/> }
         })
-        let layout = { className: 'ofy-auto', column } 
+        let layout = { className: 'ofy-auto', column }
         return (<RVD layout={layout} />)
     }
 }
 class ProductCard extends Component {
-    openPopup(){
-
+    static contextType = appContext;
+    openPopup() {
+        let {actionClass} = this.context;
+        let {product,variantIds = []} = this.props;
+        actionClass.openPopup('vitrin-product-page',{render:()=><ProductPage product={product} variantIds={variantIds}/>,product})
     }
     name_layout(name) {
         return { html: name, className: `v-product-card-name` }
@@ -484,201 +494,160 @@ class ProductCard extends Component {
         price = isNaN(price) ? 0 : price;
         if (price < 500) { price = 0 }
         return {
-            align: 'v',className:'v-product-card-price',
+            align: 'v', className: 'v-product-card-price',gap:3,
             row: [
                 { show: !price, html: 'در حال تامین', className: 'v-product-card-no-price' },
-                { show: !!price, html: () => SplitNumber(price)},
-                { size: 3 },
+                { show: !!price, html: () => SplitNumber(price) },
                 { show: !!price, html: 'تومان', className: 'v-product-card-unit' }
             ]
         }
     }
-    
     image_layout(image) {
-        return { className: 'v-product-card-image', size:72, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
-    }
-    plus_layout() {
-        let { price, selected, onSelect, id,loading } = this.props;
-        if (!onSelect || loading) { return false }
-        price = isNaN(price) ? 0 : price;
-        if (price < 500) { price = 0 }
-        if(selected){
-            return {
-                html: 'موجود در ویترین',
-                className:'vitrin-card-list-exist',
-                align: 'vh', onClick: () => onSelect(id)
-            }    
-        }
-        return {
-            html: 'افزودن به ویترین',
-            className:'vitrin-card-list-not-exist',
-            align: 'vh', onClick: () => onSelect(id)
-        }
+        return { className: 'v-product-card-image', size: 72, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
     }
     id_layout() {
         let { id } = this.props;
         return { html: id }
     }
-    variants_layout(variantIds,variants,optionTypes){
-        if(!variantIds || !variantIds.length){return false}
-        let variantoptions = this.getVariantOptions(variantIds,variants,optionTypes)
+    variants_layout(product,variantIds) {
+        if (!variantIds || !variantIds.length) { return false }
         return {
-            className:'v-product-card-variants',
-            column:[
-                {className:'v-product-card-variants-label',html:'موجود در ویترین'},
-                variantoptions
-            ]
-        }
-    }
-    getVariantOptions(variantIds,variants,optionTypes){
-        return {
-            align:'v',
-            row:[
-                {
-                    html:<div className='v-product-card-options-bullet'></div>
-                },
-                {
-                    row:variantIds.map((variantId)=>{
-                        let variant = variants.find((o)=>o.id === variantId);
-                        if(!variant){
-                            console.error(
-                                `
-                                    vitrin error =>
-                                    selected variant ids is => ${variantIds.toString()}
-                                    but we cannot find variant with id = ${variantId} in product.variants
-                                `
-                            )
-                            console.error('product is =>',this.props.product);
-                            return false
-                        }
-                        let res = []
-                        let {keys} = variant;
-                        if(!keys || !Array.isArray(keys)){
-                            console.error(
-                                `
-                                    vitrin error =>
-                                    variant keys is invalid
-                                `
-                            )
-                            console.error('product is =>',this.props.product);
-                            console.error('variant is =>',variant);
-                            return false
-                        }
-                        for(let i = 0; i < keys.length; i++){
-                            let key = keys[i];
-                            let optionType = optionTypes[i];
-                            if(!optionType){
-                                console.error(
-                                    `
-                                        vitrin error =>
-                                        cannot find option type object in index = ${i} by variant keys
-                                    `
-                                )
-                                console.error('product is =>',this.props.product);
-                                console.error('variant is =>',variant);
-                                return false
-                            }
-                            let {name:optionTypeName,optionValues} = optionType;
-                            if(!optionTypeName){
-                                console.error(
-                                    `
-                                        vitrin error =>
-                                        cannot find option type name in index = ${i}
-                                    `
-                                )
-                                console.error('product is =>',this.props.product);
-                                console.error('variant is =>',variant);
-                                return false
-                            }
-                            if(!optionValues || !optionValues.length){
-                                console.error(
-                                    `
-                                        vitrin error =>
-                                        cannot find option type values in index = ${i}
-                                    
-                                    `
-                                )
-                                console.error('product is =>',this.props.product);
-                                console.error('variant is =>',variant);
-                                return false
-                            }
-                            let optionValue = optionValues.find((ov)=>ov.id === key)
-                            if(!optionValue){
-                                console.error(
-                                    `
-                                        vitrin error =>
-                                        cannot find option value by variant keys
-                                    `
-                                )
-                                console.error('product is =>',this.props.product);
-                                console.error('variant is =>',variant);
-                                return false
-                            } 
-                            res.push({
-                                className:'v-product-card-option',
-                                row:[
-                                    {html:optionTypeName,className:'v-product-card-variant-option-name'},
-                                    {html:optionValue.name,className:'v-product-card-variant-option-value'}
-                                ]
-                            })
-                        }
-                        return {className:'v-product-card-options',
-                        row:res}
-                    })
-                }
+            className: 'v-product-card-variants',
+            column: [
+                { className: 'v-product-card-variants-label', html: 'موجود در ویترین' },
+                { className:'m-t-6',show:!!variantIds.length,html:<VariantLabels product={product} variantIds={variantIds}/>}
             ]
         }
     }
     render() {
-        let { loading, product,variantIds = [] } = this.props;
-        let {image = imgph,name,price,optionTypes,variants} = product;
+        let { loading, product, variantIds = [],renderIn } = this.props;
+        let { image = imgph, name, price } = product;
         image = imgph
         return (
-            <RVD 
-                loading={loading} 
+            <RVD
+                loading={loading}
                 layout={{
-                    className:'v-product-card',
-                    column:[
+                    className: 'v-product-card',
+                    column: [
                         {
-                            row:[
-                                {
-                                    flex:1,
-                                    column:[
-                                        this.name_layout(name),
-                                        {flex:1},
-                                        this.price_layout(price)
-                                    ]
-                                },
+                            row: [
+                                {flex: 1,column: [this.name_layout(name),{ flex: 1 },this.price_layout(price)]},
                                 this.image_layout(image)
                             ]
                         },
-                        {size:6},
+                        { size: 6 },
                         {
-                            row:[
-                                {
-                                    html:(
-                                        <button
-                                            className='v-product-card-add-button'
-                                            onClick={()=>this.openPopup()}
-                                        >مشاهده و افزودن</button>
-                                    )
-                                },
-                                {flex:1},
-                                {
-                                    html:(
-                                        <button
-                                            className='v-product-card-price-problem'
-                                            onClick={()=>this.openPopup()}
-                                        >با قیمت موافق نیستم</button>
-                                    )
-                                },
+                            row: [
+                                {html: (<button className='v-product-card-add-button' onClick={() => this.openPopup()}>{renderIn === 'my-vitrin'?'ویرایش':'مشاهده و افزودن'}</button>)},
+                                { flex: 1 },
+                                {html: (<button className='v-product-card-price-problem' onClick={() => this.openPopup()}>با قیمت موافق نیستم</button>)}
                             ]
                         },
-                        this.variants_layout(variantIds,variants,optionTypes)
+                        this.variants_layout(product,variantIds)
                     ]
-                }} 
+                }}
             />
         )
     }
 }
-
+class ProductPage extends Component{
+    static contextType = appContext;
+    image_layout(image) {
+        return { className: 'v-product-page-image', size: 144, html: <img src={image} alt='' height='100%' />, align: 'vh' }
+    }
+    name_layout(name) {
+        return { align:'vh',html: name, className: `v-product-card-name` }
+    }
+    card_layout(variant){
+        let {product} = this.props;
+        return {
+            className:'v-product-page-card',
+            column:[
+                {
+                    html:<VariantLabels product={product} variantIds={[variant.id]} type='vertical' showPrice={true}/>
+                },
+                {size:6},
+                this.buttons_layout(variant)
+            ]
+        }
+    }
+    buttons_layout(variant){
+        let {vitrin} = this.context;
+        let { product,variantIds = [] } = this.props;
+        let selected = variantIds.indexOf(variant.id) !== -1;
+        let text = selected?'موجود در ویترین':'افزودن'
+        return {
+            row: [
+                {html: (<button className={'v-product-page-add-button' + (selected?' selected':'')} onClick={() => vitrin.updateVitrinSelected(product,variant.id)}>{text}</button>)},
+                { flex: 1 },
+                {html: (<button className='v-product-card-price-problem' onClick={() => this.openPopup()}>با قیمت موافق نیستم</button>)}
+            ]
+        }
+    }
+    render(){
+        let { loading, product, variantIds = [] } = this.props;
+        let { image = imgph, name, price } = product;
+        image = imgph
+        
+        return (
+            <RVD
+                layout={{
+                    gap:16,
+                    column:[
+                        this.image_layout(image),
+                        this.name_layout(name),
+                        {
+                            gap:12,column:product.variants.map((o)=>this.card_layout(o))
+                        }
+                    ]
+                }}
+            />
+        )
+    }
+}
+function VariantLabels({ product, variantIds,type = 'horizontal',showPrice }) {
+    let { variants, optionTypes } = product
+    function keyValues_layout(variantId) {
+        let variant = variants.find((o) => o.id === variantId);
+        let { keys } = variant;
+        let row = keys.map((key,i)=>keyValue_layout(key,i))
+        if(showPrice){
+            row.push({
+                className: 'v-product-card-option',gap:3,align:'v',
+                row: [
+                    { html:bullet_layout() },
+                    price_layout(variant.price)
+                ]
+            })
+        }
+        if(type === 'horizontal'){row = [{html:bullet_layout()},...row]}
+        return {gap:6,className: 'v-product-card-options',[type === 'horizontal'?'row':'column']:row,align:'v'}
+    }
+    function keyValue_layout(key,index){
+        let { name: optionTypeName, optionValues } = optionTypes[index];
+        let {name:optionValueName} = optionValues.find((ov) => ov.id === key)
+        return {
+            className: 'v-product-card-option',gap:3,align:'v',
+            row: [
+                { show:type === 'vertical',html:bullet_layout() },
+                { html: optionTypeName + ' : ', className: 'v-product-card-variant-option-name' },
+                { html: optionValueName, className: 'v-product-card-variant-option-value' }
+            ]
+        }
+    }
+    function bullet_layout(){return <div className='v-product-card-options-bullet'></div>}
+    function price_layout(price) {
+        price = isNaN(price) ? 0 : price;
+        if (price < 500) { price = 0 }
+        return {
+            align: 'v', className: 'v-product-card-price',gap:3,
+            row: [
+                { show: !price, html: 'در حال تامین', className: 'v-product-card-no-price' },
+                { show: !!price, html: () => SplitNumber(price) },
+                { show: !!price, html: 'تومان', className: 'v-product-card-unit' }
+            ]
+        }
+    }
+    
+    return (<RVD layout={{align: 'v',gap:6,column: variantIds.map((variantId) => keyValues_layout(variantId))}}/>)
+}

@@ -355,6 +355,15 @@ export default class ActionClass {
                 body: { render }
             })
         }
+        if (type === 'vitrin-product-page') {
+            let {render,product} = parameter;
+            msfReport({actionName:'open vitrin product page',targetName:product.name,targetId:product.id,actionId:1548,tagName:'vitrin',eventName:'page view'})
+            addModal({
+                id: type,
+                header: { title: 'افزودن نوع کالا به ویترین من', attrs: { className: '' } },
+                body: { render }
+            })
+        }
         else if(type === 'vitrin-categories'){
             let {render} = parameter;
             msfReport({actionName:'open vitrin categories',actionId:19,tagName:'vitrin',eventName:'page view'})

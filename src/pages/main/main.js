@@ -91,7 +91,7 @@ export default class Main extends Component {
         },
         add:(product,variantId)=>{
           let { vitrin } = this.state,{ vitrinSelected,getIsSelected,update } = vitrin;
-          if(getIsSelected(product,variantId)){return}
+          if(getIsSelected(product.id,variantId)){return}
           let pstrid = product.id.toString();
           let newVitrinSelected = {};
           if(getIsSelected(product.id)){
@@ -105,7 +105,7 @@ export default class Main extends Component {
         },
         remove:(product,variantId)=>{
           let { vitrin } = this.state,{ vitrinSelected,getIsSelected,update } = vitrin;
-          if(!getIsSelected(product,variantId)){return}
+          if(!getIsSelected(product.id,variantId)){return}
           let pstrid = product.id.toString();
           let newVitrinSelected = {};
           let newVariantIds = vitrinSelected[pstrid].variantIds.filter((vi)=>vi !== variantId)
@@ -132,7 +132,7 @@ export default class Main extends Component {
                   catch {return 'خطای 1133'}
               },
               onSuccess: () => {
-                  if (getIsSelected(product,variantId)) { remove(product,variantId)}
+                  if (getIsSelected(product.id,variantId)) { remove(product,variantId)}
                   else {add(product,variantId)}
               }
           })

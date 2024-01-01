@@ -1,2 +1,2 @@
-import AIOLogin from 'aio-login';
+import AIOLogin from './index';
 export default AIOLogin

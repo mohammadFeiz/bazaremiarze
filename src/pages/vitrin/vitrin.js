@@ -157,7 +157,7 @@ class Search extends Component {
         let { paging, searchValue, taxon } = this.state;
         this.setState({ products: undefined })
         let { products, total } = await apis.request({
-            api: 'vitrin.v_kolle_mahsoolat', description: 'دریافت لیست محصولات قابل انتخاب ویترین', loading: false,
+            api: 'vitrin.v_kolle_mahsoolat', description: 'دریافت لیست محصولات قابل انتخاب ویترین', loading: false,def:[],
             parameter: { pageSize: paging.size, pageNumber: paging.number, searchValue, taxon: taxon || '10673' }
         })
         this.setState({ products, paging: { ...this.state.paging, length: total }, total })
@@ -522,7 +522,6 @@ class ProductCard extends Component {
     render() {
         let { loading, product, variantIds = [],renderIn } = this.props;
         let { image = imgph, name, price } = product;
-        image = imgph
         return (
             <RVD
                 loading={loading}
@@ -587,13 +586,13 @@ class ProductPage extends Component{
     render(){
         let { loading, product, variantIds = [] } = this.props;
         let { image = imgph, name, price } = product;
-        image = imgph
         
         return (
             <RVD
                 layout={{
                     gap:16,
                     column:[
+                        {size:24},
                         this.image_layout(image),
                         this.name_layout(name),
                         {
@@ -610,7 +609,7 @@ function VariantLabels({ product, variantIds,type = 'horizontal',showPrice }) {
     function keyValues_layout(variantId) {
         let variant = variants.find((o) => o.id === variantId);
         let { keys } = variant;
-        let row = keys.map((key,i)=>keyValue_layout(key,i))
+        let row = keys.map((key,i)=>keyValue_layout(key,i,variant))
         if(showPrice){
             row.push({
                 className: 'v-product-card-option',gap:3,align:'v',
@@ -623,9 +622,12 @@ function VariantLabels({ product, variantIds,type = 'horizontal',showPrice }) {
         if(type === 'horizontal'){row = [{html:bullet_layout()},...row]}
         return {gap:6,className: 'v-product-card-options',[type === 'horizontal'?'row':'column']:row,align:'v'}
     }
-    function keyValue_layout(key,index){
+    function keyValue_layout(key,index,variant){
         let { name: optionTypeName, optionValues } = optionTypes[index];
-        let {name:optionValueName} = optionValues.find((ov) => ov.id === key)
+        let optionValueName = '';
+        let optionValue = optionValues.find((ov) => ov.id === key);
+        if(!optionValue){ProductError('key_is_not_match_by_optionValues',{product,variant,keyIndex:index})}
+        else {optionValueName = optionValue.name;}
         return {
             className: 'v-product-card-option',gap:3,align:'v',
             row: [
@@ -650,4 +652,25 @@ function VariantLabels({ product, variantIds,type = 'horizontal',showPrice }) {
     }
     
     return (<RVD layout={{align: 'v',gap:6,column: variantIds.map((variantId) => keyValues_layout(variantId))}}/>)
+}
+
+
+function ProductError(type,parameter){
+    let $$ = {
+        key_is_not_match_by_optionValues:()=>{
+            let {product,variant,keyIndex} = parameter
+            console.error(`variant error`);
+            console.log('product is : ',product);
+            console.log('variant is : ',variant);
+            console.log('variant keys is : ',variant.keys);
+            let key = variant.keys[keyIndex];
+            console.log('variant key index is : ',keyIndex);
+            console.log(`variant key is: `,key);
+            console.log('optionTypes is',product.optionTypes);
+            console.log(`optionType is`,product.optionTypes[keyIndex]);
+            console.log(`optionValues is`,JSON.stringify(product.optionTypes[keyIndex].optionValues));
+            console.log(`but in optionValues we cannot find id=${key}`)    
+        }
+    }
+    $$[type]()   
 }

@@ -1562,7 +1562,7 @@ class Layout extends Component {
                 return (
                     <div
                         style={{ textAlign: justify && !types.isInput ? 'center' : undefined }}
-                        className={`${this.getItemClassName('value')}${justify && !types.isInput ? ' aio-input-value-justify' : ''} h-100`}
+                        className={`${this.getItemClassName('value')}${justify && !types.isInput ? ' aio-input-value-justify' : ''}`}
                     >{text}</div>
                 )
             }

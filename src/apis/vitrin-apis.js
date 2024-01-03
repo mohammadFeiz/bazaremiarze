@@ -19,19 +19,20 @@ export default function vitrinApis({ baseUrl, helper }) {
             }
             return { result: res.data.message }
         },
-        async v_updateMyVitrin({ isSelected, product, variantId }) {
+        async v_updateMyVitrin({ isSelected, product, variantId },{ userInfo }) {
+            let {cardCode} = userInfo;
             //type state = 'add' | 'remove'
             //type product = <product>
             //type variantId = number
-            return vitrinMock().v_updateMyVitrin({ isSelected, product, variantId })
-            // let res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrin`, { ProductId: id, state: !state, B1Code: product.sku, Price: product.price });
-            // if (res.data.isSuccess === true) {
-            //     return { result: true }
-            // }
-            // else { return res.data.message }
+            //return vitrinMock().v_updateMyVitrin({ isSelected, product, variantId })
+            let res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrin`, { ProductId: product.id, state: !isSelected, variantId, Price: product.price,cardCode });
+            if (res.data.isSuccess === true) {
+                return { result: true }
+            }
+            else { return res.data.message }
         },
         async v_kolle_mahsoolat({ pageSize, pageNumber, searchValue, filter = [], taxon }, { apis }) {
-            return vitrinMock().v_getProducts()
+            //return vitrinMock().v_getProducts()
             let body = {
                 Taxons: [10673],
                 PageSize: pageSize,
@@ -39,18 +40,15 @@ export default function vitrinApis({ baseUrl, helper }) {
                 Term: searchValue
             }
             let response = await Axios.post(`${baseUrl}/spree/GetProducts`, body);
-            console.log(response)
             let result = {
                 products: response.data.data.result,
                 total: response.data.data.totalRecords
             }
             return { response, result }
         },
-        async v_selected(cardCode) {
-            return vitrinMock().v_selected()
-            let res = await Axios.get(`${baseUrl}/vitrin/GetVitrinProductsByCardCode?cardCode=${cardCode}`);
-            let ids = res.data.data;
-            return { result: ids }
+        async v_selected(parameter,{ userInfo }) {
+            let res = await Axios.get(`${baseUrl}/vitrin/VitrinProductsByCardCode?cardCode=${userInfo.cardCode}`);
+            return { result: res.data.data }
         },
         async v_category_options(parameter, { apis }) {
             let categoryOptions = await apis.request({ api: 'vitrin.v_miarze_categories' });

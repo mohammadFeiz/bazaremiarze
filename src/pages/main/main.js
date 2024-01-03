@@ -144,7 +144,16 @@ export default class Main extends Component {
           apis.request({
             api: 'vitrin.v_selected',description: 'دریافت محصولات انتخاب شده ی ویترین',loading:false,
             parameter:userInfo.cardCode,def:[],
-            onSuccess:async (vitrinSelected)=>vitrin.update({vitrinSelected})
+            onSuccess:async (list)=>{
+              let vitrinSelected = {};
+              debugger
+              for(let i = 0; i < list.length; i++){
+                let {product,productId,variantId} = list[i];
+                vitrinSelected[productId] = vitrinSelected[productId] || {product,variantIds:[]}
+                vitrinSelected[productId].variantIds.push(variantId)
+              }
+              vitrin.update({vitrinSelected})
+            }
           });
         }
       },

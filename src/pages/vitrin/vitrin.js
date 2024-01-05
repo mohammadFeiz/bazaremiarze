@@ -4,6 +4,7 @@ import { renderCard } from 'react-virtual-dom';
 import AIOInput from "../../npm/aio-input/aio-input";
 import getSvg from "./getSvg";
 import appContext from "../../app-context";
+import Loading from './loading';
 import Icon from "@mdi/react";
 import vbsrc from './../../images/vitrin-bazargah.png';
 import { mdiClose, mdiPlus, mdiCamera, mdiDotsVertical, mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu, mdiCheck, mdiPlusThick, mdiStoreCheck, mdiMarkerCheck, mdiClockCheck } from "@mdi/js";
@@ -17,6 +18,11 @@ import TreeCategories from './../../npm/aio-functions/tree-category/index';
 import { vitrinMock } from "../../apis/vitrin-apis";
 export default class Vitrin extends Component {
     static contextType = appContext
+    constructor(props){
+        super(props);
+        this.state = {splash:true}
+        setTimeout(()=>this.setState({splash:false}),2500)
+    }
     start() {
         let { apis, vitrin, actionClass } = this.context;
         apis.request({
@@ -28,11 +34,16 @@ export default class Vitrin extends Component {
         })
     }
     render() {
+        let {backOffice} = this.context;
+        let {splash} = this.state;
+        if(splash){return <div className='w-100 h-100 align-vh'><Loading/></div> }
+        if(!backOffice.activeManager.vitrin){
+            return <div className='w-100 h-100 align-vh fs-12'>سرویس ویترین تا اطلاع ثانوی در حال بروز رسانی میباشد</div>    
+        }
         let { vitrin } = this.context, { started } = vitrin;
-        started = undefined;
         if(started === true){return <VitrinPage1 />}
         if(started === false){return <Landing start={() => this.start()} />}
-        return <div>در حال بارگزاری اطلاعات ویترین</div>
+        return <div className='w-100 h-100 align-vh fs-12'>در حال بارگزاری اطلاعات ویترین</div>
     }
 }
 function Landing(props) {
@@ -452,17 +463,12 @@ function getMockVitrinSelected() {
 class Products extends Component {
     static contextType = appContext;
     render() {
-        let { vitrin } = this.context
         let { products } = this.props;
         let Products;
         if (!products) { Products = getMockProducts() }
         else { Products = products }
         let list = Products.map((o) => {
-            let { vitrinSelected = {} } = vitrin;
-            let variantIds;
-            try { variantIds = vitrinSelected[o.id.toString()].variantIds }
-            catch { variantIds = [] }
-            return { html: <ProductCard product={o} variantIds={variantIds} loading={!products} /> }
+            return { html: <ProductCard product={o} loading={!products} /> }
         })
         let layout = { className: 'ofy-auto', column: list }
         return (<RVD layout={layout} />)
@@ -475,9 +481,10 @@ class SelectedProducts extends Component {
         let { vitrinSelected } = vitrin;
         let loading = !vitrinSelected;
         vitrinSelected = vitrinSelected || getMockVitrinSelected();
+        debugger
         let column = Object.keys(vitrinSelected).map((key) => {
-            let { product, variantIds } = vitrinSelected[key];
-            return { html: <ProductCard product={product} variantIds={variantIds} loading={loading} renderIn='my-vitrin'/> }
+            let { product } = vitrinSelected[key];
+            return { html: <ProductCard product={product} loading={loading} renderIn='my-vitrin'/> }
         })
         let layout = { className: 'ofy-auto', column }
         return (<RVD layout={layout} />)
@@ -485,10 +492,17 @@ class SelectedProducts extends Component {
 }
 class ProductCard extends Component {
     static contextType = appContext;
+    getSelectedVariantIds(){
+        let {vitrin} = this.context,{vitrinSelected} = vitrin;
+        let {product} = this.props;
+        let res = vitrinSelected[product.id]
+        if(!res){return []}
+        return res.variantIds; 
+    }
     openPopup() {
         let {actionClass} = this.context;
-        let {product,variantIds = []} = this.props;
-        actionClass.openPopup('vitrin-product-page',{render:()=><ProductPage product={product} variantIds={variantIds}/>,product})
+        let {product} = this.props;
+        actionClass.openPopup('vitrin-product-page',{render:()=><ProductPage product={product}/>,product})
     }
     name_layout(name) {
         return { html: name, className: `v-product-card-name` }
@@ -523,8 +537,9 @@ class ProductCard extends Component {
         }
     }
     render() {
-        let { loading, product, variantIds = [],renderIn } = this.props;
+        let { loading, product, renderIn } = this.props;
         let { image = imgph, name, price } = product;
+        let variantIds = this.getSelectedVariantIds()
         return (
             <RVD
                 loading={loading}
@@ -557,6 +572,13 @@ class ProductPage extends Component{
     image_layout(image) {
         return { className: 'v-product-page-image', size: 144, html: <img src={image} alt='' height='100%' />, align: 'vh' }
     }
+    getSelectedVariantIds(){
+        let {vitrin} = this.context,{vitrinSelected} = vitrin;
+        let {product} = this.props;
+        let res = vitrinSelected[product.id]
+        if(!res){return []}
+        return res.variantIds; 
+    }
     name_layout(name) {
         return { align:'vh',html: name, className: `v-product-card-name` }
     }
@@ -575,7 +597,8 @@ class ProductPage extends Component{
     }
     buttons_layout(variant){
         let {vitrin} = this.context;
-        let { product,variantIds = [] } = this.props;
+        let { product } = this.props;
+        let variantIds = this.getSelectedVariantIds()
         let selected = variantIds.indexOf(variant.id) !== -1;
         let text = selected?'موجود در ویترین':'افزودن'
         return {
@@ -587,7 +610,7 @@ class ProductPage extends Component{
         }
     }
     render(){
-        let { loading, product, variantIds = [] } = this.props;
+        let { product } = this.props;
         let { image = imgph, name, price } = product;
         
         return (
@@ -611,6 +634,10 @@ function VariantLabels({ product, variantIds,type = 'horizontal',showPrice }) {
     let { variants, optionTypes } = product
     function keyValues_layout(variantId) {
         let variant = variants.find((o) => o.id === variantId);
+        if(!variant){
+            ProductError('not_found_selected_variant_id_in_product_variants',{product,variantIds,variantId})
+            return false
+        }
         let { keys } = variant;
         let row = keys.map((key,i)=>keyValue_layout(key,i,variant))
         if(showPrice){
@@ -662,7 +689,7 @@ function ProductError(type,parameter){
     let $$ = {
         key_is_not_match_by_optionValues:()=>{
             let {product,variant,keyIndex} = parameter
-            console.error(`variant error`);
+            console.error(`variant error => key_is_not_match_by_optionValues`);
             console.log('product is : ',product);
             console.log('variant is : ',variant);
             console.log('variant keys is : ',variant.keys);
@@ -673,6 +700,18 @@ function ProductError(type,parameter){
             console.log(`optionType is`,product.optionTypes[keyIndex]);
             console.log(`optionValues is`,JSON.stringify(product.optionTypes[keyIndex].optionValues));
             console.log(`but in optionValues we cannot find id=${key}`)    
+        },
+        not_found_selected_variant_id_in_product_variants:()=>{
+            let {product,variantIds,variantId} = parameter
+            console.error(`variant error => not_found_selected_variant_id_in_product_variants`);
+            console.log('product is : ',product);
+            console.log('selected variant ids is : ',variantIds);
+            console.log('selected variant id is : ',variantId);
+            let productVariantsIds = ''
+            try{productVariantsIds = JSON.stringify(product.variants.map(({id})=>id))}
+            catch{productVariantsIds = '[]'}
+            console.log(`product.variants ids is : ${productVariantsIds}`);
+            console.log(`but we cannot find ${variantId} in ${productVariantsIds} `);
         }
     }
     $$[type]()   

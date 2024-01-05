@@ -31,10 +31,10 @@ export default function vitrinApis({ baseUrl, helper }) {
             }
             else { return res.data.message }
         },
-        async v_kolle_mahsoolat({ pageSize, pageNumber, searchValue, filter = [], taxon }, { apis }) {
+        async v_kolle_mahsoolat({ pageSize, pageNumber, searchValue, filter = [], taxon = 10673 }, { apis }) {
             //return vitrinMock().v_getProducts()
             let body = {
-                Taxons: [10673],
+                Taxons: [taxon],
                 PageSize: pageSize,
                 PageNumber: pageNumber,
                 Term: searchValue

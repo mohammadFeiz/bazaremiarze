@@ -3,6 +3,7 @@ import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import bazargahNoItemSrc from './../../images/bazargah-no-items.png';
 import appContext from '../../app-context';
 import getSvg from '../../utils/getSvg';
+import Loading from './loading';
 import AIOInput from '../../npm/aio-input/aio-input';
 import AIOContentSlider from './../../npm/aio-content-slider/aio-content-slider';
 import {Icon} from '@mdi/react';
@@ -17,9 +18,11 @@ export default class Bazargah extends Component{
     constructor(props){
         super(props);
         this.state = {
+            splash:true,
             activeTabId:0,
             notifType:0,
         }
+        setTimeout(()=>this.setState({splash:false}),2500)
     }
     openDetails(o){
         let {rsa} = this.context;
@@ -183,6 +186,17 @@ export default class Bazargah extends Component{
     }
     render(){
         if(this.props.renderInHome){return this.renderInHome()}
+        if(this.state.splash){
+            return (
+                <RVD
+                    layout={{
+                        align:'vh',
+                        className:'page-bg',style:{width:'100%'},
+                        html:<Loading/>
+                    }}
+                />
+            )
+        }
         return (
             <RVD
                 layout={{

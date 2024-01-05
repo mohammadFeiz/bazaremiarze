@@ -56,7 +56,7 @@ export default class ActionClass {
         let { backOffice, userInfo } = this.getProps();
         let icon = (path) => <Icon path={path} size={.9} />
         return [
-            { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin", show: () => !!backOffice.activeManager.vitrin,render:()=><Vitrin/> },
+            { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin",render:()=><Vitrin/> },
             { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=><Bazargah/> },
             { text: "خانه", icon: () => getSvg('home'), id: "khane",render:()=><Home/> },
             { text: "خرید", icon: () => icon(mdiShopping), id: "kharid",render:()=><Buy/> },

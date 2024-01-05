@@ -5,7 +5,7 @@ import ActionClass from "../../actionClass";
 //npm////////////////////////////////////////
 import RSA from 'react-super-app';
 import Logo5 from './../../images/logo5.png';
-import Logo1 from './../../images/logo1.png';
+import Logo1 from './../../images/bmloading.png';
 import appContext from "../../app-context";
 import SignalR from '../../singalR/signalR';
 import "./index.css";
@@ -29,11 +29,11 @@ export default class Main extends Component {
       nav:{
         items:actionClass.getNavItems,
         id:actionClass.getInitialNavId(),
-        header:()=><div className='w-100 align-vh m-v-16'><img src={Logo5} alt='' width={200} /></div>
+        header:()=><div className='w-100 m-v-16'><img src={Logo5} alt='' width={200} /></div>
       },
       side:{
         items:actionClass.getSideItems,
-        header:() => <div style={{margin:'24px 0'}}><img src={Logo1} alt='' height={48}/></div>,
+        header:() => <div style={{margin:'24px 0'}} className='align-vh w-100'><img src={Logo1} alt='' height={24}/></div>,
         footer:actionClass.getSideFooter
       },
       headerContent:({ navId }) => <Header type='page' navId={navId} />,
@@ -147,9 +147,9 @@ export default class Main extends Component {
             onSuccess:async (list)=>{
               let vitrinSelected = {};
               for(let i = 0; i < list.length; i++){
-                let {product,productId,variantId} = list[i];
+                let {product,productId,variantId,vartiantId} = list[i];
                 vitrinSelected[productId] = vitrinSelected[productId] || {product,variantIds:[]}
-                vitrinSelected[productId].variantIds.push(variantId)
+                vitrinSelected[productId].variantIds.push(vartiantId || variantId)
               }
               vitrin.update({vitrinSelected})
             }

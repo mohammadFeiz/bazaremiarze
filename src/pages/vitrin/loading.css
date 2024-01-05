@@ -1,0 +1,169 @@
+
+.vitrinloading .vitrinloadingitem:nth-child(1) {
+    animation-name: vitrinloading1;
+    animation-duration:2.4s;
+    height:60px;
+    object-fit:cover;
+    object-position:top 0px right 0px;
+    
+    
+}
+@keyframes vitrinloading1 {
+    0% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    0% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    22.5% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+      
+.vitrinloading .vitrinloadingitem:nth-child(2) {
+    animation-name: vitrinloading2;
+    animation-duration:2.4s;
+    height:60px;
+    object-fit:cover;
+    object-position:top 0px right -30px;
+    
+    
+}
+@keyframes vitrinloading2 {
+    0% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    10.5% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    33% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+      
+.vitrinloading .vitrinloadingitem:nth-child(3) {
+    animation-name: vitrinloading3;
+    animation-duration:2.4s;
+    height:60px;
+    object-fit:cover;
+    object-position:top 0px right -45px;
+    
+    
+}
+@keyframes vitrinloading3 {
+    0% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    21% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    43.5% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+      
+.vitrinloading .vitrinloadingitem:nth-child(4) {
+    animation-name: vitrinloading4;
+    animation-duration:2.4s;
+    height:60px;
+    object-fit:cover;
+    object-position:top 0px right -60px;
+    
+    
+}
+@keyframes vitrinloading4 {
+    0% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    31.5% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    54% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+      
+.vitrinloading .vitrinloadingitem:nth-child(5) {
+    animation-name: vitrinloading5;
+    animation-duration:2.4s;
+    height:60px;
+    object-fit:cover;
+    object-position:top 0px right -75px;
+    
+    
+}
+@keyframes vitrinloading5 {
+    0% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    42% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    64.5% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+      
+.vitrinloading .vitrinloadingitem:nth-child(6) {
+    animation-name: vitrinloading6;
+    animation-duration:2.4s;
+    height:60px;
+    object-fit:cover;
+    object-position:top 0px right -92px;
+    
+    
+}
+@keyframes vitrinloading6 {
+    0% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    52.5% {
+        transform: scale(3);
+        opacity: 0;
+    }
+    75% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+      

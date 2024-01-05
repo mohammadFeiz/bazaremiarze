@@ -1,6 +1,7 @@
 import React,{Component} from 'react';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import Logo5 from './../../images/logo5.png';
+import logo2 from './../../images/logo.png';
 import BMLoading from '../bm-loading/bm-loading';
 export default class Splash extends Component{
     getContent(){
@@ -17,7 +18,8 @@ export default class Splash extends Component{
             column:[
               {show:!loading,html:()=><img src={Logo5} alt='' width={160} height={160}/>,align:'vh',className:'p-36'},
               {show:!!loading,flex:1},
-              {show:!!loading,html:()=><BMLoading size={40} duration='2.5s' loop={false}/>,align:'vh',className:'p-36'},
+              //{show:!!loading,html:<img src={logo2} alt='' height={120}/>,align:'vh'},
+              {show:!!loading,html:()=><BMLoading size={40} duration='2.5s' loop={false}/>,align:'vh',className:'p-12'},
               {align: 'h', html:this.getContent()},
               {
                 align:'vh',flex:1,style:{minHeight:60},

@@ -13,20 +13,20 @@ import './theme.css';
 import Splash from './components/spalsh/splash';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
+function getBaseUrl() {
+  let url = window.location.href;
+  if (url.indexOf('bazar') !== -1) { return "https://apimy.burux.com/api/v1"; }
+  else if (url.indexOf('bbeta') !== -1) { return "https://retailerapp.bbeta.ir/api/v1"; }
+  else { return "https://retailerapp.bbeta.ir/api/v1"; }
+}
 class App extends Component {
   constructor(props) {
     super(props);
-    let baseUrl = this.getBaseUrl();
+    let baseUrl = getBaseUrl();
     this.state = {
       apis: this.getApisInstance(baseUrl), Login: this.getLoginInstance(),Logger:new AIOLog('bmlog'),
-      baseUrl, isAutenticated: false, pageError: false, userInfo: {}, landing: false, splash: true, token: false
+      baseUrl, pageError: false, userInfo: {}, landing: false, splash: true, token: false
     }
-  }
-  getBaseUrl() {
-    let url = window.location.href;
-    if (url.indexOf('bazar') !== -1) { return "https://apimy.burux.com/api/v1"; }
-    else if (url.indexOf('bbeta') !== -1) { return "https://retailerapp.bbeta.ir/api/v1"; }
-    else { return "https://retailerapp.bbeta.ir/api/v1"; }
   }
   getApisInstance(baseUrl) {return new AIOService({ getApiFunctions,getState:()=>this.state, baseUrl, id: 'bazaremiarzeapis' });}
   getLoginInstance() {
@@ -34,9 +34,14 @@ class App extends Component {
     try { userId = new URL(window.location.href).searchParams.get("pn").toString() }
     catch { userId = undefined }
     return new AIOLogin({
-      timer: 5, modes: ['OTPNumber', 'phoneNumber'], otpLength: 4, id: 'bazarmiarezelogin', userId,
-      onSubmit: this.onLoginSubmit.bind(this), checkToken: this.checkToken.bind(this),
-      onAuth: this.onAuth.bind(this),
+      id: 'bazarmiarezelogin', 
+      modes: ['OTPNumber', 'phoneNumber'], 
+      timer: 5, 
+      otpLength: 4, 
+      userId,
+      onSubmit: this.onLoginSubmit.bind(this), 
+      checkToken: this.checkToken.bind(this),
+      splashTime:2500,
       register:{
         type:'mode',text:'ثبت نام در بازار می ارزه',
         fields:[
@@ -47,14 +52,16 @@ class App extends Component {
           '*address',
           ['*state','*city']
         ]
-
-      }
+      },
+      renderApp:({token})=><Main {...this.getAppProps(token)}/>,
+      renderLogin:(loginForm)=><Splash content={()=>loginForm}/>,
+      renderSplash:()=><Splash loading={true}/>
     })
   }
-  // {html:'به خانواده بزرگ بروکس بپیوندید',className:'fs-12 theme-dark-font-color bold t-a-right'}
-  //           {html:'بیش از 8000 فروشگاه در سطح کشور عضو این خانواده هستند',className:'fs-10 theme-medium-font-color t-a-right'}
+  
   async getUserInfo(userInfo = this.state.userInfo) {
-    return await this.state.apis.request({ api: 'login.getUserInfo', parameter: userInfo, description: 'دریافت اطلاعات کاربری',loading:false })
+    let {backOffice} = this.state;
+    return await this.state.apis.request({ api: 'login.getUserInfo', parameter: {userInfo,backOffice}, description: 'دریافت اطلاعات کاربری',loading:false })
   }
   msfReport(obj,phoneNumber){
     let {userInfo = {},apis} = this.state;
@@ -64,7 +71,7 @@ class App extends Component {
     this.msfreports.push(res);
     console.log(this.msfreports);
     apis.request({
-      api:'backOffice.report',
+      api:'backOffice.report',loading:false,message:{error:false},
       parameter:res,description:'ارسال گزارش'
     })
   }
@@ -115,30 +122,29 @@ class App extends Component {
     }
   }
   async checkToken(token) {
-    let { apis, Login } = this.state;
-    let res = await apis.request({
-      api: 'login.checkToken', parameter: token,loading:false,
-      onCatch: () => 'خطای 10037.این کد خطا را به پشتیبانی اعلام کنید'
-    })
-    if (res === true) {
-      let userInfo = Login.getStorage('userInfo');
-      if(typeof userInfo !== 'object' || !userInfo.cardCode || typeof userInfo.cardCode !== 'string'){
-        return false;
-      }
-      else {
-        let updatedUserInfo = await this.getUserInfo(userInfo);
-        this.setState({ userInfo: updatedUserInfo })
-        this.msfReport({actionName:'login by cache',actionId:9,result:'success',eventName:'action',tagName:'user authentication'},updatedUserInfo.phoneNumber)
-        return true
-      }
-      
-    }
-    else if (res === false) { return false }
-  }
-  async onAuth({ token }){
     let { apis } = this.state;
-    apis.setToken(token);
-    this.setState({ token, isAutenticated: true })
+    let appSetting = await apis.request({api:'login.getBackOffice',parameter:apis,description:'دریافت تنظیمات اولیه',loading:false})
+    if(typeof appSetting === 'object'){
+      let {backOffice,landing} = appSetting;
+      this.setState({backOffice,landing})
+      if(!token){return false}
+      let isTokenValid = await apis.request({api: 'login.checkToken', parameter: token,loading:false,onCatch: () => 'خطای 10037.این کد خطا را به پشتیبانی اعلام کنید'})
+      if (isTokenValid === true) {return await this.handleUserInfo()}
+      else if (isTokenValid === false) { return false }
+    }
+  }
+  async handleUserInfo(){
+    let {Login} = this.state;
+    let userInfo = Login.getStorage('userInfo')
+    if(typeof userInfo !== 'object' || !userInfo.cardCode || typeof userInfo.cardCode !== 'string'){
+      return false;
+    }
+    else {
+      let updatedUserInfo = await this.getUserInfo(userInfo);
+      this.setState({ userInfo: updatedUserInfo })
+      this.msfReport({actionName:'login by cache',actionId:9,result:'success',eventName:'action',tagName:'user authentication'},updatedUserInfo.phoneNumber)
+      return true
+    }
   }
   async onLoginSubmit(model, mode) {
     let { apis, Login } = this.state;
@@ -152,80 +158,65 @@ class App extends Component {
     if (mode === 'OTPNumber') {
       let res = await apis.request({ api: 'login.OTPNumber', parameter: model.login.userId, onCatch,loading:false })
       if (typeof res === 'object') {
-        let { id: userId } = res;
-        this.setState({ userId })
+        //در اوتی پی بعد از ارسال شماره یک آی دی دریافت می شود که در ای پی آی او تی پی کد مورد نیاز است پس ما این آی دی رو در دیس ذخیره می کنیم
+        this.id = res.id;
         Login.setStorage('userId',model.login.userId);
         Login.setMode('OTPCode')
       }
     }
-    else if (mode === 'OTPCode' || mode === 'phoneNumber') {
-      let userId = this.state.userId;
-      let phoneNumber = model.login.userId;
-      let password = model.login.password;
-      let res = await apis.request({ api: 'login.login', onCatch, parameter: { userId, phoneNumber, password, type: mode },loading:false })
-      if (typeof res === 'object') {
-        let { accessToken } = res;
-        let token = accessToken.access_token;
-        let userInfo = await this.getUserInfo(res);
-        if(!userInfo){return}
-        let registered = await apis.request({api:'login.checkIsRegistered',parameter:phoneNumber,loading:false});
-        if(registered){
-          Login.setStorage('userInfo',userInfo);
-          Login.setStorage('userId',model.login.userId);
-          Login.setStorage('token',token);
-          Login.setMode('auth'); 
-        }
-        else {Login.setMode('register');}
-        this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'success',tagName:'user authentication',eventName:'action'},model.login.userId)
-        this.setState({ userInfo });
-      }
-      else {
-        this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'unsuccess',message:res,tagName:'user authentication',eventName:'action'},model.login.userId)
-      }
+    else if(mode === 'OTPCode'){
+      let response = await apis.request({ api: 'login.loginByOTPCode', onCatch, parameter: { id:this.id, otpCode:model.login.password },loading:false })
+      this.handleLoginResponse(response,model.login.userId,mode) 
+    }
+    else if (mode === 'phoneNumber') {
+      let response = await apis.request({ api: 'login.loginByPhoneNumber', onCatch, parameter: { phoneNumber:model.login.userId, password:model.login.password },loading:false })
+      this.handleLoginResponse(response,model.login.userId,mode) 
     }
     else if(mode === 'register'){
       this.msfReport({actionName:`register`,actionId:3,result:'success',tagName:'user authentication',eventName:'action'},model.login.userId)
       this.updateProfile(model,'register',()=>window.location.reload())
     }
   }
-  async componentDidMount() {
-    let { baseUrl, apis } = this.state;
-    try {
-      const response = await Axios.get(`${baseUrl}/BackOffice/GetLastCampaignManagement?type=backoffice`);
-      let backOffice;
-      if (typeof response.data.data[0] === 'string') {
-        backOffice = JSON.parse(response.data.data[0]);
+  async handleLoginResponse(response,userId,mode){
+    let { apis, Login } = this.state;
+    if(typeof response === 'string'){
+      let report = {
+        actionName:`login by ${mode}`,
+        actionId:mode === 'OTPCode'?0:1,
+        result:'unsuccess',
+        message:response,
+        tagName:'user authentication',
+        eventName:'action'
       }
-      else {
-        let str = window.prompt('تنظیمات اولیه اپ انجام نشده است. اگر ادمین سیستم هستید فایل تنظیمات اولیه را وارد کنید و گر نه به ادمین سیستم اطلاع دهید')
-        if (typeof str === 'string') {backOffice = JSON.parse(str)}
-        else {window.location.reload()}
-      }
-      apis.handleCacheVersions(backOffice.versions || {});
-      let landing = false;
-      if (backOffice.landing && backOffice.active_landing) { landing = backOffice.landing }
-      this.setState({ backOffice, landing });
-      let loginType = new URL(window.location.href).searchParams.get("login");
-      if (loginType) {
-        Axios.get(`${baseUrl}/login?type=${loginType}`);
-      }
+      this.msfReport(report,userId); 
+      return;
     }
-    catch (err) {
-      this.setState({ pageError: { text: 'دریافت تنظیمات اولیه با خطا مواجه شد', subtext: err.message } })
+    let { accessToken } = response;
+    let token = accessToken.access_token;
+    let userInfo = await this.getUserInfo(response);
+    if(!userInfo){return}
+    let registered = await apis.request({api:'login.checkIsRegistered',parameter:userId,loading:false});
+    if(registered){
+      Login.setStorage('userInfo',userInfo);
+      Login.setStorage('userId',userId);
+      Login.setStorage('token',token);
+      Login.setMode('auth'); 
     }
-    this.setState({ splash: false })  
+    else {Login.setMode('register');}
+    this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'success',tagName:'user authentication',eventName:'action'},userId)
+    this.setState({ userInfo });
+  }
+  
+  getAppProps(token){
+    let { userInfo, backOffice, apis, Login, baseUrl,Logger } = this.state;
+    apis.setToken(token);
+    return {apis,Login,Logger,userInfo,backOffice,baseUrl,updateProfile:this.updateProfile.bind(this),msfReport:this.msfReport.bind(this)}
   }
   render() {
-    let { isAutenticated, userInfo, pageError, landing, backOffice, splash, apis, Login, baseUrl,Logger } = this.state;
-    if (splash) { return <Splash /> }
+    let { pageError, landing, Login } = this.state;
     if (landing) { return <Landing onClose={() => this.setState({ landing: false })} items={landing} /> }
     if (pageError) { return <PageError {...pageError} /> }
-    if (isAutenticated) {
-      let props = {apis,Login,Logger,userInfo,backOffice,baseUrl,updateProfile:this.updateProfile.bind(this),msfReport:this.msfReport.bind(this)}
-      return (<Main {...props}/>)
-    }
-    //اسپلش یک پلیس هولدر هست که میتونه یک تابع برای رندر محتوی بگیره و ما اینجا براش رندر کامپوننت لاگین رو می فرستیم
-    return <Splash content={()=>Login.render()}/>
+    return Login.render()
   }
 }
 const root = ReactDOM.createRoot(document.getElementById('root'));

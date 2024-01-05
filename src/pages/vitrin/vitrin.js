@@ -29,7 +29,10 @@ export default class Vitrin extends Component {
     }
     render() {
         let { vitrin } = this.context, { started } = vitrin;
-        return started === true ? <VitrinPage1 /> : <Landing start={() => this.start()} />
+        started = undefined;
+        if(started === true){return <VitrinPage1 />}
+        if(started === false){return <Landing start={() => this.start()} />}
+        return <div>در حال بارگزاری اطلاعات ویترین</div>
     }
 }
 function Landing(props) {

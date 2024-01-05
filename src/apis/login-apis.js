@@ -17,6 +17,29 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             Logger.add('IsUserSyncedWithB1',result?'true':'false','IsUserSyncedWithB1')
             return { result }
         },  
+        async getBackOffice(apis){
+            let result;
+            try {
+                const response = await Axios.get(`${baseUrl}/BackOffice/GetLastCampaignManagement?type=backoffice`);
+                let backOffice;
+                if (typeof response.data.data[0] === 'string') {
+                  backOffice = JSON.parse(response.data.data[0]);
+                }
+                else {
+                  let str = window.prompt('تنظیمات اولیه اپ انجام نشده است. اگر ادمین سیستم هستید فایل تنظیمات اولیه را وارد کنید و گر نه به ادمین سیستم اطلاع دهید')
+                  if (typeof str === 'string') {backOffice = JSON.parse(str)}
+                  else {window.location.reload()}
+                }
+                apis.handleCacheVersions(backOffice.versions || {});
+                let landing = false;
+                if (backOffice.landing && backOffice.active_landing) { landing = backOffice.landing }
+                let loginType = new URL(window.location.href).searchParams.get("login");
+                if (loginType) {Axios.get(`${baseUrl}/login?type=${loginType}`);}
+                result = { backOffice, landing }; 
+              }
+              catch (err) {result = err.message}
+              return {result}
+        },
         async profile({model,mode},{Logger}){
             let url = {
                 'register':`${baseUrl}/Users/NewUser`,
@@ -40,17 +63,17 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             let result = response.data.isSuccess ? response.data.data : response.data.message;
             return { response, result }
         },
-        async login({ userId, phoneNumber, password, type }) {
-            let url;
-            if (type === 'OTPCode') { url = `${baseUrl}/Users/SecondStep?userId=${userId}&code=${password}` }
-            else { url = `${baseUrl}/Users/Login?phoneNumber=${phoneNumber}&password=${password}`; }
-            const response = await Axios.get(url);
-            let result;
-            if (response.data.isSuccess) { result = response.data.data }
-            else { result = response.data.message }
+        async loginByPhoneNumber({ phoneNumber, password }) {
+            const response = await Axios.get(`${baseUrl}/Users/Login?phoneNumber=${phoneNumber}&password=${password}`);
+            let result = response.data.isSuccess?response.data.data:response.data.message;
             return { response, result }
         },
-        async getUserInfo(userInfo,{backOffice,Logger}) {
+        async loginByOTPCode({ id, otpCode }) {
+            const response = await Axios.get(`${baseUrl}/Users/SecondStep?userId=${id}&code=${otpCode}`);
+            let result = response.data.isSuccess?response.data.data:response.data.message;
+            return { response, result }
+        },
+        async getUserInfo({backOffice,userInfo},{Logger}) {
             const b1Info = await fetch(`https://b1api.burux.com/api/BRXIntLayer/GetCalcData/${userInfo.cardCode}`, {
                 mode: 'cors', headers: { 'Access-Control-Allow-Origin': '*' }
             }).then((response) => { return response.json(); }).then((data) => { return data; }).catch(function (error) { return null; });

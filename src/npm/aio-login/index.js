@@ -8,7 +8,7 @@ import AIOPopup from './../../npm/aio-popup/aio-popup';
 import './index.css';
 export default class AIOlogin {
     constructor(props) {
-        let { id, onAuth, onSubmit, modes, timer, checkToken, register, userId, attrs, forget, otpLength } = props;
+        let { id, onSubmit, modes, timer, checkToken, register, userId, attrs, forget, otpLength,renderApp,renderSplash,splashTime,renderLogin } = props;
         AIOLoginValidator(props);
         let storage = AIOStorage(`-AIOLogin-${id}`);
         this.setStorage = (key, value) => { 
@@ -26,7 +26,7 @@ export default class AIOlogin {
         this.removeStorage = (key)=>storage.remove({name:key})
         this.logout = () => { this.removeStorage('token'); window.location.reload() }
         this.props = {
-            id, checkToken, onAuth, onSubmit, modes, register, userId, attrs, timer, forget, otpLength,
+            id, checkToken, onSubmit, modes, register, userId, attrs, timer, forget, otpLength,renderApp,renderSplash,splashTime,renderLogin,
             getStorage: this.getStorage.bind(this),
             setStorage: this.setStorage.bind(this),
             removeStorage:this.removeStorage.bind(this),
@@ -59,18 +59,17 @@ export default class AIOlogin {
 class AIOLOGIN extends Component {
     constructor(props) {
         super(props);
-        this.state = { isTokenChecked: false, showReload: false, mode: props.mode || props.modes[0], loading: false }
+        let {splashTime = 0} = props;
+        this.state = { isTokenChecked: false, showReload: false, mode: props.mode || props.modes[0], loading: false,showSplash:true }
         props.getActions({ setMode: this.setMode.bind(this) })
+        setTimeout(()=>this.setState({showSplash:false}),splashTime)
     }
     async checkToken() {
         let { getStorage, checkToken, removeStorage } = this.props;
         let { token, userId, userInfo } = getStorage();
         let result;
-        if (typeof token !== 'string') { result = false }
-        else {
-            try { result = await checkToken(token, { userId, userInfo }); }
-            catch (err) { new AIOPopup().addAlert({ type: 'error', text: 'بررسی توکن با خطا روبرو شد', subtext: this.getError(err) }) }
-        }
+        try { result = await checkToken(token, { userId, userInfo }); }
+        catch (err) { new AIOPopup().addAlert({ type: 'error', text: 'بررسی توکن با خطا روبرو شد', subtext: this.getError(err) }) }
         if (result === true) { this.setMode('auth') }
         else if (result === false) { removeStorage('token') }
         else {
@@ -134,32 +133,31 @@ class AIOLOGIN extends Component {
         this.setState({ mode })
     }
     render() {
-        let { otpLength, onAuth, id, timer, modes, userId, register = {}, profile, attrs = {}, forget, getStorage, logout, splash = () => null } = this.props;
-        let { isTokenChecked, showReload, mode, loading } = this.state;
+        let { otpLength, id, timer, modes, userId, register = {}, profile, attrs = {}, forget, getStorage, logout, renderSplash = () => null,renderApp,renderLogin } = this.props;
+        let { isTokenChecked, showReload, mode, loading,showSplash } = this.state;
         if(profile){
             let props = { timer, id, attrs, userId,loading,profile,onSubmitProfile:this.onSubmitProfile.bind(this) }
             return <LoginForm {...props}/>
         }
         if (showReload) { return (<div className='aio-login-reload'><button onClick={() => window.location.reload()}>بارگذاری مجدد</button></div>) }
         //اگر هنوز توکن چک نشده ادامه نده
-        if (!isTokenChecked) { return splash() }
-        //اگر توکن چک شده و توکن ولید بوده onAuth رو کال کن و ادامه نده
+        if (!isTokenChecked || showSplash) { 
+            return renderSplash() 
+        }
+        //اگر توکن چک شده و توکن ولید بوده renderApp رو کال کن و ادامه نده
         if (mode === 'auth') {
-            //برای جلوگیری از لوپ بی نهایت فقط یکبار onAuth  رو کال کن
-            if (!this.reportedAuthToParent) {
-                this.reportedAuthToParent = true;
-                let { token, userId, userInfo } = getStorage();
-                onAuth({ token, userId, userInfo, logout }); 
-            }
-            return splash()
+            let { token, userId, userInfo } = getStorage();
+            return renderApp({ token, userId, userInfo, logout }); 
         }
         // وقتی به اینجا رسیدی یعنی توکن قطعا چک شده و ولید نبوده پس لاگین رو رندر کن
-        return (
+        let content = (
             <LoginForm {...{ forget, timer, otpLength, id, modes, attrs, userId,register,loading,mode }}
                 onSubmit={this.onSubmit.bind(this)}
                 onChangeMode={this.setMode.bind(this)}
             />
         )
+        if(renderLogin){return renderLogin(content)}
+        else{return content}
     }
 }
 class LoginForm extends Component {
@@ -501,22 +499,22 @@ class SubmitButton extends Component {
     }
 }
 function AIOLoginValidator(props) {
-    let { id, onAuth, onSubmit, modes, timer, checkToken, register, userId = '', attrs, forget, otpLength } = props;
+    let { id, onSubmit, modes, timer, checkToken, register, userId = '', renderApp, forget, otpLength } = props;
     for (let prop in props) {
-        if (['id', 'onAuth', 'onSubmit', 'modes', 'timer', 'checkToken', 'register', 'userId', 'attrs', 'forget', 'otpLength', 'splash'].indexOf(prop) === -1) {
+        if (['id', 'renderApp','renderLogin', 'onSubmit', 'modes', 'timer', 'checkToken', 'register', 'userId', 'attrs', 'forget', 'otpLength', 'renderSplash','splashTime'].indexOf(prop) === -1) {
             let error = `
                 aio-login error => invalid props 
                 ${prop} is not one of AIOLogin props,
-                valid props are 'id' | 'onAuth' | 'onSubmit' | 'modes' | 'timer' | 'checkToken' | 'register' | 'userId' | 'attrs' | 'forget' | 'otpLength' | 'splash'
+                valid props are 'id' | 'renderApp' | 'renderLogin','onSubmit' | 'modes' | 'timer' | 'checkToken' | 'register' | 'userId' | 'attrs' | 'forget' | 'otpLength' | 'renderSplash' | 'splashTime'
             `;
             alert(error); console.log(error); return;
         }
     }
     if (!id) { alert(`aio-login error=> missing id props, id props should be an string`) }
-    if (!onAuth) {
+    if (!renderApp) {
         let error = `
-            aio-login error => missing onAuth props
-            onAuth type is => ({token:string,userId:string,userInfo?:any,logout:function})=>void
+            aio-login error => missing renderApp props
+            renderApp type is => ({token:string,userId:string,userInfo?:any,logout:function})=>React.ReactNode
         `;
         alert(error); console.log(error); return;
     }

@@ -146,7 +146,6 @@ export default class Main extends Component {
             parameter:userInfo.cardCode,def:[],
             onSuccess:async (list)=>{
               let vitrinSelected = {};
-              debugger
               for(let i = 0; i < list.length; i++){
                 let {product,productId,variantId} = list[i];
                 vitrinSelected[productId] = vitrinSelected[productId] || {product,variantIds:[]}

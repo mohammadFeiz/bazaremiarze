@@ -255,6 +255,7 @@ export default class ShopClass {
         let DiscountList = actionClass.getCodeDetails({ giftCodeInfo, discountCodeInfo })
         let marketingLines = this.getMarketingLines()
         let SettleType = getSettleType(PayDueDate)
+        debugger
         return {
             "DiscountList": DiscountList,
             "marketdoc": {

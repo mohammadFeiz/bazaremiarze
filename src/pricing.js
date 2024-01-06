@@ -1,5 +1,5 @@
-﻿///***Version 1.1.20 ****///
-//Edited: 2023-12-2
+﻿///***Version 1.1.29 ****///
+//Edited: 2024-01-06
 
 "use strict";
 
@@ -1069,8 +1069,11 @@ export default class Pricing {
                     }
                     DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
                 }
-                let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, false);
-                return DocAfterCa;
+                if (camrule?.isHaveCampaignDis ?? true) {
+                    let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, false);
+                    return DocAfterCa;
+                }
+                return DocAfterB1;
             }
         }
         DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
@@ -1114,21 +1117,9 @@ export default class Pricing {
                 shortrules.push(itemrules);
             }
         }
-        //shortrules = campaignRules.filter((x) =>
-        //    (x.campaignId == (MD.marketingdetails.campaign))
-        //    && (x.camType == "B")
-        //    && (!x.camCardCode || (x.camCardCode.indexOf("," + MD.cardCode + ",")) > -1)
-        //    && (!x.camCardGroupCode || (x.camCardGroupCode.indexOf("," + MD.cardGroupCode + ",")) > -1)
-        //    && (!x.camValidFrom || MD.docTime >= x.camValidFrom)
-        //    && (!x.camValidTo || MD.docTime <= x.camValidTo)
-        //    && (!x.camSettleType || (x.camSettleType == MD.marketingdetails.settleType || x.camSettleType == 2))
-        //    && (!x.camSalesChannel || (x.camSalesChannel == MD.marketingdetails.saleChannel || x.camSalesChannel == 1))
-        //);
         let bri = [];
         let PrssdLine = [];
         let br = {};
-        // فعلا فقط پیاده سازی تعدادی انجام شده است. پیاده سازی مبلغی باید بعدا اضافه شود.
-        //debugger;
         if (shortrules.length > 0) {
             let isReq = false;
             let linenum = 0;
@@ -1146,10 +1137,20 @@ export default class Pricing {
                 br.fixedValue = item.lineFixedValue ?? 0;
                 br.formula = item.lineDisRelationFormula;
                 br.commissionEffect = item.commissionEffect;
+                br.isOverValue = false;
+                br.isFull = false;
+                br.isUnderValue = false;
+                br.isUnderQty = false;
+                br.minValue = item.lineMinReqValue;
+                br.maxValue = item.lineMaxReqValue;
+                br.minQty = item.lineMinReqQty;
+                br.maxQty = item.lineMaxReqQty;
+                br.taxonId = item.taxonId;
 
                 linenum = 0;
                 for (let line of results.MarketingLines) {
-                    if (!line) {
+                    if (!line || (line.ItemQty??0)<=0) {
+                        linenum++;
                         continue;
                     }
                     if (!(line?.CampaignDetails ?? false)) line.CampaignDetails = {
@@ -1163,16 +1164,17 @@ export default class Pricing {
                         br.lines.push(linenum);
                         // پردازش قواعد کمپین
                         // قاعده حداکثر تعداد
+                        let isNoMaxCondition = false;
                         if (item.lineMaxReqQty != null) {
+                            isNoMaxCondition = false;
                             if (br.qty == item.lineMaxReqQty || br.isFull) {
                                 line.SecondQty = 0;
                                 line.CampaignDetails.Status = 0;
                                 line.CampaignDetails.Information += "مقدار تقاضا شده این خط بیشتر از مقدار مجاز (" + item.lineMaxReqQty + ") است. این خط حذف میشود.";
                                 line.CampaignDetails.RequestedQty = line.ItemQty;
-                                //line.ItemQty = 0;
+                                line.CampaignDetails.RequestedValue = line.LineTotal;
                                 br.isFull = true;
                                 br.status = 0;
-                                //debugger;
                                 if (!KeepOthers ?? false) this.ZerolineMarketing(line);
                             }
                             else if ((br.qty + line.ItemQty > item.lineMaxReqQty) && !br.isFull) {
@@ -1191,33 +1193,97 @@ export default class Pricing {
 
                         }
                         else {
-                            line.CampaignDetails.Status = 1;
-                            br.qty += line.ItemQty;
+                            isNoMaxCondition = true;
                         }
                         // قواعد حداکثر مبلغ
+                        if (item.lineMaxReqValue != null) {
+                            isNoMaxCondition = false;
+                            if (br.value == item.lineMaxReqValue || br.isOverValue) {
+                                line.CampaignDetails.Status = 0;
+                                line.CampaignDetails.Information += "مبلغ تقاضا شده این خط بیشتر از مبلغ مجاز (" + item.lineMaxReqValue + ") است. این خط حذف میشود.";
+                                line.CampaignDetails.RequestedQty = line.ItemQty;
+                                line.CampaignDetails.RequestedValue = line.LineTotal;
+                                br.isOverValue = true;
+                                br.status = 0;
+                                if (!KeepOthers ?? false) this.ZerolineMarketing(line);
+                            }
+                            else if ((br.value + line.LineTotal > item.lineMaxReqValue) && !br.isOverValue) {
+                                line.CampaignDetails.Status = 2;
+                                line.CampaignDetails.Information += "مبلغ تقاضا شده این خط بیشتر از مبلغ مجاز(" + item.lineMaxReqValue + ") است. حداکثر مبلغ مجاز در نظر گرفته می شود.";
+                                line.CampaignDetails.RequestedQty = line.ItemQty;
+                                line.CampaignDetails.RequestedValue = line.LineTotal;
+                                let newQty = Math.floor((item.lineMaxReqValue - br.value) / line.LineTotal * line.ItemQty);
+                                br.isOverValue = true;
+                                br.value += newQty / line.ItemQty * line.LineTotal;
+                                line.SecondQty = line.SecondQty * newQty / line.ItemQty;
+                                line.ItemQty = newQty;
+                            }
+                            else {
+                                line.CampaignDetails.Status = 1;
+                                br.value += line.LineTotal;
+                            }
+
+                        }
+
+                        /// هیچ قاعده حداکثری وجود ندارد
+                        if (isNoMaxCondition) {
+                            line.CampaignDetails.Status = 1;
+                            br.qty += line.ItemQty;
+                            br.value += line.LineTotal;
+                        }
+                        line.CampaignDetails.BundleRowsInfos = br;
                     }
                     linenum++;
                 }
 
+                let isNoMinCondtition = false;
                 // قاعده حداقل تعداد
                 if (item.lineMinReqQty && item.lineMinReqQty != 0) {
                     if (br.qty < item.lineMinReqQty) {
+                        br.disQty = 0;
+                        br.isExist = false;
+                        br.isUnderQty = true;
                         for (let itemb1 of br.lines) {
                             if (!results.MarketingLines[itemb1].CampaignDetails) {
                                 results.MarketingLines[itemb1].CampaignDetails = {};
                             }
                             results.MarketingLines[itemb1].CampaignDetails.Status = 0;
-                            results.MarketingLines[itemb1].CampaignDetails.Information += "مقدار تقاضا شده این خط کمتر از مقدار مجاز (" + item.lineMinReqQty ?? 0 + ") است. این خط حذف می شود.";
+                            results.MarketingLines[itemb1].CampaignDetails.Information += "مقدار تقاضا شده این خط کمتر از مقدار مجاز (" + item.lineMinReqQty + ") است. این خط حذف می شود.";
                             results.MarketingLines[itemb1].CampaignDetails.RequestedQty = results.MarketingLines[itemb1].ItemQty;
                             // results.MarketingLines[itemb1].ItemQty = 0;
                             //debugger;
                             if (!KeepOthers ?? false) this.ZerolineMarketing(results.MarketingLines[itemb1]);
+                            results.MarketingLines[itemb1].CampaignDetails.BundleRowsInfos = br;
                         }
-                        br.disQty = 0;
-                        br.isExist = false;
                     }
                 }
                 else {
+                    isNoMinCondtition = true;
+                }
+
+                // قاعده حداقل مبلغ
+                if (item.lineMinReqValue && item.lineMinReqValue != 0) {
+                    isNoMinCondtition = false;
+                    if (br.value < item.lineMinReqValue) {
+                        br.disVol = 0;
+                        br.isExist = false;
+                        br.isUnderValue = true;
+                        for (let itemb1 of br.lines) {
+                            if (!results.MarketingLines[itemb1].CampaignDetails) {
+                                results.MarketingLines[itemb1].CampaignDetails = {};
+                            }
+                            results.MarketingLines[itemb1].CampaignDetails.Status = 0;
+                            results.MarketingLines[itemb1].CampaignDetails.Information += "مبلغ تقاضا شده این خط کمتر از مبلغ مجاز (" + item.lineMinReqValue ?? 0 + ") است. این خط حذف می شود.";
+                            results.MarketingLines[itemb1].CampaignDetails.RequestedQty = results.MarketingLines[itemb1].ItemQty;
+                            results.MarketingLines[itemb1].CampaignDetails.RequestedValue = results.MarketingLines[itemb1].LineTotal;
+                            if (!KeepOthers ?? false) this.ZerolineMarketing(results.MarketingLines[itemb1]);
+                            results.MarketingLines[itemb1].CampaignDetails.BundleRowsInfos = br;
+                        }
+                    }
+                }
+
+                /// هیچ قاعده حداقلی وجود ندارد
+                if (isNoMinCondtition) {
                     for (let itemb1 of br.lines) {
                         if (!results.MarketingLines[itemb1].CampaignDetails) {
                             results.MarketingLines[itemb1].CampaignDetails = {};
@@ -1225,19 +1291,29 @@ export default class Pricing {
                         results.MarketingLines[itemb1].CampaignDetails.Status = 1;
                     }
                 }
-                // قاعده حداقل مبلغ
-                // محاسبه تخفیف تعدادی
+
+                // محاسبه تخفیف پلکانی تعدادی
                 if (item.lineDisPerQtyStp && item.lineDisPerQtyStp != 0) {
                     br.disQty = Math.max(item.lineMaxDisPerQty, item.lineMaxDisPrcnt,
-                        (Math.ceil(br.qty / item.lineStepReqQtyl)) * item.lineDisPerQtyStp);
+                        (Math.ceil(br.qty / item.lineStepReqQty)) * item.lineDisPerQtyStp);
                 }
                 else {
-                    br.disQty = item.lineMaxDisPrcnt;
+                    br.disQty = 0;
                 }
 
 
-                // محاسبه تخفیف مبلغی
-                br.disVol = 0;
+                // محاسبه تخفیف پلکانی مبلغی
+                if (item.lineDisPerValueStp && item.lineDisPerValueStp.Value != 0) {
+                    br.disVol = Math.max(item.lineMaxDisPerValue, item.lineMaxDisPrcnt,
+                        (Math.ceil(br.value / item.lineStepReqValue)) * item.lineDisPerValueStp);
+                }
+                else {
+                    br.DisVol = 0;
+                }
+
+                if (br.DisQty == 0 && br.DisVol == 0) {
+                    //br.DisQty = item.LineMaxDisPrcnt.Value;
+                }
 
                 // محاصبه تخفیف اقلام
                 linenum = 0;
@@ -1291,6 +1367,8 @@ export default class Pricing {
                     };
                     results.marketingdetails.DocumentDiscountPercent = 0;
                     results.marketingdetails.DocumentDiscount = 0;
+                    if (!results.CampaignDetails) results.CampaignDetails = {};
+                    results.CampaignDetails.BundleRowsInfos = bri;
                     return results;
                 }
             }
@@ -1311,6 +1389,8 @@ export default class Pricing {
                 };
                 results.marketingdetails.DocumentDiscountPercent = 0;
                 results.marketingdetails.DocumentDiscount = 0;
+                if (!results.CampaignDetails) results.CampaignDetails = {};
+                results.CampaignDetails.BundleRowsInfos = bri;
                 return results;
             }
             let RowDis = rownum * shortrules[0].camRowDisPrcnt;
@@ -1386,17 +1466,11 @@ export default class Pricing {
 
             results.marketingdetails.DocumentDiscount = results.marketingdetails.DocumentDiscountPercent * sum / 100;
             results.DocumentTotal = sum - results.marketingdetails.DocumentDiscount;
+            if (!results.CampaignDetails) results.CampaignDetails = {};
+            results.CampaignDetails.BundleRowsInfos = bri;
             return results;
         }
-        //for (let line of results.MarketingLines) {
-        //    if (!line) {
-        //        continue;
-        //    }
-        //    line.CmpaignDetails = {
-        //        Status: -2,
-        //        Information: "مشمول کمپین نمی شود."
-        //    };
-        //};
+
         return results;
     }
 
@@ -1842,6 +1916,16 @@ export default class Pricing {
 
     }
 
+    CalculateClubPointFromDocTotal(DocTotal) {
+        DocTotal = DocTotal > 1095000000 ? 1095000000 : DocTotal;
+        return Math.ceil((DocTotal + 5000000) / 250000 / 100) * 100;
+    }
+
+    CalculateDocTotalFromClubPoint(ClubPoint) {
+        ClubPoint = ClubPoint > 4000 ? 4000 : ClubPoint;
+        return Math.floor(ClubPoint / 100.0) * 25000000 - 5000000;
+    }
+
     GetPriceListInfo(ItemCodes, Items, DisRules, campaignRules, SlpCodes = null, CurrentDoc = null, CardCode = null
         , CardGroupCode = 100, payDueDate = 1, paymentTime = 1, settleType = 1, WhsCode = "01") {
         let result = [];
@@ -1965,17 +2049,31 @@ export default class Pricing {
 
         //بررسی متد کمپین
         if (doctocalc.marketingdetails?.Campaign) {
-            let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, true);
-            let lp = {};
-            for (let item of DocAfterCa.MarketingLines) {
-                lp = {};
-                for (let itemresult of result) {
-                    if (itemresult.ItemCode == item.ItemCode) {
-                        lp = itemresult;
-                        lp.Price = item.Price ?? 0;
-                        lp.FinalPrice = parseInt(item.PriceAfterVat ?? 0);
-                        lp.PymntDscnt = PaymentDic;
-                        lp.CmpgnDscnt = 100 - (100 - item.DiscountPercent ?? 0) / (100 - lp.B1Dscnt) * 100;
+            let PriceListCalcState = "C";
+            for (let camrul of campaignRules)
+                if (camrul.campaignId == doctocalc.marketingdetails.Campaign) {
+                    PriceListCalcState = camrul.priceListCalcState;
+                    break;
+                }
+            if (PriceListCalcState != "N") {
+                let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, true);
+                let lp = {};
+                for (let item of DocAfterCa.MarketingLines) {
+                    lp = {};
+                    for (let itemresult of result) {
+                        if (itemresult.ItemCode == item.ItemCode) {
+                            lp = itemresult;
+                            lp.Price = item.Price ?? 0;
+                            lp.FinalPrice = parseInt(item.PriceAfterVat ?? 0);
+                            lp.PymntDscnt = PaymentDic;
+                            if (lp.B1Dscnt > item.DiscountPercent) {
+                                lp.B1Dscnt = 0;
+                                lp.CmpgnDscnt = item.DiscountPercent ?? 0;
+                            }
+                            else {
+                                lp.CmpgnDscnt = 100 - (100 - item.DiscountPercent ?? 0) / (100 - lp.B1Dscnt) * 100;
+                            }
+                        }
                     }
                 }
             }

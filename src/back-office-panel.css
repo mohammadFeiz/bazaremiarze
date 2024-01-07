@@ -3,7 +3,7 @@
     --bo-color-2:#394d62;
     --bo-color-3:#394453;
     --bo-color-4:#6b92b9;
-    --bo-color-5:#63738a;
+    --bo-color-5:#848a92;
     --bo-color-6:#23486d;
     --bo-color-disabled:#c0cad4;
 }
@@ -12,27 +12,41 @@
     height: 100%;
 }
 .back-office-primary-tabs{
-    background:var(--bo-color-3);
-    color:var(--bo-color-5);
-    font-size:12px;
+    background:var(--bo-color-3) !important;
+    color:var(--bo-color-5) !important;
+    font-size:12px !important;
+    padding-bottom:0;
+    border-radius:0 !important;
+}
+.back-office-primary-tabs .aio-input-tabs-option{
+    margin:0 1px;
+    padding:6px;
+    color:#fff;
 }
 .back-office-primary-tabs .aio-input-tabs-option.active{
-    color:#fff;
-}
-.back-office-primary-tabs .aio-input-tabs-option.active:after{
-    background:#fff;
-}
-.back-office-secondary-tabs{
-    background:var(--bo-color-3);
-    color:var(--bo-color-5);
-    height:30px;
-    padding-top:6px;
-    font-size:12px;
-}
-.back-office-secondary-tabs .aio-input-tabs-option.active{
     background: var(--bo-color-1);
     color:#fff;
-    border-radius:4px 4px 0 0;
+    border-radius:6px 6px 0 0;
+}
+.back-office-primary-tabs .aio-input-tabs-option.active:after{
+    display:none;
+}
+.back-office-secondary-tabs{
+    background:var(--bo-color-1) !important;
+    color:var(--bo-color-5) !important;
+    padding:6px !important;
+    font-size:12px;
+}
+.back-office-secondary-tabs .aio-input-tabs-option{
+    margin:0 1px;
+    padding:0 6px;
+    color:#fff;
+    background:var(--bo-color-2);
+    border-radius:4px;
+}
+.back-office-secondary-tabs .aio-input-tabs-option.active{
+    background:orange;
+    color:#fff;
 }
 .back-office-secondary-tabs .aio-input-tabs-option.active:after{
     display:none;
@@ -90,15 +104,23 @@
     height: 100%;
     color:#fff;
 }
+.back-office-table-badge{
+    background:var(--bo-color-3);
+    color:#fff;
+    padding:0 3px;
+}
+.back-office .aio-input-table-remove{
+    background:rgba(255,255,255,0.03) !important;
+}
 .back-office .aio-input-table-cell{
     background:rgba(255,255,255,0.03);
 }
 .back-office .aio-input-table-header{
-    background:var(--bo-color-2);
+    background:var(--bo-color-1);
     height:36px !important;
 }
 .back-office .aio-input-table-toolbar{
-    background:var(--bo-color-2);
+    background:var(--bo-color-1);
     height:36px !important;
 }
 .back-office .aio-input-table-title{
@@ -266,6 +288,13 @@
     padding:0 6px;
     color:#fff;
 }
+.aio-input.back-office-input{
+    border:none;
+    background:var(--bo-color-2);
+    border-radius:4px;
+    padding:0 6px;
+    color:#fff;
+}
 .back-office-access-card{
     margin:12px;
     margin-bottom:0;
@@ -307,7 +336,7 @@
 .back-office .aio-input-options::-webkit-scrollbar-track {
     background-color: var(--bo-color-2);
 }
-.back-office-button{
+.aio-input.back-office-button{
     background:var(--bo-color-2);
     color:#fff;
     border:none;

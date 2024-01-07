@@ -72,8 +72,7 @@ export default class ActionClass {
                   {flex:1},
                   {size:36,align:'vh',html:<Icon path={mdiCodeBraces} size={1}/>,onClick:()=>{
                     let {developerMode} = this.getState();
-                    if(developerMode){this.setState({developerMode:false})}
-                    else {this.openPopup('developerModePassword')}
+                    this.setState({developerMode:!developerMode})
                   }}
                 ]
               }}
@@ -207,8 +206,8 @@ export default class ActionClass {
         }
         return DiscountList
     }
-    getFactorDetails = (items, obj = {}, container) => {
-        let { PaymentTime, PayDueDate, DeliveryType, giftCodeInfo, discountCodeInfo } = obj;
+    getFactorDetails = (items, shippingOptions = {}, container) => {
+        let { PaymentTime, PayDueDate, DeliveryType, giftCodeInfo, discountCodeInfo,CampaignId } = shippingOptions;
         let DiscountList = this.getCodeDetails({ giftCodeInfo, discountCodeInfo });
         let { userInfo } = this.getProps();
         let { Logger,getSettleType } = this.getState();
@@ -219,11 +218,22 @@ export default class ActionClass {
             "MarketingLines": items,
             "DeliverAddress": userInfo.address,
             "DiscountList": DiscountList,
-            "marketingdetails": { "SlpCode": userInfo.slpcode, SettleType, PaymentTime, PayDueDate, DeliveryType, DiscountList }
+            "marketingdetails": { 
+                "SlpCode": userInfo.slpcode, 
+                SettleType, PaymentTime, PayDueDate, DeliveryType, DiscountList,
+                Campaign:CampaignId
+             }
         }
-        if (container === 'shipping') { Logger.add(`autoCalcDoc payload(${container})`, config, 'autoCalcDoc_payload' + container) }
+        if (container === 'shipping') { Logger.add(`autoCalcDoc payload(${container})`, JSON.parse(JSON.stringify(config)), 'autoCalcDoc_payload' + container) }
         let res = this.pricing.autoCalcDoc(config);
-        if (container === 'shipping') { Logger.add(`autoCalcDoc response(${container})`, res, 'autoCalcDoc_response' + container) }
+        if (container === 'shipping') { 
+            let data = {}
+            try{
+                data = {...res,CampaignDetails:{...res.CampaignDetails,BundleRowsInfos:'به خاطر حجم زیاد حذف شد'}}
+            }
+            catch{}
+            Logger.add(`autoCalcDoc response(${container})`, data, 'autoCalcDoc_response' + container) 
+        }
         return res
     }
     fixPrice = ({ items, CampaignId, PriceListNum }) => {
@@ -243,11 +253,11 @@ export default class ActionClass {
             "MarketingLines": items
         }
         let list = items.map(({ itemCode }) => itemCode);
-        Logger.add(`autoPriceList payload`, data, 'autoPriceList_payload')
+        Logger.add(`autoPriceList payload`, JSON.parse(JSON.stringify(data)), 'autoPriceList_payload')
         
         try {
             list = this.pricing.autoPriceList(list, data);
-            Logger.add(`autoPriceList response`, data, 'autoPriceList_response')
+            Logger.add(`autoPriceList response`, JSON.parse(JSON.stringify(data)), 'autoPriceList_response')
         }
         catch (err) {
             alert('Pricing در محاسبات دچار مشکل شد . لطفا این مساله را با ادمین سیستم در میان بگذارید')
@@ -368,22 +378,6 @@ export default class ActionClass {
             let {render} = parameter;
             msfReport({actionName:'open vitrin categories',actionId:19,tagName:'vitrin',eventName:'page view'})
             addModal({body: {render},id: 'categories',header: { title: 'دسته بندی محصولات' }})
-        }
-        if (type === 'developerModePassword') {
-            addModal({
-                position: 'center', id: 'devmodepass',
-                header: { title: 'ورود به حالت دولوپمنت' },
-                body: {
-                    attrs: { className: 'developer-mode-password-body' },
-                    render: () => (
-                        <DeveloperModePassword onSubmit={() => {
-                            this.setState({ developerMode: true })
-                            removeModal('devmodepass')
-                        }} />
-                    )
-                }
-
-            })
         }
         else if (type === 'profile') {
             let { userInfo,Login,updateProfile} = this.getProps();

@@ -73,20 +73,18 @@ export default class ShopClass {
     getAmounts_all(cartItems, shippingOptions, container) {
         let { actionClass } = this.getAppState();
         let factorDetailsItems = [];
+        let total = 0;
         for (let i = 0; i < cartItems.length; i++) {
             let { variantId, count, product } = cartItems[i];
             let variant = product.variants.find((o) => o.id === variantId)
+            if(typeof product.price === 'number' && product.price){total += product.price * count}
+            else if(typeof product.Price === 'number' && product.Price){total += product.Price * count}
             factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
         }
-        let factorDetails = actionClass.getFactorDetails(factorDetailsItems, shippingOptions, container);
+        let factorDetails = actionClass.getFactorDetails(factorDetailsItems, {...shippingOptions,CampaignId:this.CampaignId}, container);
         let { marketingdetails, DocumentTotal } = factorDetails;
         let { DiscountList, ClubPoints = {} } = marketingdetails;
         let { DiscountValueUsed, DiscountPercentage, PaymentDiscountPercent, PaymentDiscountValue, PromotionValueUsed } = DiscountList;
-        let total = 0;
-        for (let i = 0; i < factorDetails.MarketingLines.length; i++) {
-            let o = factorDetails.MarketingLines[i];
-            total += o.Price * o.ItemQty;
-        }
         let discounts = []
         if (PaymentDiscountPercent && PaymentDiscountValue) {
             discounts.push({ percent: PaymentDiscountPercent, value: PaymentDiscountValue, title: 'تخفیف نحوه پرداخت' })
@@ -337,6 +335,7 @@ export default class ShopClass {
             return { billboard: this.billboard, products: this.products, description: this.description, title: this.name }
         }
         if (this.spreeCampaign) {
+            debugger
             if (!this.products) {
                 this.products = await apis.request({
                     api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],

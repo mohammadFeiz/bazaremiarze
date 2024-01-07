@@ -10,6 +10,11 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
         }
         return res;
     }
+    function IsSuperAdmin(userName){
+        if(userName === '09123534314'){return true}
+        if(userName === '+989123534314'){return true}
+        return false
+    }
     return {
         async checkIsRegistered(phoneNumber,{Logger}){
             let response = await Axios.get(`${baseUrl}/Users/IsUserSyncedWithB1?userName=${phoneNumber}`);
@@ -87,10 +92,11 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                 console.error(`b1Info.customer.ballance is ${ballance} but we set it on 0`)
                 ballance = 0;
             }
-            let isAdmin = IsAdmin(userInfo.userName,backOffice)
+            let isAdmin = IsAdmin(userInfo.userName,backOffice);
+            let isSuperAdmin = IsSuperAdmin(userInfo.userName);
             let result = {
                 ...userInfo,
-                isAdmin,
+                isAdmin,isSuperAdmin,
                 cardCode: userInfo.cardCode,
                 groupName: customer.groupName,
                 itemPrices: b1Info.itemPrices,

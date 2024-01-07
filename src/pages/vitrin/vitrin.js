@@ -24,7 +24,7 @@ export default class Vitrin extends Component {
         setTimeout(()=>this.setState({splash:false}),2500)
     }
     start() {
-        let { apis, vitrin, actionClass } = this.context;
+        let { apis, vitrin, actionClass,userInfo } = this.context;
         apis.request({
             api: 'vitrin.v_setStarted', parameter: true, description: 'شروع ویترین',
             onSuccess: () => vitrin.update({ started: true }, () => {
@@ -34,10 +34,10 @@ export default class Vitrin extends Component {
         })
     }
     render() {
-        let {backOffice} = this.context;
+        let {backOffice,userInfo} = this.context;
         let {splash} = this.state;
         if(splash){return <div className='w-100 h-100 align-vh'><Loading/></div> }
-        if(!backOffice.activeManager.vitrin){
+        if(!backOffice.activeManager.vitrin && !userInfo.isSuperAdmin){
             return <div className='w-100 h-100 align-vh fs-12'>سرویس ویترین تا اطلاع ثانوی در حال بروز رسانی میباشد</div>    
         }
         let { vitrin } = this.context, { started } = vitrin;
@@ -481,7 +481,6 @@ class SelectedProducts extends Component {
         let { vitrinSelected } = vitrin;
         let loading = !vitrinSelected;
         vitrinSelected = vitrinSelected || getMockVitrinSelected();
-        debugger
         let column = Object.keys(vitrinSelected).map((key) => {
             let { product } = vitrinSelected[key];
             return { html: <ProductCard product={product} loading={loading} renderIn='my-vitrin'/> }

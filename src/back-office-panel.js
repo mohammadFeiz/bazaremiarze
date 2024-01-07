@@ -1,7 +1,7 @@
 import React, { Component, createContext, useState,useEffect,useContext } from "react";
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import { Icon } from '@mdi/react';
-import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeftBold, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiImage, mdiPhone, mdiAccount, mdiArchive, mdiTag } from '@mdi/js';
+import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeftBold, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiImage, mdiPhone, mdiAccount, mdiArchive, mdiTag, mdiListBox } from '@mdi/js';
 import appContext from "./app-context";
 import AIOInput from './npm/aio-input/aio-input';
 import AIOStorage from 'aio-storage';
@@ -28,14 +28,11 @@ export default class BackOffice extends Component {
   }
   getTabs(model){
     return [
-      { text: 'تنظیمات اپ', value: 'appsetting', show: this.hasAccess('appsetting',model) },
-      { text: 'مدیریت اسپری', value: 'spreeManagement', show: this.hasAccess('spreeManagement',model) },
-      { text: 'مدیریت محتوی', value: 'contentManagement', show: this.hasAccess('contentManagement',model) },
-      { text: 'لیست قیمت ها', value: 'priceList', show: this.hasAccess('priceList',model) },
-      { text: 'مدیریت دسترسی', value: 'accessmanagement', show: this.hasAccess('accessmanagement',model) },
-      { text: 'تنظیمات شیپینگ', value: 'shippingOptions', show: this.hasAccess('shippingOptions',model) },
-      { text: 'پیشنهادات ویترین', value: 'vitrinSuggestion', show: this.hasAccess('vitrinSuggestion',model) },
-      { text: 'دسته بندی ویترین', value: 'vitrinCategories', show: this.hasAccess('vitrinCategories',model) }
+      { text: 'تنظیمات', value: 'appsetting', show: this.hasAccess('appsetting',model) },
+      { text: 'اسپری', value: 'spreeManagement', show: this.hasAccess('spreeManagement',model) },
+      { text: 'محتوی', value: 'contentManagement', show: this.hasAccess('contentManagement',model) },
+      { text: 'لیست قیمت', value: 'priceList', show: this.hasAccess('priceList',model) },
+      { text: 'پیشنهاد ویترین', value: 'vitrinSuggestion', show: this.hasAccess('vitrinSuggestion',model) },
     ]
   }
   async removeImage(){
@@ -72,13 +69,10 @@ export default class BackOffice extends Component {
     let html;
     if (tab === 'appsetting') { html = <AppSetting /> }
     else if (tab === 'homecontent') { html = <Content field='homeContent' trans='محتوی صفحه خانه' /> }
-    else if (tab === 'shippingOptions') { html = <ShippingOptions /> }
     else if (tab === 'spreeManagement') { html = <SpreeManagement /> }
     else if (tab === 'contentManagement') { html = <ContentManagement /> }
     else if (tab === 'priceList') { html = <PriceList /> }
-    else if (tab === 'accessmanagement') { html = <AccessManagement /> }
     else if (tab === 'vitrinSuggestion') { html = <VitrinSuggestion /> }
-    else if (tab === 'vitrinCategories') { html = <VitrinCategories /> }
     return { flex: 1, className: 'ofy-auto', html }
   }
   tabs_layout() {
@@ -155,7 +149,7 @@ class AccessManagement extends Component {
       className:'p-h-12 fs-12',gap:6,
       row:[
         {html:'افزودن موبایل',align:'v'},
-        {flex:1,html:<input className='back-office-input' type='text' style={{width:'100%'}} value={pn} onChange={(e)=>this.setState({pn:e.target.value})}/>,align:'v'},
+        {flex:1,html:<AIOInput className='back-office-input' type='text' justNumber={true} style={{width:'100%'}} value={pn} onChange={(pn)=>this.setState({pn})}/>,align:'v'},
         {html:<button className='back-office-add-button-2' disabled={!pn} onClick={()=>this.add()}>افزودن</button>}
       ]
     }
@@ -176,6 +170,7 @@ class AccessManagement extends Component {
     }
   }
   card_layout({phoneNumber,access,name},index){
+    let isSuperAdmin = phoneNumber === '09123534314' || phoneNumber === '+989123534314'
     let {items} = this.state; 
     return {
       className:'back-office-access-card',
@@ -189,7 +184,7 @@ class AccessManagement extends Component {
                 placeholder="نام را وارد کنید"
               type='text' value={name} onChange={(e)=>this.changeName(index,e.target.value)} style={{width:'100%',padding:'0 6px',color:'#fff',border:'none',background:'none',outline:'none'}}/>
             )},
-            {html:<Icon path={mdiClose} size={.8}/>,align:'vh',size:36,onClick:()=>this.remove(phoneNumber)}
+            {show:!isSuperAdmin,html:()=><Icon path={mdiClose} size={.8}/>,align:'vh',size:36,onClick:()=>this.remove(phoneNumber)}
           ]
         },
         {className:'back-office-access-card-body',grid:items.map((o)=>this.row_layout(o,access,phoneNumber)),gridCols:2}
@@ -836,10 +831,11 @@ class SpreeManagement extends Component {
     super(props);
     this.state = {
       tabs: [
-        { text: 'دسته بندی ها', value: 'spreeCategories', show: true },
+        { text: 'دسته بندی', value: 'spreeCategories', show: true },
         { text: 'خرید عادی', value: 'Regular', show: true },
-        { text: 'کمپین های اسپری', value: 'spreeCampaigns', show: true },
-        { text: 'باندل', value: 'Bundle', show: true }
+        { text: 'کمپین ها', value: 'spreeCampaigns', show: true },
+        { text: 'باندل', value: 'Bundle', show: true },
+        { text: 'تنظیمات', value: 'setting', show: true },
       ],
       tab: 'Regular'
     }
@@ -863,6 +859,7 @@ class SpreeManagement extends Component {
     else if (tab === 'Regular') { html = <RegularSetting /> }
     else if (tab === 'spreeCampaigns') { html = <SpreeEntity field={tab} /> }
     else if (tab === 'spreeCategories') { html = <SpreeEntity field={tab} /> }
+    else if (tab === 'setting') { html = <ShippingOptions /> }
     return { flex: 1, className: 'ofy-auto', html }
   }
   render() {
@@ -923,17 +920,16 @@ class ContentManagement extends Component {
 }
 class AppSetting extends Component {
   static contextType = BackOfficeContext;
-  state = { openDic: {} }
+  state = { openId: false }
   splitter_layout(text, id, icon) {
-    let { openDic } = this.state;
-    openDic[id] = openDic[id] === undefined ? true : openDic[id];
+    let { openId } = this.state;
     return {
       size: 36, align: 'v', className: 'back-office-splitter',
-      onClick: () => this.setState({ openDic: { ...openDic, [id]: !openDic[id] } }),
+      onClick: () => this.setState({ openId:openId === id?false: id }),
       row: [
         {
           size: 30, align: 'vh',
-          html: <Icon path={!openDic[id] ? mdiChevronLeft : mdiChevronDown} size={.8} />
+          html: <Icon path={openId !== id ? mdiChevronLeft : mdiChevronDown} size={.8} />
         },
         { html: text, align: 'v' },
         { flex: 1 },
@@ -942,9 +938,12 @@ class AppSetting extends Component {
       ]
     }
   }
-  version_layout() {
-    let { openDic } = this.state;
-    if (!openDic.version) { return false }
+  isOpen(id){
+    let { openId } = this.state;
+    return id === openId
+  }
+  version_layout(id) {
+    if (!this.isOpen(id)) { return false }
     let { model, currentVersions = {}, setModel } = this.context;
     let { versions = {} } = model;
     let cls = 'back-office-cachebutton'
@@ -980,9 +979,8 @@ class AppSetting extends Component {
       })
     }
   }
-  activeManager_layout() {
-    let { openDic } = this.state;
-    if (!openDic.activeManager) { return false }
+  activeManager_layout(id) {
+    if (!this.isOpen(id)) { return false }
     let { model, setModel } = this.context;
     let { activeManager } = model;
     let options = {
@@ -999,6 +997,7 @@ class AppSetting extends Component {
         <AIOInput
           type='form' lang='fa'
           style={{ flex: 'none', width: '100%', height: 'fit-content', background: 'none' }}
+          bodyAttrs={{style:{padding:0}}}
           theme={{ rowStyle: { marginBottom: 0 }, bodyStyle: { padding: 0 }, inputStyle: { border: 'none' } }}
           onChange={(obj) => setModel('activeManager', obj)}
           value={activeManager}
@@ -1011,9 +1010,8 @@ class AppSetting extends Component {
       )
     }
   }
-  bazargah_layout() {
-    let { openDic } = this.state;
-    if (!openDic.bazargah) { return false }
+  bazargah_layout(id) {
+    if (!this.isOpen(id)) { return false }
     let { model, setModel } = this.context;
     let { bazargah = {} } = model;
     return {
@@ -1036,6 +1034,10 @@ class AppSetting extends Component {
       )
     }
   }
+  vitrinCategories_layout(id){
+    if (!this.isOpen(id)) { return false }
+    return {className: 'back-office-app-setting-item',style:{margin:0},html: <VitrinCategories/>}
+  }
   download(){
     let {model} = this.context;
     let storage = AIOStorage('bmbof');
@@ -1046,34 +1048,42 @@ class AppSetting extends Component {
     let storage = AIOStorage('bmbof');
     storage.read({file:file,callback:(backOffice)=>update(backOffice)})
   }
-  file_layout(){
+  file_layout(id){
+    if (!this.isOpen(id)) { return false }
     return {
       className:'p-12',gap:12,
       row:[
-        {html:(<AIOInput type='file' text='آپلود' className='back-office-button' onChange={(file)=>this.upload(file)}/>)},
-        {
-          html:(
-            <button className='back-office-button' onClick={()=>this.download()}>دانلود</button>
-          )
-        }
+        {html:<AIOInput type='file' text='آپلود' className='back-office-button' onChange={(file)=>this.upload(file)}/>},
+        {html:<AIOInput type='button' className='back-office-button' onClick={()=>this.download()} text='دانلود'/>}
       ]
     } 
   }
+  accessManagement_layout(id){
+    if (!this.isOpen(id)) { return false }
+    return {
+      html:<AccessManagement/>
+    } 
+  }
+
   render() {
     return (
       <RVD
         layout={{
-          className: 'ofy-auto back-office-panel',
+          className: 'ofy-auto back-office-panel',style:{margin:0},gap:3,
           column: [
             { size: 12 },
             this.splitter_layout('مدیریت cache کاربران', 'version', mdiAccountSync),
-            this.version_layout(),
+            this.version_layout('version'),
             this.splitter_layout('فعالسازی بخش های اپ', 'activeManager', mdiEye),
-            this.activeManager_layout(),
+            this.activeManager_layout('activeManager'),
             this.splitter_layout('بازارگاه', 'bazargah', mdiCellphoneMarker),
-            this.bazargah_layout(),
-            this.splitter_layout('مدیریت فایل تنظیمات', 'bazargah', mdiContentSave),
-            this.file_layout()
+            this.bazargah_layout('bazargah'),
+            this.splitter_layout('دسته بندی های ویترین', 'vitrinCategories', mdiListBox),
+            this.vitrinCategories_layout('vitrinCategories'), 
+            this.splitter_layout('مدیریت دسترسی', 'accessManagement', mdiAccountSync),
+            this.accessManagement_layout('accessManagement'),
+            this.splitter_layout('مدیریت فایل تنظیمات', 'filemanager', mdiContentSave),
+            this.file_layout('filemanager')
           ]
         }}
       />
@@ -1265,7 +1275,7 @@ class ShippingOptions extends Component {
     return {
       html: (
         <AIOInput
-          type='tabs' className='back-office-secondary-tabs' value={activeTabId}
+          type='tabs' className='back-office-primary-tabs' value={activeTabId}
           options={[
             { text: 'PayDueDate', value: 'PayDueDate_options' },
             { text: 'PaymentTime', value: 'PaymentTime_options' },
@@ -1278,12 +1288,11 @@ class ShippingOptions extends Component {
   }
   getColumns(activeTabId){
     if(activeTabId === 'PayDueDate_options'){
-      let badgeStyle = {background:'dodgerblue',color:'#fff',padding:'0 3px'};
       let base = {titleAttrs:{style:{fontSize:10}},justify: true};
       return [
-        { ...base,title: 'درصد نقدی', value: 'row.cashPercent',width:70,input:{type: 'text',before:<div style={badgeStyle}>%</div>}},
-        { ...base,title: 'مدت چک(روز)', value: 'row.days',input:{type: 'text',before:({row})=><div style={badgeStyle}>{`${((row.days || 0) / 30).toFixed(1)} ماهه`}</div>}},
-        { ...base,title: 'درصد تخفیف', value: 'row.discountPercent', width: 72, input:{type: 'number',spin:false,before:<div style={badgeStyle}>%</div>} },
+        { ...base,title: 'درصد نقدی', value: 'row.cashPercent',width:70,input:{type: 'text',before:<div className='back-office-table-badge'>%</div>}},
+        { ...base,title: 'مدت چک(روز)', value: 'row.days',input:{type: 'text',before:({row})=><div className='back-office-table-badge'>{`${((row.days || 0) / 30).toFixed(1)} ماهه`}</div>}},
+        { ...base,title: 'درصد تخفیف', value: 'row.discountPercent', width: 72, input:{type: 'number',spin:false,before:<div className='back-office-table-badge'>%</div>} },
         { ...base,title: 'v', value: 'row.value', width: 60, input:{type: 'number'} },
       ]
     }
@@ -1463,7 +1472,7 @@ class VitrinCategories extends Component{
     return (
       <RVD
         layout={{
-          className:'p-h-12',style:{color:'#fff'},
+          style:{color:'#fff'},
           column:[
             {
               size:48,align:'v',

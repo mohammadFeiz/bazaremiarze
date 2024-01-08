@@ -791,7 +791,6 @@ export default function kharidApis({baseUrl,helper}) {
       return {result:newCart}
     },
     async setCart(cart,{userInfo}) {
-      return {result:true}
       let cartStorage = AIOStorage('bazaremiarzeapis');
       cartStorage.save({name:'cart.' + userInfo.cardCode,value:cart});
       return {result:true}

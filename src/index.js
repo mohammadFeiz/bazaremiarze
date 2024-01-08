@@ -14,7 +14,7 @@ import Splash from './components/spalsh/splash';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 function getBaseUrl() {
-  return "https://apimy.burux.com/api/v1";
+  //return "https://apimy.burux.com/api/v1";
   let url = window.location.href;
   if (url.indexOf('bazar') !== -1) { return "https://apimy.burux.com/api/v1"; }
   else if (url.indexOf('bbeta') !== -1) { return "https://retailerapp.bbeta.ir/api/v1"; }

@@ -33,8 +33,8 @@ export default class ShopClass {
     getCartProducts = (renderIn, shippingOptions) => {
         let { cart } = this.getAppState();
         let cartTab = cart[this.cartId];
-        let {taxonId} = cartTab;
         if (!cartTab) { return [] }
+        let {taxonId} = cartTab;
         let cartItems = this.getCartItems();
         if (this.cartId === 'Bundle') { return this.getCartProducts_Bundle(cartItems, renderIn) }
         else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions,taxonId) }
@@ -47,7 +47,7 @@ export default class ShopClass {
             if(cartItem.taxonId){
                 let taxon = this.taxons.find((o)=>o.id === cartItem.taxonId)
                 let props = {
-                    product:taxon,
+                    taxon,
                     renderIn:'cart',
                     index:i,
                     taxonId:cartItem.taxonId,
@@ -337,7 +337,7 @@ export default class ShopClass {
         if(isTaxon){
             return (
                 <CategoryView
-                    renderProductCard={(product, index,onFetchProducts) => this.renderTaxonCard({ product, index, renderIn: 'category',onFetchProducts,taxonId:product.id })}
+                    renderProductCard={(product, index,onFetchProducts) => this.renderTaxonCard({ taxon:product, index, renderIn: 'category',onFetchProducts,taxonId:product.id })}
                     billboard={billboard} products={products} description={description}
                 />
             )
@@ -385,7 +385,7 @@ export default class ShopClass {
                     this.products = await apis.request({
                         api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
                         parameter: { id: this.cartId,cartId:this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
-                        //cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'campaignProducts.item_' + this.cartId }
+                        cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'campaigns.campaignProducts.item_' + this.cartId }
                     });
                 }
             }
@@ -398,33 +398,33 @@ export default class ShopClass {
             return { billboard, products, description, title: name }
         }
     }
-    renderTaxonCard({ product, renderIn, index, style,onFetchProducts,taxonId,errors = [] }) {
+    renderTaxonCard({ taxon, renderIn, index, style,onFetchProducts,taxonId,errors = [] }) {
         let { apis, msfReport } = this.getAppState();
         let props = {
-            title: product.name, product, renderIn, index, style,errors,
+            title: taxon.name, taxon, renderIn, index, style,errors,
             onClick: async () => {
-                if (this.spree && !product.products) {
+                if (this.spree && !taxon.products) {
                     let products = await apis.request({
                         api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
-                        parameter: { id: product.taxonId,cartId:this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
-                        //cache: { time: 30 * 24 * 60 * 60 * 1000, name: `campaignProducts.item_${this.cartId}_${product.id}` }
+                        parameter: { id: taxon.id,cartId:this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
+                        cache: { time: 30 * 24 * 60 * 60 * 1000, name: `campaigns.campaignProducts.item_${this.cartId}_${taxon.id}` }
                     });
-                    product.products = products;
+                    taxon.products = products;
                     onFetchProducts(products)
                 }
-                msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
+                msfReport({ actionName: 'open product', actionId: 5, targetName: taxon.name, targetId: taxon.id, tagName: 'kharid', eventName: 'page view' })
             },
             
             renderProductCard:(product,index)=>{
-                if(renderIn === 'cart'){debugger}
                 return this.renderCard({ product, index, renderIn,taxonId });
             }
         }
-        return (<TaxonCard key={product.id} {...props} />)
+        return (<TaxonCard key={taxon.id} {...props} />)
     }
     renderCard({ product, renderIn, variantId, count, details, loading, index, style,taxonId, type }) {
-        let { apis, rsa, actionClass, msfReport } = this.getAppState();
+        let { apis, rsa, actionClass, msfReport,cart } = this.getAppState();
         let props = {
+            cart,
             title: this.name, product, renderIn, variantId, count, details, loading, index, style, type,taxonId,cartId:this.cartId,CampaignId:this.CampaignId,
             onClick: async () => {
                 if (this.spree && !product.hasFullDetail) {
@@ -598,24 +598,26 @@ class CategoryView extends Component {
 }
 class TaxonCard extends Component {
     not_has_products_layout() {
-        let { loading, onClick,product } = this.props;
-        return <RVD loading={loading} layout={{className: 'p-12 theme-box-shadow',onClick,html:product.name,}}/>
+        let { loading, onClick,taxon } = this.props;
+        return <RVD loading={loading} layout={{className: 'p-12 theme-box-shadow',onClick,html:taxon.name,}}/>
     }
     has_products_layout() {
-        let { product,renderProductCard,title,errors } = this.props;
+        let { taxon,renderProductCard,title,errors } = this.props;
         return (
             <RVD 
                 layout={{
                     className: 'p-12 theme-box-shadow',
                     column:[
                         {html:title,size:24,align:'v'},
-                        {column:product.products.map((o,i)=>{return {html:renderProductCard(o,i)}})},
+                        {column:taxon.products.map((o,i)=>{return {html:renderProductCard(o,i)}})},
                         {
-                            show:!!errors.length,
-                            className:'fs-12',style:{color:'red',background:'#fff'},
+                            show:!!errors.length,gap:6,
+                            className:'fs-10',style:{color:'red',background:'#fff'},
                             column:errors.map(({minValue,maxValue,product,error})=>{
                                 return {
+                                    className:'p-6 br-6',style:{border:'1px solid red'},
                                     column:[
+                                        {html:product.name,align:'v'},
                                         {
                                             gap:12,align:'v',
                                             row:[
@@ -634,8 +636,8 @@ class TaxonCard extends Component {
         )
     }
     render() {
-        let {product} = this.props;
-        if(!product.products){return this.not_has_products_layout()}
+        let {taxon} = this.props;
+        if(!taxon.products){return this.not_has_products_layout()}
         return this.has_products_layout()
     }
 }
@@ -644,11 +646,45 @@ class RegularCard extends Component {
     image_layout() {
         let { product } = this.props;
         let { srcs = [] } = product;
-        return { flex: 1, align: 'vh', html: <img src={srcs[0] || NoSrc} width={'100%'} alt='' /> }
+        return { size: 116, align: 'vh', html: <img src={srcs[0] || NoSrc} width={'100%'} alt='' /> }
     }
+
     count_layout() {
-        let { product, renderIn, variantId,cartId,taxonId,CampaignId } = this.props;
-    return { size: 36, html: () => <CartButton renderIn={renderIn} product={product} variantId={variantId} cartId={cartId} taxonId={taxonId} CampaignId={CampaignId}/> }
+        let { cartId,taxonId,CampaignId,cart,renderIn,product } = this.props;
+        let cartTab = cart[cartId] || {items:{}};
+        let cartItems = {}
+        try{cartItems = taxonId?cartTab.items[taxonId].items:cartTab.items}
+        catch{}
+        let keys = Object.keys(cartItems);
+        if(!keys.length){return false}
+        let variantsDic = {}
+        product.variants.map(({id})=>variantsDic[id] = true)
+        keys = keys.filter((variantId)=>!!variantsDic[variantId])
+        if(!keys.length){return false}
+        let column = keys.map((variantId)=>{
+            let {product} = cartItems[variantId];
+            let variant = product.variants.find((o) => o.id === variantId);
+            let { optionTypes } = product;
+            let { optionValues } = variant;
+            let details = [];
+            for (let j = 0; j < optionTypes.length; j++) {
+                let optionType = optionTypes[j];
+                details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
+            }
+            return {
+                style:{background:'#f7f7f7'},className:'p-h-3',
+                row:[
+                    {align:'v',className:'theme-medium-font-color fs-10 bold',flex:1,gap:6,row:details.map(([key,value])=>{return {html:`${key} : ${value}`}})},
+                    {
+                        html:(
+                            <CartButton renderIn={'cart'} product={product} variantId={variantId} cartId={cartId} taxonId={taxonId} CampaignId={CampaignId}/>
+                        ),align:'vh'
+                    }
+                ]
+            }
+        })
+        return {gap:3,style:{background:'#fff'},column}
+        //return { size: 36, html: () => <CartButton renderIn={renderIn} product={product} variantId={variantId} cartId={cartId} taxonId={taxonId} CampaignId={CampaignId}/> }
     }
     title_layout() {
         let { title } = this.props;
@@ -734,31 +770,30 @@ class RegularCard extends Component {
                     //         console.log(this.props)
                     //     }
                     // },
-                    style: { height: 148, border: '1px solid #eee' },
-                    gap: 12,
-                    row: [
+                    style: { border: '1px solid #eee' },
+                    column:[
                         {
-                            size: 116,
-                            column: [
+                            row: [
                                 this.image_layout(),
-                                this.count_layout()
+                                {
+                                    flex: 1,
+                                    column: [
+                                        { size: 6 },
+                                        this.title_layout(),
+                                        this.name_layout(),
+                                        this.details_layout(),
+                                        { flex: 1 },
+                                        this.discount_layout(),
+                                        this.notExist_layout(),
+                                        { row: [{ flex: 1 }, this.price_layout()] },
+                                        { size: 6 },
+        
+                                    ]
+                                }
                             ]
                         },
-                        {
-                            flex: 1,
-                            column: [
-                                { size: 6 },
-                                this.title_layout(),
-                                this.name_layout(),
-                                this.details_layout(),
-                                { flex: 1 },
-                                this.discount_layout(),
-                                this.notExist_layout(),
-                                { row: [{ flex: 1 }, this.price_layout()] },
-                                { size: 6 },
-
-                            ]
-                        }
+                        this.count_layout()
+                                
                     ]
                 }}
             />

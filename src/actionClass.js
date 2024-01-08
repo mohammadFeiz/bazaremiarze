@@ -227,11 +227,11 @@ export default class ActionClass {
 'تورچ جوشکاری',
             ]
             if(spreeCampaign.id === '10818'){
-                let cacheCategories = apis.getCache('categories') || {}
-                let {categoryProducts = {}} = cacheCategories;                
+                let cacheCampaigns = apis.getCache('campaigns') || {}
+                let {campaignProducts = {}} = cacheCampaigns;                
                 spreeCampaign.taxons = ids.map((id,i)=>{
-                    let products = categoryProducts[`campaignProducts.item_10818_${id}`];
-                    return {id,name:names[i],isTaxon:true,products,taxonId:id}
+                    let products = campaignProducts[`item_10818_${id}`];
+                    return {id,name:names[i],isTaxon:true,products}
                 })
             }
             let { id, active,taxons  } = spreeCampaign;

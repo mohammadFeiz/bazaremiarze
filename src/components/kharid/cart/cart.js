@@ -16,7 +16,8 @@ export default class Cart extends Component {
     let { cart } = this.context;
     let { activeTabId, tabs } = this.state;
     let emptyCartItems = tabs.filter((o) => {
-      return !Object.keys(cart[o].items).length
+      let cartTab = cart[o] || {items:{}} 
+      return !Object.keys(cartTab.items).length
     })
     if (emptyCartItems.length) {
       this.update();
@@ -35,9 +36,15 @@ export default class Cart extends Component {
     let activeTabId = cartId || tabs[0] || false;
     this.setState({ activeTabId, tabs })
   }
+  getBadge(option){
+    let { cart } = this.context;
+    let cartTab = cart[option] || {items:{}}
+    return <div className='tab-badge'>{Object.keys(cartTab.items).length}</div>
+  }
   tabs_layout() {
-    let { cart, actionClass } = this.context;
+    let { actionClass } = this.context;
     let { activeTabId, tabs } = this.state;
+    if(!tabs.length){return false}
     return {
       html: (
         <AIOInput
@@ -45,7 +52,7 @@ export default class Cart extends Component {
           options={tabs}
           style={{ marginBottom: 12, fontSize: 12 }}
           value={activeTabId}
-          optionAfter={(option) => <div className='tab-badge'>{Object.keys(cart[option].items).length}</div>}
+          optionAfter={(option) => this.getBadge(option)}
           optionText={(option) => actionClass.getShopById(option).name}
           optionValue='option'
           onChange={(activeTabId) => this.setState({ activeTabId })}

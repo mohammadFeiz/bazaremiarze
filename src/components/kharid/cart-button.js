@@ -14,21 +14,34 @@ export default class CartButton extends Component{
     }
     render(){
         let {cart,actionClass} = this.context;
-        let {variantId,product,renderIn,onChange = ()=>{}} = this.props;
+        let {variantId,product,renderIn,onChange = ()=>{},cartId,taxonId,CampaignId} = this.props;
         if(!product){console.error(`CartButton missing product props`)}
         if(!product.cartId){console.error(`CartButton missing cartId in product props`)}
         let cartTab = cart[product.cartId];
         let count = 0,cartItems = [];
         if(variantId){
-            if(cartTab && cartTab.items[variantId]){
-                count = cartTab.items[variantId].count;    
+            if(cartTab){
+                if(taxonId){
+                    if(cartTab.items[taxonId]){
+                        if(cartTab.items[taxonId].items[variantId]){
+                            count = cartTab.items[taxonId].items[variantId].count;    
+                        }
+                    }
+                }
+                else {
+                    if(cartTab.items[variantId]){
+                        count = cartTab.items[variantId].count;    
+                    }
+                }
             }
+            
+            
         }
         else {
             if(['product','cart','category'].indexOf(renderIn) === -1){
                 console.error('missing varinatId in ProductCard Component due render in cart page or product page')
             }
-            cartItems = actionClass.getCartItemsByProduct(product);
+            cartItems = actionClass.getCartItemsByProduct(product,cartId,taxonId);
         }
         return (
             <RVD
@@ -70,7 +83,7 @@ export default class CartButton extends Component{
                             html:()=>(
                                 <button 
                                     onClick={() => {
-                                        actionClass.changeCart({variantId,product,count:1})
+                                        actionClass.changeCart({variantId,product,count:1,cartId,taxonId,CampaignId})
                                         onChange(1)
                                     }} 
                                     className="button-2"
@@ -88,7 +101,7 @@ export default class CartButton extends Component{
                                 <ProductCount 
                                     value={count} 
                                     onChange={(count) => {
-                                        actionClass.changeCart({product,variantId,count})
+                                        actionClass.changeCart({product,variantId,count,cartId,taxonId,CampaignId})
                                         onChange(count)
                                     }} 
                                 />

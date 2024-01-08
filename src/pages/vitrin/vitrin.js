@@ -1,13 +1,12 @@
 import React, { useContext, Component, useState } from "react";
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import { renderCard } from 'react-virtual-dom';
 import AIOInput from "../../npm/aio-input/aio-input";
 import getSvg from "./getSvg";
 import appContext from "../../app-context";
 import Loading from './loading';
 import Icon from "@mdi/react";
 import vbsrc from './../../images/vitrin-bazargah.png';
-import { mdiClose, mdiPlus, mdiCamera, mdiDotsVertical, mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu, mdiCheck, mdiPlusThick, mdiStoreCheck, mdiMarkerCheck, mdiClockCheck } from "@mdi/js";
+import { mdiCamera, mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu, mdiCheck, mdiPlusThick, mdiStoreCheck, mdiMarkerCheck, mdiClockCheck } from "@mdi/js";
 import './vitrin.css';
 import imgph from './../../images/imgph.png';
 import image_src from './../../images/vitrin-landing.png';

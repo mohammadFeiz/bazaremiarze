@@ -11,7 +11,6 @@ export default class PasswordPopup extends Component{
             api:'backOffice.updatePassword',description:'تغییر رمز عبور',message:{success:true},
             parameter:model.password,
             onSuccess:()=>{
-                debugger
                 let {rsa} = this.context;
                 let {model} = this.state;
                 model.password = '';

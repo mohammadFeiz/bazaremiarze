@@ -33,29 +33,44 @@ export default class ShopClass {
     getCartProducts = (renderIn, shippingOptions) => {
         let { cart } = this.getAppState();
         let cartTab = cart[this.cartId];
+        let {taxonId} = cartTab;
         if (!cartTab) { return [] }
         let cartItems = this.getCartItems();
         if (this.cartId === 'Bundle') { return this.getCartProducts_Bundle(cartItems, renderIn) }
-        else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions) }
+        else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions,taxonId) }
     }
     getCartProducts_Bundle = (cartItems, renderIn) => {
         return cartItems.map(({ product, count, variantId }) => this.renderCard({ product, count, variantId, renderIn }))
     }
-    getCartProducts_all = (cartItems, renderIn, shippingOptions) => {//notice // shippingOptions here never used
-        return cartItems.map(({ product, count, variantId }, i) => {
-            let variant = product.variants.find((o) => o.id === variantId);
-            let { optionTypes } = product;
-            let { optionValues } = variant;
-            let details = [];
-            for (let j = 0; j < optionTypes.length; j++) {
-                let optionType = optionTypes[j];
-                details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
+    getCartProducts_all = (cartItems, renderIn, shippingOptions,taxonId) => {//notice // shippingOptions here never used
+        return cartItems.map((cartItem, i) => {
+            if(cartItem.taxonId){
+                let taxon = this.taxons.find((o)=>o.id === cartItem.taxonId)
+                let props = {
+                    product:taxon,
+                    renderIn:'cart',
+                    index:i,
+                    taxonId:cartItem.taxonId,
+                    errors:cartItem.errors
+                }
+                return this.renderTaxonCard(props)
             }
-            let props = {
-                key: variantId, variantId, index: i, product, details, type: 'horizontal',
-                renderIn, cartId: this.cartId
+            else {
+                let { product, count, variantId } = cartItem;
+                let variant = product.variants.find((o) => o.id === variantId);
+                let { optionTypes } = product;
+                let { optionValues } = variant;
+                let details = [];
+                for (let j = 0; j < optionTypes.length; j++) {
+                    let optionType = optionTypes[j];
+                    details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
+                }
+                let props = {
+                    key: variantId, variantId, index: i, product, details, type: 'horizontal',taxonId,
+                    renderIn, cartId: this.cartId
+                }
+                return this.renderCard(props)
             }
-            return this.renderCard(props)
         })
     }
     fix(value, v = 0) {
@@ -74,12 +89,28 @@ export default class ShopClass {
         let { actionClass } = this.getAppState();
         let factorDetailsItems = [];
         let total = 0;
+        let hasError = false
         for (let i = 0; i < cartItems.length; i++) {
-            let { variantId, count, product } = cartItems[i];
-            let variant = product.variants.find((o) => o.id === variantId)
-            if(typeof product.price === 'number' && product.price){total += product.price * count}
-            else if(typeof product.Price === 'number' && product.Price){total += product.Price * count}
-            factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
+            let cartItem = cartItems[i];
+            if(cartItem.taxonId){
+                let {items,errors} = cartItem;
+                if(errors && errors.length){hasError = true}
+                for(let prop in items){
+                    let { variantId, count, product } = items[prop];
+                    let variant = product.variants.find((o) => o.id === variantId)
+                    if(typeof product.price === 'number' && product.price){total += product.price * count}
+                    else if(typeof product.Price === 'number' && product.Price){total += product.Price * count}
+                    factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
+                }
+            }
+            else{
+                let { variantId, count, product } = cartItem;
+                let variant = product.variants.find((o) => o.id === variantId)
+                if(typeof product.price === 'number' && product.price){total += product.price * count}
+                else if(typeof product.Price === 'number' && product.Price){total += product.Price * count}
+                factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
+            }
+            
         }
         let factorDetails = actionClass.getFactorDetails(factorDetailsItems, {...shippingOptions,CampaignId:this.CampaignId}, container);
         let { marketingdetails, DocumentTotal } = factorDetails;
@@ -95,16 +126,11 @@ export default class ShopClass {
         if (PromotionValueUsed) {
             discounts.push({ value: PromotionValueUsed, title: 'کارت هدیه' })
         }
-        return { total, discounts, payment: DocumentTotal, ClubPoints }
+        return { total, discounts, payment: DocumentTotal, ClubPoints,hasError }
     }
     getAmounts_Bundle(cartItems, shippingOptions = {}, container) {
         let { actionClass, backOffice } = this.getAppState();
         let { PayDueDate_options } = backOffice;
-        let total = 0;
-        for (let i = 0; i < cartItems.length; i++) {
-            let { count, product } = cartItems[i];
-            total += count.packQty * product.price;
-        }
         let payment = total;
         let { PayDueDate, discountCodeInfo, giftCodeInfo } = shippingOptions;
         let cashPercent = 100;
@@ -119,6 +145,12 @@ export default class ShopClass {
             payment -= value;
         }
         let DiscountList = actionClass.getCodeDetails({ discountCodeInfo, giftCodeInfo }) || {};
+        let total = 0;
+        for (let i = 0; i < cartItems.length; i++) {
+            let { count, product } = cartItems[i];
+            total += count.packQty * product.price;
+        }
+        
         if (DiscountList.DiscountPercentage) {
             let percent = DiscountList.DiscountPercentage;
             let value = payment * percent / 100;
@@ -253,7 +285,6 @@ export default class ShopClass {
         let DiscountList = actionClass.getCodeDetails({ giftCodeInfo, discountCodeInfo })
         let marketingLines = this.getMarketingLines()
         let SettleType = getSettleType(PayDueDate)
-        debugger
         return {
             "DiscountList": DiscountList,
             "marketdoc": {
@@ -302,13 +333,24 @@ export default class ShopClass {
         if (this.cartId === 'Bundle') { return shippingOptions.SettleType !== 2 ? 'پرداخت' : 'ثبت' }
         else { return 'ارسال برای ویزیتور' }
     }
-    getCategory = ({ products, billboard, description }) => {
-        return (
-            <CategoryView
-                renderProductCard={(product, index) => this.renderCard({ product, index, renderIn: 'category' })}
-                billboard={billboard} products={products} description={description}
-            />
-        )
+    getCategory = ({ products, billboard, description,isTaxon }) => {
+        if(isTaxon){
+            return (
+                <CategoryView
+                    renderProductCard={(product, index,onFetchProducts) => this.renderTaxonCard({ product, index, renderIn: 'category',onFetchProducts,taxonId:product.id })}
+                    billboard={billboard} products={products} description={description}
+                />
+            )
+        }
+        else {
+            return (
+                <CategoryView
+                    renderProductCard={(product, index) => this.renderCard({ product, index, renderIn: 'category' })}
+                    billboard={billboard} products={products} description={description}
+                />
+            )
+        }
+        
     }
     async openCategory(id) {
         let { rsa, actionClass, msfReport } = this.getAppState();
@@ -335,15 +377,19 @@ export default class ShopClass {
             return { billboard: this.billboard, products: this.products, description: this.description, title: this.name }
         }
         if (this.spreeCampaign) {
-            debugger
             if (!this.products) {
-                this.products = await apis.request({
-                    api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
-                    parameter: { id: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
-                    cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'campaignProducts.item_' + this.cartId }
-                });
+                if(this.taxons){
+                    this.products = [...this.taxons]
+                }
+                else {
+                    this.products = await apis.request({
+                        api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
+                        parameter: { id: this.cartId,cartId:this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
+                        //cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'campaignProducts.item_' + this.cartId }
+                    });
+                }
             }
-            return { billboard: this.billboard, products: this.products, description: this.description, title: this.name }
+            return { billboard: this.billboard, products: this.products, description: this.description, title: this.name,isTaxon:!!this.taxons }
         }
         if (this.cartId === 'Regular') {
             let { spreeCategories } = this.getAppState();
@@ -352,11 +398,34 @@ export default class ShopClass {
             return { billboard, products, description, title: name }
         }
     }
-    renderCard({ product, renderIn, variantId, count, details, loading, index, style, type }) {
-        let { apis, rsa, actionClass, msfReport } = this.getAppState();
-
+    renderTaxonCard({ product, renderIn, index, style,onFetchProducts,taxonId,errors = [] }) {
+        let { apis, msfReport } = this.getAppState();
         let props = {
-            title: this.name, product, renderIn, variantId, count, details, loading, index, style, type,
+            title: product.name, product, renderIn, index, style,errors,
+            onClick: async () => {
+                if (this.spree && !product.products) {
+                    let products = await apis.request({
+                        api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
+                        parameter: { id: product.taxonId,cartId:this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
+                        //cache: { time: 30 * 24 * 60 * 60 * 1000, name: `campaignProducts.item_${this.cartId}_${product.id}` }
+                    });
+                    product.products = products;
+                    onFetchProducts(products)
+                }
+                msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
+            },
+            
+            renderProductCard:(product,index)=>{
+                if(renderIn === 'cart'){debugger}
+                return this.renderCard({ product, index, renderIn,taxonId });
+            }
+        }
+        return (<TaxonCard key={product.id} {...props} />)
+    }
+    renderCard({ product, renderIn, variantId, count, details, loading, index, style,taxonId, type }) {
+        let { apis, rsa, actionClass, msfReport } = this.getAppState();
+        let props = {
+            title: this.name, product, renderIn, variantId, count, details, loading, index, style, type,taxonId,cartId:this.cartId,CampaignId:this.CampaignId,
             onClick: async () => {
                 if (this.spree && !product.hasFullDetail) {
                     product = await apis.request({
@@ -368,35 +437,42 @@ export default class ShopClass {
                 msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
                 rsa.addModal({
                     position: 'fullscreen', id: 'product',
-                    body: { render: () => this.renderPage(product) },
+                    body: { render: () => this.renderPage(product,taxonId) },
                     header: { title: this.name, buttons: actionClass.getHeaderIcons({ cart: true }) }
                 })
             },
-            onRemove: () => actionClass.changeCart({ count: 0, variantId: product.code, product })
+            onRemove: () => actionClass.changeCart({ count: 0, variantId: product.code, product,cartId:this.cartId })
         }
         let Wrapper = this.spree ? RegularCard : BundleCard;
         return (<Wrapper key={product.id || product.code} {...props} />)
     }
-    renderPage(product) {
+    renderPage(product,taxonId) {
         let { cart, actionClass } = this.getAppState()
         let cartTab = cart[this.cartId];
         let cartItem;
         if (cartTab) {
             let { items = {} } = cartTab;
-            cartItem = items[product.code] || false
+            if(taxonId){
+                let taxon = items[taxonId] || {}
+                cartItem = taxon[product.code] || false
+            }
+            else {cartItem = items[product.code] || false}
+            
         }
         let props = {
-            product, cartItem, maxCart: this.maxCart,
+            product, cartItem, maxCart: this.maxCart,cartId:this.cartId,taxonId,CampaignId:this.CampaignId,
             onShowCart: () => actionClass.openPopup('cart'),
             //use in bundle
-            onChangeCount: (count) => actionClass.changeCart({ product, variantId: product.code, count })
+            onChangeCount: (count) => {
+                actionClass.changeCart({ product, variantId: product.code, count,cartId:this.cartId,taxonId,CampaignId:this.CampaignId })
+            }
         }
         let Wrapper = this.spree ? RegularPage : BundlePage;
         return <Wrapper {...props} />
     }
     renderCartFactor = (button = true) => {
         let res = this.getAmounts(undefined, 'cart');
-        let { payment } = res;
+        let { payment,hasError } = res;
         if(!button){
             return (
                 <RVD
@@ -438,7 +514,7 @@ export default class ShopClass {
                         },
                         { 
                             html: ()=>(
-                                <button 
+                                <button disabled={!!hasError}
                                     onClick={() => {
                                         let {rsa} = this.getAppState();
                                         rsa.removeModal('all');
@@ -483,7 +559,7 @@ class CategoryView extends Component {
         let { searchValue } = this.state;
         let { renderProductCard } = this.props;
         if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
-        return { html: renderProductCard(product, index), className: 'of-visible' }
+        return { html: renderProductCard(product, index,product.isTaxon?(products)=>{product.products = products; this.setState({})}:undefined), className: 'of-visible' }
     }
     getProductsBySearch(products) {
         let { searchValue } = this.state;
@@ -520,6 +596,49 @@ class CategoryView extends Component {
         )
     }
 }
+class TaxonCard extends Component {
+    not_has_products_layout() {
+        let { loading, onClick,product } = this.props;
+        return <RVD loading={loading} layout={{className: 'p-12 theme-box-shadow',onClick,html:product.name,}}/>
+    }
+    has_products_layout() {
+        let { product,renderProductCard,title,errors } = this.props;
+        return (
+            <RVD 
+                layout={{
+                    className: 'p-12 theme-box-shadow',
+                    column:[
+                        {html:title,size:24,align:'v'},
+                        {column:product.products.map((o,i)=>{return {html:renderProductCard(o,i)}})},
+                        {
+                            show:!!errors.length,
+                            className:'fs-12',style:{color:'red',background:'#fff'},
+                            column:errors.map(({minValue,maxValue,product,error})=>{
+                                return {
+                                    column:[
+                                        {
+                                            gap:12,align:'v',
+                                            row:[
+                                                {html:`حداقل مبلغ ${minValue} ریال`},
+                                                {html:`حداکثر مبلغ ${maxValue} ریال`},
+                                            ]
+                                        },
+                                        {html:error,align:'v'}
+                                    ]
+                                }
+                            })
+                        }
+                    ]
+                }}
+            />
+        )
+    }
+    render() {
+        let {product} = this.props;
+        if(!product.products){return this.not_has_products_layout()}
+        return this.has_products_layout()
+    }
+}
 class RegularCard extends Component {
     state = { mounted: false }
     image_layout() {
@@ -528,8 +647,8 @@ class RegularCard extends Component {
         return { flex: 1, align: 'vh', html: <img src={srcs[0] || NoSrc} width={'100%'} alt='' /> }
     }
     count_layout() {
-        let { product, renderIn, variantId } = this.props;
-        return { size: 36, html: () => <CartButton renderIn={renderIn} product={product} variantId={variantId} /> }
+        let { product, renderIn, variantId,cartId,taxonId,CampaignId } = this.props;
+    return { size: 36, html: () => <CartButton renderIn={renderIn} product={product} variantId={variantId} cartId={cartId} taxonId={taxonId} CampaignId={CampaignId}/> }
     }
     title_layout() {
         let { title } = this.props;
@@ -1126,7 +1245,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         };
     }
     addToCart_layout() {
-        let { product } = this.props;
+        let { product,cartId,taxonId,CampaignId } = this.props;
         let { selectedVariant } = this.state;
         if (!selectedVariant || !selectedVariant.inStock) {
             return { html: '' }
@@ -1134,7 +1253,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         return {
             column: [
                 { flex: 1 },
-                { html: (<CartButton variantId={selectedVariant.id} product={product} renderIn='product' />) },
+                { html: (<CartButton variantId={selectedVariant.id} product={product} renderIn='product' cartId={cartId} taxonId={taxonId} CampaignId={CampaignId}/>) },
                 { flex: 1 }
             ]
         }

@@ -47,7 +47,7 @@ export default class Search extends Component {
       return {
         flex: 1,className:'ofy-auto',
         column: result.map((o, i) => {
-          return {html:Shop_Regular.renderCard({index:i,product:o,type:'horizontal',renderIn:'search'})}
+          return {html:Shop_Regular.renderCard({index:i,product:o,type:'horizontal',renderIn:'search',taxonId:o.taxonId})}
         }),
       }
     }

@@ -152,12 +152,94 @@ export default class ActionClass {
 
         for (let i = 0; i < spreeCampaigns.length; i++) {
             let spreeCampaign = spreeCampaigns[i];
-            let { id, active } = spreeCampaign;
+            let ids = [10819,10820,10821,10822,10823,10824,10825,10826,10827,10828,10829,10830,10831,10832,10833,10834,10835,10836,10885,10883,10837,10838,10839,
+                10840,10841,10842,10886,10844,10845,10846,10849,10850,10853,10856,10857,10858,10859,10860,10861,10862,10863,10864,10865,10866,10867,10868,10869,
+                10870,10871,10847,10848,10851,10887,10852,10854,10855,10888,10872,10873,10874,10875,10876,10877,10878,10879,10880,10884,10881,10882]
+            let names = [
+'حبابی 7 وات',
+'حبابی 10 وات',
+'حبابی 12 وات',
+'حبابی 15 وات',
+'حبابی 20 وات',
+'حبابی 25 وات',
+'لامپ رنگی',
+'اشکی 6 وات',
+'شمعی 7 وات',
+'انعکاسی 6 و 7 وات',
+'گروه کالایی 6 (هالوژن)',
+'گروه کالایی 7 (fpl و قاب fpl )',
+'گروه کالایی 8 (چراغ خطی)',
+'پنل ۶۰ در ۶۰',
+'پنل پلی کربنات توکار 8 وات',
+'پنل پلی کربنات توکار 15 وات',
+'پنل پلی کربنات توکار 18 وات',
+'پنل پلی کربنات توکار 22 وات',
+'پنل پلی کربنات توکار 28 وات',
+'پنل 32 روکار - cob',
+'گروه کالایی 10 ( چراغ سقفی)',
+'باتری ۴ تایی ',
+'باتری دوتایی',
+'باتری ریموتی - متوسط و شارژی ',
+'باتری سکه ای ',
+'کلید مینیاتوری تک پل - ترک',
+'کلید مینیاتوری دو پل - ترک',
+'کلید مینیاتوری سه پل - ترک',
+'گروه کالایی 15  (محافظ جان )',
+'سیم افشان 1 در 1,5',
+'سیم افشان 1 در2.5',
+'سیم افشان 1 در4',
+'سیم افشان 1 در6',
+'کابل سری 2',
+'کابل سری 3',
+'کابل سری 4',
+'زوجی',
+'آنتن سپهر( مس)',
+'بست کمربندی',
+'فتوسل و آنتن',
+'محافظ تک راهی',
+'محافظ 3 خانه',
+'محافظ 6 خانه', 
+'چند راهی 5 خانه',
+'چسب سیلیکونی',
+'چسب 123',
+'محصولات رزا قلمو',
+'محصولات رزاغلتک',
+'محصولات رزا صفحه برش',
+'سنباده پشت کرکی و فلاپ دیسک',
+'سنباده برگی و سنباده رول',
+'دستکش',
+'قفل',
+'متر های فنی و مهندسی',
+'متر های فلزی',
+'آچار تخت و رینگی',
+'آچار یکسر جغجغه',
+'آچار آلن',
+'آچار فرانسه',
+'ست سوهان و مغار',
+'ست بکس',
+'ست پیچ گوشتی',
+'انبر میخ کش',
+'گروه انبر پرچ', 
+'گروه انبر دست',
+'گروه قیچی',
+'روغن دان و تلمبه پایی',
+'کابل باطری به باطری',
+'تورچ جوشکاری',
+            ]
+            if(spreeCampaign.id === '10818'){
+                let cacheCategories = apis.getCache('categories') || {}
+                let {categoryProducts = {}} = cacheCategories;                
+                spreeCampaign.taxons = ids.map((id,i)=>{
+                    let products = categoryProducts[`campaignProducts.item_10818_${id}`];
+                    return {id,name:names[i],isTaxon:true,products,taxonId:id}
+                })
+            }
+            let { id, active,taxons  } = spreeCampaign;
             if (!active) { continue }
             states.spreeCampaignIds.push(id);
             states[`Shop_${id}`] = new ShopClass({
                 getAppState: () => this.getState(),
-                config: { ...spreeCampaign, cartId: id, spree: true, spreeCampaign: true }
+                config: { ...spreeCampaign, cartId: id, spree: true, spreeCampaign: true,taxons:taxons && taxons.length?taxons:undefined }
             })
         }
         let { spreeCategories = [] } = backOffice;
@@ -321,35 +403,102 @@ export default class ActionClass {
         }
         return cartLength
     }
-    changeCart = async ({ count, variantId, product }) => {
-        let { cart, apis,msfReport } = this.getState();
-        let newCartTabItems = {};
-        let { cartId } = product;
-        let cartTab = cart[cartId];
-        //مقدار اولیه سبد خرید
-        if (!cartTab) { cartTab = { items: {} } }
-        //حذف از سبد خرید
-        if (count === 0) {
-            msfReport({actionName:'remove from cart',actionId:23,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
-            let res = {};
-            for (let prop in cartTab.items) {
-                if (prop.toString() !== variantId.toString()) { res[prop] = cartTab.items[prop] }
+    
+    removeCartItem = ({cartId,taxonId,variantId,product,CampaignId})=>{
+        let remove = (parent,itemId)=>{
+            let newParent = {};
+            let newLength = 0;
+            for(let item_id in parent){
+                if(item_id.toString() !== itemId.toString()){newLength++; newParent[item_id] = parent[item_id]}
             }
-            newCartTabItems = res;
+            return newLength?newParent:false
+        }
+        let { cart,msfReport } = this.getState();
+        let cartTab = cart[cartId];
+        let cartTabItems = cartTab.items;
+        if(taxonId){
+            let cartTabTaxonItems = remove(cartTabItems[taxonId].items,variantId);
+            cartTabItems = {...cartTabItems,[taxonId]:{...cartTabItems[taxonId],items:cartTabTaxonItems}}
+            if(!cartTabTaxonItems){cartTabItems = remove(cartTabItems,taxonId)}
+            if(cartTabItems){
+                let factorDetailsItems = []
+                let {items} = cartTabItems[taxonId];
+                let productDic = {}
+                for(let prop in items){
+                    let { variantId, count, product } = items[prop];
+                    let variant = product.variants.find((o) => o.id === variantId)
+                    productDic[variant.code] = product;
+                    factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
+                }
+                let errors = []
+                let factorDetails = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
+                let { MarketingLines } = factorDetails;
+                for(let i = 0; i < MarketingLines.length; i++){
+                    let {CampaignDetails = {},ItemCode} = MarketingLines[i];
+                    let {Status = 0,Information,BundleRowsInfos} = CampaignDetails;
+                    if(Status < 0){
+                        let {taxonId,minValue,maxValue} = BundleRowsInfos;
+                        errors.push({product:productDic[ItemCode],taxonId,minValue,maxValue,error:Information})
+                    }
+                }
+                cartTabItems[taxonId].errors = errors
+            }
+        }
+        else {cartTabItems = remove(cartTabItems,variantId);   }
+        msfReport({actionName:'remove from cart',actionId:23,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})    
+        let newCart = {...cart,[cartId]:{...cart[cartId],items:cartTabItems}}
+        if(!cartTabItems){newCart = remove(newCart.items,cartId)}
+        if(!newCart){newCart = {}}
+        return newCart
+    }
+    editCartItem = ({cartId,taxonId,variantId,count,product,CampaignId})=>{
+        let { cart,msfReport } = this.getState();
+        let cartTab = cart[cartId] || {items:{},taxonId};
+        let cartTabItems = cartTab.items;
+        if(taxonId){
+            cartTabItems[taxonId] = cartTabItems[taxonId] || {isTaxon:true,taxonId,items:{}}
+            if(!cartTabItems[taxonId].items[variantId]){
+                msfReport({actionName:'add to cart',actionId:24,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
+                cartTabItems[taxonId].items[variantId] = {product,variantId,count:0,isTaxon:true,taxonId}
+            }
+            cartTabItems[taxonId].items[variantId].count = count
+            let factorDetailsItems = []
+            let {items} = cartTabItems[taxonId];
+            let productDic = {}
+            for(let prop in items){
+                let { variantId, count, product } = items[prop];
+                let variant = product.variants.find((o) => o.id === variantId)
+                productDic[variant.code] = product;
+                factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
+            }
+            let errors = []
+            let factorDetails = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
+            let { MarketingLines } = factorDetails;
+            for(let i = 0; i < MarketingLines.length; i++){
+                let {CampaignDetails = {},ItemCode} = MarketingLines[i];
+                let {Status = 0,Information,BundleRowsInfos} = CampaignDetails;
+                if(Status < 0){
+                    let {taxonId,minValue,maxValue} = BundleRowsInfos;
+                    errors.push({product:productDic[ItemCode],taxonId,minValue,maxValue,error:Information})
+                }
+            }
+            cartTabItems[taxonId].errors = errors
         }
         else {
-            newCartTabItems = { ...cartTab.items }
-            //افزودن به سبد خرید
-            if (newCartTabItems[variantId] === undefined) {
-                msfReport({actionName:'add to cart',actionId:24,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
-                newCartTabItems[variantId] = { count, product, variantId }
+            if(!cartTabItems[variantId]){
+                cartTabItems[variantId] = {product,variantId,count:0}
             }
-            //ویرایش سبد خرید
-            else { newCartTabItems[variantId].count = count; }
+            cartTabItems[variantId].count = count
         }
-        clearTimeout(this.cartTimeout);
-        let newCart = { ...cart, [cartId]: { ...cartTab, items: newCartTabItems } };
-        this.cartTimeout = setTimeout(async () => await apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' }), 2000)
+        return {...cart,[cartId]:{...cartTab,items:cartTabItems}}
+    }
+    changeCart = async ({ count, variantId, product,taxonId,cartId,CampaignId }) => {
+        let { cart, apis } = this.getState();
+        let cartTab = cart[cartId];
+        if (!cartTab) { cartTab = { items: {},taxonId } }
+        let props = { cartId,count, variantId, product,taxonId,CampaignId }
+        let newCart = !count?this.removeCartItem(props):this.editCartItem(props);
+        await apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
         this.setState({ cart: newCart });
     }
     openPopup = async (type, parameter) => {
@@ -519,15 +668,24 @@ export default class ActionClass {
     getShopById = (id) => {
         return this.getState()[`Shop_${id}`]
     }
-    getCartItemsByProduct = (product) => {
+    getCartItemsByProduct = (product,cartId,taxonId) => {
         let { cart } = this.getState();
-        let { cartId } = product;
         if (!cart[cartId]) { return [] }
         let res = [];
         for (let i = 0; i < product.variants.length; i++) {
             let variant = product.variants[i];
-            let cartItem = cart[cartId].items[variant.id];
-            if (cartItem) { res.push(cartItem) }
+            if(taxonId){
+                let taxonItem = cart[cartId].items[taxonId];
+                if(taxonItem){
+                    let cartItem = cart[cartId].items[taxonId].items[variant.id];
+                    if (cartItem) { res.push(cartItem) }
+                }   
+            }
+            else{
+                let cartItem = cart[cartId].items[variant.id];
+                if (cartItem) { res.push(cartItem) }
+            }
+            
         }
         return res
     }

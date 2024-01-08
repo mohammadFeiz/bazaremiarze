@@ -18,7 +18,7 @@ export default class CategorySlider extends Component{
         row: products.map((product,i) =>{
             return {
               className:'of-visible',
-              html:(Shop_Regular.renderCard({type:'vertical',product,loading,renderIn:'category slider'}))
+              html:(Shop_Regular.renderCard({type:'vertical',product,loading,renderIn:'category slider',taxonId:product.taxonId}))
             }
         }),
       }

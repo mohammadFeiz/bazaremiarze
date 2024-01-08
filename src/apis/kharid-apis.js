@@ -301,9 +301,9 @@ export default function kharidApis({baseUrl,helper}) {
 
       return { result: campaigns };
     },
-    async getCampaignProducts({id,CampaignId,PriceListNum,name},{apis}) {
+    async getCampaignProducts({id,cartId,CampaignId,PriceListNum,name},{apis}) {
       let {products} = await apis.request({api:'kharid.getSpreeProducts',parameter:{ Taxons: id }});
-      let result = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, CampaignId,PriceListNum, cartId: id,cartName:name }});
+      let result = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, CampaignId,PriceListNum, cartId,cartName:name }});
       return { result };
     },
     async getCategoryProducts({id,count},{apis,Shop_Regular}) {
@@ -791,6 +791,7 @@ export default function kharidApis({baseUrl,helper}) {
       return {result:newCart}
     },
     async setCart(cart,{userInfo}) {
+      return {result:true}
       let cartStorage = AIOStorage('bazaremiarzeapis');
       cartStorage.save({name:'cart.' + userInfo.cardCode,value:cart});
       return {result:true}

@@ -180,6 +180,7 @@ export default class Shipping extends Component {
             <button
               className="button-2"
               onClick={async () => {
+                debugger
                 let { apis,getSettleType } = this.context;
                 let { PayDueDate, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo } = this.state;
                 let SettleType = getSettleType(PayDueDate);

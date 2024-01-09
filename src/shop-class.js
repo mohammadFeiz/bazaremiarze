@@ -168,6 +168,7 @@ export default class ShopClass {
         return { total, discounts, payment, ClubPoints: {} };//notice // ClubPoints!!!!
     }
     getFactorItems = (shippingOptions, container) => {
+        debugger
         let amounts = this.getAmounts(shippingOptions, container);
         let { total, payment, discounts, ClubPoints } = amounts;
         if (!total) { alert('missing total in ShopClass.getFactorItems') }
@@ -324,10 +325,25 @@ export default class ShopClass {
         })
     }
     getMarketingLiens_all(cartItems) {
-        return cartItems.map(({ product, variantId, count }) => {
-            let variant = product.variants.find((v) => v.id === variantId)
-            return { ItemCode: variant.code, ItemQty: count }
-        })
+        let res = [];
+        for(let i = 0; i < cartItems.length; i++){
+            let cartItem = cartItems[i];
+            if(cartItem.isTaxon){
+                let keys = Object.keys(cartItem.items);
+                for(let j = 0; j < keys.length; j++){
+                    let key = keys[i];
+                    let {variantId,product,count} = cartItem.items[key];
+                    let variant = product.variants.find((v) => v.id === variantId)
+                    res.push({ ItemCode: variant.code, ItemQty: count })
+                }
+            }
+            else {
+                let {variantId,product,count} = cartItem;
+                let variant = product.variants.find((v) => v.id === variantId)
+                res.push({ ItemCode: variant.code, ItemQty: count })
+            }
+        }
+        return res
     }
     getPaymentButtonText = (shippingOptions) => {
         if (this.cartId === 'Bundle') { return shippingOptions.SettleType !== 2 ? 'پرداخت' : 'ثبت' }
@@ -399,9 +415,9 @@ export default class ShopClass {
         }
     }
     renderTaxonCard({ taxon, renderIn, index, style,onFetchProducts,taxonId,errors = [] }) {
-        let { apis, msfReport } = this.getAppState();
+        let { apis, msfReport,cart } = this.getAppState();
         let props = {
-            title: taxon.name, taxon, renderIn, index, style,errors,
+            title: taxon.name, taxon, renderIn, index, style,errors,cart,cartId:this.cartId,
             onClick: async () => {
                 if (this.spree && !taxon.products) {
                     let products = await apis.request({
@@ -514,7 +530,8 @@ export default class ShopClass {
                         },
                         { 
                             html: ()=>(
-                                <button disabled={!!hasError}
+                                <button 
+                                    //disabled={!!hasError}
                                     onClick={() => {
                                         let {rsa} = this.getAppState();
                                         rsa.removeModal('all');
@@ -602,14 +619,38 @@ class TaxonCard extends Component {
         return <RVD loading={loading} layout={{className: 'p-12 theme-box-shadow',onClick,html:taxon.name,}}/>
     }
     has_products_layout() {
-        let { taxon,renderProductCard,title,errors } = this.props;
+        let { taxon,renderProductCard,title,errors,renderIn,cartId,cart } = this.props;
+        let products_layout;
+        if(renderIn === 'cart'){
+            let cartTab = cart[cartId] || {};
+            let cartItems = cartTab.items[taxon.id].items
+            let products = taxon.products.filter((o)=>{
+                let variantIds = o.variants.map((o)=>o.id)
+                for(let i = 0; i < variantIds.length; i++){
+                    let variantId = variantIds[i];
+                    if(cartItems[variantId]){return true}
+                }
+                return false                
+            })
+            products_layout = products.map((o,i)=>{
+                return {html:renderProductCard(o,i)}
+            })
+        }
+        else {
+            products_layout = taxon.products.map((o,i)=>{return {html:renderProductCard(o,i)}})
+        }
         return (
             <RVD 
                 layout={{
                     className: 'p-12 theme-box-shadow',
                     column:[
                         {html:title,size:24,align:'v'},
-                        {column:taxon.products.map((o,i)=>{return {html:renderProductCard(o,i)}})},
+                        {column:products_layout},
+                        {
+                            show:renderIn === 'cart' && !errors.length,align:'v',
+                            className:'fs-10',style:{color:'green',background:'#fff'},
+                            html:'تعداد انتخاب شده با شرایط منطبق است'
+                        },
                         {
                             show:!!errors.length,gap:6,
                             className:'fs-10',style:{color:'red',background:'#fff'},
@@ -662,7 +703,7 @@ class RegularCard extends Component {
         keys = keys.filter((variantId)=>!!variantsDic[variantId])
         if(!keys.length){return false}
         let column = keys.map((variantId)=>{
-            let {product} = cartItems[variantId];
+            let {product,count} = cartItems[variantId];
             let variant = product.variants.find((o) => o.id === variantId);
             let { optionTypes } = product;
             let { optionValues } = variant;
@@ -671,10 +712,17 @@ class RegularCard extends Component {
                 let optionType = optionTypes[j];
                 details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
             }
+            let unitTotal = product.FinalPrice * count
             return {
                 style:{background:'#f7f7f7'},className:'p-h-3',
                 row:[
-                    {align:'v',className:'theme-medium-font-color fs-10 bold',flex:1,gap:6,row:details.map(([key,value])=>{return {html:`${key} : ${value}`}})},
+                    {
+                        flex:1,align:'v',
+                        column:[
+                            {align:'v',className:'theme-medium-font-color fs-10 bold',gap:6,row:details.map(([key,value])=>{return {html:`${key} : ${value === undefined?'':value}`}})},
+                            {show:!isNaN(unitTotal),className:'theme-light-font-color fs-9',html:()=>`مجموع ${SplitNumber(unitTotal)} ریال`}
+                        ]
+                    },
                     {
                         html:(
                             <CartButton renderIn={'cart'} product={product} variantId={variantId} cartId={cartId} taxonId={taxonId} CampaignId={CampaignId}/>
@@ -698,7 +746,6 @@ class RegularCard extends Component {
     discount_layout() {
         let { product } = this.props;
         let { inStock, Price, B1Dscnt = 0, CmpgnDscnt = 0, PymntDscnt = 0 } = product;
-
         if (!Price || !inStock) { return false }
         return {
             gap: 4, className: 'p-h-12',
@@ -712,7 +759,7 @@ class RegularCard extends Component {
                         { show: !!CmpgnDscnt, html: <div style={{ background: '#ffa835', color: '#fff', padding: '1px 3px', fontSize: 12, borderRadius: 6 }}>{CmpgnDscnt + '%'}</div> },
                         { show: !!PymntDscnt, html: <div style={{ background: '#ff4335', color: '#fff', padding: '1px 3px', fontSize: 12, borderRadius: 6 }}>{(PymntDscnt) + '%'}</div> }//notice
                     ]
-                },
+                }
             ]
         }
     }

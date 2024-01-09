@@ -131,6 +131,11 @@ export default class ShopClass {
     getAmounts_Bundle(cartItems, shippingOptions = {}, container) {
         let { actionClass, backOffice } = this.getAppState();
         let { PayDueDate_options } = backOffice;
+        let total = 0;
+        for (let i = 0; i < cartItems.length; i++) {
+            let { count, product } = cartItems[i];
+            total += count.packQty * product.price;
+        }
         let payment = total;
         let { PayDueDate, discountCodeInfo, giftCodeInfo } = shippingOptions;
         let cashPercent = 100;
@@ -145,12 +150,6 @@ export default class ShopClass {
             payment -= value;
         }
         let DiscountList = actionClass.getCodeDetails({ discountCodeInfo, giftCodeInfo }) || {};
-        let total = 0;
-        for (let i = 0; i < cartItems.length; i++) {
-            let { count, product } = cartItems[i];
-            total += count.packQty * product.price;
-        }
-        
         if (DiscountList.DiscountPercentage) {
             let percent = DiscountList.DiscountPercentage;
             let value = payment * percent / 100;
@@ -875,6 +874,7 @@ class RegularCard extends Component {
     }
 }
 class BundleCard extends Component {
+    static contextType = appContext
     state = { mounted: false, removeMode: false }
     title_layout() {
         let { title } = this.props;
@@ -888,12 +888,16 @@ class BundleCard extends Component {
         }
     }
     image_layout() {
-        let { product } = this.props;
+        let {actionClass} = this.context;
+        let { product,renderIn } = this.props;
         let { src = '' } = product;
         return {
             column: [
                 {
                     flex: 1, size: 114, html: <img src={src} alt='' width='100%' height='100%' className='br-12' />
+                },
+                {
+                    show:renderIn === 'cart',size:30,html:'حذف از سبد',align:'vh',style:{color:'red'},className:'bold fs-14'
                 }
             ]
         }

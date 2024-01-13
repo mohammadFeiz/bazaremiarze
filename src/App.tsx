@@ -52,14 +52,15 @@ const getLoginInstance:I_getLoginInstance = function(parameter){
   }
   return new AIOLogin(props)
 }
-type I_Report_parameter = {apis:I_AIOService_class,phoneNumber?:string,userInfo:I_userInfo,obj:any}
+type I_Report_parameter = {
+  apis:I_AIOService_class,phoneNumber?:string,userInfo:I_userInfo,
+  actionName:string,actionId:3
+}
 type I_Report = (parameter:I_Report_parameter)=>void;
 const Report:I_Report = function(parameter){
-  let {userInfo,obj,phoneNumber = userInfo.phoneNumber,apis} = parameter;
+  let {userInfo,phoneNumber = userInfo.phoneNumber,apis,actionName} = parameter;
   phoneNumber = phoneNumber === undefined?userInfo.phoneNumber:phoneNumber;
-  let msfreports = this.msfReports || [];
-  let res = {...obj,phoneNumber,userId:userInfo.id}
-  this.msfreports.push(res);
+  let res = {actionName,phoneNumber,userId:userInfo.id}
   apis.request({
     api:'backOffice.report',loading:false,message:{error:false},
     parameter:res,description:'ارسال گزارش'
@@ -72,6 +73,7 @@ export default function App(){
   let [logger] = useState(new AIOLog('bmlog'))
   let [landing,setLanding] = useState(false);
   let [userInfo,setUserInfo] = useState<I_userInfo | undefined>()
+  let [userId,setUserId] = useState();
   const renderApp:I_AIOLogin_renderApp = ({token})=><Main {...this.getAppProps(token)}/>
   const renderLogin:I_AIOLogin_renderLogin = (loginForm)=><Splash content={()=>loginForm}/>
   const renderSplash:I_AIOLogin_renderSplash = ()=><Splash loading={true}/>
@@ -88,25 +90,30 @@ export default function App(){
     return result;
   }
   const onSubmit_OTPNumber = async(model:I_AIOLogin_model) => {
-    let res = await apis.request({ api: 'login.OTPNumber', parameter: model.login.userId, onCatch:onSubmit_onCatch,loading:false })
+    let res = await apis.request({api: 'login.OTPNumber', parameter: model.login.userId, onCatch:onSubmit_onCatch,loading:false,description:'ارسال شماره همراه' })
     if (typeof res === 'object') {
       //در اوتی پی بعد از ارسال شماره یک آی دی دریافت می شود که در ای پی آی او تی پی کد مورد نیاز است پس ما این آی دی رو در دیس ذخیره می کنیم
-      this.id = res.id;
+      setUserId(res.id);
       Login.setStorage('userId',model.login.userId);
       Login.setMode('OTPCode')
     }
   }
   const onSubmit_OTPCode = async (model:I_AIOLogin_model,mode:I_AIOLogin_mode)=>{
-    let response = await apis.request({ api: 'login.loginByOTPCode', onCatch:onSubmit_onCatch, parameter: { id:this.id, otpCode:model.login.password },loading:false })
-    this.handleLoginResponse(response,model.login.userId,mode) 
+    let response = await apis.request({ api: 'login.loginByOTPCode', onCatch:onSubmit_onCatch, parameter: { id:this.id, otpCode:model.login.password },loading:false,description:'ارسال کد یکبار مصرف' })
+    handleLoginResponse(response,model.login.userId,mode) 
   }
   const onSubmit_phoneNumber = async (model:I_AIOLogin_model,mode:I_AIOLogin_mode)=>{
-    let response = await apis.request({ api: 'login.loginByPhoneNumber', onCatch:onSubmit_onCatch, parameter: { phoneNumber:model.login.userId, password:model.login.password },loading:false })
-    this.handleLoginResponse(response,model.login.userId,mode) 
+    let response = await apis.request({ api: 'login.loginByPhoneNumber', onCatch:onSubmit_onCatch, parameter: { phoneNumber:model.login.userId, password:model.login.password },loading:false,description:'ورود با شماره همراه و رمز عبور' })
+    handleLoginResponse(response,model.login.userId,mode) 
   }
   const onSubmit_register = async (model:I_AIOLogin_model)=>{
-    this.msfReport({actionName:`register`,actionId:3,result:'success',tagName:'user authentication',eventName:'action'},model.login.userId)
-    this.updateProfile(model,'register',()=>window.location.reload())
+    msfReport({actionName:`register`,actionId:3,result:'success',tagName:'user authentication',eventName:'action'},model.login.userId)
+    updateProfile(model,'register',()=>window.location.reload())
+  }
+  const msfReport = (obj:{})=>{
+    Report({
+      apis,userInfo,
+    })
   }
   const checkToken:I_AIOLogin_checkToken = async (token) => {
     let { apis } = this.state;
@@ -119,6 +126,34 @@ export default function App(){
       if (isTokenValid === true) {return await this.handleUserInfo()}
       else if (isTokenValid === false) { return false }
     }
+  }
+  const handleLoginResponse = async (response,userId,mode) => {
+    if(typeof response === 'string'){
+      let report = {
+        actionName:`login by ${mode}`,
+        actionId:mode === 'OTPCode'?0:1,
+        result:'unsuccess',
+        message:response,
+        tagName:'user authentication',
+        eventName:'action'
+      }
+      msfReport(report,userId); 
+      return;
+    }
+    let { accessToken } = response;
+    let token = accessToken.access_token;
+    let userInfo = await this.getUserInfo(response);
+    if(!userInfo){return}
+    let registered = await apis.request({api:'login.checkIsRegistered',parameter:userId,loading:false});
+    if(registered){
+      Login.setStorage('userInfo',userInfo);
+      Login.setStorage('userId',userId);
+      Login.setStorage('token',token);
+      Login.setMode('auth'); 
+    }
+    else {Login.setMode('register');}
+    this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'success',tagName:'user authentication',eventName:'action'},userId)
+    this.setState({ userInfo });
   }
   let [Login] = useState<I_AIOLogin_class>(getLoginInstance({onSubmit,checkToken,renderLogin,renderApp,renderSplash}))
   
@@ -191,35 +226,7 @@ class Appjs extends Component {
     }
   }
   
-  async handleLoginResponse(response,userId,mode){
-    let { apis, Login } = this.state;
-    if(typeof response === 'string'){
-      let report = {
-        actionName:`login by ${mode}`,
-        actionId:mode === 'OTPCode'?0:1,
-        result:'unsuccess',
-        message:response,
-        tagName:'user authentication',
-        eventName:'action'
-      }
-      this.msfReport(report,userId); 
-      return;
-    }
-    let { accessToken } = response;
-    let token = accessToken.access_token;
-    let userInfo = await this.getUserInfo(response);
-    if(!userInfo){return}
-    let registered = await apis.request({api:'login.checkIsRegistered',parameter:userId,loading:false});
-    if(registered){
-      Login.setStorage('userInfo',userInfo);
-      Login.setStorage('userId',userId);
-      Login.setStorage('token',token);
-      Login.setMode('auth'); 
-    }
-    else {Login.setMode('register');}
-    this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'success',tagName:'user authentication',eventName:'action'},userId)
-    this.setState({ userInfo });
-  }
+  
   
   getAppProps(token){
     let { userInfo, backOffice, apis, Login, baseUrl,Logger } = this.state;

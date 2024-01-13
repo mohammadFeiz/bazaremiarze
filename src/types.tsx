@@ -29,7 +29,9 @@ export type I_AIOLogin_class = {
 /////aio-login
 /////aio-service
 export type I_AIOService_request = (obj:{
-    api:string,parameter?:any,loading?:boolean,onCatch?:I_AIOService_onCatch
+    api:string,parameter?:any,loading?:boolean,onCatch?:I_AIOService_onCatch,
+    message?:{error?:boolean | string,success?:boolean | string},
+    description:string
 })=>any
 export type I_AIOService_class = {
     request:I_AIOService_request

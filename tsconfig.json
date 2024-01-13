@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "allowImportingTsExtensions": true,
+        "noEmit": true, // or "emitDeclarationOnly": true
+        "jsx": "react", // Specify the JSX factory you're using (e.g., "react" for React applications)
+        "esModuleInterop": true,        // Enable interoperability between CommonJS and ES modules
+        "target": "ES6",
+        "module":"CommonJS",
+    }
+}
+

@@ -85,13 +85,6 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             Logger.add('b1Info',{customer:b1Info.customer,salePeople:b1Info.salePeople},'b1Info')
             let { customer = {} } = b1Info;
             let ballance = customer.ballance;
-            let visitorMobile;
-            try { visitorMobile = b1Info.salePeople.mobile }
-            catch { visitorMobile = '' }
-            if (isNaN(ballance)) {
-                console.error(`b1Info.customer.ballance is ${ballance} but we set it on 0`)
-                ballance = 0;
-            }
             let isAdmin = IsAdmin(userInfo.userName,backOffice);
             let isSuperAdmin = IsSuperAdmin(userInfo.userName);
             let result = {
@@ -104,7 +97,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                 slpname: customer.slpname,
                 groupCode: customer.groupCode,
                 ballance: -ballance,
-                visitorMobile
+                //visitorMobile //notice
             }
             if(result.lastName === null){result.lasName = ''}
             Logger.add('userInfo',{...result,itemPrices:'prevent show manually'},'userInfo')

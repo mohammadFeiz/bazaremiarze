@@ -1,8 +1,12 @@
 /////aio-login
-export type I_AIOLogin_mode = 'OTPNumber' | 'phoneNumber' | 'OTPCode'
+export type I_AIOLogin_mode = (
+    'OTPNumber' | 'phoneNumber' | 'OTPCode' | 'auth' |
+    'register'
+)
 export type I_AIOLogin_model = {
   login:{userId:string,password:string},
-  register:{[field:string]:any}
+  register:{[field:string]:any},
+  profile?:any
 }
 export type I_AIOLogin_onSubmit = (model:I_AIOLogin_model,mode:I_AIOLogin_mode)=>Promise<void>
 export type I_AIOLogin_checkToken = (token:string | false)=>Promise<boolean | undefined>
@@ -39,9 +43,42 @@ export type I_AIOService_class = {
 export type I_AIOService_onCatch = (error:any)=>string | undefined
 
 /////aio-service
-export type I_userInfo = {
+export type I_BMUserInfo = {
+    landlineNumber:string,
+    landline:string,
+    latitude:number,
+    longitude:number,
+    firstName:string,
+    lastName:string,
+    userName:string,
+    password:string,
+    storeName:string,
+    address:string,
+    userProvince:string,
+    userCity:string,
+    id:string,
     phoneNumber:string,
-    id:string
+    cardCode:string,
+    isAdmin:boolean,
+    isSuperAdmin:boolean,
+
+}
+export type I_B1UserInfo = {
+    itemPrices:any[],//notice
+    salePeople:{
+        mobile:string
+    },
+    customer:{
+        ballance:number,
+        groupName:string,
+        slpcode:string,
+        slpname:string,
+        groupCode:string
+    }
+}
+export type I_userInfo = {
+    b1:I_B1UserInfo,
+    bm:I_BMUserInfo
 }
 export type I_register = {
     landlineNumber: string,
@@ -57,5 +94,5 @@ export type I_register = {
     userCity: string
 }
 export type backOffice = {
-
+    accessPhoneNumbers:{phoneNumber:string,access:{[field:string]:boolean}}[]
 }

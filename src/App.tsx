@@ -9,7 +9,7 @@ import getApiFunctions from './apis/apis';
 import './App.css';
 import './theme.css';
 import Splash from './components/spalsh/splash';
-import { I_AIOLogin_checkToken, I_AIOLogin_class, I_AIOLogin_mode, I_AIOLogin_model, I_AIOLogin_onSubmit, I_AIOLogin_props, I_AIOLogin_renderApp, I_AIOLogin_renderLogin, I_AIOLogin_renderSplash, I_AIOService_class, I_AIOService_onCatch, I_userInfo } from './types';
+import { I_AIOLogin_checkToken, I_AIOLogin_class, I_AIOLogin_mode, I_AIOLogin_model, I_AIOLogin_onSubmit, I_AIOLogin_props, I_AIOLogin_renderApp, I_AIOLogin_renderLogin, I_AIOLogin_renderSplash, I_AIOService_class, I_AIOService_onCatch, I_BMUserInfo, I_userInfo } from './types';
 type I_getBaseUrl = ()=>string
 const getBaseUrl:I_getBaseUrl = function() {
   //return "https://apimy.burux.com/api/v1";
@@ -52,28 +52,26 @@ const getLoginInstance:I_getLoginInstance = function(parameter){
   }
   return new AIOLogin(props)
 }
-type I_Report_parameter = {
-  apis:I_AIOService_class,phoneNumber?:string,userInfo:I_userInfo,
-  actionName:string,actionId:3
+type I_report = {
+  actionName:string,actionId:number,targetName?:string,targetId?:number,
+  tagName:'kharid' | 'vitrin' | 'profile' | 'other' | 'user authentication',eventName:'action' | 'page view',
+  result?:'success' | 'unsuccess',message?:string
+}
+type I_msfReport = (obj:I_report,p?:{userId?:string,phoneNumber?:string})=>void
+interface I_Report_parameter extends I_report {
+  apis:I_AIOService_class;phoneNumber:string;userId:string;
 }
 type I_Report = (parameter:I_Report_parameter)=>void;
 const Report:I_Report = function(parameter){
-  let {userInfo,phoneNumber = userInfo.phoneNumber,apis,actionName} = parameter;
-  phoneNumber = phoneNumber === undefined?userInfo.phoneNumber:phoneNumber;
-  let res = {actionName,phoneNumber,userId:userInfo.id}
+  let {phoneNumber,userId,apis,actionName} = parameter;
+  let res = {actionName,phoneNumber,userId}
   apis.request({
     api:'backOffice.report',loading:false,message:{error:false},
     parameter:res,description:'ارسال گزارش'
   })
 }
+
 export default function App(){
-  let [baseUrl] = useState<string>(getBaseUrl());
-  let [apis] = useState<I_AIOService_class>(getApisInstance(baseUrl,()=>{return {}}))
-  let [pageError,setPageError] = useState<{text:string,subtext:string}>()
-  let [logger] = useState(new AIOLog('bmlog'))
-  let [landing,setLanding] = useState(false);
-  let [userInfo,setUserInfo] = useState<I_userInfo | undefined>()
-  let [userId,setUserId] = useState();
   const renderApp:I_AIOLogin_renderApp = ({token})=><Main {...this.getAppProps(token)}/>
   const renderLogin:I_AIOLogin_renderLogin = (loginForm)=><Splash content={()=>loginForm}/>
   const renderSplash:I_AIOLogin_renderSplash = ()=><Splash loading={true}/>
@@ -107,12 +105,15 @@ export default function App(){
     handleLoginResponse(response,model.login.userId,mode) 
   }
   const onSubmit_register = async (model:I_AIOLogin_model)=>{
-    msfReport({actionName:`register`,actionId:3,result:'success',tagName:'user authentication',eventName:'action'},model.login.userId)
+    msfReport({actionName:`register`,actionId:3,result:'success',tagName:'user authentication',eventName:'action'},{phoneNumber:model.login.userId})
     updateProfile(model,'register',()=>window.location.reload())
   }
-  const msfReport = (obj:{})=>{
+  const msfReport:I_msfReport = (obj,p)=>{
+    let {bm = {}} = userInfo || {};
+    let {id = p.userId,phoneNumber = p.phoneNumber} = bm as I_BMUserInfo;
+    let {actionName,actionId,eventName,targetName,targetId,tagName} = obj
     Report({
-      apis,userInfo,
+      apis,userId:id,phoneNumber,actionName,actionId,eventName,targetName,targetId,tagName
     })
   }
   const checkToken:I_AIOLogin_checkToken = async (token) => {
@@ -123,28 +124,23 @@ export default function App(){
       this.setState({backOffice,landing})
       if(!token){return false}
       let isTokenValid = await apis.request({api: 'login.checkToken', parameter: token,loading:false,onCatch: () => 'خطای 10037.این کد خطا را به پشتیبانی اعلام کنید'})
-      if (isTokenValid === true) {return await this.handleUserInfo()}
+      if (isTokenValid === true) {return await handleUserInfo()}
       else if (isTokenValid === false) { return false }
     }
   }
   const handleLoginResponse = async (response,userId,mode) => {
     if(typeof response === 'string'){
-      let report = {
-        actionName:`login by ${mode}`,
-        actionId:mode === 'OTPCode'?0:1,
-        result:'unsuccess',
-        message:response,
-        tagName:'user authentication',
-        eventName:'action'
-      }
-      msfReport(report,userId); 
+      msfReport({
+        actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'unsuccess',
+        message:response,tagName:'user authentication',eventName:'action'
+      },{userId}); 
       return;
     }
     let { accessToken } = response;
     let token = accessToken.access_token;
-    let userInfo = await this.getUserInfo(response);
+    let userInfo = await getUserInfo(response);
     if(!userInfo){return}
-    let registered = await apis.request({api:'login.checkIsRegistered',parameter:userId,loading:false});
+    let registered = await apis.request({api:'login.checkIsRegistered',parameter:userId,loading:false,description:'دریافت اطلاعات ثبت نام'});
     if(registered){
       Login.setStorage('userInfo',userInfo);
       Login.setStorage('userId',userId);
@@ -152,43 +148,22 @@ export default function App(){
       Login.setMode('auth'); 
     }
     else {Login.setMode('register');}
-    this.msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'success',tagName:'user authentication',eventName:'action'},userId)
+    msfReport({actionName:`login by ${mode}`,actionId:mode === 'OTPCode'?0:1,result:'success',tagName:'user authentication',eventName:'action'},userId)
     this.setState({ userInfo });
   }
-  let [Login] = useState<I_AIOLogin_class>(getLoginInstance({onSubmit,checkToken,renderLogin,renderApp,renderSplash}))
-  
-  
-  
-}
-class Appjs extends Component {
-  async getUserInfo(userInfo = this.state.userInfo) {
+  const getUserInfo = async (userInfo) => {
     let {backOffice} = this.state;
-    return await this.state.apis.request({ api: 'login.getUserInfo', parameter: {userInfo,backOffice}, description: 'دریافت اطلاعات کاربری',loading:false })
+    return await apis.request({ api: 'login.getUserInfo', parameter: {userInfo,backOffice}, description: 'دریافت اطلاعات کاربری',loading:false })
   }
-  
-  async updateProfile(loginModel,mode,callback){
-    let model = {};
-    if(mode === 'register'){model = loginModel.register}
-    else if(mode === 'profile'){model = loginModel.profile}
-    else if(mode === 'location'){model = loginModel.profile}
-    let {apis,userInfo} = this.state;
-    let obj = {
-      ...userInfo,
-      landlineNumber:model.phone,
-      landline:model.phone,
-      latitude:model.location.lat,
-      longitude:model.location.lng,
-      firstName:model.firstname,
-      lastName:model.lastname,
-      password:model.password,
-      storeName:model.storeName,
-      address:model.address,
-      userProvince:model.state,
-      userCity:model.city
-    }
-    let description = {register:'ثبت نام',profile:'ویرایش حساب کاربری',location:'ثبت موقعیت جغرافیایی'}[mode]
+  const updateProfile = async(loginModel:I_AIOLogin_model,mode:'register' | 'profile' | 'location',callback?:Function) =>{
+    let model = {},description:string;
+    if(mode === 'register'){model = loginModel.register; description = 'ثبت نام'}
+    else if(mode === 'profile'){model = loginModel.profile; description = 'ویرایش حساب کاربری'}
+    else if(mode === 'location'){model = loginModel.profile; description = 'ثبت موقعیت جغرافیایی'}
+    let oldUserInfo = (userInfo || {}) as I_userInfo;
+    let newUserInfo:I_userInfo = {bm:{...oldUserInfo.bm,...model},b1:{...oldUserInfo.b1}}
     let res = await apis.request({
-        api:'login.profile',parameter:{model:{...userInfo,...obj},mode},description,loading:false,
+        api:'login.profile',parameter:{model:newUserInfo,mode},description,loading:false,
         onCatch:(error)=>{
             let {response,message,Message} = error;
             if(response && response.data){
@@ -212,7 +187,7 @@ class Appjs extends Component {
       callback()
     }
   }
-  async handleUserInfo(){
+  const handleUserInfo = async () => {
     let {Login} = this.state;
     let userInfo = Login.getStorage('userInfo')
     if(typeof userInfo !== 'object' || !userInfo.cardCode || typeof userInfo.cardCode !== 'string'){
@@ -225,6 +200,23 @@ class Appjs extends Component {
       return true
     }
   }
+  let [baseUrl] = useState<string>(getBaseUrl());
+  let [apis] = useState<I_AIOService_class>(getApisInstance(baseUrl,()=>{return {}}))
+  let [pageError,setPageError] = useState<{text:string,subtext:string}>()
+  let [logger] = useState(new AIOLog('bmlog'))
+  let [landing,setLanding] = useState(false);
+  let [userInfo,setUserInfo] = useState<I_userInfo | undefined>()
+  let [userId,setUserId] = useState();
+  let [Login] = useState<I_AIOLogin_class>(getLoginInstance({onSubmit,checkToken,renderLogin,renderApp,renderSplash}))
+  
+  
+  
+}
+class Appjs extends Component {
+  
+  
+  
+  
   
   
   

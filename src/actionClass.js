@@ -728,7 +728,7 @@ let mins = [
             })
         }
         else if (type === 'password') {
-            msfReport({actionName:'open password popup',actionId:24,tagName:'prodile',eventName:'page view'})
+            msfReport({actionName:'open password popup',actionId:24,tagName:'profile',eventName:'page view'})
             addModal({ id: type, position: 'fullscreen', body: { render: () => <PasswordPopup /> }, header: { title: 'مشاهده و ویرایش رمز عبور' } })
         }
         else if (type === 'peygiriye-sefareshe-kharid') {

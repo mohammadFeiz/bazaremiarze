@@ -40,7 +40,7 @@ export default class Main extends Component {
       body:({ render,id,text }) => {
         if(id !== this.lastNavId){
           let {msfReport} = this.props;
-          msfReport({actionName:'tab',actionId:7,targetName:text,targetId:id,tagName:'id',eventName:'page view'})  
+          msfReport({actionName:'tab',actionId:7,targetName:text,targetId:id,tagName:id,eventName:'page view'})  
         }
         this.lastNavId = id;
 
@@ -55,7 +55,7 @@ export default class Main extends Component {
       developerMode:false,actionClass,Logger,updateProfile,Login:props.Login,apis:props.apis,rsa,userInfo:props.userInfo,backOffice: props.backOffice,baseUrl,msfReport:props.msfReport,
       logout:()=>{
         let {Login,msfReport} = this.props;
-        msfReport({actionName:'logout',actionId:875,tagName:'user auth',eventName:'action'});
+        msfReport({actionName:'logout',actionId:875,tagName:'user authentication',eventName:'action'});
         Login.logout();
       },
       vitrin:{

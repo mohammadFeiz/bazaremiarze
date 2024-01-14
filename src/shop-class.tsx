@@ -15,12 +15,79 @@ import SearchBox from './components/search-box/index';
 
 import appContext from './app-context';
 import noItemSrc from './images/not-found.png';
-
+import { I_ShopProps_taxon, I_app_state, I_product, I_shopRenderIn } from "./types";
 
 export default class ShopClass {
+    getAppState:()=>I_app_state;
+    taxons?:I_ShopProps_taxon;
+    cartId:string;
+    id:string;
+    renderCard:(
+        p:{ 
+            product:I_product, renderIn:I_shopRenderIn, variantId:string, count:number, 
+            details?:any, loading?:boolean, index?:number, style?:any, taxonId?:string, type?:any 
+        }
+    )=>React.ReactNode;
+    renderTaxonCard:(
+        p:{
+            taxon:I_ShopProps_taxon, renderIn:I_shopRenderIn, index?:number, onFetchProducts:any, errors?:any[],hasErrors?:any[] 
+        }
+    )=>React.ReactNode
+    name:string;
+    CampaignId?:number;
     constructor({ getAppState, config }) {
         this.getAppState = getAppState;
-        this.update(config)
+        this.update(config);
+        this.renderCard = (p) => {
+            let { product, renderIn, variantId, count, details, loading, index, style, taxonId, type } = p;
+            let { apis, rsa, actionClass, msfReport, cart } = this.getAppState();
+            let props = {
+                cart,
+                title: this.name, product, renderIn, variantId, count, details, loading, index, style, type, taxonId, cartId: this.cartId, CampaignId: this.CampaignId,
+                onClick: async () => {
+                    if (!product.hasFullDetail) {
+                        product = await apis.request({
+                            api: 'kharid.getProductFullDetail',
+                            parameter: { id: product.id, code: product.defaultVariant.code, product }
+                        })
+                        product.hasFullDetail = true;
+                    }
+                    msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
+                    rsa.addModal({
+                        position: 'fullscreen', id: 'product',
+                        body: { render: () => this.renderPage(product, taxonId) },
+                        header: { title: this.name, buttons: actionClass.getHeaderIcons({ cart: true }) }
+                    })
+                },
+                onRemove: () => actionClass.changeCart({ count: 0, variantId: product.code, product, cartId: this.cartId })
+            }
+            let Wrapper = this.id === 'Bundle' ? BundleCard : RegularCard;
+            return (<Wrapper key={product.id || product.code} {...props} />)
+        }
+        this.renderTaxonCard = (p) => {
+            let { taxon, renderIn, index, onFetchProducts, errors = [],hasErrors = [] } = p;
+            let { apis, msfReport, cart } = this.getAppState();
+            let props = {
+                title: taxon.name, taxon, renderIn, index, style, errors, cart, cartId: this.cartId,hasErrors,
+                onClick: async () => {
+                    if (!taxon.products) {
+                        let products = await apis.request({
+                            api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
+                            parameter: { id: taxon.id, cartId: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
+                            cache: { time: 30 * 24 * 60 * 60 * 1000, name: `campaigns.campaignProducts.item_${this.cartId}_${taxon.id}` }
+                        });
+                        taxon.products = products;
+                        onFetchProducts(products)
+                    }
+                    msfReport({ actionName: 'open product', actionId: 5, targetName: taxon.name, targetId: taxon.id, tagName: 'kharid', eventName: 'page view' })
+                },
+    
+                renderProductCard: (product, index) => {
+                    return this.renderCard({ product, index, renderIn, taxonId });
+                }
+            }
+            return (<TaxonCard key={taxon.id} {...props} />)
+        }
     }
     update(obj) { for (let prop in obj) { this[prop] = obj[prop]; } }
     getCartItems = () => {
@@ -34,15 +101,14 @@ export default class ShopClass {
         let { cart } = this.getAppState();
         let cartTab = cart[this.cartId];
         if (!cartTab) { return [] }
-        let { taxonId } = cartTab;
         let cartItems = this.getCartItems();
         if (this.cartId === 'Bundle') { return this.getCartProducts_Bundle(cartItems, renderIn) }
-        else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions, taxonId) }
+        else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions) }
     }
     getCartProducts_Bundle = (cartItems, renderIn) => {
         return cartItems.map(({ product, count, variantId }) => this.renderCard({ product, count, variantId, renderIn }))
     }
-    getCartProducts_all = (cartItems, renderIn, shippingOptions, taxonId) => {//notice // shippingOptions here never used
+    getCartProducts_all = (cartItems, renderIn, shippingOptions) => {//notice // shippingOptions here never used
         if (this.taxons) {
             let hasErrors =  cartItems.filter((cartItem, i) => {
                 let errors = cartItem.errors;
@@ -74,7 +140,7 @@ export default class ShopClass {
                     details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
                 }
                 let props = {
-                    key: variantId, variantId, index: i, product, details, type: 'horizontal', taxonId,
+                    key: variantId, variantId, index: i, product, details, type: 'horizontal',
                     renderIn, cartId: this.cartId
                 }
                 return this.renderCard(props)
@@ -425,54 +491,7 @@ export default class ShopClass {
         }
         
     }
-    renderTaxonCard({ taxon, renderIn, index, style, onFetchProducts, taxonId, errors = [],hasErrors = [] }) {
-        let { apis, msfReport, cart } = this.getAppState();
-        let props = {
-            title: taxon.name, taxon, renderIn, index, style, errors, cart, cartId: this.cartId,hasErrors,
-            onClick: async () => {
-                if (!taxon.products) {
-                    let products = await apis.request({
-                        api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
-                        parameter: { id: taxon.id, cartId: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
-                        cache: { time: 30 * 24 * 60 * 60 * 1000, name: `campaigns.campaignProducts.item_${this.cartId}_${taxon.id}` }
-                    });
-                    taxon.products = products;
-                    onFetchProducts(products)
-                }
-                msfReport({ actionName: 'open product', actionId: 5, targetName: taxon.name, targetId: taxon.id, tagName: 'kharid', eventName: 'page view' })
-            },
-
-            renderProductCard: (product, index) => {
-                return this.renderCard({ product, index, renderIn, taxonId });
-            }
-        }
-        return (<TaxonCard key={taxon.id} {...props} />)
-    }
-    renderCard({ product, renderIn, variantId, count, details, loading, index, style, taxonId, type }) {
-        let { apis, rsa, actionClass, msfReport, cart } = this.getAppState();
-        let props = {
-            cart,
-            title: this.name, product, renderIn, variantId, count, details, loading, index, style, type, taxonId, cartId: this.cartId, CampaignId: this.CampaignId,
-            onClick: async () => {
-                if (!product.hasFullDetail) {
-                    product = await apis.request({
-                        api: 'kharid.getProductFullDetail',
-                        parameter: { id: product.id, code: product.defaultVariant.code, product }
-                    })
-                    product.hasFullDetail = true;
-                }
-                msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
-                rsa.addModal({
-                    position: 'fullscreen', id: 'product',
-                    body: { render: () => this.renderPage(product, taxonId) },
-                    header: { title: this.name, buttons: actionClass.getHeaderIcons({ cart: true }) }
-                })
-            },
-            onRemove: () => actionClass.changeCart({ count: 0, variantId: product.code, product, cartId: this.cartId })
-        }
-        let Wrapper = this.CartId === 'Bundle' ? BundleCard : RegularCard;
-        return (<Wrapper key={product.id || product.code} {...props} />)
-    }
+    
     renderPage(product, taxonId) {
         let { cart, actionClass } = this.getAppState()
         let cartTab = cart[this.cartId];

@@ -10,32 +10,21 @@ export default function Cart(props:I_Cart) {
   let {cartId} = props;
   let { cart,Shop } = context;
   let [activeTabId,setActiveTabId] = useState<string|false>(false)
-  let [tabs,setTabs] = useState<string[]>([])
+  let tabs = Object.keys(cart);
   useEffect(()=>update(),[])
   useEffect(()=> {
-    let { activeTabId, tabs } = this.state;
-    let emptyCartItems = tabs.filter((o) => {
-      let cartTab = cart[o] || {items:{}} 
-      return !Object.keys(cartTab.items).length
-    })
-    if (emptyCartItems.length) {
-      update();
-      return;
-    }
-    if (tabs.length && activeTabId !== false && tabs.indexOf(activeTabId) === -1) {
-      update()
-    }
-  },[cart,activeTabId])
+    if(activeTabId !== false && !cart[activeTabId]){update()}
+  },[cart])
   function update() {
-    let tabs = Object.keys(cart).filter((o) => {
-      return !!Object.keys(cart[o].items).length
-    });
     let activeTabId = cartId || tabs[0] || false;
-    this.setState({ activeTabId, tabs })
+    this.setActiveTabId(activeTabId)
   }
   function getBadge(option:string){
-    let cartTab = cart[option] || {items:{}}
-    return <div className='tab-badge'>{Object.keys(cartTab.items).length}</div>
+    let cartTab = cart[option]
+    let length:number;
+    if(cartTab.isTaxon === true){length = Object.keys(cartTab.taxons).length}
+    else{length = Object.keys(cartTab.products).length}
+    return <div className='tab-badge'>{length}</div>
   }
   function tabs_layout() {
     if(!tabs.length){return false}
@@ -80,7 +69,7 @@ export default function Cart(props:I_Cart) {
     <RVD
       layout={{
         flex: 1, className: 'theme-popup-bg',
-        column: [this.tabs_layout(), this.products_layout(), this.payment_layout()]
+        column: [tabs_layout(), products_layout(), payment_layout()]
       }}
     />
   )

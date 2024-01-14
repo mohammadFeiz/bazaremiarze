@@ -140,15 +140,17 @@ export type I_ShopProps = {
     icon?:string,
     maxCart?:number,
     PriceListNum?:number,
-    taxons?:[id:string,name:string,min:number,max:number][]
+    taxons?:I_ShopProps_taxon[],
 } 
+export type I_ShopProps_taxon = [id:string,name:string,min:number,max:number]
 export type I_ShopClass = {
     billboard?:string,icon?:string,name:string,
     openCategory:(id?:string)=>void,
     payment:(p:{ address, SettleType, PaymentTime, DeliveryType, PayDueDate, cartId, giftCodeInfo, discountCodeInfo })=>boolean
-    getCartProducts:(renderIn:'product'|'shipping'|'cart'|'category',shippingOptions?:I_shippingOptions)=>React.ReactNode[],
+    getCartProducts:(renderIn:I_shopRenderIn,shippingOptions?:I_shippingOptions)=>React.ReactNode[],
     renderCartFactor:()=>React.ReactNode
 }
+export type I_shopRenderIn = 'product'|'shipping'|'cart'|'category';
 export type I_app_state = {
     backOffice:I_state_backOffice,
     apis:I_AIOService_class,
@@ -172,16 +174,19 @@ export type I_actionClass = {
             CampaignId?:number,PriceListNum?:number 
         }
     )=>any[],//notice
+    changeCart:(p:{ count:number, variantId:string, product:I_product,taxonId?:string,cartId:string,CampaignId?:number })=>void,
+    getHeaderIcons:(p:{[key:string]:boolean})=>any[]
 }
 export type I_state_spreeCategories = { icon_type: I_spreeCategory[], slider_type: I_spreeCategory[], dic: {} }
 export type I_state_Shop = {[shopId:string]:I_ShopClass}
 /////cart
-export type I_state_cart = {[cartId:string]:(I_cartTab | I_cartTaxon)}
-export type I_cartTab = {items:{[variantId:string]:I_cartItem}}
-export type I_cartItem = {product:any,count:number,variantId:string}
-export type I_cartTaxon = {items:{[taxonId:string]:I_cartTaxonItem},isTaxon:true}
-export type I_cartTaxonItem = {
-    taxonId:string,items:{[variantId:string]:I_cartItem},
+export type I_state_cart = {[cartId:string]:(I_cartTab | I_cartTab_isTaxon)}
+export type I_cartTab = {products:{[productId:string]:I_cartProduct},isTaxon?:false}
+export type I_cartProduct = {variants:{[variantId:string]:I_cartVariant},product:I_product}
+export type I_cartVariant = {count:number,variant:I_variant};
+export type I_cartTab_isTaxon = {taxons:{[taxonId:string]:I_cartTaxon},isTaxon:true}
+export type I_cartTaxon = {
+    taxonId:string,products:{[productId:string]:I_cartProduct},
     errors?:{product:any,taxonId:string,minValue:number,maxValue:number,error:string}[]
 }
 /////cart
@@ -197,4 +202,5 @@ export type I_msfReport = (obj: I_report, p?: { userId?: string, phoneNumber?: s
 export type I_updateProfile = (loginModel: I_AIOLogin_model, mode: 'register' | 'profile' | 'location', callback?: Function)=>void
 
 
-export type I_product = any
+export type I_product = any;
+export type I_variant = any;

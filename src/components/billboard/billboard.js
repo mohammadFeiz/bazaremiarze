@@ -16,7 +16,7 @@ export default class Billboard extends Component{
         this.setState({homeBillboards})
     }
     getItems(){
-        let {backOffice,userInfo,Shop_Bundle,spreeCampaignIds = [],actionClass} = this.context;
+        let {backOffice,b1Info,Shop_Bundle,spreeCampaignIds = [],actionClass} = this.context;
         let {renderIn} = this.props;
         let {homeBillboards} = this.state;
         let items = [];
@@ -36,7 +36,7 @@ export default class Billboard extends Component{
             }
         }
         
-        if(renderIn === 'home' && !!backOffice.activeManager.garanti && userInfo.slpcode){
+        if(renderIn === 'home' && !!backOffice.activeManager.garanti && b1Info.customer.slpcode){
             items.push({
                billboard:Sookhte,
                onClick:()=>actionClass.openPopup('sabteGarantiJadid')

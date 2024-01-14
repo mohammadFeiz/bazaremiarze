@@ -536,7 +536,7 @@ export default function kharidApis({baseUrl,helper}) {
       let result = actionClass.getShopById(cartId).payment(obj);
       return {result}
     },
-    async getProductFullDetail({ id, code, product },{userInfo,actionClass,apis}) {
+    async getProductFullDetail({ id, code, product },{b1Info,actionClass,apis}) {
       //پروداکت رو همینجوری برای اینکه یک چیزی ریترن بشه فرستادم تو از کد و آی دی آبجکت کامل پروداکت رو بساز و ریترن کن
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
         {Ids: id,PerPage: 250,Include: "variants,option_types,product_properties,images"}
@@ -587,7 +587,7 @@ export default function kharidApis({baseUrl,helper}) {
           price = await apis.request({api:'kharid.updateCampaignPrice',parameter:{campaignId:product.campaign.id, item:price}})
         }
         if (price === undefined) continue;
-        let sss = userInfo.itemPrices.find(x => x.itemCode === varSku || x.mainSku === varSku);
+        let sss = b1Info.itemPrices.find(x => x.itemCode === varSku || x.mainSku === varSku);
         if (!sss) { sss = {} }
         let { canSell, qtyRelation } = sss;
         variants.push({
@@ -614,7 +614,7 @@ export default function kharidApis({baseUrl,helper}) {
       product.optionTypes = optionTypes;
       return {result:product};
     },
-    async getTaxonProducts({ loadType, Taxons, Name },{ userInfo,apis }) {
+    async getTaxonProducts({ loadType, Taxons, Name },{ userInfo,b1Info,apis }) {
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
         {
           CardCode: userInfo.cardCode,Taxons,PerPage: 250,Skame: Name,
@@ -624,7 +624,7 @@ export default function kharidApis({baseUrl,helper}) {
 
       if (res.data.data.status === 500) {return {result:false}}
       const spreeData = res.data.data;
-      const b1Data = userInfo.itemPrices.map((i) => {
+      const b1Data = b1Info.itemPrices.map((i) => {
         return {
           "itemCode": i.itemCode,
           "price": 0,
@@ -638,7 +638,7 @@ export default function kharidApis({baseUrl,helper}) {
       let result = await apis.request({api:'kharid.getMappedAllProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data, loadType }})
       return {result};
     },
-    async getSpreeProducts({ Taxons,pageSize = 250,pageNumber,ids,Name,vitrin },{ userInfo,apis }) {
+    async getSpreeProducts({ Taxons,pageSize = 250,pageNumber,ids,Name,vitrin },{ userInfo,b1Info,apis }) {
       let body = {
         vitrin,
         CardCode: userInfo.cardCode,Taxons,Name,ids,PerPage: pageSize,Page:pageNumber,
@@ -653,10 +653,10 @@ export default function kharidApis({baseUrl,helper}) {
       let b1Data;
       if(!vitrin){
         if(!userInfo.itemPrices){
-          helper.showAlert({type:'error',text:`userInfo.itemPrices is not valid`})
+          helper.showAlert({type:'error',text:`b1Info.itemPrices is not valid`})
           return {result:[]}
         }
-        b1Data = userInfo.itemPrices.map((i) => {
+        b1Data = b1Info.itemPrices.map((i) => {
           return {
             "itemCode": i.itemCode,
             "price": 0,

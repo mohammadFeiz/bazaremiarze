@@ -27,7 +27,9 @@ export type I_AIOLogin_props = {
 }
 export type I_AIOLogin_class = {
     setStorage:(key:string,value:any)=>void,
-    setMode:(mode:I_AIOLogin_mode)=>void
+    getStorage:(key:string)=>any,
+    setMode:(mode:I_AIOLogin_mode)=>void,
+    render:()=>React.ReactNode
 }
 
 /////aio-login
@@ -35,15 +37,16 @@ export type I_AIOLogin_class = {
 export type I_AIOService_request = (obj:{
     api:string,parameter?:any,loading?:boolean,onCatch?:I_AIOService_onCatch,
     message?:{error?:boolean | string,success?:boolean | string},
-    description:string
+    description:string,getError?:I_AIOService_getError
 })=>any
 export type I_AIOService_class = {
-    request:I_AIOService_request
+    request:I_AIOService_request,
+    setToken:(token:string)=>void
 }
 export type I_AIOService_onCatch = (error:any)=>string | undefined
-
+export type I_AIOService_getError = (response:any)=>string | undefined
 /////aio-service
-export type I_BMUserInfo = {
+export type I_userInfo = {
     landlineNumber:string,
     landline:string,
     latitude:number,
@@ -59,11 +62,10 @@ export type I_BMUserInfo = {
     id:string,
     phoneNumber:string,
     cardCode:string,
-    isAdmin:boolean,
-    isSuperAdmin:boolean,
+    accessToken:{access_token:string}
 
 }
-export type I_B1UserInfo = {
+export type I_B1Info = {
     itemPrices:any[],//notice
     salePeople:{
         mobile:string
@@ -76,10 +78,7 @@ export type I_B1UserInfo = {
         groupCode:string
     }
 }
-export type I_userInfo = {
-    b1:I_B1UserInfo,
-    bm:I_BMUserInfo
-}
+
 export type I_register = {
     landlineNumber: string,
     landline: string,
@@ -93,6 +92,10 @@ export type I_register = {
     userProvince: string,
     userCity: string
 }
-export type backOffice = {
-    accessPhoneNumbers:{phoneNumber:string,access:{[field:string]:boolean}}[]
+export type I_backOffice_accessPhoneNumber = {phoneNumber:string,access:{[field:string]:boolean}};
+export type I_backOffice = {
+    accessPhoneNumbers:I_backOffice_accessPhoneNumber[]
+    landing:{type:'billboard' | 'image' | 'description' | 'label',url?:string,text?:string}[],
+    active_landing:boolean,
+    isAdmin:(userInfo:I_userInfo)=>boolean,isSuperAdmin:(userInfo:I_userInfo)=>boolean
 }

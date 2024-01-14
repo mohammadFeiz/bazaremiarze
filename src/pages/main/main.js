@@ -12,7 +12,7 @@ import "./index.css";
 export default class Main extends Component {
   constructor(props) {
     super(props);
-    let { baseUrl,Logger,updateProfile } = this.props;
+    let { baseUrl,Logger,updateProfile,userInfo,b1Info,Login,apis,backOffice,msfReport } = props;
     props.apis.setProperty('getState',()=>{return {...this.state}});
     let actionClass = new ActionClass({
       getSelf:()=>this,
@@ -52,7 +52,7 @@ export default class Main extends Component {
     
     actionClass.manageUrl();
     this.state = {
-      developerMode:false,actionClass,Logger,updateProfile,Login:props.Login,apis:props.apis,rsa,userInfo:props.userInfo,backOffice: props.backOffice,baseUrl,msfReport:props.msfReport,
+      developerMode:false,actionClass,Logger,updateProfile,Login,apis,rsa,userInfo,backOffice,baseUrl,msfReport,b1Info,
       logout:()=>{
         let {Login,msfReport} = this.props;
         msfReport({actionName:'logout',actionId:875,tagName:'user auth',eventName:'action'});

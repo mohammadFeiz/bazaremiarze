@@ -59,7 +59,7 @@ export default class Home extends Component {
         return { html: <Billboard renderIn='home'/>,align:'h' }
     }
     cartAndWallet_layout(){
-        let {userInfo,actionClass,backOffice} = this.context;
+        let {b1Info,actionClass,backOffice} = this.context;
         let cartLength = actionClass.getCartLength()
         return {
             className:'of-visible theme-gap-h',
@@ -69,7 +69,7 @@ export default class Home extends Component {
                     className:'of-visible',flex:1,
                     html:()=>(
                         <Card
-                            type='card1' title='کیف پول' value={SplitNumber(Math.max(userInfo.ballance * 10,0))} unit='ریال'
+                            type='card1' title='کیف پول' value={SplitNumber(Math.max(b1Info.customer.ballance * 10,0))} unit='ریال'
                             icon={getSvg(29,{width:30,height:30})} onClick={()=>actionClass.openPopup('wallet')}
                         />
                     )
@@ -113,8 +113,8 @@ export default class Home extends Component {
         }
     }
     garanti_layout(){
-        let {guaranteeItems = [],actionClass,backOffice,userInfo} = this.context;
-        if(!backOffice.activeManager.garanti || !userInfo.slpcode){return false}
+        let {guaranteeItems = [],actionClass,backOffice,b1Info} = this.context;
+        if(!backOffice.activeManager.garanti || !b1Info.customer.slpcode){return false}
         return {
             className:'theme-gap-h m-t-12 of-visible',
             column:[

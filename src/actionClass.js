@@ -37,9 +37,10 @@ export default class ActionClass {
         this.setState = setState;
     }
     getSideItems = () => {
-        let { userInfo, backOffice, Logger } = this.getProps();
+        let { userInfo,b1Info, backOffice, Logger } = this.getProps();
         let { logout } = this.getState();
-        let { slpcode, isAdmin } = userInfo;
+        let { slpcode } = b1Info.customer;
+        let isAdmin = backOffice.isAdmin(userInfo);
         let { activeManager } = backOffice;
         let icon = (path) => <Icon path={path} size={0.8} />
         return [
@@ -53,14 +54,17 @@ export default class ActionClass {
         ]
     }
     getNavItems = () => {
-        let { backOffice, userInfo } = this.getProps();
+        let { userInfo } = this.getProps();
         let icon = (path) => <Icon path={path} size={.9} />
+        let firstName = userInfo.firstName;
+        let lastName = userInfo.lastName;
+        lastName = typeof lastName !== 'string'?'':lastName;
         return [
             { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin",render:()=><Vitrin/> },
             { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=><Bazargah/> },
             { text: "خانه", icon: () => getSvg('home'), id: "khane",render:()=><Home/> },
             { text: "خرید", icon: () => icon(mdiShopping), id: "kharid",render:()=><Buy/> },
-            { text: () => `${userInfo.firstName} ${userInfo.lastName}`, marquee: true, icon: () => icon(mdiAccountBox), id: "profile",render:()=><Profile/> },
+            { text: () => `${firstName} ${lastName}`, marquee: true, icon: () => icon(mdiAccountBox), id: "profile",render:()=><Profile/> },
         ]
     }
     getSideFooter = ()=>{
@@ -104,9 +108,7 @@ export default class ActionClass {
     }
 
     manageUrl = () => {
-        //let { userInfo } = this.getProps()
         let wrl = window.location.href;
-        //this.addAnaliticsHistory({userId:userInfo.phoneNumber})
         let jsonUrl = UrlToJson(wrl)
         if (jsonUrl.status === '2') {
             alert('خطا در پرداخت')
@@ -442,17 +444,17 @@ let mins = [
     getFactorDetails = (items, shippingOptions = {}, container) => {
         let { PaymentTime, PayDueDate, DeliveryType, giftCodeInfo, discountCodeInfo,CampaignId } = shippingOptions;
         let DiscountList = this.getCodeDetails({ giftCodeInfo, discountCodeInfo });
-        let { userInfo } = this.getProps();
+        let { userInfo,b1Info } = this.getProps();
         let { Logger,getSettleType } = this.getState();
         let SettleType = getSettleType(PayDueDate)
         let config = {
             "CardCode": userInfo.cardCode,
-            "CardGroupCode": userInfo.groupCode,
+            "CardGroupCode": b1Info.customer.groupCode,
             "MarketingLines": items,
             "DeliverAddress": userInfo.address,
             "DiscountList": DiscountList,
             "marketingdetails": { 
-                "SlpCode": userInfo.slpcode, 
+                "SlpCode": b1Info.customer.slpcode, 
                 SettleType, PaymentTime, PayDueDate, DeliveryType, DiscountList,
                 Campaign:CampaignId
              }
@@ -470,17 +472,17 @@ let mins = [
         return res
     }
     fixPrice = ({ items, CampaignId, PriceListNum }) => {
-        let { userInfo } = this.getProps();
+        let { userInfo,b1Info } = this.getProps();
         let {Logger} = this.getState();
-        if (!userInfo.groupCode) { console.error('fixPrice missing userInfo.groupCode') }
+        if (!b1Info.customer.groupCode) { console.error('fixPrice missing userInfo.groupCode') }
         if (!userInfo.cardCode) { console.error('fixPrice missing userInfo.cardCode') }
-        if (!userInfo.slpcode) { console.error('fixPrice missing userInfo.slpcode') }
+        if (!b1Info.customer.slpcode) { console.error('fixPrice missing userInfo.slpcode') }
         let data = {
-            "CardGroupCode": userInfo.groupCode,
+            "CardGroupCode": b1Info.customer.groupCode,
             "CardCode": userInfo.cardCode,
             "marketingdetails": {
                 "PriceList": PriceListNum,
-                "SlpCode": userInfo.slpcode,
+                "SlpCode": b1Info.customer.slpcode,
                 "Campaign": CampaignId
             },
             "MarketingLines": items
@@ -681,7 +683,7 @@ let mins = [
             addModal({body: {render},id: 'categories',header: { title: 'دسته بندی محصولات' }})
         }
         else if (type === 'profile') {
-            let { userInfo,Login,updateProfile} = this.getProps();
+            let { Login,updateProfile} = this.getProps();
             msfReport({actionName:'open profile',actionId:20,tagName:'profile',eventName:'page view'})
             let mode = parameter;
             let title = {profile:'ویرایش حساب کاربری',location:'ثبت موقعیت جغرافیایی'}[mode]

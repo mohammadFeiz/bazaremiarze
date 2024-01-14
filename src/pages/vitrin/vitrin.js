@@ -36,7 +36,7 @@ export default class Vitrin extends Component {
         let {backOffice,userInfo} = this.context;
         let {splash} = this.state;
         if(splash){return <div className='w-100 h-100 align-vh'><Loading/></div> }
-        if(!backOffice.activeManager.vitrin && !userInfo.isSuperAdmin){
+        if(!backOffice.activeManager.vitrin && !backOffice.isSuperAdmin(userInfo)){
             return <div className='w-100 h-100 align-vh fs-12'>سرویس ویترین تا اطلاع ثانوی در حال بروز رسانی میباشد</div>    
         }
         let { vitrin } = this.context, { started } = vitrin;

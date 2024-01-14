@@ -292,7 +292,7 @@ export default class ShopClass {
     }
     getOrderBody = ({ PaymentTime, DeliveryType, PayDueDate, address, giftCodeInfo, discountCodeInfo }) => {
         let appState = this.getAppState();
-        let { userInfo, actionClass, getSettleType } = appState;
+        let { userInfo,b1Info, actionClass, getSettleType } = appState;
         let DiscountList = actionClass.getCodeDetails({ giftCodeInfo, discountCodeInfo })
         let marketingLines = this.getMarketingLines()
         let SettleType = getSettleType(PayDueDate)
@@ -302,7 +302,7 @@ export default class ShopClass {
                 "DiscountList": DiscountList,
                 "DocType": this.cartId === 'Bundle' ? 17 : undefined,
                 "CardCode": userInfo.cardCode,
-                "CardGroupCode": userInfo.groupCode,
+                "CardGroupCode": b1Info.customer.groupCode,
                 "MarketingLines": marketingLines,
                 "DeliverAddress": address,
                 "marketingdetails": { Campaign: this.B1Id }

@@ -1,8 +1,8 @@
 import Axios from "axios";
 export default function guarantiApis({baseUrl,helper}) {
   return {
-    async garantiItems(undefined,{userInfo}) {
-      let res = await Axios.get(`${baseUrl}/Guarantee/Requests?slpCode=${userInfo.slpcode}&page=${1}&perPage=${20}`);
+    async garantiItems(undefined,{b1Info}) {
+      let res = await Axios.get(`${baseUrl}/Guarantee/Requests?slpCode=${b1Info.customer.slpcode}&page=${1}&perPage=${20}`);
       if(res.status === 401){return {result:false}}
       if (res.data === null || !res.data || !res.data.isSuccess || !res.data.data) {return {result:[]}}
       let items = res.data.data.data;
@@ -47,8 +47,8 @@ export default function guarantiApis({baseUrl,helper}) {
       });
       return {result}
     },
-    async sabte_kalahaye_garanti(items,{userInfo}) {
-      let res = await Axios.post(`${baseUrl}/Guarantee/Equivalent`, { SlpCode: userInfo.slpcode,
+    async sabte_kalahaye_garanti(items,{b1Info}) {
+      let res = await Axios.post(`${baseUrl}/Guarantee/Equivalent`, { SlpCode: b1Info.customer.slpcode,
          Detail: items.map(x=>{
           return {
             ItemCode:x.code,
@@ -59,7 +59,7 @@ export default function guarantiApis({baseUrl,helper}) {
            };
          })});
 
-            // let res = await Axios.post(`${baseUrl}/Guarantee/Equivalent`, { SlpCode: userInfo.slpcode,
+            // let res = await Axios.post(`${baseUrl}/Guarantee/Equivalent`, { SlpCode: b1Info.customer.slpcode,
       //    Detail: {
       //     ItemCode:x.code,Quantity:items.reduce((partialSum, a) => partialSum + a.Qty, 0),
       //     Variants: items.map(x=>{

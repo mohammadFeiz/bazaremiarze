@@ -33,7 +33,7 @@ export default class Shipping extends Component {
     }
   }
   async componentDidMount() {
-    let { userInfo, backOffice } = this.context;
+    let { userInfo,b1Info, backOffice } = this.context;
     let { cartId } = this.props;
     let defaultShipping = backOffice[cartId]
     if(!defaultShipping){
@@ -54,7 +54,7 @@ export default class Shipping extends Component {
       code: userInfo.cardCode,
       address: userInfo.address,
       phone: userInfo.phoneNumber,
-      customerGroup: userInfo.groupName
+      customerGroup: b1Info.customer.groupName
     })
   }
   address_layout() {

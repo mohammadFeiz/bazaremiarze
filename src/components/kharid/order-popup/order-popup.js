@@ -76,7 +76,7 @@ export default class OrderPopup extends Component {
       }
     }
     details_layout(){
-      let {userInfo} = this.context;
+      let {b1Info} = this.context;
       let {order} = this.state;
       let {details = {}} = order;
       details.basePrice = details.basePrice || 0
@@ -87,7 +87,7 @@ export default class OrderPopup extends Component {
           this.getRow("تاریخ ثبت", order.date),
           this.splitter_layout(),
           this.getRow("نام مشتری",details.customerName + " - " + details.customerCode),
-          this.getRow("گروه مشتری", userInfo.groupName),
+          this.getRow("گروه مشتری", b1Info.customer.groupName),
           this.getRow("نام کمپین", details.campaignName),
           this.getRow("قیمت پایه", SplitNumber(details.basePrice) + ' ریال'),
           this.getRow("نام ویزیتور", details.visitorName),

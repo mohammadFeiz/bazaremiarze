@@ -42,8 +42,9 @@ export default class Wallet extends Component{
         this.setState({items,cards})
     }
     header_layout(){
-        let {userInfo,actionClass} = this.context;
+        let {b1Info,actionClass} = this.context;
         let {onClose} = this.props;
+        let ballance = b1Info.customer.ballance;
         return {
             className:'blue-gradient',
             column:[
@@ -70,8 +71,8 @@ export default class Wallet extends Component{
                         {flex:1},
                         {html:'تراز حساب',className:'fs-12 colorC7E7F4',align:'v'},
                         {size:12},
-                        {row:[{html:' بدهکاری',align:'v'},{size:6}],show:userInfo.ballance < 0,className:'colorA4262C fs-16 bold'},
-                        {html:userInfo.ballance < 0?SplitNumber(-userInfo.ballance):SplitNumber(userInfo.ballance),className:`color-fff ${userInfo.ballance < 0?'fs-16':'fs-28'} bold`,align:'v'},
+                        {row:[{html:' بدهکاری',align:'v'},{size:6}],show:ballance < 0,className:'colorA4262C fs-16 bold'},
+                        {html:ballance < 0?SplitNumber(-ballance):SplitNumber(ballance),className:`color-fff ${ballance < 0?'fs-16':'fs-28'} bold`,align:'v'},
                         {size:6},
                         {html:'ریال',className:'fs-14 color-fff',align:'v'},
                         {flex:1}
@@ -81,7 +82,7 @@ export default class Wallet extends Component{
                 {
                     row:[
                         {flex:1},
-                        {html:this.headerButton_layout(getSvg('arrowTopRight'),'برداشت','bardasht',userInfo.ballance <= 0)},
+                        {html:this.headerButton_layout(getSvg('arrowTopRight'),'برداشت','bardasht',ballance <= 0)},
                         {size:24},
                         {html:this.headerButton_layout(getSvg('arrowDown'),'شارژ حساب','variz')},
                         {flex:1}
@@ -96,7 +97,8 @@ export default class Wallet extends Component{
     }
     headerButton_layout(icon,text,type,disabled){
         let {cards} = this.state;
-        let {userInfo} = this.context;
+        let {b1Info} = this.context;
+        let ballance = b1Info.customer.ballance
         return (
             <AIOInput
                 type='button' caret={false}
@@ -119,7 +121,7 @@ export default class Wallet extends Component{
                 backdropAttrs={{style:{background:'rgba(0,0,0,0.8)'}}}
                 popOver={disabled?undefined:()=>{
                     if(type === 'bardasht'){
-                        if(userInfo.ballance > 0){return <BardashtPopup cards={cards} mojoodi={userInfo.ballance}/>}
+                        if(ballance > 0){return <BardashtPopup cards={cards} mojoodi={ballance}/>}
                     }
                     if(type === 'variz'){return <VarizPopup/>}
                 }}

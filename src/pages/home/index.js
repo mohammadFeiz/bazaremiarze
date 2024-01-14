@@ -319,9 +319,9 @@ class Call extends Component{
     static contextType = appContext;
     render(){
         let {onClose} = this.props;
-        let {userInfo} = this.context;
-        let {visitorMobile} = userInfo;
-    
+        let {b1Info} = this.context;
+        let mobile = b1Info.salePeople.mobile;
+        
         return (
             <RVD
                 layout={{
@@ -329,15 +329,15 @@ class Call extends Component{
                     column:[
                         {flex:1,attrs:{onClick:()=>onClose()}},
                         {
-                            size:48,className:'m-b-12',show:!!visitorMobile,
+                            size:48,className:'m-b-12',show:!!mobile,
                             row:[
                                 {size:12},
-                                {html:<a style={{height:48}} href={`tel:${visitorMobile}`}>{getSvg('tamasbavizitor')}</a>,align:'vh'},
+                                {html:<a style={{height:48}} href={`tel:${mobile}`}>{getSvg('tamasbavizitor')}</a>,align:'vh'},
                                 {size:12},
                                 {
                                     column:[
                                         {html:'تماس با ویزیتور',align:'v',style:{color:'#fff'},className:'fs-14'},
-                                        {html:visitorMobile,align:'v',style:{color:'#fff'},className:'fs-12'}
+                                        {html:mobile,align:'v',style:{color:'#fff'},className:'fs-12'}
                                     ]
                                 }
                             ]

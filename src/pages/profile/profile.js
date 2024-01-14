@@ -29,7 +29,7 @@ export default class Profile extends Component{
                     after:getSvg('chevronLeft'),
                     text:'جزییات درخواست های گارانتی',
                     icon:getSvg(14,{className:'theme-medium-font-color'}),
-                    show:()=>!!this.context.backOffice.activeManager.garanti && !!this.context.userInfo.slpcode,
+                    show:()=>!!this.context.backOffice.activeManager.garanti && !!this.context.b1Info.customer.slpcode,
                     onClick:async ()=>{
                         let {SetState,apis,actionClass} = this.context;
                         let guaranteeItems = await apis.request({api:'guaranti.garantiItems',description:'دریافت لیست کالاهای گارانتی کاربر'});
@@ -47,11 +47,11 @@ export default class Profile extends Component{
         return {className:'m-h-12 of-visible',html:<Card type='card4' items={parts}/>}
     }
     getContent(){
-        let {guaranteeItems = [],userInfo,actionClass,backOffice,apis,SetState} = this.context;
+        let {guaranteeItems = [],userInfo,b1Info,actionClass,backOffice,apis,SetState} = this.context;
         let slpname,slpcode;
         try{
-            slpname = userInfo.slpname || 'تعیین نشده';
-            slpcode = userInfo.slpcode || 'تعیین نشده';
+            slpname = b1Info.customer.slpname || 'تعیین نشده';
+            slpcode = b1Info.customer.slpcode || 'تعیین نشده';
         }
         catch{
             slpname = 'تعیین نشده';
@@ -83,7 +83,6 @@ export default class Profile extends Component{
                     size:36,
                     row:[
                         {flex:1},
-                        //{className:'theme-dark-font-color fs-20 bold',html:userInfo.cardName,align:'vh'},
                         {className:'theme-dark-font-color fs-20 bold',html:`${userInfo.firstName} ${!userInfo.lastName || userInfo.lastName === null?'':userInfo.lastName}`,align:'vh'},
                         {flex:1}
                     ]
@@ -98,7 +97,7 @@ export default class Profile extends Component{
                                 [['کد مشتری',userInfo.cardCode],['نام فروشگاه',userInfo.storeName]],
                                 [['نام ویزیتور',slpname],['کد ویزیتور',slpcode]],
                                 [
-                                    ['گروه مشتری',userInfo.groupName],
+                                    ['گروه مشتری',b1Info.customer.groupName],
                                     [
                                         'رمز ورود',
                                         <button 
@@ -122,13 +121,13 @@ export default class Profile extends Component{
                             html:()=>(
                                 <Card
                                     type='card3' footer='جزییات کیف پول'
-                                    rows={[[['کیف پول',SplitNumber(Math.max(userInfo.ballance * 10,0)) + ' ریال']]]}
+                                    rows={[[['کیف پول',SplitNumber(Math.max(b1Info.customer.ballance * 10,0)) + ' ریال']]]}
                                     onClick={()=>this.setState({showWallet:true})}
                                 />
                             )
                         },
                         {
-                            flex:1,className:'of-visible',show:!!backOffice.activeManager.garanti && !!userInfo.slpcode,          
+                            flex:1,className:'of-visible',show:!!backOffice.activeManager.garanti && !!b1Info.customer.slpcode,          
                             html:()=>(
                                 <Card
                                     type='card3'

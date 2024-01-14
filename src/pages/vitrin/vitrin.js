@@ -23,7 +23,7 @@ export default class Vitrin extends Component {
         setTimeout(()=>this.setState({splash:false}),2500)
     }
     start() {
-        let { apis, vitrin, actionClass,userInfo } = this.context;
+        let { apis, vitrin, actionClass } = this.context;
         apis.request({
             api: 'vitrin.v_setStarted', parameter: true, description: 'شروع ویترین',
             onSuccess: () => vitrin.update({ started: true }, () => {

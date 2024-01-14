@@ -183,13 +183,13 @@ export default class Main extends Component {
     this.state.signalR = signalR;
   }
   async componentDidMount() {
-    let { userInfo } = this.props;
-    let {vitrin,rsa} = this.state;
+    let { b1Info } = this.props;
+    let {vitrin} = this.state;
     vitrin.fetchData();
     let {backOffice,actionClass} = this.state;
     await actionClass.startPricing()
     await actionClass.getShopState();
-    if (backOffice.activeManager.garanti && userInfo.slpcode) { actionClass.getGuaranteeItems(); }
+    if (backOffice.activeManager.garanti && b1Info.customer.slpcode) { actionClass.getGuaranteeItems(); }
     if (backOffice.activeManager.bazargah) { actionClass.getBazargahOrders(); }
     actionClass.handleMissedLocation()
     this.setState({mounted:true})

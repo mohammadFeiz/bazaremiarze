@@ -1,73 +1,70 @@
 import Axios from "axios";
 import nosrcImage from './../images/no-src.png';
 import nosrc from './../images/no-src.png';
-import foroosheVijeIcon from './../images/forooshe-vije-icon.png';
 import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
-
-export default function kharidApis({baseUrl,helper}) {
-  class getTaxonsTree{
-    res = []
-    getTree = (data)=>this.getTree_req(data)
-    getTree_req = (data,parentId) => data.filter((o)=>o.parentId === parentId).map((o)=>{
-      return {id:o.id,name:o.name,parentId:o.parentId,childs:this.getTree_req(data,o.id)}
-    })
-  }
-  return {
-    async getSpreeTaxonomies(){
-      const response = await Axios.post(`${baseUrl}/spree/getAllCategories`,{Taxon:10673,});
-      let list = response.data.data.data;
-      list = list.map(({attributes,relationships,id})=>{
-        let {name,is_leaf,is_root} = attributes;
-        let {parent} = relationships;
-        let parentId = parent.data.id;
-        return {name,id,parentId}
-      })
-      list = new getTaxonsTree().getTree(list);
-      // return [
-      //   {
-      //     id:'0',name:'cat-0',
-      //     childs:[
-      //       {id:'00',name:'cat_00'},
-      //       {id:'01',name:'cat_01'}
-      //     ]
-      //   },
-      //   {
-      //     id:'1',name:'cat-1',
-      //     childs:[
-      //       {id:'10',name:'cat_10'},
-      //       {id:'11',name:'cat_11'}
-      //     ]
-      //   }
-      // ]
+import { I_ShopProps, I_app_state, I_product, I_state_cart } from "../types";
+type I_chekcCode_return = any;
+type I_updateProductPrice_return = I_product[]
+type I_getCampaigns_return = { cartId: string, name: string, id: string, src: string, CampaignId: number, PriceListNum: number }[];
+type I_getCampaignProducts_return = I_product[]
+type I_getCategoryProducts_return = I_product[]
+type I_getCategories_return = { name: string, id: string }[]
+type I_ni = (p: any, appState?: I_app_state) => any
+type I_apiFunctions = {
+  checkCode: (p: { code: string }) => Promise<{ result: I_chekcCode_return }>,
+  updateProductPrice: (
+    p: {
+      products: I_product[],
+      CampaignId?: number,
+      PriceListNum?: number,
+      cartName: string
     },
-    async checkCode({type,code}){
+    appState: I_app_state
+  ) => { result: I_updateProductPrice_return },
+  tarikhche_sefareshate_kharid: I_ni,
+  mahsoolate_sefareshe_kharid: I_ni,
+  getCampaigns: (ids: string[]) => Promise<{ result: I_getCampaigns_return }>,
+  getCampaignProducts: (p: I_ShopProps, appState: I_app_state) => Promise<{ result: I_getCampaignProducts_return }>,
+  getCategoryProducts: (p: { id: string, count?: number }, appState: I_app_state) => Promise<{ result: I_getCategoryProducts_return }>
+  preOrders: I_ni,
+  search: I_ni,
+  getCategories: (ids: string[], appState?: I_app_state) => Promise<{ result: I_getCategories_return }>
+  getVariantOptionValues: I_ni,
+  getProductVariant: I_ni,
+  sortIncluded: I_ni,
+  getMappedAllProducts: I_ni,
+  payment: I_ni,
+  getProductFullDetail: I_ni,
+  getTaxonProducts: I_ni,
+  getSpreeProducts: I_ni,
+  getModifiedProducts: I_ni,
+  getCart: (p: any, appState: I_app_state) => { result: I_state_cart },
+  setCart: (cart: I_state_cart, appState: I_app_state) => { result: true }
+  dargah: I_ni,
+  pardakhte_kharid:I_ni,
+  bundleData:I_ni
+}
+export default function kharidApis({ baseUrl, helper }) {
+
+  let apiFunctions: I_apiFunctions = {
+    async checkCode({ code }) {
       const response = await Axios.get(`${baseUrl}/os/couponvalidation?code=${code}`);
-      if(response.data.isSuccess){
-        return {result:response.data.data}
+      if (response.data.isSuccess) {
+        return { result: response.data.data }
       }
       else {
-        return {result:response.data.message || response.data.Message}
+        return { result: response.data.message || response.data.Message }
       }
-      
     },
-    async eydane_registered() {
-      const result = await Axios.get(`${baseUrl}/Users/GetEydaneStatus`);
-      return { result: result.data.isSuccess && result.data.data };
+    updateProductPrice({ products, CampaignId, PriceListNum, cartName }, { actionClass }) {
+      if (!products.length) { return { result: [] } }
+      let items = products.map(({ defaultVariant }) => { return { ItemCode: defaultVariant.code, itemCode: defaultVariant.code, ItemQty: 1, itemQty: 1 }; })
+      let fixed = actionClass.fixPrice({ items, CampaignId, PriceListNum })
+      let res = products.map((o, i) => { return { ...o, ...fixed[i], cartName } })
+      return { result: res };
     },
-    async updateProductPrice({ products, CampaignId, PriceListNum, cartId,cartName },{actionClass}) {
-      if (!products) { return {result:false} }
-      if (!products.length) { return {result:[]} }
-      let items = products.map(({ defaultVariant }) => {return { ItemCode: defaultVariant.code , itemCode : defaultVariant.code , ItemQty: 1 , itemQty : 1 };})
-      let fixed = actionClass.fixPrice({items,CampaignId, PriceListNum})
-      let res = products.map((o, i) => {return { ...o, ...fixed[i], cartId,cartName }})
-      return {result:res};
-    },
-    async taide_noorvare(name) {
-      let result = Axios.get(`${baseUrl}/Users/Norvareh3Agreement`);
-      return { result }
-    },
-    async tarikhche_sefareshate_kharid(undefined,{userInfo}) {
+    async tarikhche_sefareshate_kharid(undefined, { userInfo }) {
       let res = await Axios.post(`${baseUrl}/BOne/GetOrders`, {
         "FieldName": "cardcode",
         "FieldValue": userInfo.cardCode,
@@ -164,7 +161,7 @@ export default function kharidApis({baseUrl,helper}) {
       }
       return { result: tabs };
     },
-    async mahsoolate_sefareshe_kharid(order,{userInfo}) {
+    async mahsoolate_sefareshe_kharid(order, { userInfo }) {
       const docTypeDictionary = {
         Customer: 2,
         Quotation: 23,
@@ -279,8 +276,8 @@ export default function kharidApis({baseUrl,helper}) {
       return { result: { ...order, details } }
     },
     async getCampaigns(ids) {
-      if(!ids){return {result:[]}}
-      if(!ids.length){return {result:[]}}
+      if (!ids) { return { result: [] } }
+      if (!ids.length) { return { result: [] } }
       let res = await Axios.get(`${baseUrl}/Spree/GetAllCampaigns?ids=${ids.toString()}`);
       let dataResult = res.data.data.data;
       let includedResult = res.data.data.included;
@@ -294,41 +291,41 @@ export default function kharidApis({baseUrl,helper}) {
           }
         }
         let obj;
-        try {obj = JSON.parse(o.attributes.meta_description)}
-        catch {obj = {};}
-        return { cartId: o.attributes.name, name: o.attributes.name, id: o.id, src: src, CampaignId:obj.CampaignId,PriceListNum:obj.PriceListNum };
+        try { obj = JSON.parse(o.attributes.meta_description) }
+        catch { obj = {}; }
+        return { cartId: o.attributes.name, name: o.attributes.name, id: o.id, src: src, CampaignId: obj.CampaignId, PriceListNum: obj.PriceListNum };
       });
 
       return { result: campaigns };
     },
-    async getCampaignProducts({id,cartId,CampaignId,PriceListNum,name},{apis}) {
-      let {products} = await apis.request({api:'kharid.getSpreeProducts',parameter:{ Taxons: id }});
-      let result = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, CampaignId,PriceListNum, cartId,cartName:name }});
+    async getCampaignProducts({ id, CampaignId, PriceListNum, name }, { apis }) {
+      let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { Taxons: id } });
+      let result = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products, CampaignId, PriceListNum, cartName: name } });
       return { result };
     },
-    async getCategoryProducts({id,count},{apis,Shop_Regular}) {
-      let {cartId,name} = Shop_Regular;
-      let {products} = await apis.request({api:'kharid.getSpreeProducts',parameter:{ Taxons: id.toString(),pageSize:count }});
-      let result = await apis.request({api:'kharid.updateProductPrice',parameter:{ products, cartId,cartName:name }})
-      return {result}
+    async getCategoryProducts({ id, count }, { apis, Shop }) {
+      let { name } = Shop.Regular;
+      let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { Taxons: id.toString(), pageSize: count } });
+      let result = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products, cartName: name } })
+      return { result }
     },
-    async preOrders(undefined,{ userInfo }) {
+    async preOrders(undefined, { userInfo }) {
       let preOrders = { waitOfVisitor: 0, waitOfPey: 0 };
       let res = await Axios.post(`${baseUrl}/Visit/PreOrderStat`, { CardCode: userInfo.cardCode });
       if (!res || !res.data || !res.data.data) {
         console.error('apis.kharid.preOrders Error!!!');
-        return {result:preOrders};
+        return { result: preOrders };
       }
       let result = res.data.data;
       for (let i = 0; i < result.length; i++) {
-        if (['PreOrder', 'CustomeApproved', 'VisitorApproved'].indexOf(result[i]).docStatus !== -1) { preOrders.waitOfVisitor++; }
+        if (['PreOrder', 'CustomeApproved', 'VisitorApproved'].indexOf(result[i].docStatus) !== -1) { preOrders.waitOfVisitor++; }
         if (result[i].docStatus === 'WaitingForPayment') { preOrders.waitOfPey++; }
       }
-      return {result:preOrders};
+      return { result: preOrders };
     },
     async search(searchValue) {
-      let res = await Axios.post(`${baseUrl}/Spree/Products`, { Name: searchValue, PerPage: 250, Include: "images" });
-      res = res.data.data.data;
+      let response = await Axios.post(`${baseUrl}/Spree/Products`, { Name: searchValue, PerPage: 250, Include: "images" });
+      let res = response.data.data.data;
       let included = res.data.data.included;
       let result = res.map((o) => {
         let src;
@@ -339,18 +336,18 @@ export default function kharidApis({baseUrl,helper}) {
         catch { src = ""; }
         return { name: o.attributes.name, price: o.attributes.price, unit: "", src: `https://spree.burux.com${src}`, discountPercent: 0, discountPrice: 0 };
       });
-      return {result}
+      return { result }
     },
     async getCategories(ids) {
       //10709,10711,10713,10714,10715,10732
       let res = await Axios.get(`${baseUrl}/Spree/GetAllCategoriesbyIds?ids=${ids.toString()}`);
       let dataResult = res.data.data.data;
       let categories = dataResult.map((o) => {
-        return { name: o.attributes.name,id: o.id};
+        return { name: o.attributes.name, id: o.id };
       });
-      return {result:categories};
+      return { result: categories };
     },
-    async getVariantOptionValues({optionValues, optionTypes}) {
+    async getVariantOptionValues({ optionValues, optionTypes }) {
       let result = {};
       for (let optionValue of optionValues) {
         let id = optionValue.id.toString();
@@ -365,14 +362,14 @@ export default function kharidApis({baseUrl,helper}) {
           }
         }
       }
-      return {result};
+      return { result };
     },
-    async getProductVariant({include_variant, include_srcs, b1Result, optionTypes, defaultVariantId, product},{apis}) {
+    async getProductVariant({ include_variant, include_srcs, b1Result, optionTypes, defaultVariantId, product }, { apis }) {
       let { id, attributes, relationships } = include_variant;
       let srcs = relationships.images.data.map(({ id }) => include_srcs[id.toString()].attributes.original_url)
       const b1_item = b1Result.find((i) => i.itemCode === attributes.sku);
       if (!b1_item) {
-        return {result:false}
+        return { result: false }
       }
       let price, discountPrice, discountPercent, inStock, dropShipping;
       try { price = b1_item.finalPrice } catch { price = 0 }
@@ -380,7 +377,7 @@ export default function kharidApis({baseUrl,helper}) {
       try { inStock = !!b1_item.canSell } catch { inStock = 0 }
       try { dropShipping = b1_item.qtyRelation === 4 } catch { dropShipping = 0 }
       try { discountPrice = Math.round(b1_item.price * discountPercent / 100) } catch { discountPrice = 0 }
-      let optionValues = await apis.request({api:'kharid.getVariantOptionValues',parameter:{optionValues:relationships.option_values.data, optionTypes}})
+      let optionValues = await apis.request({ api: 'kharid.getVariantOptionValues',description:'', parameter: { optionValues: relationships.option_values.data, optionTypes } })
       let code = '';
       if (b1_item && b1_item.itemCode) { code = b1_item.itemCode }
       else {
@@ -392,7 +389,7 @@ export default function kharidApis({baseUrl,helper}) {
         id, optionValues, discountPrice, price, inStock, srcs,
         dropShipping, code, discountPercent, isDefault: defaultVariantId === id
       };
-      return {result}
+      return { result }
     },
     async sortIncluded(spreeResult) {
       let sorted = { include_optionTypes: {}, include_details: {}, include_srcs: {}, meta_optionTypes: {}, include_variants: {} }
@@ -409,9 +406,9 @@ export default function kharidApis({baseUrl,helper}) {
         let optionType = spreeResult.meta.filters.option_types[i];
         sorted.meta_optionTypes[optionType.id.toString()] = optionType;
       }
-      return {result:sorted}
+      return { result: sorted }
     },
-    async getMappedAllProducts({ spreeResult, b1Result, loadType },{apis}) {
+    async getMappedAllProducts({ spreeResult, b1Result, loadType }, { apis }) {
       if (loadType === 0) {
 
         const included = spreeResult.included;
@@ -446,11 +443,11 @@ export default function kharidApis({baseUrl,helper}) {
           });
         }
 
-        return {result:finalResult};
+        return { result: finalResult };
       }
 
       let products = spreeResult.data;
-      let { include_optionTypes, include_variants, include_details, include_srcs, meta_optionTypes } = await apis.request({api:'kharid.sortIncluded',parameter:spreeResult});
+      let { include_optionTypes, include_variants, include_details, include_srcs, meta_optionTypes } = await apis.request({ api: 'kharid.sortIncluded',description:'', parameter: spreeResult });
       var finalResult = [];
       for (let product of products) {
         let { relationships } = product;
@@ -505,8 +502,8 @@ export default function kharidApis({baseUrl,helper}) {
           let { id } = relationships.variants.data[i];
           id = id.toString();
           let variant = await apis.request({
-            api:'kharid.getProductVariant',
-            parameter:{include_variant:include_variants[id],include_srcs,b1Result,optionTypes,defaultVariantId,product}
+            api: 'kharid.getProductVariant',description:'',
+            parameter: { include_variant: include_variants[id], include_srcs, b1Result, optionTypes, defaultVariantId, product }
           })
           if (variant === false) { continue }
           if (variant.isDefault) { defaultVariant = variant }
@@ -529,21 +526,21 @@ export default function kharidApis({baseUrl,helper}) {
           price, discountPrice, discountPercent, id: product.id
         })
       }
-      return {result:finalResult};
+      return { result: finalResult };
     },
-    async payment(obj,{actionClass}) {
+    async payment(obj, { Shop }) {
       let { cartId } = obj;
-      let result = actionClass.getShopById(cartId).payment(obj);
-      return {result}
+      let result = Shop[cartId].payment(obj);
+      return { result }
     },
-    async getProductFullDetail({ id, code, product },{b1Info,actionClass,apis}) {
+    async getProductFullDetail({ id, code, product }, { b1Info, actionClass, apis }) {
       //پروداکت رو همینجوری برای اینکه یک چیزی ریترن بشه فرستادم تو از کد و آی دی آبجکت کامل پروداکت رو بساز و ریترن کن
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
-        {Ids: id,PerPage: 250,Include: "variants,option_types,product_properties,images"}
+        { Ids: id, PerPage: 250, Include: "variants,option_types,product_properties,images" }
       );
-      if (res.data.data.status === 500) {return {result:false}}
+      if (res.data.data.status === 500) { return { result: false } }
       const productResult = res.data.data.data[0];
-      if (productResult === undefined){return {result:{}};}
+      if (productResult === undefined) { return { result: {} }; }
 
       const included = res.data.data.included;
       let { relationships } = productResult;
@@ -551,7 +548,7 @@ export default function kharidApis({baseUrl,helper}) {
       let details = [];
       let optionTypes = [];
       const defaultVariantId = product.defaultVariant.code;
-      let response = await apis.request({api:'kharid.sortIncluded',parameter:res.data.data});
+      let response = await apis.request({ api: 'kharid.sortIncluded',description:'', parameter: res.data.data });
       let { include_optionTypes, include_details, meta_optionTypes } = response;
       for (let i = 0; i < relationships.option_types.data.length; i++) {
         let { id } = relationships.option_types.data[i];
@@ -576,16 +573,13 @@ export default function kharidApis({baseUrl,helper}) {
         let varId = variant.id.toString();
         let varSku = variant.attributes.sku;
         if (!varSku) { continue }
-        let optionValues = await apis.request({api:'kharid.getVariantOptionValues',parameter:{optionValues:variant.relationships.option_values.data, optionTypes}})
+        let optionValues = await apis.request({ api: 'kharid.getVariantOptionValues', parameter: { optionValues: variant.relationships.option_values.data, optionTypes } })
         const variantImagesId = variant.relationships.images.data.map(x => x.id);
         const variantImages = included.filter(x => x.type === "image" && variantImagesId.includes(x.id));
         const srcs = variantImages.map(x => {
           return "https://spree.burux.com" + x.attributes.original_url;
         });
-        let price = actionClass.fixPrice({items:[{ ItemCode: varSku, itemCode : varSku ,ItemQty: 1 , itemQty : 1}]})[0];
-        if (product.campaign) {
-          price = await apis.request({api:'kharid.updateCampaignPrice',parameter:{campaignId:product.campaign.id, item:price}})
-        }
+        let price = actionClass.fixPrice({ items: [{ ItemCode: varSku, itemCode: varSku, ItemQty: 1, itemQty: 1 }] })[0];
         if (price === undefined) continue;
         let sss = b1Info.itemPrices.find(x => x.itemCode === varSku || x.mainSku === varSku);
         if (!sss) { sss = {} }
@@ -612,17 +606,17 @@ export default function kharidApis({baseUrl,helper}) {
       product.details = details;
       product.variants = variants;
       product.optionTypes = optionTypes;
-      return {result:product};
+      return { result: product };
     },
-    async getTaxonProducts({ loadType, Taxons, Name },{ userInfo,b1Info,apis }) {
+    async getTaxonProducts({ loadType, Taxons, Name }, { userInfo, b1Info, apis }) {
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
         {
-          CardCode: userInfo.cardCode,Taxons,PerPage: 250,Skame: Name,
+          CardCode: userInfo.cardCode, Taxons, PerPage: 250, Skame: Name,
           Include: loadType === 0 ? "default_variant,images" : "variants,option_types,product_properties,taxons,images,default_variant"
         }
       );
 
-      if (res.data.data.status === 500) {return {result:false}}
+      if (res.data.data.status === 500) { return { result: false } }
       const spreeData = res.data.data;
       const b1Data = b1Info.itemPrices.map((i) => {
         return {
@@ -635,26 +629,26 @@ export default function kharidApis({baseUrl,helper}) {
           "canSell": i.canSell
         };
       });
-      let result = await apis.request({api:'kharid.getMappedAllProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data, loadType }})
-      return {result};
+      let result = await apis.request({ api: 'kharid.getMappedAllProducts',description:'', parameter: { spreeResult: spreeData, b1Result: b1Data, loadType } })
+      return { result };
     },
-    async getSpreeProducts({ Taxons,pageSize = 250,pageNumber,ids,Name,vitrin },{ userInfo,b1Info,apis }) {
+    async getSpreeProducts({ Taxons, pageSize = 250, pageNumber, ids, Name, vitrin }, { userInfo, b1Info, apis }) {
       let body = {
         vitrin,
-        CardCode: userInfo.cardCode,Taxons,Name,ids,PerPage: pageSize,Page:pageNumber,
+        CardCode: userInfo.cardCode, Taxons, Name, ids, PerPage: pageSize, Page: pageNumber,
         ProductFields: "id,name,type,sku,slug,default_variant,images,price",
         VariantFields: "id,sku,type,images",
         Include: "default_variant,images"
       }
-      let res = await Axios.post(`${baseUrl}/Spree/Products`,body);
-      if(!res.data.isSuccess){return {result:res.data.message}}
+      let res = await Axios.post(`${baseUrl}/Spree/Products`, body);
+      if (!res.data.isSuccess) { return { result: res.data.message } }
       const spreeData = res.data.data;
-      if(!spreeData){return {result:'خطا در دریافت اطلاعات اسپری'}}
+      if (!spreeData) { return { result: 'خطا در دریافت اطلاعات اسپری' } }
       let b1Data;
-      if(!vitrin){
-        if(!userInfo.itemPrices){
-          helper.showAlert({type:'error',text:`b1Info.itemPrices is not valid`})
-          return {result:[]}
+      if (!vitrin) {
+        if (!b1Info.itemPrices) {
+          helper.showAlert({ type: 'error', text: `b1Info.itemPrices is not valid` })
+          return { result: [] }
         }
         b1Data = b1Info.itemPrices.map((i) => {
           return {
@@ -675,35 +669,35 @@ export default function kharidApis({baseUrl,helper}) {
           };
         });
       }
-      
-      let products = await apis.request({api:'kharid.getModifiedProducts',parameter:{ spreeResult: spreeData, b1Result: b1Data,Taxons,vitrin }})
+
+      let products = await apis.request({ api: 'kharid.getModifiedProducts',description:'', parameter: { spreeResult: spreeData, b1Result: b1Data, Taxons, vitrin } })
       let total = spreeData.meta.total_count
-      let result = {products:[],total:0};
-      if(Array.isArray(products)){result = {products,total}}
-      return {result}
+      let result = { products: [], total: 0 };
+      if (Array.isArray(products)) { result = { products, total } }
+      return { result }
     },
-    async getModifiedProducts({ spreeResult, b1Result,Taxons,vitrin }) {
-      let images = spreeResult.included.filter(({type})=>type === 'image')
-      function getImagesDic(){
-        let baseImageUrl = vitrin?"https://shopback.miarze.com":"https://spree.burux.com"
+    async getModifiedProducts({ spreeResult, b1Result, Taxons, vitrin }) {
+      let images = spreeResult.included.filter(({ type }) => type === 'image')
+      function getImagesDic() {
+        let baseImageUrl = vitrin ? "https://shopback.miarze.com" : "https://spree.burux.com"
         let images_dic = {};
-        for(let i = 0; i < images.length; i++){let {attributes,id} = images[i]; images_dic[id.toString()] = baseImageUrl + attributes.styles[9].url;}
+        for (let i = 0; i < images.length; i++) { let { attributes, id } = images[i]; images_dic[id.toString()] = baseImageUrl + attributes.styles[9].url; }
         return images_dic
       }
       let images_dic = getImagesDic()
-      function getImages(product){
-        return product.relationships.images.data.map(({id}) => images_dic[id.toString()])
+      function getImages(product) {
+        return product.relationships.images.data.map(({ id }) => images_dic[id.toString()])
       }
       let allProducts = [];
-      let variants = spreeResult.included.filter(({type})=>type === 'variant')
-        
+      let variants = spreeResult.included.filter(({ type }) => type === 'variant')
+
       for (const product of spreeResult.data) {
         // 11291 ,
         //11909 ,
         // 11922 ,
         // 12314 ,
         // 12395
-        if (product.id === "12395" || product.relationships.default_variant === undefined || product.relationships.default_variant.data === undefined) {      
+        if (product.id === "12395" || product.relationships.default_variant === undefined || product.relationships.default_variant.data === undefined) {
           console.error(`
             if (product.id === "12395" || product.relationships.default_variant === undefined || product.relationships.default_variant.data === undefined) {      
               continue;
@@ -712,22 +706,22 @@ export default function kharidApis({baseUrl,helper}) {
           continue;
         }
         let iimages = getImages(product);
-        let {relationships} = product;
+        let { relationships } = product;
         let defalutVariantId = relationships.default_variant.data.id;
-        const defaultVariant = variants.find(({id}) => id === defalutVariantId);
+        const defaultVariant = variants.find(({ id }) => id === defalutVariantId);
         const sku = defaultVariant.attributes.sku;
-        if(!sku){
+        if (!sku) {
           console.error(`missing sku in default variant of product`);
-          console.error(`product is : `,product);
-          console.error(`default variant is : `,defaultVariant);
-          console.error(`defaultVariant.attributes.sku is : `,sku);
+          console.error(`product is : `, product);
+          console.error(`default variant is : `, defaultVariant);
+          console.error(`defaultVariant.attributes.sku is : `, sku);
           continue
         }
         let defaultVariantProps = {
           "id": defalutVariantId,
           "discountPrice": 0,
           "price": 0,
-          inStock:Infinity,
+          inStock: true,
           "dropShipping": true,
           "srcs": [],
           "code": sku,
@@ -735,65 +729,56 @@ export default function kharidApis({baseUrl,helper}) {
           "isDefault": true
         };
         let productProps = {}
-        if(vitrin){
+        if (vitrin) {
           let price = product.attributes.price;
           productProps = {
-            inStock:defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs:iimages,
+            inStock: defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs: iimages,
             name: product.attributes.name, defaultVariant: defaultVariantProps,
-            Price: price,FinalPrice:price, discountPrice: 0, discountPercent: 0, id: product.id
+            Price: price, FinalPrice: price, discountPrice: 0, discountPercent: 0, id: product.id
           }
         }
-        else{
+        else {
           const itemFromB1 = b1Result.find((x) => {
-            if(x.itemCode === sku){return true}
-            if(x.mainSku === sku){return true}
+            if (x.itemCode === sku) { return true }
+            if (x.mainSku === sku) { return true }
             return false
           });
-          if(!itemFromB1){
+          if (!itemFromB1) {
             console.error(`spree item with sku = ${sku} is not match with any item in B1`);
-            console.error(`product is : `,product);
-            console.error(`default variant is : `,defaultVariant);
+            console.error(`product is : `, product);
+            console.error(`default variant is : `, defaultVariant);
             continue
           }
           defaultVariantProps.inStock = !!itemFromB1 && !!itemFromB1.canSell;
           defaultVariantProps.dropShipping = itemFromB1.qtyRelation === 4;
           productProps = {
-            inStock:defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs:iimages,
+            inStock: defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs: iimages,
             name: product.attributes.name, defaultVariant: defaultVariantProps,
             price: 0, discountPrice: 0, discountPercent: 0, id: product.id
           }
         }
-        
+
         allProducts.push(productProps);
       }
-      return {result:allProducts};
+      return { result: allProducts };
     },
-    async getCart({Shop_Bundle,spreeCampaignIds,userInfo}) {
-      function getCartIds(){
-        let ids = ['Regular'];
-        for(let i = 0; i < spreeCampaignIds.length; i++){
-          let spreeCampaignId = spreeCampaignIds[i];
-          ids.push(spreeCampaignId);
-        }
-        if(Shop_Bundle.active){ids.push('Bundle')}
-        return ids;   
-      }
+    getCart({ Shop, userInfo }) {
       let cartStorage = AIOStorage('bazaremiarzeapis');
-      let cart = cartStorage.load({name:'cart.' + userInfo.cardCode,def:{}});
-      let cartIds = getCartIds();
+      let cart = cartStorage.load({ name: 'cart.' + userInfo.cardCode, def: {} });
+      let cartIds = Object.keys(Shop);
       let keys = Object.keys(cart)
       let newCart = {}
       for (let i = 0; i < keys.length; i++) {
         let cartId = keys[i];
-        if(cartIds.indexOf(cartId) === -1){continue}
+        if (cartIds.indexOf(cartId) === -1) { continue }
         newCart[cartId] = cart[cartId]
       }
-      return {result:newCart}
+      return { result: newCart }
     },
-    async setCart(cart,{userInfo}) {
+    setCart(cart, { userInfo }) {
       let cartStorage = AIOStorage('bazaremiarzeapis');
-      cartStorage.save({name:'cart.' + userInfo.cardCode,value:cart});
-      return {result:true}
+      cartStorage.save({ name: 'cart.' + userInfo.cardCode, value: cart });
+      return { result: true }
     },
     async dargah({ amount, url }) {
       //AIOServiceShowAlert({type:'success',text:'text',subtext:'test'})
@@ -814,143 +799,14 @@ export default function kharidApis({baseUrl,helper}) {
         window.location.href = res.data.data;
       }
     },
-    async bundleData(){
-      return {result:staticBundleData}
+    async bundleData() {
+      return { result: staticBundleData }
       let response = await Axios.get(`${baseUrl}/BackOffice/GetBelexData`);
       let result = response.data.data.taxons;
-      return {result}
-    },
-    async daryafte_ettelaate_bundle(undefined,{apis}) {
-      let allData = await apis.request({
-        api:'kharid.bundleData',description:'دریافت دیتای باندل',def:[]
-      })
-      var items = [];
-      for (const i1 of allData.filter(x => x.taxonid !== 159)) {
-        if (i1.items) items.push(i1.items.filter(x => x.itemcodes != null));
-        if (!i1.taxons) continue;
-        for (const i2 of i1.taxons) {
-          if (i2.items) items.push(i2.items.filter(x => x.itemcodes != null));
-          if (!i2.taxons) continue;
-          for (const i3 of i2.taxons) {
-            if (i3.items) items.push(i3.items.filter(x => x.itemcodes != null));
-            if (!i3.taxons) continue;
-            for (const i4 of i3.taxons) {
-              if (i4.items) items.push(i4.items.filter(x => x.itemcodes != null));
-              if (!i4.taxons) continue;
-              for (const i5 of i4.taxons) {
-                if (i5.items) items.push(i5.items.filter(x => x.itemcodes != null));
-                if (!i5.taxons) continue;
-                for (const i6 of i5.taxons) {
-                  if (i6.items) items.push(i6.items.filter(x => x.itemcodes != null));
-                  if (!i6.taxons) continue;
-                  for (const i7 of i6.taxons) {
-                    if (i7.items) items.push(i7.items.filter(x => x.itemcodes != null));
-                    if (!i7.taxons) continue;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      var cableItems = [];
-      for (const i1 of allData.filter(x => x.taxonid === 159)) {
-        if (i1.items) cableItems.push(i1.items.filter(x => x.itemcodes != null));
-        if (!i1.taxons) continue;
-        for (const i2 of i1.taxons) {
-
-          if (i2.items) cableItems.push(i2.items.filter(x => x.itemcodes != null));
-          if (!i2.taxons) continue;
-          for (const i3 of i2.taxons) {
-
-            if (i3.items) cableItems.push(i3.items.filter(x => x.itemcodes != null));
-            if (!i3.taxons) continue;
-            for (const i4 of i3.taxons) {
-
-              if (i4.items) cableItems.push(i4.items.filter(x => x.itemcodes != null));
-              if (!i4.taxons) continue;
-              for (const i5 of i4.taxons) {
-
-                if (i5.items) cableItems.push(i5.items.filter(x => x.itemcodes != null));
-                if (!i5.taxons) continue;
-                for (const i6 of i5.taxons) {
-
-                  if (i6.items) cableItems.push(i6.items.filter(x => x.itemcodes != null));
-                  if (!i6.taxons) continue;
-
-                  for (const i7 of i6.taxons) {
-
-                    if (i7.items) cableItems.push(i7.items.filter(x => x.itemcodes != null));
-                    if (!i7.taxons) continue;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      let products = [];
-      for (const item of items) {
-
-        if (item.length) {
-
-          for (const subItem of item) {
-
-            // var subProduct = {
-            //   name:subItem.itemname,
-            //   id:subItem.itemid,
-            //   finalPrice:subItem.price,
-            //   products:subItem.itemcodes.map(x=>{
-            //     return {mainsku:x.mainsku,name:x.Name,unitPrice:x.Price,qty:x.Qty,step:x.Step,variants:x.Variants}
-            //   })
-            // };
-
-            products.push({
-              cartId: 'Bundle',
-              name: subItem.itemname,
-              clubpoint:subItem.clubpoint,
-              code: subItem.itemcode,
-              price: subItem.price,
-              cableCategory: false,
-              variants: subItem.itemcodes.map(x => {
-                return {
-                  mainsku: x.mainsku, name: x.Name, unitPrice: x.Price, qty: x.Qty, step: x.Step, variants: x.Variants,
-                  id: x.Name
-                }
-              }),
-              src: subItem.imageurl
-            });
-          }
-        }
-      }
-      for (const item of cableItems) {
-
-        if (item.length) {
-
-          for (const subItem of item) {
-
-            products.push({
-              cartId: 'Bundle',
-              clubpoint:subItem.clubpoint,
-              name: subItem.itemname,
-              code: subItem.itemcode,
-              price: subItem.price,
-              cableCategory: true,
-              variants: subItem.itemcodes.map(x => {
-                return {
-                  mainsku: x.mainsku, name: x.Name, unitPrice: x.Price, qty: x.Qty, step: x.Step, variants: x.Variants,
-                  id: x.Name
-                }
-              }),
-              src: subItem.imageurl
-            });
-          }
-        }
-      }
-      let result = products
-      return {result}
-    },
+      return { result }
+    }
   }
+  return apiFunctions
 }
 
 //تقدی آنلاین

@@ -182,10 +182,6 @@ export default class Profile extends Component{
             ]
         }
     }
-    componentDidMount(){
-        // let {actionClass} = this.context;
-        // actionClass.addAnaliticsHistory({url:'Profile',title:'Profile'})
-    }
     render(){
         let {showWallet} = this.state;
         return (<>

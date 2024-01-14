@@ -674,7 +674,7 @@ class FormSetting extends Component {
             },
             {
               show: ['Regular', 'Bundle', 'spreeCampaigns'].indexOf(type) !== -1, 
-              input:{type: 'text'}, label: 'B1Id', field: 'value.B1Id'
+              input:{type: 'text'}, label: 'CampaignId', field: 'value.CampaignId'
             },
             {
               show: ['Bundle'].indexOf(type) !== -1,

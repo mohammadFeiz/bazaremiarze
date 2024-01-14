@@ -16,16 +16,17 @@ export default class Billboard extends Component{
         this.setState({homeBillboards})
     }
     getItems(){
-        let {backOffice,b1Info,Shop_Bundle,spreeCampaignIds = [],actionClass} = this.context;
+        let {backOffice,b1Info,Shop,actionClass} = this.context;
         let {renderIn} = this.props;
         let {homeBillboards} = this.state;
         let items = [];
         if(renderIn === 'buy'){
-            for(let i = 0; i < spreeCampaignIds.length; i++){
-                let spreeCampaignId = spreeCampaignIds[i]
-                let Shop = actionClass.getShopById(spreeCampaignId);
-                let {billboard,icon,name} = Shop;
-                items.push({name,billboard,icon,onClick:()=>Shop.openCategory()})
+            for(let shopId in Shop){
+                let ShopClass = Shop[shopId]
+                if(ShopClass.billboard){
+                    let {billboard,icon,name} = ShopClass;
+                    items.push({name,billboard,icon,onClick:()=>Shop.openCategory()})
+                }
             }
         }
         else if(renderIn === 'home'){
@@ -42,10 +43,10 @@ export default class Billboard extends Component{
                onClick:()=>actionClass.openPopup('sabteGarantiJadid')
             })
         }
-        if(Shop_Bundle.active && renderIn === 'buy'){
+        if(Shop.Bundle.active && renderIn === 'buy'){
             items.push({
-                name:Shop_Bundle.name,icon:Shop_Bundle.icon,billboard:Shop_Bundle.billboard,
-                onClick:()=>Shop_Bundle.openCategory()
+                name:Shop.Bundle.name,icon:Shop.Bundle.icon,billboard:Shop.Bundle.billboard,
+                onClick:()=>Shop.Bundle.openCategory()
             })
         }
         return items

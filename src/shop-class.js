@@ -292,10 +292,10 @@ export default class ShopClass {
     }
     getOrderBody = ({ PaymentTime, DeliveryType, PayDueDate, address, giftCodeInfo, discountCodeInfo }) => {
         let appState = this.getAppState();
-        let { userInfo,b1Info, actionClass, getSettleType } = appState;
+        let { userInfo,b1Info, actionClass } = appState;
         let DiscountList = actionClass.getCodeDetails({ giftCodeInfo, discountCodeInfo })
         let marketingLines = this.getMarketingLines()
-        let SettleType = getSettleType(PayDueDate)
+        let SettleType = actionClass.getSettleType(PayDueDate)
         return {
             "DiscountList": DiscountList,
             "marketdoc": {
@@ -305,7 +305,7 @@ export default class ShopClass {
                 "CardGroupCode": b1Info.customer.groupCode,
                 "MarketingLines": marketingLines,
                 "DeliverAddress": address,
-                "marketingdetails": { Campaign: this.B1Id }
+                "marketingdetails": { Campaign: this.CampaignId }
             },
             SettleType, PaymentTime, DeliveryType, PayDueDate
         }
@@ -402,7 +402,13 @@ export default class ShopClass {
         if (this.cartId === 'Bundle') {
             return { billboard: this.billboard, products: this.products, description: this.description, title: this.name }
         }
-        if (this.spreeCampaign) {
+        else if (this.cartId === 'Regular') {
+            let { spreeCategories } = this.getAppState();
+            let products = await this.getCategoryProducts(id);
+            let { billboard, name, description } = spreeCategories.dic[id];
+            return { billboard, products, description, title: name }
+        }
+        else  {
             if (!this.products) {
                 if (this.taxons) {
                     this.products = [...this.taxons]
@@ -410,26 +416,21 @@ export default class ShopClass {
                 else {
                     this.products = await apis.request({
                         api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
-                        parameter: { id: this.cartId, cartId: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
+                        parameter: { id: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
                         cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'campaigns.campaignProducts.item_' + this.cartId }
                     });
                 }
             }
             return { billboard: this.billboard, products: this.products, description: this.description, title: this.name, isTaxon: !!this.taxons }
         }
-        if (this.cartId === 'Regular') {
-            let { spreeCategories } = this.getAppState();
-            let products = await this.getCategoryProducts(id);
-            let { billboard, name, description } = spreeCategories.dic[id];
-            return { billboard, products, description, title: name }
-        }
+        
     }
     renderTaxonCard({ taxon, renderIn, index, style, onFetchProducts, taxonId, errors = [],hasErrors = [] }) {
         let { apis, msfReport, cart } = this.getAppState();
         let props = {
             title: taxon.name, taxon, renderIn, index, style, errors, cart, cartId: this.cartId,hasErrors,
             onClick: async () => {
-                if (this.spree && !taxon.products) {
+                if (!taxon.products) {
                     let products = await apis.request({
                         api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
                         parameter: { id: taxon.id, cartId: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
@@ -453,7 +454,7 @@ export default class ShopClass {
             cart,
             title: this.name, product, renderIn, variantId, count, details, loading, index, style, type, taxonId, cartId: this.cartId, CampaignId: this.CampaignId,
             onClick: async () => {
-                if (this.spree && !product.hasFullDetail) {
+                if (!product.hasFullDetail) {
                     product = await apis.request({
                         api: 'kharid.getProductFullDetail',
                         parameter: { id: product.id, code: product.defaultVariant.code, product }
@@ -469,7 +470,7 @@ export default class ShopClass {
             },
             onRemove: () => actionClass.changeCart({ count: 0, variantId: product.code, product, cartId: this.cartId })
         }
-        let Wrapper = this.spree ? RegularCard : BundleCard;
+        let Wrapper = this.CartId === 'Bundle' ? BundleCard : RegularCard;
         return (<Wrapper key={product.id || product.code} {...props} />)
     }
     renderPage(product, taxonId) {
@@ -493,7 +494,7 @@ export default class ShopClass {
                 actionClass.changeCart({ product, variantId: product.code, count, cartId: this.cartId, taxonId, CampaignId: this.CampaignId })
             }
         }
-        let Wrapper = this.spree ? RegularPage : BundlePage;
+        let Wrapper = this.cartId === 'Bundle' ? BundlePage : RegularPage;
         return <Wrapper {...props} />
     }
     renderCartFactor = (button = true) => {

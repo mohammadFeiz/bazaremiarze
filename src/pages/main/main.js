@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Header from "../../components/header";
 //actions////////////////////////////////
-import ActionClass from "../../actionClass";
+import ActionClass from "../../actionClass.tsx";
 //npm////////////////////////////////////////
 import RSA from 'react-super-app';
 import Logo5 from './../../images/logo5.png';
@@ -156,22 +156,7 @@ export default class Main extends Component {
           });
         }
       },
-      getSettleType:(PayDueDate)=>{
-        if(PayDueDate === undefined){return}
-        let {backOffice} = this.props;
-        let PayDueDateOption = backOffice.PayDueDate_options.find((o)=>o.value === PayDueDate);
-        if(!PayDueDateOption){return}
-        let {cashPercent,days} = PayDueDateOption;
-        if(days){
-          if(cashPercent){return 4}
-          else{return 2}
-        }
-        else{
-          if(cashPercent){return 1}
-          else{return}
-        }
-      },
-      Shop_Bundle:{},Shop_Regular:{},
+      Shop:{},
       bazargahOrders: {wait_to_get: undefined,wait_to_send: undefined},
       spreeCategories:{slider_type:[],icon_type:[],dic:{}},
       SetState: (obj) => this.setState(obj),
@@ -188,7 +173,8 @@ export default class Main extends Component {
     vitrin.fetchData();
     let {backOffice,actionClass} = this.state;
     await actionClass.startPricing()
-    await actionClass.getShopState();
+    this.setState(await actionClass.getShopState());
+    this.setState({spreeCategories:actionClass.getSpreeCategories(backOffice)})
     if (backOffice.activeManager.garanti && b1Info.customer.slpcode) { actionClass.getGuaranteeItems(); }
     if (backOffice.activeManager.bazargah) { actionClass.getBazargahOrders(); }
     actionClass.handleMissedLocation()

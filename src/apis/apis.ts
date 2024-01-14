@@ -1,5 +1,5 @@
 import loginApis from './login-apis';
-import kharidApis from "./kharid-apis";
+import kharidApis from "./kharid-apis.tsx";
 import bazargahApis from './bazargah-apis';
 import guarantiApis from './guaranti-apis';
 import vitrinApis from './vitrin-apis';

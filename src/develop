@@ -1,6 +1,1 @@
-category structure
-<CategoryView/> => billboard description ProductCard products
-
-<billboard/> getItems campaigns openPopup(....)
-add cartItem props to <BundlePage/>
-
+update backOffice data on server => b1Id => CampaignId

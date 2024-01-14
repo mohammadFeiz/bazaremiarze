@@ -20,7 +20,7 @@ import SabteGarantiJadidBaJoziat from './components/garanti/sabte-garanti-jadid-
 import Search from './components/kharid/search/search';
 import Wallet from './popups/wallet/wallet';
 import TanzimateKifePool from './components/kife-pool/tanzimate-kife-pool/tanzimate-kife-pool';
-import Cart from './components/kharid/cart/cart';
+import Cart from './components/kharid/cart/cart.tsx';
 import Sefareshe_Ersal_Shode_Baraye_Vizitor from './components/kharid/sefareshe-ersal-shode-baraye-vizitor/sefareshe-ersal-shode-baraye-vizitor';
 import AIOInput from './npm/aio-input/aio-input';
 import Home from "./pages/home/index";
@@ -28,21 +28,45 @@ import Buy from "./pages/buy/index";
 import Bazargah from "./pages/bazargah/bazargah";
 import Profile from "./pages/profile/profile";
 import Vitrin from './pages/vitrin/vitrin';
+import taxonCampaign from './taxonCampaign';
+import { I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, I_userInfo, I_B1Info, I_state_cart, I_cartTab, I_cartTaxon, I_cartTaxonItem, I_updateProfile, I_AIOLogin_class } from './types';
 
-
+type I_getSideItems = ()=>{
+    text:string,icon:()=>React.ReactNode,onClick:()=>void
+}[]
+type I_getNavItems = ()=>{
+    text:string | (()=>string),icon:()=>React.ReactNode,render:()=>React.ReactNode,id:string
+}[]
+type I_getFactorDetails = (items:any[],shippingOptions:I_shippingOptions,container?:string)=>{
+    MarketingLines:{CampaignDetails:any,ItemCode:string}[]
+}
+type I_getShopState = ()=>{
+    Shop:I_state_Shop,cart:I_state_cart
+}
 export default class ActionClass {
+    getState:()=>I_app_state;
+    setState:(p:any)=>void
+    getProps:()=>{
+        backOffice:I_state_backOffice,
+        userInfo:I_userInfo,
+        b1Info:I_B1Info,
+        Logger:any,
+        updateProfile:I_updateProfile,
+        Login:I_AIOLogin_class
+    };
+    pricing:any;
     constructor({ getState, getProps, setState }) {
         this.getState = getState;
         this.getProps = getProps;
         this.setState = setState;
     }
-    getSideItems = () => {
+    getSideItems:I_getSideItems = () => {
         let { userInfo,b1Info, backOffice, Logger } = this.getProps();
         let { logout } = this.getState();
         let { slpcode } = b1Info.customer;
         let isAdmin = backOffice.isAdmin(userInfo);
         let { activeManager } = backOffice;
-        let icon = (path) => <Icon path={path} size={0.8} />
+        let icon = (path:any):React.ReactNode => <Icon path={path} size={0.8} />
         return [
             { text: 'بازارگاه', icon: () => icon(mdiCellphoneMarker), onClick: () => this.getState().rsa.setNavId('bazargah') },
             { text: 'پیگیری سفارش خرید', icon: () => icon(mdiClipboardList), onClick: () => this.openPopup('peygiriye-sefareshe-kharid') },
@@ -53,7 +77,7 @@ export default class ActionClass {
             { text: 'خروج از حساب کاربری', icon: () => icon(mdiExitToApp), attrs: { className: 'colorFDB913' }, onClick: () => logout() }
         ]
     }
-    getNavItems = () => {
+    getNavItems:I_getNavItems = () => {
         let { userInfo } = this.getProps();
         let icon = (path) => <Icon path={path} size={.9} />
         let firstName = userInfo.firstName;
@@ -90,23 +114,6 @@ export default class ActionClass {
         else if (nav.id === 'profile') { return 'پروفایل' }
         else { return nav.text }
     }
-    addAnaliticsHistory = ({ url, title, userId }) => {
-        window.dataLayer = window.dataLayer || [];
-        if (userId) {
-            window.dataLayer.push({
-                'user_id': userId
-            });
-        }
-        else {
-
-        }
-        window.dataLayer.push({
-            'event': 'virtualPageview',
-            'pageUrl': `https://bazar.miarze.com/${url}`,
-            'pageTitle': title //some arbitrary name for the page/state
-        });
-    }
-
     manageUrl = () => {
         let wrl = window.location.href;
         let jsonUrl = UrlToJson(wrl)
@@ -131,286 +138,55 @@ export default class ActionClass {
         this.pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode, 12 * 60 * 60 * 1000)
         this.pricing.startservice().then((value) => { return value; });
     }
-    getShopState = async () => {
-        let { apis } = this.getState();
-        let { backOffice, userInfo } = this.getProps();
-        let { Bundle = {}, Regular, spreeCampaigns = [] } = backOffice;
-        let states = { spreeCampaignIds: [], Shop_Bundle: {}, Shop_Regular: {}, spreeCategories: [] }
-
-        states.Shop_Regular = new ShopClass({
-            getAppState: () => this.getState(),
-            config: { ...Regular, cartId: 'Regular', spree: true }
-        })
-        states.Shop_Bundle = new ShopClass({
-            getAppState: () => this.getState(),
-            config: { ...Bundle, cartId: 'Bundle', products: [] }
-        })
+    getShopState:I_getShopState = () => {
+        let { apis,backOffice, userInfo } = this.getState();
+        let { Bundle, Regular, spreeCampaigns = [] } = backOffice;
+        let Shop:I_state_Shop = {}
+        Shop.Regular = new ShopClass({getAppState: () => this.getState(),config: Regular})
         if (Bundle.active) {
-            await apis.request({
-                api: "kharid.daryafte_ettelaate_bundle", loading: false, description: 'دریافت اطلاعات باندل',
-                onSuccess: (products) => states.Shop_Bundle.update({ products })
-            });
+            Shop.Bundle = new ShopClass({getAppState: () => this.getState(),config: { ...Bundle, cartId: 'Bundle' }})
         }
-
         for (let i = 0; i < spreeCampaigns.length; i++) {
             let spreeCampaign = spreeCampaigns[i];
-            
-
-
-
-
-
-
-
-
-            let maxs = [
-150000000,
-300000000,
-150000000,
-150000000,
-225000000,
-300000000,
-150000000,
-150000000,
-150000000,
-150000000,
-150000000,
-150000000,
-150000000,
-240000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-150000000,
-75000000,
-150000000,
-150000000,
-150000000,
-150000000,
-300000000,
-300000000,
-225000000,
-300000000,
-225000000,
-300000000,
-450000000,
-225000000,
-150000000,
-45000000,
-45000000,
-150000000,
-150000000,
-150000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-30000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000,
-75000000   
-]
-let mins = [
-10000000,
-20000000,
-10000000,
-10000000,
-15000000,
-20000000,
-10000000,
-10000000,
-10000000,
-10000000,
-10000000,
-10000000,
-10000000,
-16000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-10000000,
-5000000,
-10000000,
-10000000,
-10000000,
-10000000,
-20000000,
-20000000,
-15000000,
-20000000,
-15000000,
-20000000,
-30000000,
-15000000,
-10000000,
-3000000,
-3000000,
-10000000,
-10000000,
-10000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-2000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-5000000,
-]
-
-            let list = [
-                [10819,'حبابی 7 وات',10000000],
-                [10820,'حبابی 10 وات',20000000],
-                [10821,'حبابی 12 وات',10000000],
-                [10822,'حبابی 15 وات',15000000],
-                [10823,'حبابی 20 وات',20000000],
-                [10824,'حبابی 25 وات',10000000],
-                [10825,'لامپ رنگی',10000000],
-                [10826,'اشکی 6 وات',10000000],
-                [10827,'شمعی 7 وات',10000000],
-                [10828,'انعکاسی 6 و 7 وات',10000000],
-                [10829,'گروه کالایی 6 (هالوژن)',10000000],
-                [10830,'گروه کالایی 7 (fpl و قاب fpl )',10000000],
-                [10831,'گروه کالایی 8 (چراغ خطی)',16000000],
-                [10832,'پنل ۶۰ در ۶۰',5000000],
-                [10833,'پنل پلی کربنات توکار 8 وات',5000000],
-                [10834,'پنل پلی کربنات توکار 15 وات',5000000],
-                [10835,'پنل پلی کربنات توکار 18 وات',5000000],
-                [10836,'پنل پلی کربنات توکار 22 وات',5000000],
-                [10885,'پنل پلی کربنات توکار 28 وات',5000000],
-                [10883,'پنل 32 روکار - cob',5000000],
-                [10837,'گروه کالایی 10 ( چراغ سقفی)',5000000],
-                [10838,'باتری ۴ تایی',5000000],
-                [10839,'باتری دوتایی',10000000],
-                [10840,'باتری ریموتی - متوسط و شارژی ',5000000],
-                [10841,'باتری سکه ای ',10000000],
-                [10842,'کلید مینیاتوری تک پل - ترک',1000000],
-                [10886,'کلید مینیاتوری دو پل - ترک',10000000],
-                [10844,'کلید مینیاتوری سه پل - ترک',10000000],
-                [10845,'گروه کالایی 15  (محافظ جان )',20000000],
-                [10846,'سیم افشان 1 در 1,5',20000000],
-                [10849,'سیم افشان 1 در2.5',15000000],
-                [10850,'سیم افشان 1 در4',20000000],
-                [10853,'سیم افشان 1 در6',15000000],
-                [10856,'کابل سری 2',20000000],
-                [10857,'کابل سری 3',30000000],
-                [10858,'کابل سری 4',15000000],
-                [10859,'زوجی',10000000],
-                [10860,'آنتن سپهر( مس)',3000000],
-                [10861,'بست کمربندی',3000000],
-                [10862,'فتوسل و آنتن',10000000],
-                [10863,'محافظ تک راهی',10000000],
-                [10864,'محافظ 3 خانه',10000000],
-                [10865,'محافظ 6 خانه',5000000],
-                [10866,'چند راهی 5 خانه',5000000],
-                [10867,'چسب سیلیکونی',5000000],
-                [10868,'چسب 123',5000000],
-                [10869,'محصولات رزا قلمو',5000000],
-                [10870,'محصولات رزاغلتک',5000000],
-                [10871,'محصولات رزا صفحه برش',5000000],
-                [10847,'سنباده پشت کرکی و فلاپ دیسک',5000000],
-                [10848,'سنباده برگی و سنباده رول',5000000],
-                [10851,'دستکش',5000000],
-                [10887,'قفل',5000000],
-                [10852,'متر های فنی و مهندسی',5000000],
-                [10854,'متر های فلزی',5000000],
-                [10855,'آچار تخت و رینگی',5000000],
-                [10888,'آچار یکسر جغجغه',5000000],
-                [10872,'آچار آلن',5000000],
-                [10873,'آچار فرانسه',5000000],
-                [10889,'ست سوهان و مغار',5000000],
-                [10875,'ست بکس',5000000],
-                [10876,'ست پیچ گوشتی',5000000],
-                [10877,'انبر میخ کش',5000000],
-                [10878,'گروه انبر پرچ',5000000],
-                [10879,'گروه انبر دست',5000000],
-                [10880,'گروه قیچی',5000000],
-                [10884,'روغن دان و تلمبه پایی',5000000],
-                [10881,'کابل باطری به باطری',5000000],
-                [10882,'تورچ جوشکاری',5000000]
-            ]
             if(spreeCampaign.id === '10818'){
+                let list = taxonCampaign;
                 let cacheCampaigns = apis.getCache('campaigns') || {}
                 let {campaignProducts = {}} = cacheCampaigns;                
-                spreeCampaign.taxons = list.map(([id,name],i)=>{
-                    let min = mins[i];
-                    let max = maxs[i];
+                spreeCampaign.taxons = list.map(([id,name,min,max],i)=>{
                     let products = campaignProducts[`item_10818_${id}`];
                     return {id,name,isTaxon:true,products,min,max}
                 })
             }
             let { id, active,taxons  } = spreeCampaign;
             if (!active) { continue }
-            states.spreeCampaignIds.push(id);
-            states[`Shop_${id}`] = new ShopClass({
+            Shop[id] = new ShopClass({
                 getAppState: () => this.getState(),
-                config: { ...spreeCampaign, cartId: id, spree: true, spreeCampaign: true,taxons:taxons && taxons.length?taxons:undefined }
+                config: { ...spreeCampaign, cartId: id,taxons:taxons && taxons.length?taxons:undefined }
             })
         }
+        
+        let cart = apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});
+        return {cart,Shop}
+    }
+    getSpreeCategories = (backOffice:I_state_backOffice) => {
         let { spreeCategories = [] } = backOffice;
-        let categories = { icon_type: [], slider_type: [], dic: {} }
+        let categories:I_state_spreeCategories = { icon_type: [], slider_type: [], dic: {} }
         for (let i = 0; i < spreeCategories.length; i++) {
-            let sc = spreeCategories[i];
+            let sc:I_spreeCategory = spreeCategories[i];
             let { showType = 'icon', id } = sc;
             categories[`${showType}_type`].push(sc);
             categories.dic[id] = sc;
         }
-        states.spreeCategories = categories;
-        let cart = await apis.request({
-            api: 'kharid.getCart',
-            parameter: { userInfo, Shop_Bundle: states.Shop_Bundle, spreeCampaignIds: states.spreeCampaignIds },
-            description: 'دریافت اطلاعات سبد خرید'
-        });
-        states.cart = cart;
-        this.setState(states)
+        return categories;
+    }
+    getSettleType = (PayDueDate:number) =>{
+        if(PayDueDate === undefined){return}
+        let {backOffice} = this.getProps();
+        let PayDueDateOption = backOffice.PayDueDate_options.find((o)=>o.value === PayDueDate);
+        if(!PayDueDateOption){return}
+        let {cashPercent,days} = PayDueDateOption;
+        if(days){return cashPercent?4:2}
+        else{return cashPercent?1:undefined}
     }
     getCodeDetails = ({ giftCodeInfo, discountCodeInfo }) => {
         function getPromo(id) {
@@ -441,16 +217,16 @@ let mins = [
         }
         return DiscountList
     }
-    getFactorDetails = (items, shippingOptions = {}, container) => {
-        let { PaymentTime, PayDueDate, DeliveryType, giftCodeInfo, discountCodeInfo,CampaignId } = shippingOptions;
+    getFactorDetails:I_getFactorDetails = (marketingLines:I_marketingLine[], shippingOptions?:I_shippingOptions, container?:string) => {
+        let { PaymentTime, PayDueDate, DeliveryType, giftCodeInfo, discountCodeInfo,CampaignId } = shippingOptions || {};
         let DiscountList = this.getCodeDetails({ giftCodeInfo, discountCodeInfo });
         let { userInfo,b1Info } = this.getProps();
-        let { Logger,getSettleType } = this.getState();
-        let SettleType = getSettleType(PayDueDate)
+        let { Logger } = this.getState();
+        let SettleType = this.getSettleType(PayDueDate)
         let config = {
             "CardCode": userInfo.cardCode,
             "CardGroupCode": b1Info.customer.groupCode,
-            "MarketingLines": items,
+            "MarketingLines": marketingLines,
             "DeliverAddress": userInfo.address,
             "DiscountList": DiscountList,
             "marketingdetails": { 
@@ -500,16 +276,16 @@ let mins = [
         }
         return list
     }
-    openLink = (linkTo) => {
-        let { Shop_Bundle, Shop_Regular, rsa } = this.getState();
-        if (linkTo === 'Bundle') { Shop_Bundle.openCategory() }
+    openLink = (linkTo:string) => {
+        let { Shop, rsa } = this.getState();
+        if (linkTo === 'Bundle') { Shop.Bundle.openCategory() }
         else if (linkTo.indexOf('category') === 0) {
             let id = linkTo.split('_')[1];
-            Shop_Regular.openCategory(id);
+            Shop.Regular.openCategory(id);
         }
         else if (linkTo.indexOf('spreeCampaign') === 0) {
             let id = linkTo.split('_')[1];
-            let shop = this.getShopById(id);
+            let shop = Shop[id];
             if (!shop) { return }
             shop.openCategory();
         }
@@ -556,29 +332,34 @@ let mins = [
         }
         return cartLength
     }
-    
-    removeCartItem = ({cartId,taxonId,variantId,product,CampaignId})=>{
-        let remove = (parent,itemId)=>{
-            let newParent = {};
-            let newLength = 0;
-            for(let item_id in parent){
-                if(item_id.toString() !== itemId.toString()){newLength++; newParent[item_id] = parent[item_id]}
+    removeItem = (obj,id)=>{
+        let newItems = {}
+        let length = 0;
+        for(let prop in obj.items){
+            if(id.toString() !== prop.toString()){
+                length++;
+                newItems[prop] = obj.items[prop]
             }
-            return newLength?newParent:false
         }
+        if(length){return{...obj,items:newItems}}
+        return {...obj};
+    }
+    removeCartItem = ({cartId,taxonId,variantId,product,CampaignId})=>{
         let { cart,msfReport } = this.getState();
         let cartTab = cart[cartId];
-        let cartTabItems = cartTab.items;
         if(taxonId){
-            let cartTabTaxonItems = remove(cartTabItems[taxonId].items,variantId);
-            cartTabItems = {...cartTabItems,[taxonId]:{...cartTabItems[taxonId],items:cartTabTaxonItems}}
-            if(!cartTabTaxonItems){cartTabItems = remove(cartTabItems,taxonId)}
-            if(cartTabItems){
+            let newCartTab = cartTab as I_cartTaxon;
+            let cartTaxonItem:I_cartTaxonItem = newCartTab.items[taxonId];
+            cartTaxonItem = this.removeItem(cartTaxonItem,variantId)
+            if(!cartTaxonItem.items){
+                newCartTab = this.removeItem(newCartTab,taxonId)
+            }
+            cartTab = newCartTab;
+            if(cartTaxonItem.items){
                 let factorDetailsItems = []
-                let {items} = cartTabItems[taxonId];
                 let productDic = {}
-                for(let prop in items){
-                    let { variantId, count, product } = items[prop];
+                for(let prop in cartTaxonItem.items){
+                    let { variantId, count, product } = cartTaxonItem.items[prop];
                     let variant = product.variants.find((o) => o.id === variantId)
                     productDic[variant.code] = product;
                     factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
@@ -594,39 +375,49 @@ let mins = [
                         errors.push({product:productDic[ItemCode],taxonId,minValue,maxValue,error:Information})
                     }
                 }
-                cartTabItems[taxonId].errors = errors
+                cartTaxonItem.errors = errors
             }
         }
-        else {cartTabItems = remove(cartTabItems,variantId);   }
+        else {
+            let newCartTab = cartTab as I_cartTab;
+            newCartTab = this.removeItem(newCartTab,variantId) 
+            cartTab = newCartTab
+        }
         msfReport({actionName:'remove from cart',actionId:23,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})    
-        let newCart = {...cart,[cartId]:{...cart[cartId],items:cartTabItems}}
-        if(!cartTabItems){newCart = remove(newCart.items,cartId)}
-        if(!newCart){newCart = {}}
+        let newCart = {}
+        for(let prop in cart){
+            if(prop === cartId){
+                if(cartTab.items){newCart[prop] = cartTab}
+            }
+            else {newCart[prop] = cart[prop];}
+        }
         return newCart
     }
     editCartItem = ({cartId,taxonId,variantId,count,product,CampaignId})=>{
         let { cart,msfReport } = this.getState();
-        let cartTab = cart[cartId] || {items:{},taxonId};
-        let cartTabItems = cartTab.items;
+        let cartTab = cart[cartId];
+        let reportAdd = false;
         if(taxonId){
-            cartTabItems[taxonId] = cartTabItems[taxonId] || {isTaxon:true,taxonId,items:{}}
-            if(!cartTabItems[taxonId].items[variantId]){
-                msfReport({actionName:'add to cart',actionId:24,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
-                cartTabItems[taxonId].items[variantId] = {product,variantId,count:0,isTaxon:true,taxonId}
+            let newCartTab = cartTab as I_cartTaxon;
+            if(!newCartTab){newCartTab = {isTaxon:true,items:{}}}
+            if(!newCartTab.items[taxonId]){
+                newCartTab.items[taxonId] = {taxonId,items:{}}
             }
-            cartTabItems[taxonId].items[variantId].count = count
+            if(!newCartTab.items[taxonId].items[variantId]){
+                reportAdd = true;
+                newCartTab.items[taxonId].items[variantId] = {product,variantId,count:0}
+            }
+            newCartTab.items[taxonId].items[variantId].count = count
             let factorDetailsItems = []
-            let {items} = cartTabItems[taxonId];
             let productDic = {}
-            for(let prop in items){
-                let { variantId, count, product } = items[prop];
+            for(let prop in newCartTab.items[taxonId].items){
+                let { variantId, count, product } = newCartTab.items[taxonId].items[prop];
                 let variant = product.variants.find((o) => o.id === variantId)
                 productDic[variant.code] = product;
                 factorDetailsItems.push({ ItemCode: variant.code, ItemQty: count })
             }
             let errors = []
             let factorDetails = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
-            debugger
             let { MarketingLines } = factorDetails;
             for(let i = 0; i < MarketingLines.length; i++){
                 let {CampaignDetails = {},ItemCode} = MarketingLines[i];
@@ -636,26 +427,30 @@ let mins = [
                     errors.push({product:productDic[ItemCode],taxonId,minValue,maxValue,error:Information})
                 }
             }
-            cartTabItems[taxonId].errors = errors
+            newCartTab.items[taxonId].errors = errors
+            cartTab = newCartTab;
         }
         else {
-            if(!cartTabItems[variantId]){
-                cartTabItems[variantId] = {product,variantId,count:0}
+            let newCartTab = cartTab as I_cartTab;
+            if(!newCartTab){newCartTab = {items:{}}}
+            if(!newCartTab.items[variantId]){
+                reportAdd = true
+                newCartTab.items[variantId] = {product,variantId,count:0}
             }
-            cartTabItems[variantId].count = count
+            newCartTab.items[variantId].count = count;
+            cartTab = newCartTab;
         }
-        return {...cart,[cartId]:{...cartTab,items:cartTabItems}}
+        if(reportAdd){msfReport({actionName:'add to cart',actionId:24,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})}
+        return {...cart,[cartId]:cartTab}
     }
     changeCart = async ({ count, variantId, product,taxonId,cartId,CampaignId }) => {
-        let { cart, apis } = this.getState();
-        let cartTab = cart[cartId];
-        if (!cartTab) { cartTab = { items: {},taxonId } }
+        let { apis } = this.getState();
         let props = { cartId,count, variantId, product,taxonId,CampaignId }
         let newCart = !count?this.removeCartItem(props):this.editCartItem(props);
         await apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
         this.setState({ cart: newCart });
     }
-    openPopup = async (type, parameter) => {
+    openPopup = (type:string, parameter?:any):void => {
         let { rsa, backOffice, Logger,msfReport } = this.getState();
         let { userInfo } = this.getProps();
         let { addModal, removeModal, setNavId } = rsa;
@@ -730,7 +525,7 @@ let mins = [
             })
         }
         else if (type === 'password') {
-            msfReport({actionName:'open password popup',actionId:24,tagName:'prodile',eventName:'page view'})
+            msfReport({actionName:'open password popup',actionId:24,tagName:'profile',eventName:'page view'})
             addModal({ id: type, position: 'fullscreen', body: { render: () => <PasswordPopup /> }, header: { title: 'مشاهده و ویرایش رمز عبور' } })
         }
         else if (type === 'peygiriye-sefareshe-kharid') {
@@ -786,30 +581,10 @@ let mins = [
             })
         }
     }
-    getGuaranteeImages = async (items) => {
-        if (!items.length) { return }
-        let { apis, images } = this.getState();
-        let itemCodes = [];
-        for (let i = 0; i < items.length; i++) {
-            let { Details = [] } = items[i];
-            for (let j = 0; j < Details.length; j++) {
-                let { Code } = Details[j];
-                if (images[Code]) { continue }
-                if (itemCodes.indexOf(Code) !== -1) { continue }
-                itemCodes.push(Code);
-            }
-        }
-        let res = await apis.request({ api: 'guaranti.daryafte_tasavire_kalahaye_garanti', parameter: itemCodes, loading: false, description: 'دریافت تصاویر کالاهای گارانتی' });
-        for (let i = 0; i < res.length; i++) {
-            images[res.ItemCode] = res.ImagesUrl;
-        }
-        this.setState({ images })
-    }
     getGuaranteeItems = async () => {
         let { apis, Login } = this.getState();
         let res = await apis.request({ api: "guaranti.garantiItems", loading: false, description: 'دریافت لیست کالاهای گارانتی کاربر' });
         if (res === false) { Login.logout(); return; }
-        //this.getGuaranteeImages(items);
         let guaranteeExistItems = await apis.request({ api: "guaranti.kalahaye_ghabele_garanti", loading: false, description: 'کالاهای قابل گارانتی', def: [] });
         this.setState({ guaranteeItems: res, guaranteeExistItems });
     }
@@ -819,9 +594,6 @@ let mins = [
         let wait_to_send = await apis.request({ api: 'bazargah.daryafte_sefareshate_bazargah', parameter: { type: 'wait_to_send' }, loading: false, description: 'دریافت سفارشات در انتظار ارسال بازارگاه' });
         this.setState({ bazargahOrders: { ...bazargahOrders, wait_to_get, wait_to_send } })
     }
-    getShopById = (id) => {
-        return this.getState()[`Shop_${id}`]
-    }
     getCartItemsByProduct = (product,cartId,taxonId) => {
         let { cart } = this.getState();
         if (!cart[cartId]) { return [] }
@@ -829,37 +601,26 @@ let mins = [
         for (let i = 0; i < product.variants.length; i++) {
             let variant = product.variants[i];
             if(taxonId){
-                let taxonItem = cart[cartId].items[taxonId];
+                let cartTab = cart[cartId] as I_cartTaxon;
+                let taxonItem = cartTab.items[taxonId];
                 if(taxonItem){
-                    let cartItem = cart[cartId].items[taxonId].items[variant.id];
+                    let cartItem = cartTab.items[taxonId].items[variant.id];
                     if (cartItem) { res.push(cartItem) }
-                }   
+                }  
             }
             else{
-                let cartItem = cart[cartId].items[variant.id];
+                let cartTab = cart[cartId] as I_cartTab;
+                let cartItem = cartTab.items[variant.id];
                 if (cartItem) { res.push(cartItem) }
             }
             
         }
         return res
     }
-    removeCart = (cartId) => {
+    removeCart = (cartId:string) => {
         let { cart } = this.getState();
         let newCart = {}
         for (let prop in cart) { if (prop !== cartId) { newCart[prop] = cart[prop] } }
         this.setState({ cart: newCart })
     }
-}
-
-function DeveloperModePassword({ onSubmit }) {
-    let [code, setCode] = useState('')
-    function change(code) {
-        setCode(code);
-        if (code === 'bmdevmode') { onSubmit() }
-    }
-    return (
-        <AIOInput
-            type='text' value={code} onChange={(code) => change(code)} className='developer-mode-input'
-        />
-    )
 }

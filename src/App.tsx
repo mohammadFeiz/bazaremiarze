@@ -5,11 +5,11 @@ import Landing from './components/landing';
 import AIOLogin from './npm/aio-login/aio-login';
 import AIOLog from 'aio-log';
 import AIOService from 'aio-service';
-import getApiFunctions from './apis/apis';
+import getApiFunctions from './apis/apis.ts';
 import './App.css';
 import './theme.css';
 import Splash from './components/spalsh/splash';
-import { I_AIOLogin_checkToken, I_AIOLogin_class, I_AIOLogin_mode, I_AIOLogin_model, I_AIOLogin_onSubmit, I_AIOLogin_props, I_AIOLogin_renderApp, I_AIOLogin_renderLogin, I_AIOLogin_renderSplash, I_AIOService_class, I_AIOService_onCatch, I_B1Info, I_backOffice, I_backOffice_accessPhoneNumber, I_userInfo } from './types';
+import { I_AIOLogin_checkToken, I_AIOLogin_class, I_AIOLogin_mode, I_AIOLogin_model, I_AIOLogin_onSubmit, I_AIOLogin_props, I_AIOLogin_renderApp, I_AIOLogin_renderLogin, I_AIOLogin_renderSplash, I_AIOService_class, I_AIOService_onCatch, I_B1Info, I_Report_parameter, I_msfReport, I_state_backOffice, I_state_backOffice_accessPhoneNumber, I_updateProfile, I_userInfo } from './types';
 type I_getBaseUrl = () => string
 const getBaseUrl: I_getBaseUrl = function () {
   //return "https://apimy.burux.com/api/v1";
@@ -51,15 +51,6 @@ const getLoginInstance: I_getLoginInstance = function (parameter) {
     }
   }
   return new AIOLogin(props)
-}
-type I_report = {
-  actionName: string, actionId: number, targetName?: string, targetId?: number,
-  tagName: 'kharid' | 'vitrin' | 'profile' | 'other' | 'user authentication', eventName: 'action' | 'page view',
-  result?: 'success' | 'unsuccess', message?: string
-}
-type I_msfReport = (obj: I_report, p?: { userId?: string, phoneNumber?: string }) => void
-interface I_Report_parameter extends I_report {
-  apis: I_AIOService_class; phoneNumber: string; userId: string;
 }
 type I_Report = (parameter: I_Report_parameter) => void;
 const Report: I_Report = function (parameter) {
@@ -167,7 +158,7 @@ export default function App() {
   const getB1Info = async (userInfo:I_userInfo) => {
     return await apis.request({ api: 'login.getB1Info', parameter: {userInfo,Logger}, description: 'دریافت اطلاعات b1', loading: false })
   }
-  const updateProfile = async (loginModel: I_AIOLogin_model, mode: 'register' | 'profile' | 'location', callback?: Function) => {
+  const updateProfile:I_updateProfile = async (loginModel, mode, callback) => {
     let model = {}, description: string;
     if (mode === 'register') { model = loginModel.register; description = 'ثبت نام' }
     else if (mode === 'profile') { model = loginModel.profile; description = 'ویرایش حساب کاربری' }
@@ -201,7 +192,7 @@ export default function App() {
   let [showLanding,setShowLanding] = useState<boolean>(true);
   let [pageError, setPageError] = useState<{ text: string, subtext: string }>()
   let [Logger] = useState(new AIOLog('bmlog'))
-  let [backOffice,setBackOffice] = useState<I_backOffice | undefined>()
+  let [backOffice,setBackOffice] = useState<I_state_backOffice | undefined>()
   let [Login] = useState<I_AIOLogin_class>(getLoginInstance({ onSubmit, checkToken, renderLogin, renderApp, renderSplash }))
   let [apis] = useState<I_AIOService_class>(getApisInstance(baseUrl, () => { return {} }))
   let [userInfo, setUserInfo] = useState<I_userInfo | undefined>()

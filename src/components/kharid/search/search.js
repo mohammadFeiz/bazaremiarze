@@ -34,7 +34,7 @@ export default class Search extends Component {
       }, 2000);
     }
     result_layout(){
-      let {Shop_Regular} = this.context;
+      let {Shop} = this.context;
       let { result,loading,searchValue } = this.state;
       if(loading){
         return {html:'در حال جستجو...',size:60,align:'vh'}
@@ -47,7 +47,7 @@ export default class Search extends Component {
       return {
         flex: 1,className:'ofy-auto',
         column: result.map((o, i) => {
-          return {html:Shop_Regular.renderCard({index:i,product:o,type:'horizontal',renderIn:'search',taxonId:o.taxonId})}
+          return {html:Shop.Regular.renderCard({index:i,product:o,type:'horizontal',renderIn:'search',taxonId:o.taxonId})}
         }),
       }
     }

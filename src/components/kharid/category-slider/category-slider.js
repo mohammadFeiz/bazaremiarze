@@ -9,7 +9,7 @@ import appContext from '../../../app-context';
 export default class CategorySlider extends Component{
     static contextType = appContext;
     products_layout(){
-      let {Shop_Regular} = this.context;
+      let {Shop} = this.context;
       let {products} = this.props;
       let loading = false;
       if(!products){loading = true; products = [fakeProduct,fakeProduct,fakeProduct,fakeProduct,fakeProduct]}
@@ -18,7 +18,7 @@ export default class CategorySlider extends Component{
         row: products.map((product,i) =>{
             return {
               className:'of-visible',
-              html:(Shop_Regular.renderCard({type:'vertical',product,loading,renderIn:'category slider',taxonId:product.taxonId}))
+              html:(Shop.Regular.renderCard({type:'vertical',product,loading,renderIn:'category slider',taxonId:product.taxonId}))
             }
         }),
       }

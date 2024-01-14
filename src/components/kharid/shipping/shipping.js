@@ -114,8 +114,8 @@ export default class Shipping extends Component {
   }
   products_layout() {
     let { cartId } = this.props;
-    let { actionClass } = this.context;
-    let cards = actionClass.getShopById(cartId).getCartProducts('shipping', { ...this.state });
+    let { Shop } = this.context;
+    let cards = Shop[cartId].getCartProducts('shipping', { ...this.state });
     return {
       column: [
         { size: 36, align: 'v', className: 'theme-medium-font-color fs-14 bold p-h-12', html: 'محصولات' },
@@ -160,12 +160,12 @@ export default class Shipping extends Component {
   }
   amount_layout() {
     let { cartId } = this.props;
-    let { actionClass,msfReport,getSettleType } = this.context;
-    let Shop = actionClass.getShopById(cartId);
+    let { Shop,actionClass,msfReport } = this.context;
+    let ShopClass = Shop[cartId];
     let { address, giftCodeInfo, discountCodeInfo } = this.state;
     let { PayDueDate, DeliveryType, PaymentTime } = this.state;
-    let { getFactorItems, getPaymentButtonText } = Shop;
-    let SettleType = getSettleType(PayDueDate);
+    let { getFactorItems, getPaymentButtonText } = ShopClass;
+    let SettleType = actionClass.getSettleType(PayDueDate);
     let factorItems = getFactorItems({ PayDueDate, SettleType, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo },'shipping')
     let Details = this.details_layout(factorItems);
     return {
@@ -181,9 +181,9 @@ export default class Shipping extends Component {
               className="button-2"
               onClick={async () => {
                 debugger
-                let { apis,getSettleType } = this.context;
+                let { apis,actionClass } = this.context;
                 let { PayDueDate, DeliveryType, PaymentTime, address, giftCodeInfo, discountCodeInfo } = this.state;
-                let SettleType = getSettleType(PayDueDate);
+                let SettleType = actionClass.getSettleType(PayDueDate);
                 let { cartId } = this.props;
                 await apis.request({
                   api: "kharid.payment", description: 'عملیات ثبت و پرداخت',

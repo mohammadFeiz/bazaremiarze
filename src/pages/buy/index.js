@@ -38,20 +38,20 @@ export default class Buy extends Component {
     
   }
   async componentDidMount() {
-    let {spreeCategories,Shop_Regular} = this.context;
+    let {spreeCategories,Shop} = this.context;
     let {slider_type = []} = spreeCategories;
     let sliders = [];
     for(let i = 0; i < slider_type.length; i++){
       let o = slider_type[i];
       let {id,name} = o;
-      let products = await Shop_Regular.getCategoryProducts(id,6);
+      let products = await Shop.Regular.getCategoryProducts(id,6);
       sliders.push({products,name,id})
     }
     this.setState({sliders})
   }
   tabs(){
     let {view} = this.state;
-    let {Shop_Regular} = this.context;
+    let {Shop} = this.context;
     return {
       flex: 1,style:{overflow:'hidden'},show:view.type === 'main',
       column: [
@@ -60,7 +60,7 @@ export default class Buy extends Component {
           column: [
             // {
             //   html:()=>{
-            //     return Shop_Regular.renderCartFactor(false)
+            //     return Shop.Regular.renderCartFactor(false)
             //   }
             // },
             {
@@ -79,7 +79,7 @@ export default class Buy extends Component {
     }
   }
   categories_layout(){
-    let {Shop_Regular,backOffice} = this.context;
+    let {Shop,backOffice} = this.context;
     let {spreeCategories = []} = backOffice;
     let categories = spreeCategories.filter(({showType})=>showType === 'icon');
     return {
@@ -92,9 +92,9 @@ export default class Buy extends Component {
             let {name,icon,id} = o;
             return {
               flex:1,align:'vh',style:{maxWidth:220},
-              onClick:()=>Shop_Regular.openCategory(id),
+              onClick:()=>Shop.Regular.openCategory(id),
               // onClick:async ()=>{
-              //   let category = await Shop_Regular.getCategoryProps(id)
+              //   let category = await Shop.Regular.getCategoryProps(id)
               //   this.setState({category})
               // },
               column:[
@@ -109,25 +109,25 @@ export default class Buy extends Component {
     }
   }
   category_layout(){
-    let {Shop_Regular} = this.context;
+    let {Shop} = this.context;
     let {category} = this.state
     if(!category){return false}
     return {
-      html:Shop_Regular.getCategory(category)
+      html:Shop.Regular.getCategory(category)
     }
   }
   billboard_layout(){
     return {html:<Billboard renderIn='buy'/>}
   }
   sliders_layout(){
-    let {Shop_Regular} = this.context;
+    let {Shop} = this.context;
     let {sliders} = this.state;
     return {
       className:'of-visible',
       column:sliders.map(({name,id,products})=>{
         return {
           className:'of-visible',style:{marginBottom:12},
-          html:()=><CategorySlider title={name} products={products} showAll={()=>Shop_Regular.openCategory(id)}/>
+          html:()=><CategorySlider title={name} products={products} showAll={()=>Shop.Regular.openCategory(id)}/>
         }
       })
     }

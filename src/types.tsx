@@ -163,7 +163,6 @@ export type I_ShopClass = {
             taxon: I_ShopClass_taxon, renderIn: I_shopRenderIn, index?: number, onFetchProducts?: any, errors?: any[], hasErrors?: any[]
         }
     ) => React.ReactNode,
-    getCartItems:()=>I_cartProduct[] | I_cartTaxon[],
     getCartVariants:()=>I_cartVariant[],
     name: string,
     billboard?:string,
@@ -176,10 +175,10 @@ export type I_ShopClass = {
     PriceListNum?: number,
     getAmounts_all(
         p:{cartItems, shippingOptions, container}
-    )=>{{ total, discounts, payment: DocumentTotal, ClubPoints?:any, hasError }},
+    )=>{ total, discounts, payment: DocumentTotal, ClubPoints?:any, hasError },
     getAmounts_Bundle:(
         p:{cartItems:I_cartProduct[],shippingOptions?:I_shippingOptions,container?:string}
-    )=>{ total:number, discounts:{ percent:number, value:number, title:string }[], payment:number, ClubPoints?: any },
+    )=>{ total:number, discounts:I_discount[], payment:number, ClubPoints?: any },
 }
 export type I_shopRenderIn = 'product'|'shipping'|'cart'|'category';
 export type I_actionClass = {
@@ -257,11 +256,13 @@ export type I_state_cart = {[cartId:string]:(I_cartTab | I_cartTab_isTaxon)}
 export type I_cartTab = {products:{[productId:string]:I_cartProduct},isTaxon?:false}
 export type I_cartProduct = {variants:{[variantId:string]:I_cartVariant},product:I_product}
 export type I_cartVariant = {
-    cartId:string,count:number,
+    cartId:string,count:number | I_bundleCount,
     variant:I_variant,variantId:string,
     product:I_product,productId:string,
-    taxon?:I_ShopClass_taxon,taxonId?:string
+    taxon?:I_ShopClass_taxon,taxonId?:string,
+    error?:string
 };
+export type I_bundleCount = {packQty:number,qtyInPacks:any}
 export type I_cartTab_isTaxon = {taxons:{[taxonId:string]:I_cartTaxon},isTaxon:true}
 export type I_cartTaxon = {
     taxonId:string,products:{[productId:string]:I_cartProduct},taxon:I_ShopClass_taxon,
@@ -319,6 +320,7 @@ export type I_variant = {
     optionValues:{[optiontypeId:string]:string},
     srcs:string[]
 };
+export type I_discount = { percent?:number, value:number, title:string }
 
 
 export type I_bottomMenu = 'vitrin' | 'bazargah' | 'khane' | 'kharid' | 'profile'

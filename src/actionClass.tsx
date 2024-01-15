@@ -154,7 +154,7 @@ export default class ActionClass {
                 let {campaignProducts = {}} = cacheCampaigns;                
                 spreeCampaign.taxons = list.map(([id,name,min,max],i)=>{
                     let products = campaignProducts[`item_10818_${id}`];
-                    return {id,name,isTaxon:true,products,min,max}
+                    return {id,name,products,min,max}
                 })
             }
             let { id, active,taxons  } = spreeCampaign;
@@ -333,7 +333,13 @@ export default class ActionClass {
         let cartTabs = Object.keys(cart);
         for (let i = 0; i < cartTabs.length; i++) {
             let cartTab = cart[cartTabs[i]];
-            cartLength += Object.keys(cartTab.items).length;
+            if(cartTab.isTaxon === true){
+                cartLength += Object.keys(cartTab.taxons).length;
+            }
+            else{
+                cartLength += Object.keys(cartTab.products).length;
+            }
+            
         }
         return cartLength
     }

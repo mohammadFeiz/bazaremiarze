@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from "react";
+import React, { Component, Fragment, useContext, useEffect, useState } from "react";
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import { Icon } from '@mdi/react';
 import { mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiDelete, mdiPlus, mdiMinus } from "@mdi/js";
@@ -15,7 +15,7 @@ import SearchBox from './components/search-box/index';
 
 import appContext from './app-context';
 import noItemSrc from './images/not-found.png';
-import { I_ShopProps_taxon, I_app_state, I_product, I_shopRenderIn } from "./types";
+import { I_ShopProps_taxon, I_app_state, I_cartTab, I_cartTab_isTaxon, I_product, I_shopRenderIn, I_state_cart } from "./types";
 
 export default class ShopClass {
     getAppState:()=>I_app_state;
@@ -24,7 +24,7 @@ export default class ShopClass {
     id:string;
     renderCard:(
         p:{ 
-            product:I_product, renderIn:I_shopRenderIn, variantId:string, count:number, 
+            product:I_product, renderIn:I_shopRenderIn, variantId?:string, count?:number, 
             details?:any, loading?:boolean, index?:number, style?:any, taxonId?:string, type?:any 
         }
     )=>React.ReactNode;
@@ -35,6 +35,7 @@ export default class ShopClass {
     )=>React.ReactNode
     name:string;
     CampaignId?:number;
+    PriceListNum?:number;
     constructor({ getAppState, config }) {
         this.getAppState = getAppState;
         this.update(config);
@@ -68,7 +69,7 @@ export default class ShopClass {
             let { taxon, renderIn, index, onFetchProducts, errors = [],hasErrors = [] } = p;
             let { apis, msfReport, cart } = this.getAppState();
             let props = {
-                title: taxon.name, taxon, renderIn, index, style, errors, cart, cartId: this.cartId,hasErrors,
+                title: taxon.name, taxon, renderIn, index, errors, cart, cartId: this.cartId,hasErrors,
                 onClick: async () => {
                     if (!taxon.products) {
                         let products = await apis.request({
@@ -94,8 +95,14 @@ export default class ShopClass {
         let { cart } = this.getAppState();
         let cartTab = cart[this.cartId];
         if (!cartTab) { return [] }
-        let { items = {} } = cartTab;
-        return Object.keys(items).map((o) => items[o])
+        if(cartTab.isTaxon === true){
+            let ct = cartTab as I_cartTab_isTaxon;
+            return Object.keys(ct.taxons).map((o) => ct.taxons[o])    
+        }
+        else {
+            let ct = cartTab as I_cartTab;
+            return Object.keys(ct.products).map((o) => ct.products[o])
+        }
     }
     getCartProducts = (renderIn, shippingOptions) => {
         let { cart } = this.getAppState();
@@ -276,7 +283,7 @@ export default class ShopClass {
         let { rsa, msfReport } = this.getAppState();
         if (this.cartId === 'Bundle') { this.fillAuto() }
         msfReport({ actionName: 'open checkout page', actionId: 754, targetName: this.cartId, targetId: this.cartId, tagName: 'kharid', eventName: 'page view' })
-        rsa.addModal({ id: 'edameye_farayande_kharid', position: 'fullscreen', body: { render: () => <Shipping cartId={this.cartId} /> }, header: { title: 'ادامه فرایند خرید' } })
+        rsa.addModal({ id: 'edameye_farayande_kharid', position: 'fullscreen', body: { render: () => <Shipping cartId={this.cartId} /> }, header: { title: 'ادامه فرایند خرید' } }) 
     }
     fillAuto = () => {
         return;
@@ -718,20 +725,39 @@ class TaxonCard extends Component {
         return this.has_products_layout()
     }
 }
-class RegularCard extends Component {
-    state = { mounted: false }
-    image_layout() {
-        let { product } = this.props;
+type I_RegularCard = {product:I_product,cartId:string,shopName:string, taxonId, CampaignId?:number, renderIn,index?:number,loading?:boolean,onClick?:Function,type?:'horizontal' | 'vertical'}
+function RegularCard(props:I_RegularCard) {
+    let {cart}:I_app_state = useContext(appContext);
+    let [mounted,setMounted] = useState<boolean>(false)
+    let {product,cartId, taxonId, CampaignId, renderIn,shopName,index,loading,onClick,type = 'horizontal'} = props;
+    function image_layout() {
         let { srcs = [] } = product;
         return { size: 116, align: 'vh', html: <img src={srcs[0] || NoSrc} width={'100%'} alt='' /> }
     }
+    function count_layout() {
+        let cartTab = cart[cartId];
+        if(!cartTab){return false}
 
-    count_layout() {
-        let { cartId, taxonId, CampaignId, cart, renderIn, product } = this.props;
-        let cartTab = cart[cartId] || { items: {} };
         let cartItems = {}
-        try { cartItems = taxonId ? cartTab.items[taxonId].items : cartTab.items }
-        catch { }
+        if(cartTab.isTaxon === true){
+            for(let taxonId in cartTab.taxons){
+                let cartTaxon = cartTab.taxons[taxonId];
+                for(let productId in cartTaxon.products){
+                    if(product.id === productId){
+                        let cartProduct = cartTaxon.products[productId];
+                        cartItems = cartProduct.variants
+                    }
+                }        
+            }
+        }
+        else {
+            for(let productId in cartTab.products){
+                if(product.id === productId){
+                    let cartProduct = cartTab.products[productId];
+                    cartItems = cartProduct.variants
+                }
+            }
+        }
         let keys = Object.keys(cartItems);
         if (!keys.length) { return false }
         let variantsDic = {}
@@ -739,8 +765,7 @@ class RegularCard extends Component {
         keys = keys.filter((variantId) => !!variantsDic[variantId])
         if (!keys.length) { return false }
         let column = keys.map((variantId) => {
-                let { product, count } = cartItems[variantId];
-                let variant = product.variants.find((o) => o.id === variantId);
+                let { count,variant } = cartItems[variantId];
                 let { optionTypes } = product;
                 let { optionValues } = variant;
                 let details = [];
@@ -770,16 +795,14 @@ class RegularCard extends Component {
         return {gap:3,style:{background:'#fff'},column}
         //return { size: 36, html: () => <CartButton renderIn={renderIn} product={product} variantId={variantId} cartId={cartId} taxonId={taxonId} CampaignId={CampaignId}/> }
     }
-    title_layout() {
-        let { title } = this.props;
-        return { html: title, className: 'fs-10', style: { color: 'rgb(253, 185, 19)' } }
+    function title_layout() {
+        return { html: shopName, className: 'fs-10', style: { color: 'rgb(253, 185, 19)' } }
     }
-    name_layout() {
-        let { product } = this.props;
+    function name_layout() {
         let { name } = product;
         return { html: name, className: 'fs-12 theme-medium-font-color bold', style: { whiteSpace: 'normal', textAlign: 'right' } }
     }
-    discount_layout() {
+    function discount_layout() {
         let { product } = this.props;
         let { inStock, Price, B1Dscnt = 0, CmpgnDscnt = 0, PymntDscnt = 0 } = product;
         if (!Price || !inStock) { return false }
@@ -799,30 +822,22 @@ class RegularCard extends Component {
             ]
         }
     }
-    details_layout() {
-        let { details = [] } = this.props;
-        if (!details.length) { return false }
-        let text = '';
-        for (let i = 0; i < details.length; i++) {
-            let [title, value] = details[i];
-            text += `${title}:${value} `
-        }
+    function details_layout() {
+        if(!product.description){return false}
         return {
-            html: text, className: 'fs-9',
+            html: product.description, className: 'fs-9',
             style: {
                 whiteSpace: 'nowrap',
                 overflow: 'hidden'
             }
         }
     }
-    notExist_layout() {
-        let { product } = this.props;
+    function notExist_layout() {
         let { inStock } = product;
         if (inStock) { return false }
         return { row: [{ flex: 1 }, { html: 'نا موجود', className: 'colorD83B01 bold fs-12' }, { size: 12 }] }
     }
-    price_layout() {
-        let { product } = this.props;
+    function price_layout() {
         let { FinalPrice, inStock } = product;
         if (!inStock || !FinalPrice) { return false }
         return {
@@ -832,83 +847,70 @@ class RegularCard extends Component {
             ]
         }
     }
-    componentDidMount() {
-        let { index = 0 } = this.props;
+    useEffect(()=>{
         setTimeout(() => {
-            this.setState({ mounted: true })
-        }, index * 100 + 100)
-    }
-    horizontal_layout() {
-        let { loading, onClick } = this.props;
-        let { mounted } = this.state;
+            setMounted(true)
+        }, (index || 0) * 100 + 100)
+    },[])
+    function horizontal_layout() {
         return (
             <RVD
                 loading={loading}
                 layout={{
                     className: 'theme-card-bg theme-box-shadow gap-no-color rvd-rotate-card' + (mounted ? ' mounted' : ''),
                     onClick,
-                    // egg:{
-                    //     count:3,
-                    //     callback:()=>{
-                    //         console.log(this.props)
-                    //     }
-                    // },
                     style: { border: '1px solid #eee' },
                     column:[
                         {
                             row: [
-                                this.image_layout(),
+                                image_layout(),
                                 {
                                     flex: 1,
                                     column: [
                                         { size: 6 },
-                                        this.title_layout(),
-                                        this.name_layout(),
-                                        this.details_layout(),
+                                        title_layout(),
+                                        name_layout(),
+                                        details_layout(),
                                         { flex: 1 },
-                                        this.discount_layout(),
-                                        this.notExist_layout(),
-                                        { row: [{ flex: 1 }, this.price_layout()] },
+                                        discount_layout(),
+                                        notExist_layout(),
+                                        { row: [{ flex: 1 }, price_layout()] },
                                         { size: 6 },
 
                                     ]
                                 }
                             ]
                         },
-                        this.count_layout()
-
+                        count_layout()
                     ]
                 }}
             />
         )
     }
-    vertical_layout() {
-        let { style, product, loading, onClick } = this.props;
+    function vertical_layout() {
         let { srcs = [], name } = product;
         return (
             <RVD
                 loading={loading}
                 layout={{
-                    style: { ...style }, className: 'theme-card-bg theme-box-shadow theme-border-radius of-visible w-168 h-288 fs-14 br-12',
+                    className: 'theme-card-bg theme-box-shadow theme-border-radius of-visible w-168 h-288 fs-14 br-12',
                     onClick,
                     column: [
                         { size: 140, align: 'vh', html: <img src={srcs[0] || NoSrc} width={'100%'} style={{ width: 'calc(100% - 24px)', height: '100%', borderRadius: 8 }} alt='' />, style: { padding: 6, paddingBottom: 0 } },
                         { html: name, className: 'fs-12 p-v-6 p-h-12 theme-medium-font-color bold', style: { whiteSpace: 'normal' } },
                         //this.name_layout(),
                         { flex: 1 },
-                        this.discount_layout(),
-                        this.price_layout(),
-                        this.notExist_layout(),
+                        discount_layout(),
+                        price_layout(),
+                        notExist_layout(),
                         { size: 12 }
                     ]
                 }}
             />
         )
     }
-    render() {
-        let { type = 'horizontal' } = this.props;
-        return this[type + '_layout']()
-    }
+    return type === 'horizontal'?horizontal_layout():vertical_layout()
+    
 }
 class BundleCard extends Component {
     static contextType = appContext

@@ -41,7 +41,8 @@ export type I_AIOLogin_class_render_parameter = {
 export type I_AIOService_request = (obj:{
     api:string,parameter?:any,loading?:boolean,onCatch?:I_AIOService_onCatch,
     message?:{error?:boolean | string,success?:boolean | string},
-    description?:string,getError?:I_AIOService_getError,def?:any
+    description?:string,getError?:I_AIOService_getError,def?:any,
+    cache?:{time:number,name:string}
 })=>any
 export type I_AIOService_class = {
     request:I_AIOService_request,
@@ -142,7 +143,7 @@ export type I_ShopProps = {
     PriceListNum?:number,
     taxons?:I_ShopProps_taxon[],
 } 
-export type I_ShopProps_taxon = [id:string,name:string,min:number,max:number]
+export type I_ShopProps_taxon = {id:string,name:string,min:number,max:number,products?:I_product[]}
 export type I_ShopClass = {
     billboard?:string,icon?:string,name:string,
     openCategory:(id?:string)=>void,
@@ -191,7 +192,7 @@ export type I_cartTaxon = {
 }
 /////cart
 export type I_report = {
-    actionName: string, actionId: number, targetName?: string, targetId?: number,
+    actionName: string, actionId: number, targetName?: string, targetId?: any,
     tagName: 'kharid' | 'vitrin' | 'profile' | 'other' | 'user authentication', eventName: 'action' | 'page view',
     result?: 'success' | 'unsuccess', message?: string
 }

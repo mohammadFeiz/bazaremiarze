@@ -29,21 +29,27 @@ import Bazargah from "./pages/bazargah/bazargah";
 import Profile from "./pages/profile/profile";
 import Vitrin from './pages/vitrin/vitrin';
 import taxonCampaign from './taxonCampaign';
-import { I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, I_userInfo, I_B1Info, I_state_cart, I_cartTab, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartTab_isTaxon, I_cartProduct, I_variant } from './types';
+import { I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, I_userInfo, I_B1Info, I_state_cart, I_cartTab, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartTab_isTaxon, I_cartProduct, I_variant, I_actionClass, I_product } from './types';
 
-type I_getSideItems = ()=>{
-    text:string,icon:()=>React.ReactNode,onClick:()=>void
-}[]
-type I_getNavItems = ()=>{
-    text:string | (()=>string),icon:()=>React.ReactNode,render:()=>React.ReactNode,id:string
-}[]
-type I_getFactorDetails = (items:any[],shippingOptions:I_shippingOptions,container?:string)=>{
-    MarketingLines:{CampaignDetails:any,ItemCode:string}[]
-}
-type I_getShopState = ()=>{
-    Shop:I_state_Shop,cart:I_state_cart
-}
-export default class ActionClass {
+export default class ActionClass implements I_actionClass {
+    getNavItems:()=>{
+        text:string | (()=>string),icon:()=>React.ReactNode,render:()=>React.ReactNode,id:string
+    }[]
+    getSideItems:()=>{
+        text:string,icon:()=>React.ReactNode,onClick:()=>void
+    }[]
+    getShopState:()=>{Shop:I_state_Shop,cart:I_state_cart}
+    fixPrice:(
+        p:{ 
+            items:{itemCode:string,ItemCode:string,itemQty:number,ItemQty:number}[], 
+            CampaignId?:number,PriceListNum?:number 
+        }
+    )=>any[];//notice
+    changeCart:(p:{ count:number, variantId:string, product:I_product,taxonId?:string,cartId:string,CampaignId?:number })=>void;
+    getHeaderIcons:(p:{[key:string]:boolean})=>any[];
+    getFactorDetails:(items:any[],shippingOptions:I_shippingOptions,container?:string)=>{
+        MarketingLines:{CampaignDetails:any,ItemCode:string}[]
+    }
     getState:()=>I_app_state;
     setState:(p:any)=>void
     getProps:()=>{
@@ -59,37 +65,68 @@ export default class ActionClass {
         this.getState = getState;
         this.getProps = getProps;
         this.setState = setState;
-    }
-    getSideItems:I_getSideItems = () => {
-        let { userInfo,b1Info, backOffice, Logger } = this.getProps();
-        let { logout } = this.getState();
-        let { slpcode } = b1Info.customer;
-        let isAdmin = backOffice.isAdmin(userInfo);
-        let { activeManager } = backOffice;
-        let icon = (path:any):React.ReactNode => <Icon path={path} size={0.8} />
-        return [
-            { text: 'بازارگاه', icon: () => icon(mdiCellphoneMarker), onClick: () => this.getState().rsa.setNavId('bazargah') },
-            { text: 'پیگیری سفارش خرید', icon: () => icon(mdiClipboardList), onClick: () => this.openPopup('peygiriye-sefareshe-kharid') },
-            { text: 'درخواست گارانتی', icon: () => icon(mdiShieldCheck), onClick: () => this.openPopup('sabteGarantiJadid'), show: () => !!activeManager.garanti && slpcode },
-            { text: 'لیست قیمت', icon: () => icon(mdiCash), onClick: () => this.openPopup('priceList'), show: () => !!activeManager.priceList },
-            { text: 'پنل ادمین', icon: () => icon(mdiSecurity), onClick: () => this.openPopup('admin-panel'), show: () => !!isAdmin },
-            { text: 'رفتار سیستم', icon: () => icon(mdiSkullScan), onClick: () => Logger.openPopup(), show: () => !!this.getState().developerMode },
-            { text: 'خروج از حساب کاربری', icon: () => icon(mdiExitToApp), attrs: { className: 'colorFDB913' }, onClick: () => logout() }
-        ]
-    }
-    getNavItems:I_getNavItems = () => {
-        let { userInfo } = this.getProps();
-        let icon = (path) => <Icon path={path} size={.9} />
-        let firstName = userInfo.firstName;
-        let lastName = userInfo.lastName;
-        lastName = typeof lastName !== 'string'?'':lastName;
-        return [
-            { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin",render:()=><Vitrin/> },
-            { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=><Bazargah/> },
-            { text: "خانه", icon: () => getSvg('home'), id: "khane",render:()=><Home/> },
-            { text: "خرید", icon: () => icon(mdiShopping), id: "kharid",render:()=><Buy/> },
-            { text: () => `${firstName} ${lastName}`, marquee: true, icon: () => icon(mdiAccountBox), id: "profile",render:()=><Profile/> },
-        ]
+        this.getSideItems = () => {
+            let { userInfo,b1Info, backOffice, Logger } = this.getProps();
+            let { logout } = this.getState();
+            let { slpcode } = b1Info.customer;
+            let isAdmin = backOffice.isAdmin(userInfo);
+            let { activeManager } = backOffice;
+            let icon = (path:any):React.ReactNode => <Icon path={path} size={0.8} />
+            return [
+                { text: 'بازارگاه', icon: () => icon(mdiCellphoneMarker), onClick: () => this.getState().rsa.setNavId('bazargah') },
+                { text: 'پیگیری سفارش خرید', icon: () => icon(mdiClipboardList), onClick: () => this.openPopup('peygiriye-sefareshe-kharid') },
+                { text: 'درخواست گارانتی', icon: () => icon(mdiShieldCheck), onClick: () => this.openPopup('sabteGarantiJadid'), show: () => !!activeManager.garanti && slpcode },
+                { text: 'لیست قیمت', icon: () => icon(mdiCash), onClick: () => this.openPopup('priceList'), show: () => !!activeManager.priceList },
+                { text: 'پنل ادمین', icon: () => icon(mdiSecurity), onClick: () => this.openPopup('admin-panel'), show: () => !!isAdmin },
+                { text: 'رفتار سیستم', icon: () => icon(mdiSkullScan), onClick: () => Logger.openPopup(), show: () => !!this.getState().developerMode },
+                { text: 'خروج از حساب کاربری', icon: () => icon(mdiExitToApp), attrs: { className: 'colorFDB913' }, onClick: () => logout() }
+            ]
+        }
+        this.getNavItems = () => {
+            let { userInfo } = this.getProps();
+            let icon = (path) => <Icon path={path} size={.9} />
+            let firstName = userInfo.firstName;
+            let lastName = userInfo.lastName;
+            lastName = typeof lastName !== 'string'?'':lastName;
+            return [
+                { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin",render:()=><Vitrin/> },
+                { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=><Bazargah/> },
+                { text: "خانه", icon: () => getSvg('home'), id: "khane",render:()=><Home/> },
+                { text: "خرید", icon: () => icon(mdiShopping), id: "kharid",render:()=><Buy/> },
+                { text: () => `${firstName} ${lastName}`, marquee: true, icon: () => icon(mdiAccountBox), id: "profile",render:()=><Profile/> },
+            ]
+        }
+        this.getShopState = () => {
+            let { apis,backOffice, userInfo } = this.getState();
+            let { Bundle, Regular, spreeCampaigns = [] } = backOffice;
+            let Shop:I_state_Shop = {}
+            Shop.Regular = new ShopClass({getAppState: () => this.getState(),config: Regular})
+            if (Bundle.active) {
+                Shop.Bundle = new ShopClass({getAppState: () => this.getState(),config: { ...Bundle, cartId: 'Bundle' }})
+            }
+            for (let i = 0; i < spreeCampaigns.length; i++) {
+                let spreeCampaign = spreeCampaigns[i];
+                if(spreeCampaign.id === '10818'){
+                    let list = taxonCampaign;
+                    let cacheCampaigns = apis.getCache('campaigns') || {}
+                    let {campaignProducts = {}} = cacheCampaigns;                
+                    spreeCampaign.taxons = list.map(([id,name,min,max],i)=>{
+                        let products = campaignProducts[`item_10818_${id}`];
+                        return {id,name,products,min,max}
+                    })
+                }
+                let { id, active,taxons  } = spreeCampaign;
+                if (!active) { continue }
+                Shop[id] = new ShopClass({
+                    getAppState: () => this.getState(),
+                    config: { ...spreeCampaign, cartId: id,taxons:taxons && taxons.length?taxons:undefined }
+                })
+            }
+            
+            let cart = apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});
+            return {cart,Shop}
+        }
+        
     }
     getSideFooter = ()=>{
         return (
@@ -137,36 +174,6 @@ export default class ActionClass {
         let { userInfo } = this.getProps();
         this.pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode, 12 * 60 * 60 * 1000)
         this.pricing.startservice().then((value) => { return value; });
-    }
-    getShopState:I_getShopState = () => {
-        let { apis,backOffice, userInfo } = this.getState();
-        let { Bundle, Regular, spreeCampaigns = [] } = backOffice;
-        let Shop:I_state_Shop = {}
-        Shop.Regular = new ShopClass({getAppState: () => this.getState(),config: Regular})
-        if (Bundle.active) {
-            Shop.Bundle = new ShopClass({getAppState: () => this.getState(),config: { ...Bundle, cartId: 'Bundle' }})
-        }
-        for (let i = 0; i < spreeCampaigns.length; i++) {
-            let spreeCampaign = spreeCampaigns[i];
-            if(spreeCampaign.id === '10818'){
-                let list = taxonCampaign;
-                let cacheCampaigns = apis.getCache('campaigns') || {}
-                let {campaignProducts = {}} = cacheCampaigns;                
-                spreeCampaign.taxons = list.map(([id,name,min,max],i)=>{
-                    let products = campaignProducts[`item_10818_${id}`];
-                    return {id,name,products,min,max}
-                })
-            }
-            let { id, active,taxons  } = spreeCampaign;
-            if (!active) { continue }
-            Shop[id] = new ShopClass({
-                getAppState: () => this.getState(),
-                config: { ...spreeCampaign, cartId: id,taxons:taxons && taxons.length?taxons:undefined }
-            })
-        }
-        
-        let cart = apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});
-        return {cart,Shop}
     }
     getSpreeCategories = (backOffice:I_state_backOffice) => {
         let { spreeCategories = [] } = backOffice;

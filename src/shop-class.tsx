@@ -1,7 +1,7 @@
-import React, { Component, Fragment, useContext, useEffect, useState } from "react";
+import React, { Component, Fragment, useContext, useEffect, useState,createRef } from "react";
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import { Icon } from '@mdi/react';
-import { mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiDelete, mdiPlus, mdiMinus } from "@mdi/js";
+import { mdiMinusThick, mdiPlusThick,mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline } from "@mdi/js";
 import Axios from 'axios';
 import SplitNumber from "./npm/aio-functions/split-number";
 import Shipping from "./components/kharid/shipping/shipping";
@@ -12,30 +12,31 @@ import AIOInput from "./npm/aio-input/aio-input";
 import $ from 'jquery';
 import bundleBoxSrc from './images/bundle-box.jpg';
 import SearchBox from './components/search-box/index';
-
 import appContext from './app-context';
-import noItemSrc from './images/not-found.png';
-import { I_ShopProps_taxon, I_app_state, I_cartTab, I_cartTab_isTaxon, I_product, I_shopRenderIn, I_state_cart } from "./types";
+import { I_ShopProps_taxon, I_app_state, I_cartProduct, I_cartTab, I_cartTab_isTaxon, I_cartTaxon, I_product, I_shippingOptions, I_shopRenderIn, I_state_cart } from "./types";
 
 export default class ShopClass {
-    getAppState:()=>I_app_state;
-    taxons?:I_ShopProps_taxon;
-    cartId:string;
-    id:string;
-    renderCard:(
-        p:{ 
-            product:I_product, renderIn:I_shopRenderIn, variantId?:string, count?:number, 
-            details?:any, loading?:boolean, index?:number, style?:any, taxonId?:string, type?:any 
+    getAppState: () => I_app_state;
+    taxons?: I_ShopProps_taxon[];
+    cartId: string;
+    id: string;
+    renderCard: (
+        p: {
+            product: I_product, renderIn: I_shopRenderIn, variantId?: string, count?: number,
+            details?: any, loading?: boolean, index?: number, style?: any, type?: any
         }
-    )=>React.ReactNode;
-    renderTaxonCard:(
-        p:{
-            taxon:I_ShopProps_taxon, renderIn:I_shopRenderIn, index?:number, onFetchProducts:any, errors?:any[],hasErrors?:any[] 
+    ) => React.ReactNode;
+    renderTaxonCard: (
+        p: {
+            taxon: I_ShopProps_taxon, renderIn: I_shopRenderIn, index?: number, onFetchProducts?: any, errors?: any[], hasErrors?: any[]
         }
-    )=>React.ReactNode
-    name:string;
-    CampaignId?:number;
-    PriceListNum?:number;
+    ) => React.ReactNode
+    getCartItems:()=>I_cartTaxon[] | I_cartProduct[];
+    name: string;
+    CampaignId?: number;
+    PriceListNum?: number;
+    getCartProducts:(renderIn:I_shopRenderIn,shippingOptions?:I_shippingOptions)=>React.ReactNode[]
+    getAmounts_Bundle:(p:{cartItems:I_cartProduct[],shippingOptions?:I_shippingOptions,container?:string})=>{ total:number, discounts:{ percent:number, value:number, title:string }[], payment:number, ClubPoints?: any }
     constructor({ getAppState, config }) {
         this.getAppState = getAppState;
         this.update(config);
@@ -66,10 +67,10 @@ export default class ShopClass {
             return (<Wrapper key={product.id || product.code} {...props} />)
         }
         this.renderTaxonCard = (p) => {
-            let { taxon, renderIn, index, onFetchProducts, errors = [],hasErrors = [] } = p;
+            let { taxon, renderIn, index, onFetchProducts, errors = [], hasErrors = [] } = p;
             let { apis, msfReport, cart } = this.getAppState();
             let props = {
-                title: taxon.name, taxon, renderIn, index, errors, cart, cartId: this.cartId,hasErrors,
+                title: taxon.name, taxon, renderIn, index, errors, cart, cartId: this.cartId, hasErrors,
                 onClick: async () => {
                     if (!taxon.products) {
                         let products = await apis.request({
@@ -82,56 +83,99 @@ export default class ShopClass {
                     }
                     msfReport({ actionName: 'open product', actionId: 5, targetName: taxon.name, targetId: taxon.id, tagName: 'kharid', eventName: 'page view' })
                 },
-    
+
                 renderProductCard: (product, index) => {
-                    return this.renderCard({ product, index, renderIn, taxonId });
+                    return this.renderCard({ product, index, renderIn });
                 }
             }
             return (<TaxonCard key={taxon.id} {...props} />)
         }
+        this.getCartItems = () => {
+            let { cart } = this.getAppState();
+            let cartTab = cart[this.cartId];
+            if (!cartTab) { return [] }
+            let res = [];
+            if (cartTab.isTaxon === true) {
+                let ct = cartTab as I_cartTab_isTaxon;
+                return Object.keys(ct.taxons).map((o) => ct.taxons[o])
+            }
+            else {
+                let ct = cartTab as I_cartTab;
+                for(let productId in ct.products){
+                    let {variants,product} = ct.products[productId];
+                    for(let variantId in variants){
+                        let {count,variant} = variants[variantId];
+                        res.push(productId,variantId,product,variant,count)
+                    }
+                }
+            }
+            return res
+        }
+        this.getCartProducts = (renderIn, shippingOptions) => {
+            let { cart } = this.getAppState();
+            let cartTab = cart[this.cartId];
+            if (!cartTab) { return [] }
+            let cartItems = this.getCartItems();
+            if (this.cartId === 'Bundle') { return this.getCartProducts_Bundle(cartItems, renderIn) }
+            else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions) }
+        }
+        this.getAmounts_Bundle = ({cartItems, shippingOptions = {}, container}) => {
+            let { actionClass, backOffice } = this.getAppState();
+            let { PayDueDate_options } = backOffice;
+            let total = 0;
+            for (let i = 0; i < cartItems.length; i++) {
+                let { count, product } = cartItems[i];
+                let price = product.price / (1 - (12 / 100))
+                total += count.packQty * price;
+            }
+            let payment = total;
+            let { PayDueDate, discountCodeInfo, giftCodeInfo } = shippingOptions;
+            let cashPercent = 100;
+            let discounts = [];
+            if (PayDueDate) {
+                let PayDueDateOption = PayDueDate_options.find((o) => o.value === PayDueDate);
+                let percent = PayDueDateOption.discountPercent;
+                let value = total * percent / 100;
+                let title = 'نخفیف نحوه پرداخت';
+                discounts.push({ percent, value, title });
+                cashPercent = PayDueDateOption.cashPercent;
+                payment -= value;
+            }
+            let DiscountList = actionClass.getCodeDetails({ discountCodeInfo, giftCodeInfo }) || {};
+            if (DiscountList.DiscountPercentage) {
+                let percent = DiscountList.DiscountPercentage;
+                let value = payment * percent / 100;
+                let title = 'کد تخفیف';
+                discounts.push({ percent, value, title })
+                payment -= value;
+            }
+            if (DiscountList.PromotionValue) {
+                let value = DiscountList.PromotionValue;
+                let title = 'کارت هدیه';
+                discounts.push({ title, value });
+                payment -= value;
+            }
+            payment = payment * cashPercent / 100;
+            return { total, discounts, payment, ClubPoints: {} };//notice // ClubPoints!!!!
+        }
+        
     }
     update(obj) { for (let prop in obj) { this[prop] = obj[prop]; } }
-    getCartItems = () => {
-        let { cart } = this.getAppState();
-        let cartTab = cart[this.cartId];
-        if (!cartTab) { return [] }
-        if(cartTab.isTaxon === true){
-            let ct = cartTab as I_cartTab_isTaxon;
-            return Object.keys(ct.taxons).map((o) => ct.taxons[o])    
-        }
-        else {
-            let ct = cartTab as I_cartTab;
-            return Object.keys(ct.products).map((o) => ct.products[o])
-        }
-    }
-    getCartProducts = (renderIn, shippingOptions) => {
-        let { cart } = this.getAppState();
-        let cartTab = cart[this.cartId];
-        if (!cartTab) { return [] }
-        let cartItems = this.getCartItems();
-        if (this.cartId === 'Bundle') { return this.getCartProducts_Bundle(cartItems, renderIn) }
-        else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions) }
-    }
+    
     getCartProducts_Bundle = (cartItems, renderIn) => {
         return cartItems.map(({ product, count, variantId }) => this.renderCard({ product, count, variantId, renderIn }))
     }
     getCartProducts_all = (cartItems, renderIn, shippingOptions) => {//notice // shippingOptions here never used
         if (this.taxons) {
-            let hasErrors =  cartItems.filter((cartItem, i) => {
+            let hasErrors = cartItems.filter((cartItem, i) => {
                 let errors = cartItem.errors;
                 return errors && errors.length
             })
             return cartItems.map((cartItem, i) => {
-                
+
                 let taxon = this.taxons.find((o) => o.id === cartItem.taxonId)
                 let errors = cartItem.errors;
-                let props = {
-                    taxon,
-                    renderIn: 'cart',
-                    index: i,
-                    taxonId: cartItem.taxonId,
-                    errors,hasErrors
-                }
+                let props = {taxon,renderIn,index: i,taxonId: cartItem.taxonId,errors, hasErrors}
                 return this.renderTaxonCard(props)
             })
         }
@@ -165,7 +209,7 @@ export default class ShopClass {
         let cartTab = cart[this.cartId];
         if (!cartTab) { return {} }
         let cartItems = this.getCartItems();
-        if (this.cartId === 'Bundle') { return this.getAmounts_Bundle(cartItems, shippingOptions, container) }
+        if (this.cartId === 'Bundle') { return this.getAmounts_Bundle({cartItems, shippingOptions, container}) }
         else { return this.getAmounts_all(cartItems, shippingOptions, container) }
     }
     getAmounts_all(cartItems, shippingOptions, container) {
@@ -211,45 +255,7 @@ export default class ShopClass {
         }
         return { total, discounts, payment: DocumentTotal, ClubPoints, hasError }
     }
-    getAmounts_Bundle(cartItems, shippingOptions = {}, container) {
-        let { actionClass, backOffice } = this.getAppState();
-        let { PayDueDate_options } = backOffice;
-        let total = 0;
-        for (let i = 0; i < cartItems.length; i++) {
-            let { count, product } = cartItems[i];
-            let price = product.price / (1 - (12 / 100))
-            total += count.packQty * price;
-        }
-        let payment = total;
-        let { PayDueDate, discountCodeInfo, giftCodeInfo } = shippingOptions;
-        let cashPercent = 100;
-        let discounts = [];
-        if (PayDueDate) {
-            let PayDueDateOption = PayDueDate_options.find((o) => o.value === PayDueDate);
-            let percent = PayDueDateOption.discountPercent;
-            let value = total * percent / 100;
-            let title = 'نخفیف نحوه پرداخت';
-            discounts.push({ percent, value, title });
-            cashPercent = PayDueDateOption.cashPercent;
-            payment -= value;
-        }
-        let DiscountList = actionClass.getCodeDetails({ discountCodeInfo, giftCodeInfo }) || {};
-        if (DiscountList.DiscountPercentage) {
-            let percent = DiscountList.DiscountPercentage;
-            let value = payment * percent / 100;
-            let title = 'کد تخفیف';
-            discounts.push({ percent, value, title })
-            payment -= value;
-        }
-        if (DiscountList.PromotionValue) {
-            let value = DiscountList.PromotionValue;
-            let title = 'کارت هدیه';
-            discounts.push({ title, value });
-            payment -= value;
-        }
-        payment = payment * cashPercent / 100;
-        return { total, discounts, payment, ClubPoints: {} };//notice // ClubPoints!!!!
-    }
+    
     getFactorItems = (shippingOptions, container) => {
         let amounts = this.getAmounts(shippingOptions, container);
         let { total, payment, discounts, ClubPoints } = amounts;
@@ -283,7 +289,7 @@ export default class ShopClass {
         let { rsa, msfReport } = this.getAppState();
         if (this.cartId === 'Bundle') { this.fillAuto() }
         msfReport({ actionName: 'open checkout page', actionId: 754, targetName: this.cartId, targetId: this.cartId, tagName: 'kharid', eventName: 'page view' })
-        rsa.addModal({ id: 'edameye_farayande_kharid', position: 'fullscreen', body: { render: () => <Shipping cartId={this.cartId} /> }, header: { title: 'ادامه فرایند خرید' } }) 
+        rsa.addModal({ id: 'edameye_farayande_kharid', position: 'fullscreen', body: { render: () => <Shipping cartId={this.cartId} /> }, header: { title: 'ادامه فرایند خرید' } })
     }
     fillAuto = () => {
         return;
@@ -365,7 +371,7 @@ export default class ShopClass {
     }
     getOrderBody = ({ PaymentTime, DeliveryType, PayDueDate, address, giftCodeInfo, discountCodeInfo }) => {
         let appState = this.getAppState();
-        let { userInfo,b1Info, actionClass } = appState;
+        let { userInfo, b1Info, actionClass } = appState;
         let DiscountList = actionClass.getCodeDetails({ giftCodeInfo, discountCodeInfo })
         let marketingLines = this.getMarketingLines()
         let SettleType = actionClass.getSettleType(PayDueDate)
@@ -481,7 +487,7 @@ export default class ShopClass {
             let { billboard, name, description } = spreeCategories.dic[id];
             return { billboard, products, description, title: name }
         }
-        else  {
+        else {
             if (!this.products) {
                 if (this.taxons) {
                     this.products = [...this.taxons]
@@ -496,9 +502,9 @@ export default class ShopClass {
             }
             return { billboard: this.billboard, products: this.products, description: this.description, title: this.name, isTaxon: !!this.taxons }
         }
-        
+
     }
-    
+
     renderPage(product, taxonId) {
         let { cart, actionClass } = this.getAppState()
         let cartTab = cart[this.cartId];
@@ -695,7 +701,7 @@ class TaxonCard extends Component {
                             html: `تخفیف گروه کالا ${0.5 * cartLength} درصد`
                         },
                         {
-                            gap: 12, align: 'v',className:'fs-10',style:{color:'orange'},
+                            gap: 12, align: 'v', className: 'fs-10', style: { color: 'orange' },
                             row: [
                                 { html: `حداقل مبلغ ${SplitNumber(taxon.min)} ریال` },
                                 { html: `حداکثر مبلغ ${SplitNumber(taxon.max)} ریال` },
@@ -725,34 +731,34 @@ class TaxonCard extends Component {
         return this.has_products_layout()
     }
 }
-type I_RegularCard = {product:I_product,cartId:string,shopName:string, taxonId, CampaignId?:number, renderIn,index?:number,loading?:boolean,onClick?:Function,type?:'horizontal' | 'vertical'}
-function RegularCard(props:I_RegularCard) {
-    let {cart}:I_app_state = useContext(appContext);
-    let [mounted,setMounted] = useState<boolean>(false)
-    let {product,cartId, taxonId, CampaignId, renderIn,shopName,index,loading,onClick,type = 'horizontal'} = props;
+type I_RegularCard = { product: I_product, cartId: string, cartName: string, taxonId, CampaignId?: number, renderIn, index?: number, loading?: boolean, onClick?: Function, type?: 'horizontal' | 'vertical' }
+function RegularCard(props: I_RegularCard) {
+    let { cart }: I_app_state = useContext(appContext);
+    let [mounted, setMounted] = useState<boolean>(false)
+    let { product, cartId, taxonId, CampaignId, renderIn, cartName, index, loading, onClick, type = 'horizontal' } = props;
     function image_layout() {
         let { srcs = [] } = product;
         return { size: 116, align: 'vh', html: <img src={srcs[0] || NoSrc} width={'100%'} alt='' /> }
     }
     function count_layout() {
         let cartTab = cart[cartId];
-        if(!cartTab){return false}
+        if (!cartTab) { return false }
 
         let cartItems = {}
-        if(cartTab.isTaxon === true){
-            for(let taxonId in cartTab.taxons){
+        if (cartTab.isTaxon === true) {
+            for (let taxonId in cartTab.taxons) {
                 let cartTaxon = cartTab.taxons[taxonId];
-                for(let productId in cartTaxon.products){
-                    if(product.id === productId){
+                for (let productId in cartTaxon.products) {
+                    if (product.id === productId) {
                         let cartProduct = cartTaxon.products[productId];
                         cartItems = cartProduct.variants
                     }
-                }        
+                }
             }
         }
         else {
-            for(let productId in cartTab.products){
-                if(product.id === productId){
+            for (let productId in cartTab.products) {
+                if (product.id === productId) {
                     let cartProduct = cartTab.products[productId];
                     cartItems = cartProduct.variants
                 }
@@ -765,38 +771,38 @@ function RegularCard(props:I_RegularCard) {
         keys = keys.filter((variantId) => !!variantsDic[variantId])
         if (!keys.length) { return false }
         let column = keys.map((variantId) => {
-                let { count,variant } = cartItems[variantId];
-                let { optionTypes } = product;
-                let { optionValues } = variant;
-                let details = [];
-                for (let j = 0; j < optionTypes.length; j++) {
-                    let optionType = optionTypes[j];
-                    details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
-                }
-                let unitTotal = product.FinalPrice * count
-                return {
-                    style: { background: '#f7f7f7' }, className: 'p-h-3',
-                    row: [
-                        {
-                            flex: 1, align: 'v',
-                            column: [
-                                { align: 'v', className: 'theme-medium-font-color fs-10 bold', gap: 6, row: details.map(([key, value]) => { return { html: `${key} : ${value === undefined ? '' : value}` } }) },
-                                { show: !isNaN(unitTotal), className: 'theme-light-font-color fs-9', html: () => `مجموع ${SplitNumber(unitTotal)} ریال` }
-                            ]
-                        },
-                        {
-                            html: (
-                                <CartButton renderIn={'cart'} product={product} variantId={variantId} cartId={cartId} taxonId={taxonId} CampaignId={CampaignId} />
-                            ), align: 'vh'
-                        }
-                    ]
-                }
+            let { count, variant } = cartItems[variantId];
+            let { optionTypes } = product;
+            let { optionValues } = variant;
+            let details = [];
+            for (let j = 0; j < optionTypes.length; j++) {
+                let optionType = optionTypes[j];
+                details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
+            }
+            let unitTotal = product.FinalPrice * count
+            return {
+                style: { background: '#f7f7f7' }, className: 'p-h-3',
+                row: [
+                    {
+                        flex: 1, align: 'v',
+                        column: [
+                            { align: 'v', className: 'theme-medium-font-color fs-10 bold', gap: 6, row: details.map(([key, value]) => { return { html: `${key} : ${value === undefined ? '' : value}` } }) },
+                            { show: !isNaN(unitTotal), className: 'theme-light-font-color fs-9', html: () => `مجموع ${SplitNumber(unitTotal)} ریال` }
+                        ]
+                    },
+                    {
+                        html: (
+                            <CartButton renderIn={renderIn} product={product} variantId={variantId} cartId={cartId} taxonId={taxonId} CampaignId={CampaignId} />
+                        ), align: 'vh'
+                    }
+                ]
+            }
         })
-        return {gap:3,style:{background:'#fff'},column}
+        return { gap: 3, style: { background: '#fff' }, column }
         //return { size: 36, html: () => <CartButton renderIn={renderIn} product={product} variantId={variantId} cartId={cartId} taxonId={taxonId} CampaignId={CampaignId}/> }
     }
     function title_layout() {
-        return { html: shopName, className: 'fs-10', style: { color: 'rgb(253, 185, 19)' } }
+        return { html: cartName, className: 'fs-10', style: { color: 'rgb(253, 185, 19)' } }
     }
     function name_layout() {
         let { name } = product;
@@ -823,7 +829,7 @@ function RegularCard(props:I_RegularCard) {
         }
     }
     function details_layout() {
-        if(!product.description){return false}
+        if (!product.description) { return false }
         return {
             html: product.description, className: 'fs-9',
             style: {
@@ -847,11 +853,11 @@ function RegularCard(props:I_RegularCard) {
             ]
         }
     }
-    useEffect(()=>{
+    useEffect(() => {
         setTimeout(() => {
             setMounted(true)
         }, (index || 0) * 100 + 100)
-    },[])
+    }, [])
     function horizontal_layout() {
         return (
             <RVD
@@ -860,7 +866,7 @@ function RegularCard(props:I_RegularCard) {
                     className: 'theme-card-bg theme-box-shadow gap-no-color rvd-rotate-card' + (mounted ? ' mounted' : ''),
                     onClick,
                     style: { border: '1px solid #eee' },
-                    column:[
+                    column: [
                         {
                             row: [
                                 image_layout(),
@@ -909,45 +915,38 @@ function RegularCard(props:I_RegularCard) {
             />
         )
     }
-    return type === 'horizontal'?horizontal_layout():vertical_layout()
-    
+    return type === 'horizontal' ? horizontal_layout() : vertical_layout()
+
 }
-class BundleCard extends Component {
-    static contextType = appContext
-    state = { mounted: false, removeMode: false }
-    title_layout() {
-        let { title } = this.props;
-        if (!title) { return false }
+type I_BundleCard = { cartName: string, product: I_product, renderIn: I_shopRenderIn, count: { qtyInPacks: any, count: number }, index?: number,onClick?:Function }
+function BundleCard(props: I_BundleCard) {
+    let { actionClass }: I_app_state = useContext(appContext)
+    let { cartName, product, renderIn, count, index = 0,onClick } = props;
+    let [mounted, setMounted] = useState<boolean>(false)
+    function title_layout() {
+        if (!cartName) { return false }
         return {
             row: [
-                { html: title, style: { color: '#FDB913' }, className: 'fs-12 bold', align: 'v' },
+                { html: cartName, style: { color: '#FDB913' }, className: 'fs-12 bold', align: 'v' },
                 { size: 3 },
                 { flex: 1, html: (<div style={{ height: 2, width: '1100%', background: '#FDB913' }}></div>), align: 'v' }
             ]
         }
     }
-    image_layout() {
-        let { actionClass } = this.context;
-        let { product, renderIn } = this.props;
+    function image_layout() {
         let { src = '' } = product;
         return {
             column: [
-                {
-                    flex: 1, size: 114, html: <img src={src} alt='' width='100%' height='100%' className='br-12' />
-                },
-                {
-                    show:renderIn === 'cart',size:30,html:'حذف از سبد',align:'vh',style:{color:'red'},className:'bold fs-14'
-                }
+                { flex: 1, size: 114, html: <img src={src} alt='' width='100%' height='100%' className='br-12' /> },
+                { show: renderIn === 'cart', size: 30, html: 'حذف از سبد', align: 'vh', style: { color: 'red' }, className: 'bold fs-14' }
             ]
         }
     }
-    name_layout() {
-        let { product } = this.props;
+    function name_layout() {
         let { name } = product;
         return { html: name, className: 'fs-14 theme-dark-font-color bold', style: { textAlign: 'right' } }
     }
-    detail_layout() {
-        let { product, count } = this.props;
+    function detail_layout() {
         let { variants } = product;
         if (count) {
             let str = '';
@@ -993,138 +992,37 @@ class BundleCard extends Component {
             ], className: 'fs-12 theme-medium-font-color', style: { textAlign: 'right' }
         }
     }
-    price_layout() {
-        let { product } = this.props;
+    function price_layout() {
         return {
             size: 36,
             row: [
                 {
                     flex: 1, className: 'fs-14 bold theme-dark-font-color',
-                    align: 'v',
-                    row: [
-                        { flex: 1 },
-                        { html: SplitNumber(product.price) },
-                        { size: 3 },
-                        { html: 'ریال' }
-                    ]
+                    align: 'v', row: [{ flex: 1 }, { html: SplitNumber(product.price) }, { size: 3 }, { html: 'ریال' }]
                 },
-
             ]
         }
     }
-    remove(e) {
-        e.stopPropagation()
-        let { count, onRemove } = this.props;
-        if (!count) { return false }
-        onRemove()
-    }
-    componentDidMount() {
-        let { index = 0 } = this.props;
-        setTimeout(() => {
-            this.setState({ mounted: true })
-        }, index * 100 + 100)
-    }
-    timer(e) {
-        this.time = 0;
-        this.interval = setInterval(() => {
-            this.time++;
-            if (this.time > 50) {
-                clearInterval(this.interval);
-                this.setState({ removeMode: true })
-            }
-        }, 10)
-    }
-    cancelRemoveMode() {
-        this.setState({ removeMode: false })
-    }
-    remove_layout() {
-        let { removeMode } = this.state;
-        if (!removeMode) { return false }
-        let space = { flex: 1, onClick: () => this.cancelRemoveMode() };
-        return {
-            style: { zIndex: 10, position: 'absolute', width: '100%', height: '100%', left: 0, top: 0, background: 'rgba(255,255,255,0.9)' },
-            html: (
-                <RVD
-                    layout={{
-                        column: [
-                            space,
-                            {
-                                row: [
-                                    space,
-                                    {
-                                        html: <Icon path={mdiDelete} size={1} style={{ padding: 16, background: '#A4262C', color: '#fff', borderRadius: '100%' }} />, align: 'vh',
-                                        onClick: () => this.remove()
-                                    },
-                                    space
-                                ]
-                            },
-                            space
+    useEffect(() => {
+        setTimeout(() => setMounted(true), index * 100 + 100)
+    }, [])
+    return (
+        <RVD
+            layout={{
+                className: 'theme-box-shadow theme-card-bg theme-border-radius theme-gap-h p-12 of-visible rvd-rotate-card' + (mounted ? ' mounted' : ''),
+                onClick,
+                column: [
+                    this.title_layout(),{ size: 6 },
+                    {
+                        gap:12,row: [
+                            {size: 114, column: [this.image_layout()]},
+                            {flex: 1,column: [this.name_layout(),{ size: 6 },this.detail_layout(),{ flex: 1 },this.price_layout()]}
                         ]
-                    }}
-                />
-            )
-        }
-    }
-    mounseup() {
-        clearInterval(this.interval);
-        $(window).unbind('mouseup', this.mounseup)
-        $(window).unbind('touchend', this.mounseup)
-    }
-    render() {
-        let { mounted, removeMode } = this.state;
-        let { count, onClick } = this.props;
-        let touch = 'ontouchstart' in document.documentElement;
-        let attrs = {};
-        if (count) {
-            if (touch) {
-                attrs.onTouchStart = () => {
-                    this.timer();
-                    $(window).bind('touchend', $.proxy(this.mounseup, this))
-                }
-            }
-            else {
-                attrs.onMouseDown = () => {
-                    this.timer();
-                    $(window).bind('mouseup', $.proxy(this.mounseup, this))
-                }
-            }
-        }
-        return (
-            <RVD
-                layout={{
-                    className: 'theme-box-shadow theme-card-bg theme-border-radius theme-gap-h p-12 of-visible rvd-rotate-card' + (mounted ? ' mounted' : ''),
-                    attrs,
-                    onClick: () => { if (!removeMode) { onClick() } },
-                    column: [
-                        this.title_layout(),
-                        this.remove_layout(),
-                        { size: 6 },
-                        {
-                            row: [
-                                {
-                                    size: 114, column: [
-                                        this.image_layout(),
-                                    ]
-                                },
-                                { size: 12 },
-                                {
-                                    flex: 1,
-                                    column: [
-                                        this.name_layout(),
-                                        { size: 6 },
-                                        this.detail_layout(),
-                                        { flex: 1 },
-                                        this.price_layout()
-                                    ]
-                                }
-                            ]
-                        },
-
-                    ]
-                }}
-            />
-        )
-    }
+                    },
+                ]
+            }}
+        />
+    )
 }
 class RegularPage extends Component {
     componentDidMount() {
@@ -1370,7 +1268,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         };
     }
     addToCart_layout() {
-        let { product,cartId,taxonId,CampaignId } = this.props;
+        let { product, cartId, taxonId, CampaignId } = this.props;
         let { selectedVariant } = this.state;
         if (!selectedVariant || !selectedVariant.inStock) {
             return { html: '' }
@@ -1378,7 +1276,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         return {
             column: [
                 { flex: 1 },
-                { html: (<CartButton variantId={selectedVariant.id} product={product} renderIn='product' cartId={cartId} taxonId={taxonId} CampaignId={CampaignId}/>) },
+                { html: (<CartButton variantId={selectedVariant.id} product={product} renderIn='product' cartId={cartId} taxonId={taxonId} CampaignId={CampaignId} />) },
                 { flex: 1 }
             ]
         }
@@ -1834,6 +1732,327 @@ class ForoosheVijeSlider extends Component {
                                 // }
                             ]
                         }
+                    ]
+                }}
+            />
+        )
+    }
+}
+
+class CartButton extends Component{
+    static contextType = appContext;
+    openCart(e){
+        e.stopPropagation();
+        let {actionClass} = this.context;
+        let {product} = this.props;
+        actionClass.openPopup('cart',product.cartId)
+    }
+    render(){
+        let {cart,actionClass} = this.context;
+        let {variantId,product,renderIn,onChange = ()=>{},cartId,taxonId,CampaignId} = this.props;
+        if(!product){console.error(`CartButton missing product props`)}
+        if(!product.cartId){console.error(`CartButton missing cartId in product props`)}
+        let cartTab = cart[cartId];
+        let count = 0,cartItems = [];
+        if(variantId){
+            if(cartTab){
+                if(taxonId){
+                    if(cartTab.items[taxonId]){
+                        if(cartTab.items[taxonId].items[variantId]){
+                            count = cartTab.items[taxonId].items[variantId].count;    
+                        }
+                    }
+                }
+                else {
+                    if(cartTab.items[variantId]){
+                        count = cartTab.items[variantId].count;    
+                    }
+                }
+            }
+            
+            
+        }
+        else {
+            if(['product','cart','category'].indexOf(renderIn) === -1){
+                console.error('missing varinatId in ProductCard Component due render in cart page or product page')
+            }
+            cartItems = actionClass.getCartItemsByProduct(product,cartId,taxonId);
+        }
+        let layout;
+        if(!count){
+            layout = {
+                html:()=>(
+                    <button 
+                        onClick={() => {
+                            actionClass.changeCart({variantId,product,count:1,cartId,taxonId,CampaignId})
+                            onChange(1)
+                        }} 
+                        className="button-2"
+                        style={{fontSize:12,height:36,padding:'0 8px'}}
+                    >افزودن به سبد خرید</button>
+                )
+            }
+        }
+        else if(renderIn === 'shipping'){
+            layout = {
+                align:'h',gap:3,className:'fs-12 color3B55A5',onClick:(e)=>this.openCart(e),
+                row:[{html:<Icon path={mdiCart} size={1}/>,align:'vh'},{html:count,align:'v',className:'fs-18'}]
+            }
+        }
+        else{
+            layout={
+                column:[
+                    {show:renderIn === 'product',align:'vh',html:'تعداد در سبد خرید',className:'fs-12 color3B55A5'},
+                    {
+                        html:()=>(
+                            <ProductCount 
+                                value={count} 
+                                onChange={(count) => {
+                                    actionClass.changeCart({product,variantId,count,cartId,taxonId,CampaignId})
+                                    onChange(count)
+                                }} 
+                            />
+                        )
+                    }
+                ]
+            }
+        }
+        return (<RVD layout={layout}/>)
+    }
+}
+
+class ProductCount extends Component{
+    static contextType = appContext;
+    constructor(props){
+        super(props);
+        let {value} = this.props;
+        this.state = {value,prevValue:value,popup:false}
+    }
+    change(value,min = this.props.min || 0){
+        value = +value;
+        if(isNaN(value)){value = 0}
+        let {onChange,max = Infinity} = this.props;
+        this.setState({value});
+        clearTimeout(this.changeTimeout);
+        this.changeTimeout = setTimeout(()=>{
+            if(value > max){value = max}
+            if(value < min){value = min}
+            onChange(value)
+        },500)
+        
+    }
+    touchStart(dir,touch,isTouch){
+        if(touch && !isTouch){return}
+        if(!touch && isTouch){return}
+        let {value} = this.state;
+        this.change(value + dir)
+        if(touch){$(window).bind('touchend',$.proxy(this.touchEnd,this))}
+        else{$(window).bind('mouseup',$.proxy(this.touchEnd,this))}
+        // clearTimeout(this.timeout);
+        // clearInterval(this.interval);
+        // this.timeout = setTimeout(()=>{
+        //   this.interval = setInterval(()=>{
+        //     let {value} = this.state;
+        //     let {min = 0} = this.props;
+        //     this.change(value + dir,Math.max(min,1))
+        //   },60)
+        // },800)
+      }
+      touchEnd(){
+        $(window).unbind('touchend',this.touchEnd)
+        $(window).unbind('mouseup',this.touchEnd)
+        // clearTimeout(this.timeout)
+        // clearInterval(this.interval) 
+      }
+      openPopup(){
+        let {actionClass,rsa} = this.context;
+        let {value} = this.state;
+        let config = {
+            onChange:(value)=>{
+                this.change(value);
+                rsa.removeModal()
+            },
+            onRemove:()=>{
+                this.change(0)
+                rsa.removeModal()
+            },
+            onClose:()=>{
+                rsa.removeModal()
+            },
+            value,
+        }
+        actionClass.openPopup('count-popup',config)
+      }
+    render(){
+        let {value,prevValue} = this.state;
+        let {onChange,max = Infinity,style} = this.props;
+        if(this.props.value !== prevValue){setTimeout(()=>this.setState({value:this.props.value,prevValue:this.props.value}),0)}
+        let touch = 'ontouchstart' in document.documentElement;
+        return (
+            <>
+                <RVD
+                layout={{
+                    childsProps: { align: "vh" },
+                    style:{height:36,...style},
+                    attrs:{onClick:(e)=>e.stopPropagation()},
+                    row: [
+                        {
+                            html: (
+                                <div 
+                                    onMouseDown={(e)=>this.touchStart(1,touch,false)} 
+                                    onTouchStart={(e)=>this.touchStart(1,touch,true)} 
+                                    className={'product-count-button' + (value >= max?' disabled':'')}
+                                >
+                                    <Icon path={mdiPlus} size={1}/>
+                                </div>
+                            ),
+                            align:'vh',
+                            show:onChange!== undefined
+                        },
+                        { 
+                            show:!!value,
+                            flex:1,
+                            html:(
+                                <div
+                                    className='product-count-input'
+                                    onClick={()=>this.openPopup()}
+                                >{value}</div>
+                            )
+                        },
+                        {
+                            html: ()=>(
+                                <div 
+                                    onMouseDown={(e) =>this.touchStart(-1,touch,false)} 
+                                    onTouchStart={(e) =>this.touchStart(-1,touch,true)} 
+                                    className='product-count-button'
+                                >
+                                    <Icon path={mdiMinus} size={1}/>
+                                </div>),
+                            show:value > 1 && onChange!== undefined
+                        },
+                        {
+                            html: ()=>(
+                                <div 
+                                    onClick={(e)=>this.change(0)} 
+                                    className='product-count-button'
+                                >
+                                    <Icon path={mdiTrashCanOutline} size={0.8}/>
+                                </div>
+                            ),
+                            show:value === 1 && onChange!== undefined
+                        },
+                    ] 
+                }}
+            />
+            </>
+        )
+    }
+}
+
+class CountPopup extends Component{
+    constructor(props){
+        super(props);
+        this.dom = createRef();
+        this.state = {value:props.value}
+    }
+    offset(v){
+        let {value} = this.state;
+        value = +value;
+        if(isNaN(value)){value = 0}
+        value += v;
+        if(value < 0){value = 0}
+        return value;
+    }
+    change(v){
+        this.eventHandler('window','mouseup',$.proxy(this.mouseup,this));
+        this.setState({value:this.offset(v)});
+        clearTimeout(this.timeout)
+        clearInterval(this.interval)
+        this.timeout = setTimeout(()=>{
+            this.interval = setInterval(()=>{
+                this.setState({value:this.offset(v)});
+            },10);
+        },700)
+    }
+    mouseup(){
+        this.eventHandler('window','mouseup',this.mouseup,'unbind');
+        clearTimeout(this.timeout)
+        clearInterval(this.interval)
+    }
+    eventHandler(selector, event, action, type = "bind") {
+        var me = {mousedown: "touchstart",mousemove: "touchmove",mouseup: "touchend"};
+        event = "ontouchstart" in document.documentElement ? me[event] : event;
+        var element = typeof selector === "string" ? (selector === "window"? $(window): $(selector)): selector;
+        element.unbind(event, action);
+        if (type === "bind") {element.bind(event, action);}
+    }
+    render(){
+        let {value} = this.state;
+        let {onRemove,onChange} = this.props;
+        let touch = "ontouchstart" in document.documentElement;
+        return (
+            <RVD
+                layout={{
+                    style:{height:'100%',padding:12},
+                    onClick:(e)=>e.stopPropagation(),
+                    column:[
+                        {
+                            gap:3,
+                            row:[
+                                {
+                                    size:48,html:<Icon path={mdiPlusThick} size={1}/>,align:'vh',onClick:()=>this.change(1),
+                                    attrs:{
+                                        [touch?'onTouchStart':'onMouseDown']:()=>this.change(1)
+                                    }
+                                },
+                                {
+                                    flex:1,
+                                    html:(
+                                        <input 
+                                            type='number' value={value} min={0}
+                                            ref={this.dom}
+                                            onChange={(e)=>{
+                                                let val = e.target.value;
+                                                this.setState({value:val});
+                                            }}
+                                            onClick={()=>{
+                                                $(this.dom.current).focus().select()
+                                            }}
+                                            style={{width:'100%',border:'1px solid lightblue',height:36,textAlign:'center',borderRadius:4}}
+                                        />
+                                    )
+                                },
+                                {
+                                    size:48,html:<Icon path={mdiMinusThick} size={1}/>,align:'vh',
+                                    attrs:{
+                                        [touch?'onTouchStart':'onMouseDown']:()=>this.change(-1)
+                                    }
+                                }
+                            ]
+                        },
+                        {size:12},
+                        {
+                            row:[
+                                {
+                                    flex:1,
+                                    html:(
+                                        <button 
+                                            className='button-2' style={{background:'red',border:'none'}}
+                                            onClick={()=>onRemove()}
+                                        >حذف محصول</button>
+                                    )
+                                },
+                                {size:12},
+                                {
+                                    flex:1,
+                                    html:(
+                                        <button onClick={()=>onChange(value)} className='button-2'>
+                                                تایید
+                                        </button>
+                                    )
+                                },
+                            ]
+                        },
                     ]
                 }}
             />

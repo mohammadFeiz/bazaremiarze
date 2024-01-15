@@ -13,210 +13,133 @@ import $ from 'jquery';
 import bundleBoxSrc from './images/bundle-box.jpg';
 import SearchBox from './components/search-box/index';
 import appContext from './app-context';
-import { I_ShopProps_taxon, I_app_state, I_cartProduct, I_cartTab, I_cartTab_isTaxon, I_cartTaxon, I_product, I_shippingOptions, I_shopRenderIn, I_state_cart, I_variant } from "./types";
+import { I_ShopClass, I_ShopClass_taxon, I_app_state, I_cartProduct, I_cartTab, I_cartTab_isTaxon, I_cartTaxon, I_product, I_shippingOptions, I_shopRenderIn, I_state_cart, I_variant } from "./types";
 
-export default class ShopClass {
-    getAppState: () => I_app_state;
-    taxons?: I_ShopProps_taxon[];
-    cartId: string;
-    id: string;
-    renderCard: (
-        p: {
-            product: I_product, renderIn: I_shopRenderIn, variantId?: string, count?: number,
-            details?: any, loading?: boolean, index?: number, style?: any, type?: any
-        }
-    ) => React.ReactNode;
-    renderPage:(product:I_product)=>React.ReactNode;
-    renderTaxonCard: (
-        p: {
-            taxon: I_ShopProps_taxon, renderIn: I_shopRenderIn, index?: number, onFetchProducts?: any, errors?: any[], hasErrors?: any[]
-        }
-    ) => React.ReactNode
-    getCartItems:()=>I_cartTaxon[] | I_cartProduct[];
+
+export default class ShopClass implements I_ShopClass {
+    getAppState:()=>I_app_state;
     name: string;
+    cartId: string;
     CampaignId?: number;
+    id: string;
+    maxCart?: number;
     PriceListNum?: number;
-    getCartProducts:(renderIn:I_shopRenderIn,shippingOptions?:I_shippingOptions)=>React.ReactNode[]
-    getAmounts_Bundle:(p:{cartItems:I_cartProduct[],shippingOptions?:I_shippingOptions,container?:string})=>{ total:number, discounts:{ percent:number, value:number, title:string }[], payment:number, ClubPoints?: any }
+    taxons?: I_ShopClass_taxon[];
+    billboard?: string;
+    products?: I_product;
+    description?: string;
     constructor({ getAppState, config }) {
         this.getAppState = getAppState;
         this.update(config);
-        this.renderCard = (p) => {
-            let { product, renderIn, variantId, count, details, loading, index, style, type } = p;
-            let { apis, rsa, actionClass, msfReport, cart } = this.getAppState();
-            let props = {
-                cart,
-                title: this.name, product, renderIn, variantId, count, details, loading, index, style, type, cartId: this.cartId, CampaignId: this.CampaignId,
-                onClick: async () => {
-                    if (!product.hasFullDetail) {
-                        product = await apis.request({
-                            api: 'kharid.getProductFullDetail',
-                            parameter: { id: product.id, code: product.defaultVariant.code, product }
-                        })
-                        product.hasFullDetail = true;
-                    }
-                    msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
-                    rsa.addModal({
-                        position: 'fullscreen', id: 'product',
-                        body: { render: () => this.renderPage(product) },
-                        header: { title: this.name, buttons: actionClass.getHeaderIcons({ cart: true }) }
+    }
+    update(obj) { for (let prop in obj) { this[prop] = obj[prop]; } }
+    renderCard = (p) => {
+        let { product, renderIn, variantId, count, details, loading, index, style, type } = p;
+        let { apis, rsa, actionClass, msfReport, cart } = this.getAppState();
+        let props = {
+            cart,
+            title: this.name, product, renderIn, variantId, count, details, loading, index, style, type, cartId: this.cartId, CampaignId: this.CampaignId,
+            onClick: async () => {
+                if (!product.hasFullDetail) {
+                    product = await apis.request({
+                        api: 'kharid.getProductFullDetail',
+                        parameter: { id: product.id, code: product.defaultVariant.code, product }
                     })
-                },
-                onRemove: () => actionClass.changeCart({ count: 0, variantId: product.code, product, cartId: this.cartId })
-            }
-            let Wrapper = this.id === 'Bundle' ? BundleCard : RegularCard;
-            return (<Wrapper key={product.id || product.code} {...props} />)
-        }
-        this.renderPage = (product) => {
-            let { actionClass } = this.getAppState()
-            let props = {
-                product,  maxCart: this.maxCart, cartId: this.cartId, CampaignId: this.CampaignId,
-                onShowCart: () => actionClass.openPopup('cart'),
-                //use in bundle
-                onChangeCount: (count) => {
-                    actionClass.changeCart({ product, variantId: product.code, count, cartId: this.cartId, taxonId, CampaignId: this.CampaignId })
+                    product.hasFullDetail = true;
                 }
-            }
-            let Wrapper = this.cartId === 'Bundle' ? BundlePage : RegularPage;
-            return <Wrapper {...props} />
+                msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
+                rsa.addModal({
+                    position: 'fullscreen', id: 'product',
+                    body: { render: () => this.renderPage(product) },
+                    header: { title: this.name, buttons: actionClass.getHeaderIcons({ cart: true }) }
+                })
+            },
+            onRemove: () => actionClass.changeCart({ count: 0, variantId: product.code, product, cartId: this.cartId })
         }
-        this.renderTaxonCard = (p) => {
-            let { taxon, renderIn, index, onFetchProducts, errors = [], hasErrors = [] } = p;
-            let { apis, msfReport, cart } = this.getAppState();
-            let props = {
-                title: taxon.name, taxon, renderIn, index, errors, cart, cartId: this.cartId, hasErrors,
-                onClick: async () => {
-                    if (!taxon.products) {
-                        let products = await apis.request({
-                            api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
-                            parameter: { id: taxon.id, cartId: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
-                            cache: { time: 30 * 24 * 60 * 60 * 1000, name: `campaigns.campaignProducts.item_${this.cartId}_${taxon.id}` }
-                        });
-                        taxon.products = products;
-                        onFetchProducts(products)
-                    }
-                    msfReport({ actionName: 'open product', actionId: 5, targetName: taxon.name, targetId: taxon.id, tagName: 'kharid', eventName: 'page view' })
-                },
+        let Wrapper = this.id === 'Bundle' ? BundleCard : RegularCard;
+        return (<Wrapper key={product.id} {...props} />)
+    }
+    renderPage = (product) => {
+        let { actionClass } = this.getAppState()
+        let props = {
+            product,  maxCart: this.maxCart, cartId: this.cartId, CampaignId: this.CampaignId,
+            onShowCart: () => actionClass.openPopup('cart'),
+            //use in bundle
+            onChangeCount: (count) => {
+                actionClass.changeCart({ product, variantId: product.code, count, cartId: this.cartId, taxonId, CampaignId: this.CampaignId })
+            }
+        }
+        let Wrapper = this.cartId === 'Bundle' ? BundlePage : RegularPage;
+        return <Wrapper {...props} />
+    }
+    renderTaxonCard = (p) => {
+        let { taxon, renderIn, index, onFetchProducts, errors = [], hasErrors = [] } = p;
+        let { apis, msfReport, cart } = this.getAppState();
+        let props = {
+            title: taxon.name, taxon, renderIn, index, errors, cart, cartId: this.cartId, hasErrors,
+            onClick: async () => {
+                if (!taxon.products) {
+                    let products = await apis.request({
+                        api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
+                        parameter: { id: taxon.id, cartId: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
+                        cache: { time: 30 * 24 * 60 * 60 * 1000, name: `campaigns.campaignProducts.item_${this.cartId}_${taxon.id}` }
+                    });
+                    taxon.products = products;
+                    onFetchProducts(products)
+                }
+                msfReport({ actionName: 'open product', actionId: 5, targetName: taxon.name, targetId: taxon.id, tagName: 'kharid', eventName: 'page view' })
+            },
 
-                renderProductCard: (product, index) => {
-                    return this.renderCard({ product, index, renderIn });
-                }
+            renderProductCard: (product, index) => {
+                return this.renderCard({ product, index, renderIn });
             }
-            return (<TaxonCard key={taxon.id} {...props} />)
         }
-        this.getCartItems = () => {
-            let { cart } = this.getAppState();
-            let cartTab = cart[this.cartId];
-            if (!cartTab) { return [] }
-            let res = [];
-            if (cartTab.isTaxon === true) {
-                let ct = cartTab as I_cartTab_isTaxon;
-                return Object.keys(ct.taxons).map((o) => ct.taxons[o])
-            }
-            else {
-                let ct = cartTab as I_cartTab;
-                for(let productId in ct.products){
-                    let {variants,product} = ct.products[productId];
-                    for(let variantId in variants){
-                        let {count,variant} = variants[variantId];
-                        res.push(productId,variantId,product,variant,count)
-                    }
+        return (<TaxonCard key={taxon.id} {...props} />)
+    }
+    getCartItems = () => {
+        let { cart } = this.getAppState();
+        let cartTab = cart[this.cartId];
+        if (!cartTab) { return [] }
+        let res = [];
+        if (this.taxons) {
+            let ct = cartTab as I_cartTab_isTaxon;
+            return Object.keys(ct.taxons).map((taxonId) => ct.taxons[taxonId])
+        }
+        else {
+            let ct = cartTab as I_cartTab;
+            return Object.keys(ct.products).map((productId)=>ct.products[productId])
+        }
+    }
+    getCartProducts = (renderIn, shippingOptions) => {
+        let { cart } = this.getAppState();
+        let cartTab = cart[this.cartId];
+        if (!cartTab) { return [] }
+        let cartItems = this.getCartItems();
+        if (this.cartId === 'Bundle') { return this.getCartProducts_Bundle(cartItems, renderIn) }
+        else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions) }
+    }
+    getCartVariants = ()=>{
+        function getVariants(parent){
+            let res = []
+            for(let productId in parent.products){
+                let {variants,product} = parent.products[productId]
+                for(let variantId in variants){
+                    let {count,variant} = variants[variantId]
+                    res.push({cartId,productId,variantId,product,variant,count,taxon:parent.taxon,taxonId:parent.taxonId})
                 }
             }
             return res
         }
-        this.getCartProducts = (renderIn, shippingOptions) => {
-            let { cart } = this.getAppState();
-            let cartTab = cart[this.cartId];
-            if (!cartTab) { return [] }
-            let cartItems = this.getCartItems();
-            if (this.cartId === 'Bundle') { return this.getCartProducts_Bundle(cartItems, renderIn) }
-            else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions) }
+        let { cart } = this.getAppState();
+        let cartId = this.cartId;
+        if (!cart[cartId]) { return [] }
+        if(this.taxons){
+            let res = []
+            let cartTab = cart[cartId] as I_cartTab_isTaxon;
+            for(let taxonId in cartTab.taxons){res = [...res,getVariants(cartTab.taxons[taxonId])]}
+            return res
         }
-        this.getAmounts_Bundle = ({cartItems, shippingOptions = {}, container}) => {
-            let { actionClass, backOffice } = this.getAppState();
-            let { PayDueDate_options } = backOffice;
-            let total = 0;
-            for (let i = 0; i < cartItems.length; i++) {
-                let { count, product } = cartItems[i];
-                let price = product.price / (1 - (12 / 100))
-                total += count.packQty * price;
-            }
-            let payment = total;
-            let { PayDueDate, discountCodeInfo, giftCodeInfo } = shippingOptions;
-            let cashPercent = 100;
-            let discounts = [];
-            if (PayDueDate) {
-                let PayDueDateOption = PayDueDate_options.find((o) => o.value === PayDueDate);
-                let percent = PayDueDateOption.discountPercent;
-                let value = total * percent / 100;
-                let title = 'نخفیف نحوه پرداخت';
-                discounts.push({ percent, value, title });
-                cashPercent = PayDueDateOption.cashPercent;
-                payment -= value;
-            }
-            let DiscountList = actionClass.getCodeDetails({ discountCodeInfo, giftCodeInfo }) || {};
-            if (DiscountList.DiscountPercentage) {
-                let percent = DiscountList.DiscountPercentage;
-                let value = payment * percent / 100;
-                let title = 'کد تخفیف';
-                discounts.push({ percent, value, title })
-                payment -= value;
-            }
-            if (DiscountList.PromotionValue) {
-                let value = DiscountList.PromotionValue;
-                let title = 'کارت هدیه';
-                discounts.push({ title, value });
-                payment -= value;
-            }
-            payment = payment * cashPercent / 100;
-            return { total, discounts, payment, ClubPoints: {} };//notice // ClubPoints!!!!
-        }
-        
-    }
-    update(obj) { for (let prop in obj) { this[prop] = obj[prop]; } }
-    
-    getCartProducts_Bundle = (cartItems, renderIn) => {
-        return cartItems.map(({ product, count, variantId }) => this.renderCard({ product, count, variantId, renderIn }))
-    }
-    getCartProducts_all = (cartItems, renderIn, shippingOptions) => {//notice // shippingOptions here never used
-        if (this.taxons) {
-            let hasErrors = cartItems.filter((cartItem, i) => {
-                let errors = cartItem.errors;
-                return errors && errors.length
-            })
-            return cartItems.map((cartItem, i) => {
-
-                let taxon = this.taxons.find((o) => o.id === cartItem.taxonId)
-                let errors = cartItem.errors;
-                let props = {taxon,renderIn,index: i,taxonId: cartItem.taxonId,errors, hasErrors}
-                return this.renderTaxonCard(props)
-            })
-        }
-        else {
-            return cartItems.map((cartItem, i) => {
-                let { product, count, variantId } = cartItem;
-                let variant = product.variants.find((o) => o.id === variantId);
-                let { optionTypes } = product;
-                let { optionValues } = variant;
-                let details = [];
-                for (let j = 0; j < optionTypes.length; j++) {
-                    let optionType = optionTypes[j];
-                    details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
-                }
-                let props = {
-                    key: variantId, variantId, index: i, product, details, type: 'horizontal',
-                    renderIn, cartId: this.cartId
-                }
-                return this.renderCard(props)
-
-            })
-        }
-
-    }
-    fix(value, v = 0) {
-        try { return +value.toFixed(v) }
-        catch { return 0 }
+        else {return getVariants(cart[cartId])}
     }
     getAmounts = (shippingOptions, container) => {
         let { cart } = this.getAppState();
@@ -224,9 +147,9 @@ export default class ShopClass {
         if (!cartTab) { return {} }
         let cartItems = this.getCartItems();
         if (this.cartId === 'Bundle') { return this.getAmounts_Bundle({cartItems, shippingOptions, container}) }
-        else { return this.getAmounts_all(cartItems, shippingOptions, container) }
+        else { return this.getAmounts_all({cartItems, shippingOptions, container}) }
     }
-    getAmounts_all(cartItems, shippingOptions, container) {
+    getAmounts_all({cartItems, shippingOptions, container}) {
         let { actionClass } = this.getAppState();
         let factorDetailsItems = [];
         let total = 0;
@@ -269,6 +192,88 @@ export default class ShopClass {
         }
         return { total, discounts, payment: DocumentTotal, ClubPoints, hasError }
     }
+    getAmounts_Bundle = ({cartItems, shippingOptions, container}) => {
+        let { actionClass, backOffice } = this.getAppState();
+        let { PayDueDate_options } = backOffice;
+        let total = 0;
+        for (let i = 0; i < cartItems.length; i++) {
+            let { count, product } = cartItems[i];
+            let price = product.price / (1 - (12 / 100))
+            total += count.packQty * price;
+        }
+        let payment = total;
+        let { PayDueDate, discountCodeInfo, giftCodeInfo } = shippingOptions || {};
+        let cashPercent = 100;
+        let discounts = [];
+        if (PayDueDate) {
+            let PayDueDateOption = PayDueDate_options.find((o) => o.value === PayDueDate);
+            let percent = PayDueDateOption.discountPercent;
+            let value = total * percent / 100;
+            let title = 'نخفیف نحوه پرداخت';
+            discounts.push({ percent, value, title });
+            cashPercent = PayDueDateOption.cashPercent;
+            payment -= value;
+        }
+        let DiscountList = actionClass.getCodeDetails({ discountCodeInfo, giftCodeInfo }) || {};
+        if (DiscountList.DiscountPercentage) {
+            let percent = DiscountList.DiscountPercentage;
+            let value = payment * percent / 100;
+            let title = 'کد تخفیف';
+            discounts.push({ percent, value, title })
+            payment -= value;
+        }
+        if (DiscountList.PromotionValue) {
+            let value = DiscountList.PromotionValue;
+            let title = 'کارت هدیه';
+            discounts.push({ title, value });
+            payment -= value;
+        }
+        payment = payment * cashPercent / 100;
+        return { total, discounts, payment, ClubPoints: {} };//notice // ClubPoints!!!!
+    }
+    getCartProducts_Bundle = (cartItems, renderIn) => {
+        return cartItems.map(({ product, count, variantId }) => this.renderCard({ product, count, variantId, renderIn }))
+    }
+    getCartProducts_all = (cartItems, renderIn, shippingOptions) => {//notice // shippingOptions here never used
+        if (this.taxons) {
+            let hasErrors = cartItems.filter((cartItem, i) => {
+                let errors = cartItem.errors;
+                return errors && errors.length
+            })
+            return cartItems.map((cartItem, i) => {
+
+                let taxon = this.taxons.find((o) => o.id === cartItem.taxonId)
+                let errors = cartItem.errors;
+                let props = {taxon,renderIn,index: i,taxonId: cartItem.taxonId,errors, hasErrors}
+                return this.renderTaxonCard(props)
+            })
+        }
+        else {
+            return cartItems.map((cartItem, i) => {
+                let { product, count, variantId } = cartItem;
+                let variant = product.variants.find((o) => o.id === variantId);
+                let { optionTypes } = product;
+                let { optionValues } = variant;
+                let details = [];
+                for (let j = 0; j < optionTypes.length; j++) {
+                    let optionType = optionTypes[j];
+                    details.push([optionType.name, optionType.items[optionValues[optionType.id]]]);
+                }
+                let props = {
+                    key: variantId, variantId, index: i, product, details, type: 'horizontal',
+                    renderIn, cartId: this.cartId
+                }
+                return this.renderCard(props)
+
+            })
+        }
+
+    }
+    fix(value, v = 0) {
+        try { return +value.toFixed(v) }
+        catch { return 0 }
+    }
+    
     
     getFactorItems = (shippingOptions, container) => {
         let amounts = this.getAmounts(shippingOptions, container);
@@ -342,7 +347,7 @@ export default class ShopClass {
         if (typeof result === 'object') {
             let { orderNumber } = result;
             rsa.removeModal('all');
-            actionClass.removeCart(this.cartId)
+            actionClass.removeCartTab(this.cartId)
             actionClass.openPopup('sefareshe-ersal-shode-baraye-vizitor', { orderNumber });
             return true
         }
@@ -1343,6 +1348,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
 }
 class BundlePage extends Component {
     state = {}
+    mounted: boolean;
     componentDidMount() {
         this.mounted = true;
         let { cartItem } = this.props;
@@ -1370,6 +1376,9 @@ class BundlePage extends Component {
         this.cartTimeout = setTimeout(() => {
             this.updateCart()
         }, 1000)
+    }
+    cartTimeout(cartTimeout: any) {
+        throw new Error("Method not implemented.");
     }
     image_layout(name, code, src) {
         return {
@@ -1750,7 +1759,7 @@ class CartButton extends Component{
         if(!product){console.error(`CartButton missing product props`)}
         if(!product.cartId){console.error(`CartButton missing cartId in product props`)}
         let cartTab = cart[cartId];
-        let count = 0,cartItems = [];
+        let count = 0;
         if(variantId){
             if(cartTab){
                 if(taxonId){
@@ -1773,7 +1782,6 @@ class CartButton extends Component{
             if(['product','cart','category'].indexOf(renderIn) === -1){
                 console.error('missing varinatId in ProductCard Component due render in cart page or product page')
             }
-            cartItems = actionClass.getCartItemsByProduct(product,cartId,taxonId);
         }
         let layout;
         if(!count){
@@ -1837,6 +1845,9 @@ class ProductCount extends Component{
             onChange(value)
         },500)
         
+    }
+    changeTimeout(changeTimeout: any) {
+        throw new Error("Method not implemented.");
     }
     touchStart(dir,touch,isTouch){
         if(touch && !isTouch){return}
@@ -1947,6 +1958,7 @@ class ProductCount extends Component{
 }
 
 class CountPopup extends Component{
+    dom: React.RefObject<unknown>;
     constructor(props){
         super(props);
         this.dom = createRef();
@@ -1970,6 +1982,12 @@ class CountPopup extends Component{
                 this.setState({value:this.offset(v)});
             },10);
         },700)
+    }
+    timeout(timeout: any) {
+        throw new Error("Method not implemented.");
+    }
+    interval(interval: any) {
+        throw new Error("Method not implemented.");
     }
     mouseup(){
         this.eventHandler('window','mouseup',this.mouseup,'unbind');

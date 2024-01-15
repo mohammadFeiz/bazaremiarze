@@ -13,7 +13,7 @@ import $ from 'jquery';
 import bundleBoxSrc from './images/bundle-box.jpg';
 import SearchBox from './components/search-box/index';
 import appContext from './app-context';
-import { I_ShopProps_taxon, I_app_state, I_cartProduct, I_cartTab, I_cartTab_isTaxon, I_cartTaxon, I_product, I_shippingOptions, I_shopRenderIn, I_state_cart } from "./types";
+import { I_ShopProps_taxon, I_app_state, I_cartProduct, I_cartTab, I_cartTab_isTaxon, I_cartTaxon, I_product, I_shippingOptions, I_shopRenderIn, I_state_cart, I_variant } from "./types";
 
 export default class ShopClass {
     getAppState: () => I_app_state;
@@ -26,6 +26,7 @@ export default class ShopClass {
             details?: any, loading?: boolean, index?: number, style?: any, type?: any
         }
     ) => React.ReactNode;
+    renderPage:(product:I_product)=>React.ReactNode;
     renderTaxonCard: (
         p: {
             taxon: I_ShopProps_taxon, renderIn: I_shopRenderIn, index?: number, onFetchProducts?: any, errors?: any[], hasErrors?: any[]
@@ -41,11 +42,11 @@ export default class ShopClass {
         this.getAppState = getAppState;
         this.update(config);
         this.renderCard = (p) => {
-            let { product, renderIn, variantId, count, details, loading, index, style, taxonId, type } = p;
+            let { product, renderIn, variantId, count, details, loading, index, style, type } = p;
             let { apis, rsa, actionClass, msfReport, cart } = this.getAppState();
             let props = {
                 cart,
-                title: this.name, product, renderIn, variantId, count, details, loading, index, style, type, taxonId, cartId: this.cartId, CampaignId: this.CampaignId,
+                title: this.name, product, renderIn, variantId, count, details, loading, index, style, type, cartId: this.cartId, CampaignId: this.CampaignId,
                 onClick: async () => {
                     if (!product.hasFullDetail) {
                         product = await apis.request({
@@ -57,7 +58,7 @@ export default class ShopClass {
                     msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
                     rsa.addModal({
                         position: 'fullscreen', id: 'product',
-                        body: { render: () => this.renderPage(product, taxonId) },
+                        body: { render: () => this.renderPage(product) },
                         header: { title: this.name, buttons: actionClass.getHeaderIcons({ cart: true }) }
                     })
                 },
@@ -65,6 +66,19 @@ export default class ShopClass {
             }
             let Wrapper = this.id === 'Bundle' ? BundleCard : RegularCard;
             return (<Wrapper key={product.id || product.code} {...props} />)
+        }
+        this.renderPage = (product) => {
+            let { actionClass } = this.getAppState()
+            let props = {
+                product,  maxCart: this.maxCart, cartId: this.cartId, CampaignId: this.CampaignId,
+                onShowCart: () => actionClass.openPopup('cart'),
+                //use in bundle
+                onChangeCount: (count) => {
+                    actionClass.changeCart({ product, variantId: product.code, count, cartId: this.cartId, taxonId, CampaignId: this.CampaignId })
+                }
+            }
+            let Wrapper = this.cartId === 'Bundle' ? BundlePage : RegularPage;
+            return <Wrapper {...props} />
         }
         this.renderTaxonCard = (p) => {
             let { taxon, renderIn, index, onFetchProducts, errors = [], hasErrors = [] } = p;
@@ -503,31 +517,6 @@ export default class ShopClass {
             return { billboard: this.billboard, products: this.products, description: this.description, title: this.name, isTaxon: !!this.taxons }
         }
 
-    }
-
-    renderPage(product, taxonId) {
-        let { cart, actionClass } = this.getAppState()
-        let cartTab = cart[this.cartId];
-        let cartItem;
-        if (cartTab) {
-            let { items = {} } = cartTab;
-            if (taxonId) {
-                let taxon = items[taxonId] || {}
-                cartItem = taxon[product.code] || false
-            }
-            else { cartItem = items[product.code] || false }
-
-        }
-        let props = {
-            product, cartItem, maxCart: this.maxCart, cartId: this.cartId, taxonId, CampaignId: this.CampaignId,
-            onShowCart: () => actionClass.openPopup('cart'),
-            //use in bundle
-            onChangeCount: (count) => {
-                actionClass.changeCart({ product, variantId: product.code, count, cartId: this.cartId, taxonId, CampaignId: this.CampaignId })
-            }
-        }
-        let Wrapper = this.cartId === 'Bundle' ? BundlePage : RegularPage;
-        return <Wrapper {...props} />
     }
     renderCartFactor = (button = true) => {
         let res = this.getAmounts(undefined, 'cart');
@@ -1024,19 +1013,27 @@ function BundleCard(props: I_BundleCard) {
         />
     )
 }
-class RegularPage extends Component {
-    componentDidMount() {
-        this.mounted = true;
-        let { product } = this.props;
-        this.getVariants()
+type I_RegularPage = {product:I_product}
+function RegularPage(props:I_RegularPage) {
+    let {product} = props;
+    let [mounted,setMounted] = useState<boolean>(false)
+    let [selectedVariant,setSelectedVariant] = useState<I_variant|undefined>()
+    let [optionValues,setOptionValues] = useState<>()
+    useEffect(()=>{
+        setMounted(true)
+        let {ovs,options} = getVariants()
         let firstVariant = product.inStock ? (product.variants.filter((o) => o.inStock)[0]) : undefined;
+        let optionValues = firstVariant ? { ...firstVariant.optionValues } : undefined;
+        set
         this.setState({
-            optionValues: firstVariant ? { ...firstVariant.optionValues } : undefined, showDetails: true,
+            optionValues, showDetails: true,
             selectedVariant: firstVariant, srcIndex: 0
         });
+    },[])
+    componentDidMount() {
+        
     }
     getVariants() {
-        let { product } = this.props;
         let { variants, optionTypes } = product;
         let optionTypesDict = {}
         let optionValuesDict = {}

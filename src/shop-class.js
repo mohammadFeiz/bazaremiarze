@@ -12,7 +12,7 @@ import AIOInput from "./npm/aio-input/aio-input";
 import $ from 'jquery';
 import bundleBoxSrc from './images/bundle-box.jpg';
 import SearchBox from './components/search-box/index';
-
+import AIOStorage from 'aio-storage';
 import appContext from './app-context';
 import noItemSrc from './images/not-found.png';
 
@@ -580,7 +580,7 @@ class CategoryView extends Component {
     description_layout() {
         let { description } = this.props;
         if (!description) { return false }
-        return { html: description, style: { textAlign: 'right', padding: '0 12px' } }
+        return { html: <pre style={{fontFamily:'inherit'}}>{description}</pre>, style: { textAlign: 'right', padding: '0 12px' } }
     }
     product_layout(product, index) {
         let { searchValue } = this.state;
@@ -624,12 +624,42 @@ class CategoryView extends Component {
     }
 }
 class TaxonCard extends Component {
+    constructor(props){
+        super(props)
+        let {taxon} = props;
+        this.state = {open:AIOStorage('taxonCardToggle').load({name:'toggle' +taxon.id,def:false})}
+    
+    }
+    click(){
+        let { onClick, taxon } = this.props;
+        let {open} = this.state
+        if(!taxon.products){
+            onClick()
+        }
+        else{
+            AIOStorage('taxonCardToggle').save({name:'toggle' +taxon.id,value:!open})
+            this.setState({open:!open})
+        }
+        onClick()
+    }
     not_has_products_layout() {
-        let { loading, onClick, taxon } = this.props;
-        return <RVD loading={loading} layout={{ className: 'p-12 theme-box-shadow', onClick, html: taxon.name, }} />
+        let { loading, taxon } = this.props;
+        return (
+            <RVD 
+                loading={loading} 
+                layout={{ 
+                    className: 'p-12 theme-box-shadow', onClick:this.click.bind(this), 
+                    row:[
+                        {size:36,align:'vh',html:<Icon path={mdiChevronLeft} size={.8}/>},
+                        {html: taxon.name,align:'v'}
+                    ] 
+                }} 
+            />
+        )
     }
     has_products_layout() {
         let { taxon, renderProductCard, title, errors, renderIn, cartId, cart, hasErrors } = this.props;
+        let {open} = this.state
         let products_layout;
         let cartTab = cart[cartId] || {};
         let cartLength = Object.keys(cartTab.items || {}).length - hasErrors.length;
@@ -655,7 +685,13 @@ class TaxonCard extends Component {
                 layout={{
                     className: 'p-12 theme-box-shadow',
                     column: [
-                        { html: title, size: 24, align: 'v' },
+                        {
+                            onClick:(e)=>{e.stopPropagation(); this.click()},
+                            row:[
+                                {html:<Icon path={mdiChevronDown} size={0.8}/>,align:'vh',size:36},
+                                { html: title, flex: 1, align: 'v' },
+                            ]
+                        },
                         { column: products_layout },
                         {
                             show: renderIn === 'cart' && !errors.length, align: 'v',
@@ -694,7 +730,8 @@ class TaxonCard extends Component {
     }
     render() {
         let { taxon } = this.props;
-        if (!taxon.products) { return this.not_has_products_layout() }
+        let {open} = this.state;
+        if (!taxon.products || !open) { return this.not_has_products_layout() }
         return this.has_products_layout()
     }
 }

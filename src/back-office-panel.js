@@ -109,6 +109,7 @@ export default class BackOffice extends Component {
       model, currentVersions, apis,tabs,
       setModel: (key, value) => {
         let newModel = { ...model, [key]: value }
+        debugger
         this.setState({ model: newModel })
       },
       removeImage:this.removeImage.bind(this),
@@ -662,6 +663,9 @@ class FormSetting extends Component {
               }
             },
             {
+              input:{type: 'textarea'}, label: 'توضیحات', field: 'value.description',
+            },
+            {
               show: ['Regular', 'Bundle'].indexOf(type) !== -1,
               input:{type: 'text'}, label: 'نام', field: 'value.name',
             },
@@ -1115,8 +1119,6 @@ class Image extends Component {
     )
   }
 }
-
-
 class SpreeEntity extends Component {
   static contextType = BackOfficeContext;
   state = { openDic: {} }
@@ -1260,7 +1262,6 @@ class SpreeEntity extends Component {
     )
   }
 }
-
 class ShippingOptions extends Component {
   static contextType = BackOfficeContext;
   state = { activeTabId: 'PayDueDate_options' }
@@ -1359,8 +1360,6 @@ class ShippingOptions extends Component {
     )
   }
 }
-
-
 class VitrinCategories extends Component{
   static contextType = BackOfficeContext;
   constructor(props){

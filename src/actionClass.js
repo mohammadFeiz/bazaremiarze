@@ -571,7 +571,7 @@ let mins = [
             let cartTabTaxonItems = remove(cartTabItems[taxonId].items,variantId);
             cartTabItems = {...cartTabItems,[taxonId]:{...cartTabItems[taxonId],items:cartTabTaxonItems}}
             if(!cartTabTaxonItems){cartTabItems = remove(cartTabItems,taxonId)}
-            if(cartTabItems){
+            if(cartTabItems && cartTabItems[taxonId]){
                 let factorDetailsItems = []
                 let {items} = cartTabItems[taxonId];
                 let productDic = {}

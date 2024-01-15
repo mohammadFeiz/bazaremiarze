@@ -119,7 +119,7 @@ export type I_PaydueDate_option = {
 export type I_state_backOffice_accessPhoneNumber = {phoneNumber:string,access:{[field:string]:boolean}};
 //////backOffice
 export type I_shippingOptions = {
-    PaymentTime?:number, PayDueDate?:number, DeliveryType?:number, giftCodeInfo?:any, discountCodeInfo?:any,CampaignId?:number
+    PaymentTime?:number, PayDueDate?:number, DeliveryType?:number, giftCodeInfo?:any, discountCodeInfo?:any,CampaignId?:number,address?:string
 }
 export type I_marketingLine = {ItemCode:string,ItemQty:number}
 export type I_spreeCategory = { showType:'icon' | 'slider', id:string,active:boolean,billboard?:string,icon?:string,name:string }
@@ -146,11 +146,18 @@ export type I_ShopProps = {
 } 
 export type I_ShopClass_taxon = {id:string,name:string,min:number,max:number,products?:I_product[]}
 export type I_ShopClass = {
-    getAppState: () => I_app_state,
-    taxons?: I_ShopClass_taxon[],
-    cartId: string,
     id: string,
+    name: string,
+    cartId: string,
+    taxons?: I_ShopClass_taxon[],
     maxCart?:number,
+    CampaignId?:number,
+    PriceListNum?: number,
+    billboard?:string,
+    products?: I_product;
+    description?: string;
+    icon?:string,
+    
     renderCard: (
         p: {
             product: I_product, renderIn: I_shopRenderIn, variantId?: string, count?: number,
@@ -164,22 +171,14 @@ export type I_ShopClass = {
         }
     ) => React.ReactNode,
     getCartVariants:()=>I_cartVariant[],
-    name: string,
-    billboard?:string,
-    icon?:string,
-    CampaignId?:number,
     openCategory:(id?:string)=>void,
-    payment:(p:{ address, SettleType, PaymentTime, DeliveryType, PayDueDate, cartId, giftCodeInfo, discountCodeInfo })=>boolean,
+    payment:(p:I_shippingOptions)=>Promise<boolean>, 
     getCartProducts:(renderIn:I_shopRenderIn,shippingOptions?:I_shippingOptions)=>React.ReactNode[],
     renderCartFactor:()=>React.ReactNode,
-    PriceListNum?: number,
-    getAmounts_all(
-        p:{cartItems, shippingOptions, container}
-    )=>{ total, discounts, payment: DocumentTotal, ClubPoints?:any, hasError },
-    getAmounts_Bundle:(
-        p:{cartItems:I_cartProduct[],shippingOptions?:I_shippingOptions,container?:string}
-    )=>{ total:number, discounts:I_discount[], payment:number, ClubPoints?: any },
+    getAmounts:I_getAmounts,getAmounts_all:I_getAmounts,getAmounts_Bundle:I_getAmounts,
 }
+export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>I_amounts;
+export type I_amounts = { total:number, discounts:I_discount[], payment:number, ClubPoints?: any };
 export type I_shopRenderIn = 'product'|'shipping'|'cart'|'category';
 export type I_actionClass = {
     getNavItems:()=>{
@@ -247,7 +246,8 @@ export type I_app_state = {
     cart:I_state_cart,
     msfReport:I_msfReport,
     bazargahOrders:{wait_to_get?:[],wait_to_send?:[]},
-    actionClass:I_actionClass
+    actionClass:I_actionClass,
+    baseUrl:string
 }
 export type I_state_spreeCategories = { icon_type: I_spreeCategory[], slider_type: I_spreeCategory[], dic: {} }
 export type I_state_Shop = {[shopId:string]:I_ShopClass}

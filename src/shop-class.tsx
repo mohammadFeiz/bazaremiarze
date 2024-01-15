@@ -1,5 +1,6 @@
 import React, { Component, Fragment, useContext, useEffect, useState,createRef } from "react";
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
+import AIOStorage from 'aio-storage';
 import { Icon } from '@mdi/react';
 import { mdiMinusThick, mdiPlusThick,mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline } from "@mdi/js";
 import Axios from 'axios';
@@ -17,22 +18,25 @@ import { I_ShopClass, I_ShopClass_taxon, I_app_state, I_bundleCount, I_cartProdu
 
 
 export default class ShopClass implements I_ShopClass {
-    getAppState:()=>I_app_state;
-    name: string;
-    cartId: string;
-    CampaignId?: number;
-    id: string;
-    maxCart?: number;
-    PriceListNum?: number;
-    taxons?: I_ShopClass_taxon[];
-    billboard?: string;
-    products?: I_product;
-    description?: string;
     constructor({ getAppState, config }) {
         this.getAppState = getAppState;
         this.update(config);
     }
     update(obj) { for (let prop in obj) { this[prop] = obj[prop]; } }
+    dicToArray = (dic:{[key:string]:any}) => Object.keys(dic).map((key)=>dic[key])
+    /****type defined**** */
+    getAppState:()=>I_app_state;
+    id: string;
+    name: string;
+    cartId: string;
+    taxons?: I_ShopClass_taxon[];
+    maxCart?: number;
+    CampaignId?: number;
+    PriceListNum?: number;
+    billboard?: string;
+    products?: I_product;
+    description?: string;
+    icon?:string;
     renderCard = (p) => {
         let { product, renderIn, variantId, count, details, loading, index, style, type } = p;
         let { apis, rsa, actionClass, msfReport, cart } = this.getAppState();
@@ -83,7 +87,6 @@ export default class ShopClass implements I_ShopClass {
         }
         return (<TaxonCard key={taxon.id} {...props} />)
     }
-    dicToArray = (dic:{[key:string]:any}) => Object.keys(dic).map((key)=>dic[key])
     getCartVariants = ()=>{
         function getVariants(parent){
             let res = []
@@ -107,6 +110,60 @@ export default class ShopClass implements I_ShopClass {
         }
         else {return getVariants(cart[cartId])}
     }
+    openCategory = async(id?:string) => {
+        let { apis,rsa, actionClass, msfReport } = this.getAppState(); 
+        let props;
+        if (this.cartId === 'Bundle') {
+            props = { products: this.products }
+        }
+        else if (this.cartId === 'Regular') {
+            let { spreeCategories } = this.getAppState();
+            let products = await this.getCategoryProducts(id);
+            let { billboard, name, description } = spreeCategories.dic[id];
+            return { billboard, products, description }
+        }
+        else {
+            if (!this.products) {
+                if (this.taxons) {
+                    this.products = [...this.taxons]
+                }
+                else {
+                    this.products = await apis.request({
+                        api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
+                        parameter: { id: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
+                        cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'campaigns.campaignProducts.item_' + this.cartId }
+                    });
+                }
+            }
+            return { billboard: this.billboard, products: this.products, description: this.description, title: this.name, isTaxon: !!this.taxons }
+        }
+
+        msfReport({ actionName: 'open category', actionId: 4, targetName: res.title, targetId: id, tagName: 'kharid', eventName: 'page view' })
+        let buttons = actionClass.getHeaderIcons({ cart: true })
+        rsa.addModal({
+            id: 'shop-class-category',
+            position: 'fullscreen',
+            body: { render: () => this.getCategory(res) },
+            header: { title: res.title, buttons }
+        })
+    }
+    payment = async (obj:I_shippingOptions) => {
+        //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
+        let { rsa, actionClass } = this.getAppState();
+        let result = await this.sabt(obj);
+        if (typeof result === 'object') {
+            let { orderNumber } = result;
+            rsa.removeModal('all');
+            actionClass.removeCartTab(this.cartId)
+            actionClass.openPopup('sefareshe-ersal-shode-baraye-vizitor', { orderNumber });
+            return true
+        }
+        else { return false }
+    }
+    
+    /******** */
+    
+    
     //جمع قیمت سبد خرید بدون تخفیف
     getCartVariantsTotal = (cartVariants:I_cartVariant[]) => {
         let total = 0;
@@ -115,15 +172,11 @@ export default class ShopClass implements I_ShopClass {
         }
         return total;
     }
-    getAmounts = (shippingOptions, container) => {
-        let { cart } = this.getAppState();
-        let cartTab = cart[this.cartId];
-        if (!cartTab) { return {} }
-        let cartVariants = this.getCartVariants();
-        if (this.cartId === 'Bundle') { return this.getAmounts_Bundle({cartVariants, shippingOptions, container}) }
-        else { return this.getAmounts_all({shippingOptions, container}) }
+    getAmounts = (shippingOptions:I_shippingOptions, container?:string) => {
+        if (this.cartId === 'Bundle') { return this.getAmounts_Bundle(shippingOptions, container) }
+        else { return this.getAmounts_all(shippingOptions, container) }
     }
-    getAmounts_all({shippingOptions, container}) {
+    getAmounts_all(shippingOptions:I_shippingOptions, container?:string) {
         let { actionClass } = this.getAppState();
         let cartVariants = this.getCartVariants();
         let total = this.getCartVariantsTotal(cartVariants)
@@ -144,12 +197,13 @@ export default class ShopClass implements I_ShopClass {
         }
         return { total, discounts, payment: DocumentTotal, ClubPoints }
     }
-    getAmounts_Bundle = ({cartItems, shippingOptions, container}) => {
+    getAmounts_Bundle = (shippingOptions:I_shippingOptions, container?:string) => {
         let { actionClass, backOffice } = this.getAppState();
         let { PayDueDate_options } = backOffice;
+        let cartVariants = this.getCartVariants();
         let total = 0;
-        for (let i = 0; i < cartItems.length; i++) {
-            let { count, product } = cartItems[i];
+        for (let i = 0; i < cartVariants.length; i++) {
+            let { count, product } = cartVariants[i];
             let price = product.price / (1 - (12 / 100))
             total += count.packQty * price;
         }
@@ -290,22 +344,6 @@ export default class ShopClass implements I_ShopClass {
         //   }
         // }
     }
-    payment = async (obj) => {
-        //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
-        let { rsa, actionClass } = this.getAppState();
-        let result;
-        //if (this.cartId === 'Bundle') { result = obj.SettleType !== 2 ? await this.pardakht(obj) : await this.sabt(obj) }
-        if (this.cartId === 'Bundle') { result = await this.sabt(obj) }
-        else { result = await this.sabt(obj); }
-        if (typeof result === 'object') {
-            let { orderNumber } = result;
-            rsa.removeModal('all');
-            actionClass.removeCartTab(this.cartId)
-            actionClass.openPopup('sefareshe-ersal-shode-baraye-vizitor', { orderNumber });
-            return true
-        }
-        else { return result }
-    }
     sabt = async (obj) => {
         //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
         let { baseUrl } = this.getAppState();
@@ -361,7 +399,7 @@ export default class ShopClass implements I_ShopClass {
             SettleType, PaymentTime, DeliveryType, PayDueDate
         }
     }
-    getMarketingLines = (cartVariants) => {
+    getMarketingLines = (cartVariants:I_cartVariant[]) => {
         if (this.cartId === 'Bundle') { return this.getMarketingLiens_Bundle(cartVariants) }
         else { return cartVariants.map((o:I_cartVariant)=>{return {ItemCode:o.variantId,ItemQty:o.count}}) }
     }
@@ -385,40 +423,23 @@ export default class ShopClass implements I_ShopClass {
             }
         })
     }
-    getPaymentButtonText = (shippingOptions) => {
+    getPaymentButtonText = (shippingOptions:I_shippingOptions) => {
         if (this.cartId === 'Bundle') { return shippingOptions.SettleType !== 2 ? 'پرداخت' : 'ثبت' }
         else { return 'ارسال برای ویزیتور' }
     }
-    getCategory = ({ products, billboard, description, isTaxon }) => {
-        if (isTaxon) {
-            return (
-                <CategoryView
-                    renderProductCard={(product, index, onFetchProducts) => this.renderTaxonCard({ taxon: product, index, renderIn: 'category', onFetchProducts, taxonId: product.id })}
-                    billboard={billboard} products={products} description={description}
-                />
-            )
+    getCategory = ({ products }) => {
+        let props = {billboard:this.billboard,description:this.description}
+        if (this.taxons) {
+            let renderProductCard = (product, index) => this.renderTaxonCard({ 
+                taxon: product, index, renderIn: 'category', taxonId: product.id 
+            })
+            return (<CategoryView {...props} renderProductCard={renderProductCard} products={products}/>)
         }
         else {
-            return (
-                <CategoryView
-                    renderProductCard={(product, index) => this.renderCard({ product, index, renderIn: 'category' })}
-                    billboard={billboard} products={products} description={description}
-                />
-            )
+            let renderProductCard = (product, index) => this.renderCard({ product, index, renderIn: 'category' })
+            return (<CategoryView {...props} renderProductCard={renderProductCard} products={products}/>)
         }
 
-    }
-    async openCategory(id) {
-        let { rsa, actionClass, msfReport } = this.getAppState();
-        let res = await this.getCategoryProps(id)
-        msfReport({ actionName: 'open category', actionId: 4, targetName: res.title, targetId: id, tagName: 'kharid', eventName: 'page view' })
-        let buttons = actionClass.getHeaderIcons({ cart: true })
-        rsa.addModal({
-            id: 'shop-class-category',
-            position: 'fullscreen',
-            body: { render: () => this.getCategory(res) },
-            header: { title: res.title, buttons }
-        })
     }
     async getCategoryProducts(id, count) {
         let { apis } = this.getAppState();
@@ -426,34 +447,6 @@ export default class ShopClass implements I_ShopClass {
             api: 'kharid.getCategoryProducts', parameter: { id, count }, description: 'دریافت محصولات دسته بندی', def: [],
             cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'categories.categoryProducts.item_' + id + (count ? count : '') }
         });
-    }
-    async getCategoryProps(id) {
-        let { apis } = this.getAppState();
-        if (this.cartId === 'Bundle') {
-            return { billboard: this.billboard, products: this.products, description: this.description, title: this.name }
-        }
-        else if (this.cartId === 'Regular') {
-            let { spreeCategories } = this.getAppState();
-            let products = await this.getCategoryProducts(id);
-            let { billboard, name, description } = spreeCategories.dic[id];
-            return { billboard, products, description, title: name }
-        }
-        else {
-            if (!this.products) {
-                if (this.taxons) {
-                    this.products = [...this.taxons]
-                }
-                else {
-                    this.products = await apis.request({
-                        api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
-                        parameter: { id: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
-                        cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'campaigns.campaignProducts.item_' + this.cartId }
-                    });
-                }
-            }
-            return { billboard: this.billboard, products: this.products, description: this.description, title: this.name, isTaxon: !!this.taxons }
-        }
-
     }
     renderCartFactor = (button = true) => {
         let res = this.getAmounts(undefined, 'cart');
@@ -582,89 +575,78 @@ class CategoryView extends Component {
         )
     }
 }
-type I_TaxonCard = {}
+type I_TaxonCard = {taxon:I_ShopClass_taxon,cartId:string,renderIn:I_shopRenderIn,renderProductCard:any}
 function TaxonCard(props:I_TaxonCard) {
-    let {apis}:I_app_state = useContext(appContext)
-    function click(){
-        let products = await apis.request({
-            api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
-            parameter: { id: taxon.id, cartId: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
-            cache: { time: 30 * 24 * 60 * 60 * 1000, name: `campaigns.campaignProducts.item_${this.cartId}_${taxon.id}` }
-        });
-    }
-    not_has_products_layout() {
-        let { loading, onClick, taxon } = this.props;
-        return <RVD loading={loading} layout={{ className: 'p-12 theme-box-shadow', onClick, html: taxon.name, }} />
-    }
-    has_products_layout() {
-        let { taxon, renderProductCard, title, errors, renderIn, cartId, cart, hasErrors } = this.props;
-        let products_layout;
-        let cartTab = cart[cartId] || {};
-        let cartLength = Object.keys(cartTab.items || {}).length - hasErrors.length;
-        if (renderIn === 'cart') {
-            let cartItems = cartTab.items[taxon.id].items
-            let products = taxon.products.filter((o) => {
-                let variantIds = o.variants.map((o) => o.id)
-                for (let i = 0; i < variantIds.length; i++) {
-                    let variantId = variantIds[i];
-                    if (cartItems[variantId]) { return true }
-                }
-                return false
-            })
-            products_layout = products.map((o, i) => {
-                return { html: renderProductCard({ ...o, groupDicount: 0.5 }, i) }
-            })
-        }
-        else {
-            products_layout = taxon.products.map((o, i) => { return { html: renderProductCard(o, i) } })
-        }
+    let {apis,Shop,cart}:I_app_state = useContext(appContext);
+    let storage = AIOStorage('taxonCardToggle');
+    let {taxon,cartId,renderIn,renderProductCard} = props;
+    let [open,setOpen] = useState<boolean>(storage.load({name:'toggle' +taxon.id,def:false}))
+    let [products,setProducts] = useState<I_product[] | undefined>()
+    async function click(){setOpen(!open); storage.save({name:'toggle' +taxon.id,value:!open})}
+    
+    function close_layout() {
         return (
-            <RVD
-                layout={{
-                    className: 'p-12 theme-box-shadow',
-                    column: [
-                        { html: title, size: 24, align: 'v' },
-                        { column: products_layout },
-                        {
-                            show: renderIn === 'cart' && !errors.length, align: 'v',
-                            className: 'fs-10', style: { color: 'green', background: '#fff' },
-                            html: 'تعداد انتخاب شده با شرایط منطبق است'
-                        },
-                        {
-                            show: renderIn === 'cart', align: 'v',
-                            className: 'fs-10', style: { color: 'green', background: '#fff' },
-                            html: `تخفیف گروه کالا ${0.5 * cartLength} درصد`
-                        },
-                        {
-                            gap: 12, align: 'v', className: 'fs-10', style: { color: 'orange' },
-                            row: [
-                                { html: `حداقل مبلغ ${SplitNumber(taxon.min)} ریال` },
-                                { html: `حداکثر مبلغ ${SplitNumber(taxon.max)} ریال` },
-                            ]
-                        },
-                        {
-                            show: !!errors.length, gap: 6,
-                            className: 'fs-10', style: { color: 'red', background: '#fff' },
-                            column: errors.map(({ minValue, maxValue, product, error }) => {
-                                return {
-                                    className: 'p-6 br-6', style: { border: '1px solid red' },
-                                    column: [
-                                        { html: product.name, align: 'v' },
-                                        { html: error, align: 'v' }
-                                    ]
-                                }
-                            })
-                        }
-                    ]
-                }}
+            <RVD 
+                layout={{ 
+                    className: 'p-12 theme-box-shadow', onClick:()=>click(), 
+                    row:[
+                        {size:36,align:'vh',html:<Icon path={mdiChevronLeft} size={.8}/>},
+                        {html: taxon.name,align:'v'}
+                    ] 
+                }} 
             />
         )
     }
-    render() {
-        let { taxon } = this.props;
-        if (!taxon.products) { return this.not_has_products_layout() }
-        return this.has_products_layout()
+    function groupDiscount_layout(){
+        if(renderIn !== 'cart' && renderIn !== 'shipping'){return false}
+        let cartTab = cart[cartId] as I_cartTab_isTaxon;
+        if(!cartTab){return false}
+        let cartLength = Object.keys(cartTab.taxons).length;
+        return {
+            align: 'v',html: `تخفیف گروه کالا ${0.5 * cartLength} درصد`,
+            className: 'fs-10', style: { color: 'green', background: '#fff' }
+        }
     }
+    function taxonName_layout(){
+        return {
+            onClick:(e)=>{e.stopPropagation(); this.click()},
+            row:[
+                {html:<Icon path={mdiChevronDown} size={0.8}/>,align:'vh',size:36},
+                { html: taxon.name, flex: 1, align: 'v' },
+            ]
+        }
+    }
+    function products_layout(){return { column: products.map((o, i) => { return { html: renderProductCard(o, i) } }) }}
+    function range_layout(){
+        let Min = SplitNumber(taxon.min),Max = SplitNumber(taxon.max);
+        return {
+            gap: 12, align: 'v', className: 'fs-10', style: { color: 'orange' },
+            row: [{ html: `حداقل مبلغ ${Min} ریال` },{ html: `حداکثر مبلغ ${Max} ریال` },]
+        }
+    }
+    function open_layout() {
+        return (<RVD layout={{className: 'p-12 theme-box-shadow',column: [taxonName_layout(),products_layout(),groupDiscount_layout(),range_layout()]}}/>)
+    }
+    useEffect(()=>{getProducts()},[cart,open])
+    async function getProducts(){
+        if(renderIn === 'cart' || renderIn === 'shipping'){
+            let cartTab = cart[cartId] as I_cartTab_isTaxon;
+            let productDic = cartTab.taxons[taxon.id].products;
+            let products = []
+            for(let productId in productDic){products.push(productDic[productId])}
+            setProducts(products)
+        }
+        else {
+            let {CampaignId,PriceListNum} = Shop[cartId]
+            let products = await apis.request({
+                api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
+                parameter: { id: taxon.id, cartId, CampaignId, PriceListNum },
+                cache: { time: 30 * 24 * 60 * 60 * 1000, name: `campaigns.campaignProducts.item_${cartId}_${taxon.id}` }
+            });
+            setProducts(products)
+        }
+    }
+    return open && products?open_layout():close_layout()
 }
 type I_RegularCard = { product: I_product, cartId: string, cartName: string, taxonId, CampaignId?: number, renderIn, index?: number, loading?: boolean, onClick?: Function, type?: 'horizontal' | 'vertical' }
 function RegularCard(props: I_RegularCard) {

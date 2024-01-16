@@ -38,13 +38,14 @@ type I_apiFunctions = {
   getProductFullDetail: I_ni,
   getTaxonProducts: I_ni,
   getSpreeProducts: I_ni,
-  getProductsByTaxon:(p:{ taxonId:string, taxonName:string, count?:number,CampaignId?:number, PriceListNum?:number },appState:I_app_state)=>Promise<{result:I_product[]}>
+  getProductsByTaxon: (p: { taxonId: string, taxonName: string, count?: number, CampaignId?: number, PriceListNum?: number }, appState: I_app_state) => Promise<{ result: I_product[] }>
   getModifiedProducts: I_ni,
   getCart: (p: any, appState: I_app_state) => { result: I_state_cart },
   setCart: (cart: I_state_cart, appState: I_app_state) => { result: true }
   dargah: I_ni,
-  pardakhte_kharid:I_ni,
-  bundleData:I_ni
+  pardakhte_kharid: I_ni,
+  bundleData: I_ni,
+  daryafte_ettelaate_bundle: I_ni
 }
 export default function kharidApis({ baseUrl, helper }) {
 
@@ -310,7 +311,7 @@ export default function kharidApis({ baseUrl, helper }) {
       let result = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products, cartName: name } })
       return { result }
     },
-    async getProductsByTaxon({ taxonId, taxonName, count,CampaignId, PriceListNum },{apis}) {
+    async getProductsByTaxon({ taxonId, taxonName, count, CampaignId, PriceListNum }, { apis }) {
       let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { Taxons: taxonId, pageSize: count } });
       let result = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products, cartName: taxonName, CampaignId, PriceListNum } })
       return { result }
@@ -383,7 +384,7 @@ export default function kharidApis({ baseUrl, helper }) {
       try { inStock = !!b1_item.canSell } catch { inStock = 0 }
       try { dropShipping = b1_item.qtyRelation === 4 } catch { dropShipping = 0 }
       try { discountPrice = Math.round(b1_item.price * discountPercent / 100) } catch { discountPrice = 0 }
-      let optionValues = await apis.request({ api: 'kharid.getVariantOptionValues',description:'', parameter: { optionValues: relationships.option_values.data, optionTypes } })
+      let optionValues = await apis.request({ api: 'kharid.getVariantOptionValues', description: '', parameter: { optionValues: relationships.option_values.data, optionTypes } })
       let code = '';
       if (b1_item && b1_item.itemCode) { code = b1_item.itemCode }
       else {
@@ -453,7 +454,7 @@ export default function kharidApis({ baseUrl, helper }) {
       }
 
       let products = spreeResult.data;
-      let { include_optionTypes, include_variants, include_details, include_srcs, meta_optionTypes } = await apis.request({ api: 'kharid.sortIncluded',description:'', parameter: spreeResult });
+      let { include_optionTypes, include_variants, include_details, include_srcs, meta_optionTypes } = await apis.request({ api: 'kharid.sortIncluded', description: '', parameter: spreeResult });
       var finalResult = [];
       for (let product of products) {
         let { relationships } = product;
@@ -508,7 +509,7 @@ export default function kharidApis({ baseUrl, helper }) {
           let { id } = relationships.variants.data[i];
           id = id.toString();
           let variant = await apis.request({
-            api: 'kharid.getProductVariant',description:'',
+            api: 'kharid.getProductVariant', description: '',
             parameter: { include_variant: include_variants[id], include_srcs, b1Result, optionTypes, defaultVariantId, product }
           })
           if (variant === false) { continue }
@@ -554,7 +555,7 @@ export default function kharidApis({ baseUrl, helper }) {
       let details = [];
       let optionTypes = [];
       const defaultVariantId = product.defaultVariant.code;
-      let response = await apis.request({ api: 'kharid.sortIncluded',description:'', parameter: res.data.data });
+      let response = await apis.request({ api: 'kharid.sortIncluded', description: '', parameter: res.data.data });
       let { include_optionTypes, include_details, meta_optionTypes } = response;
       for (let i = 0; i < relationships.option_types.data.length; i++) {
         let { id } = relationships.option_types.data[i];
@@ -635,7 +636,7 @@ export default function kharidApis({ baseUrl, helper }) {
           "canSell": i.canSell
         };
       });
-      let result = await apis.request({ api: 'kharid.getMappedAllProducts',description:'', parameter: { spreeResult: spreeData, b1Result: b1Data, loadType } })
+      let result = await apis.request({ api: 'kharid.getMappedAllProducts', description: '', parameter: { spreeResult: spreeData, b1Result: b1Data, loadType } })
       return { result };
     },
     async getSpreeProducts({ Taxons, pageSize = 250, pageNumber, ids, Name, vitrin }, { userInfo, b1Info, apis }) {
@@ -676,7 +677,7 @@ export default function kharidApis({ baseUrl, helper }) {
         });
       }
 
-      let products = await apis.request({ api: 'kharid.getModifiedProducts',description:'', parameter: { spreeResult: spreeData, b1Result: b1Data, Taxons, vitrin } })
+      let products = await apis.request({ api: 'kharid.getModifiedProducts', description: '', parameter: { spreeResult: spreeData, b1Result: b1Data, Taxons, vitrin } })
       let total = spreeData.meta.total_count
       let result = { products: [], total: 0 };
       if (Array.isArray(products)) { result = { products, total } }
@@ -810,8 +811,139 @@ export default function kharidApis({ baseUrl, helper }) {
       let response = await Axios.get(`${baseUrl}/BackOffice/GetBelexData`);
       let result = response.data.data.taxons;
       return { result }
-    }
+    },
+    async daryafte_ettelaate_bundle(undefined, { apis }) {
+      let allData = await apis.request({
+        api: 'kharid.bundleData', description: 'دریافت دیتای باندل', def: []
+      })
+      var items = [];
+      for (const i1 of allData) {
+        if (i1.items) items.push(i1.items.filter(x => x.itemcodes != null));
+        if (!i1.taxons) continue;
+        for (const i2 of i1.taxons) {
+          if (i2.items) items.push(i2.items.filter(x => x.itemcodes != null));
+          if (!i2.taxons) continue;
+          for (const i3 of i2.taxons) {
+            if (i3.items) items.push(i3.items.filter(x => x.itemcodes != null));
+            if (!i3.taxons) continue;
+            for (const i4 of i3.taxons) {
+              if (i4.items) items.push(i4.items.filter(x => x.itemcodes != null));
+              if (!i4.taxons) continue;
+              for (const i5 of i4.taxons) {
+                if (i5.items) items.push(i5.items.filter(x => x.itemcodes != null));
+                if (!i5.taxons) continue;
+                for (const i6 of i5.taxons) {
+                  if (i6.items) items.push(i6.items.filter(x => x.itemcodes != null));
+                  if (!i6.taxons) continue;
+                  for (const i7 of i6.taxons) {
+                    if (i7.items) items.push(i7.items.filter(x => x.itemcodes != null));
+                    if (!i7.taxons) continue;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      var cableItems = [];
+      for (const i1 of allData.filter(x => x.taxonid === 159)) {
+        if (i1.items) cableItems.push(i1.items.filter(x => x.itemcodes != null));
+        if (!i1.taxons) continue;
+        for (const i2 of i1.taxons) {
+
+          if (i2.items) cableItems.push(i2.items.filter(x => x.itemcodes != null));
+          if (!i2.taxons) continue;
+          for (const i3 of i2.taxons) {
+
+            if (i3.items) cableItems.push(i3.items.filter(x => x.itemcodes != null));
+            if (!i3.taxons) continue;
+            for (const i4 of i3.taxons) {
+
+              if (i4.items) cableItems.push(i4.items.filter(x => x.itemcodes != null));
+              if (!i4.taxons) continue;
+              for (const i5 of i4.taxons) {
+
+                if (i5.items) cableItems.push(i5.items.filter(x => x.itemcodes != null));
+                if (!i5.taxons) continue;
+                for (const i6 of i5.taxons) {
+
+                  if (i6.items) cableItems.push(i6.items.filter(x => x.itemcodes != null));
+                  if (!i6.taxons) continue;
+
+                  for (const i7 of i6.taxons) {
+
+                    if (i7.items) cableItems.push(i7.items.filter(x => x.itemcodes != null));
+                    if (!i7.taxons) continue;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      let products = [];
+      for (const item of items) {
+
+        if (item.length) {
+
+          for (const subItem of item) {
+
+            // var subProduct = {
+            //   name:subItem.itemname,
+            //   id:subItem.itemid,
+            //   finalPrice:subItem.price,
+            //   products:subItem.itemcodes.map(x=>{
+            //     return {mainsku:x.mainsku,name:x.Name,unitPrice:x.Price,qty:x.Qty,step:x.Step,variants:x.Variants}
+            //   })
+            // };
+
+            products.push({
+              cartId: 'Bundle',
+              name: subItem.itemname,
+              clubpoint: subItem.clubpoint,
+              code: subItem.itemcode,
+              price: subItem.price,
+              cableCategory: false,
+              variants: subItem.itemcodes.map(x => {
+                return {
+                  mainsku: x.mainsku, name: x.Name, unitPrice: x.Price, qty: x.Qty, step: x.Step, variants: x.Variants,
+                  id: x.Name
+                }
+              }),
+              src: subItem.imageurl
+            });
+          }
+        }
+      }
+      for (const item of cableItems) {
+
+        if (item.length) {
+
+          for (const subItem of item) {
+
+            products.push({
+              cartId: 'Bundle',
+              clubpoint: subItem.clubpoint,
+              name: subItem.itemname,
+              code: subItem.itemcode,
+              price: subItem.price,
+              cableCategory: true,
+              variants: subItem.itemcodes.map(x => {
+                return {
+                  mainsku: x.mainsku, name: x.Name, unitPrice: x.Price, qty: x.Qty, step: x.Step, variants: x.Variants,
+                  id: x.Name
+                }
+              }),
+              src: subItem.imageurl
+            });
+          }
+        }
+      }
+      let result = products
+      return { result }
+    },
   }
+
   return apiFunctions
 }
 

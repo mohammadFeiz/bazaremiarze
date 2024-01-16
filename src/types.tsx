@@ -252,18 +252,38 @@ export type I_app_state = {
 export type I_state_spreeCategories = { icon_type: I_spreeCategory[], slider_type: I_spreeCategory[], dic: {} }
 export type I_state_Shop = {[shopId:string]:I_ShopClass}
 /////cart
-export type I_state_cart = {[cartId:string]:(I_cartTab | I_cartTab_isTaxon)}
+export type I_state_cart = {[cartId:string]:(I_cartTab | I_cartTab_taxon | I_cartTab_bundle)}
 export type I_cartTab = {products:{[productId:string]:I_cartProduct},isTaxon?:false}
 export type I_cartProduct = {variants:{[variantId:string]:I_cartVariant},product:I_product}
 export type I_cartVariant = {
-    cartId:string,count:number | I_bundleCount,
+    cartId:string,count:number,
     variant:I_variant,variantId:string,
     product:I_product,productId:string,
     taxon?:I_ShopClass_taxon,taxonId?:string,
     error?:string
 };
-export type I_bundleCount = {packQty:number,qtyInPacks:any}
-export type I_cartTab_isTaxon = {taxons:{[taxonId:string]:I_cartTaxon},isTaxon:true}
+export type I_cartTab_bundle = {
+    taxons:{[taxonId:string]:I_cartTab_bundle_taxon}
+}
+export type I_cartTab_bundle_taxon = {
+    taxon:any,taxonId:string,count:number,products:{[productId:string]:I_cartTab_bundle_product}
+}
+export type I_cartTab_bundle_product = {
+    [variantId:string]:I_cartTab_bundle_variant
+}
+export type I_cartTab_bundle_variant = {
+    count:number,step:number
+}
+export type I_bundle_taxon = {
+    cartId:'Bundle',id:string,name:string,price:number,products:I_bundle_product[],image:string
+}
+export type I_bundle_product = { //mainSku => id, unitPrice => price
+    id:string,namer:string,price:number,qty:number,step:number,variants:I_bundle_variant[]
+}
+export type I_bundle_variant = {//Code => id Name=> name Step => step
+    id:string,name:string,
+}
+export type I_cartTab_taxon = {taxons:{[taxonId:string]:I_cartTaxon},isTaxon:true}
 export type I_cartTaxon = {
     taxonId:string,products:{[productId:string]:I_cartProduct},taxon:I_ShopClass_taxon,
     errors?:{product:any,taxonId:string,minValue:number,maxValue:number,error:string}[]
@@ -302,6 +322,7 @@ export type I_product = {
     details:[key:string,value:string][],
     variants:I_variant[]
 };
+export type I_product_bundle = any;
 export type I_product_optionType = {
     id:string,
     name:string,

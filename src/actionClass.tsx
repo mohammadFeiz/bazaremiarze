@@ -9,7 +9,7 @@ import getSvg from './utils/getSvg';
 import Register from './components/register/register';
 import PriceList from './popups/price-list/price-list';
 import BackOffice from './back-office-panel';
-import CountPopup from './components/kharid/product-count/count-popup';
+import {CountPopup} from './shop-class.tsx';
 import PasswordPopup from './components/password-popup/password-popup';
 import OrdersHistory from './components/kharid/orders-history/orders-history';
 import OrderPopup from './components/kharid/order-popup/order-popup';
@@ -28,7 +28,7 @@ import Bazargah from "./pages/bazargah/bazargah";
 import Profile from "./pages/profile/profile";
 import Vitrin from './pages/vitrin/vitrin';
 import taxonCampaign from './taxonCampaign';
-import { I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, I_userInfo, I_B1Info, I_state_cart, I_cartTab, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartTab_isTaxon, I_cartProduct, I_variant, I_actionClass, I_changeCartProps } from './types';
+import { I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, I_userInfo, I_B1Info, I_state_cart, I_cartTab, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartTab_taxon, I_cartProduct, I_variant, I_actionClass, I_changeCartProps } from './types';
 export default class ActionClass implements I_actionClass {
     getState:()=>I_app_state;
     setState:(p:any)=>void
@@ -493,7 +493,7 @@ export default class ActionClass implements I_actionClass {
         let { cart,msfReport,Shop } = this.getState();
         let cartTab = cart[cartId];
         if(taxonId){
-            let newCartTab = cartTab as I_cartTab_isTaxon;
+            let newCartTab = cartTab as I_cartTab_taxon;
             let cartTaxon:I_cartTaxon = newCartTab.taxons[taxonId];
             let cartProduct:I_cartProduct = cartTaxon.products[product.id];
             cartProduct = this.removeItem(cartProduct,variantId,'variants')
@@ -561,7 +561,7 @@ export default class ActionClass implements I_actionClass {
         let cartTab = cart[cartId];
         let reportAdd = false;
         if(taxonId){
-            let newCartTab = cartTab as I_cartTab_isTaxon;
+            let newCartTab = cartTab as I_cartTab_taxon;
             if(!newCartTab){newCartTab = {isTaxon:true,taxons:{}}}
             if(!newCartTab.taxons[taxonId]){
                 newCartTab.taxons[taxonId] = {taxonId,products:{}}

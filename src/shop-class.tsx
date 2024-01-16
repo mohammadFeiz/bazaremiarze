@@ -1,8 +1,8 @@
-import React, { Component, Fragment, useContext, useEffect, useState,createRef } from "react";
+import React, { Component, Fragment, useContext, useEffect, useState, createRef, useRef } from "react";
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import AIOStorage from 'aio-storage';
 import { Icon } from '@mdi/react';
-import { mdiMinusThick, mdiPlusThick,mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline } from "@mdi/js";
+import { mdiMinusThick, mdiPlusThick, mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline } from "@mdi/js";
 import Axios from 'axios';
 import SplitNumber from "./npm/aio-functions/split-number";
 import Shipping from "./components/kharid/shipping/shipping";
@@ -14,7 +14,7 @@ import $ from 'jquery';
 import bundleBoxSrc from './images/bundle-box.jpg';
 import SearchBox from './components/search-box/index';
 import appContext from './app-context';
-import { I_ShopClass, I_ShopClass_taxon, I_app_state, I_bundleCount, I_cartProduct, I_cartTab, I_cartTab_isTaxon, I_cartTaxon, I_cartVariant, I_discount, I_product, I_shippingOptions, I_shopRenderIn, I_state_cart, I_variant } from "./types";
+import { I_ShopClass, I_ShopClass_taxon, I_app_state, I_bundleCount, I_cartProduct, I_cartProduct_bundle, I_cartTab, I_cartTab_taxon, I_cartTaxon, I_cartVariant, I_discount, I_product, I_shippingOptions, I_shopRenderIn, I_state_cart, I_variant } from "./types";
 
 
 export default class ShopClass implements I_ShopClass {
@@ -23,9 +23,9 @@ export default class ShopClass implements I_ShopClass {
         this.update(config);
     }
     update(obj) { for (let prop in obj) { this[prop] = obj[prop]; } }
-    dicToArray = (dic:{[key:string]:any}) => Object.keys(dic).map((key)=>dic[key])
+    dicToArray = (dic: { [key: string]: any }) => Object.keys(dic).map((key) => dic[key])
     /****type defined**** */
-    getAppState:()=>I_app_state;
+    getAppState: () => I_app_state;
     id: string;
     name: string;
     cartId: string;
@@ -36,7 +36,7 @@ export default class ShopClass implements I_ShopClass {
     billboard?: string;
     products?: I_product;
     description?: string;
-    icon?:string;
+    icon?: string;
     renderCard = (p) => {
         let { product, renderIn, variantId, count, details, loading, index, style, type } = p;
         let { apis, rsa, actionClass, msfReport, cart } = this.getAppState();
@@ -65,16 +65,21 @@ export default class ShopClass implements I_ShopClass {
     }
     renderPage = (product) => {
         let { actionClass } = this.getAppState()
-        let props = {
-            product,  maxCart: this.maxCart, cartId: this.cartId, CampaignId: this.CampaignId,
-            onShowCart: () => actionClass.openPopup('cart'),
-            //use in bundle
-            onChangeCount: (count) => {
-                actionClass.changeCart({ product, variantId: product.code, count, cartId: this.cartId, taxonId, CampaignId: this.CampaignId })
+        if (this.cartId === 'bundle') {
+            let props = {
+                product, maxCart: this.maxCart, cartId: this.cartId, CampaignId: this.CampaignId,
+                onShowCart: () => actionClass.openPopup('cart'),
             }
+            return <BundlePage {...props} />
         }
-        let Wrapper = this.cartId === 'Bundle' ? BundlePage : RegularPage;
-        return <Wrapper {...props} />
+        else {
+            let props = {
+                product, maxCart: this.maxCart, cartId: this.cartId, CampaignId: this.CampaignId,
+                onShowCart: () => actionClass.openPopup('cart'),
+                //use in bundle
+            }
+            return <RegularPage {...props} />
+        }
     }
     renderTaxonCard = (p) => {
         let { taxon, renderIn, index, , errors = [], hasErrors = [] } = p;
@@ -87,14 +92,14 @@ export default class ShopClass implements I_ShopClass {
         }
         return (<TaxonCard key={taxon.id} {...props} />)
     }
-    getCartVariants = ()=>{
-        function getVariants(parent){
+    getCartVariants = () => {
+        function getVariants(parent) {
             let res = []
-            for(let productId in parent.products){
-                let {variants,product} = parent.products[productId]
-                for(let variantId in variants){
-                    let {count,variant} = variants[variantId]
-                    res.push({cartId,productId,variantId,product,variant,count,taxon:parent.taxon,taxonId:parent.taxonId})
+            for (let productId in parent.products) {
+                let { variants, product } = parent.products[productId]
+                for (let variantId in variants) {
+                    let { count, variant } = variants[variantId]
+                    res.push({ cartId, productId, variantId, product, variant, count, taxon: parent.taxon, taxonId: parent.taxonId })
                 }
             }
             return res
@@ -102,26 +107,26 @@ export default class ShopClass implements I_ShopClass {
         let { cart } = this.getAppState();
         let cartId = this.cartId;
         if (!cart[cartId]) { return [] }
-        if(this.taxons){
+        if (this.taxons) {
             let res = []
-            let cartTab = cart[cartId] as I_cartTab_isTaxon;
-            for(let taxonId in cartTab.taxons){res = [...res,getVariants(cartTab.taxons[taxonId])]}
+            let cartTab = cart[cartId] as I_cartTab_taxon;
+            for (let taxonId in cartTab.taxons) { res = [...res, getVariants(cartTab.taxons[taxonId])] }
             return res
         }
-        else {return getVariants(cart[cartId])}
+        else { return getVariants(cart[cartId]) }
     }
-    openCategory = async(id?:string,name?:string) => {
-        let { apis,rsa, actionClass, msfReport } = this.getAppState(); 
+    openCategory = async (id?: string, name?: string) => {
+        let { apis, rsa, actionClass, msfReport } = this.getAppState();
         let products;
         let taxonId = id || this.cartId;
         let taxonName = name || this.name;
         if (this.cartId === 'Bundle') {
-            products = this.products 
+            products = this.products
         }
-        else{
+        else {
             products = await apis.request({
                 api: 'kharid.getProductsByTaxon', description: 'دریافت محصولات تکزون', def: [],
-                parameter: { taxonId,taxonName, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
+                parameter: { taxonId, taxonName, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
                 cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'taxon_' + taxonId }
             });
         }
@@ -131,22 +136,24 @@ export default class ShopClass implements I_ShopClass {
         rsa.addModal({
             id: 'shop-class-category',
             position: 'fullscreen',
-            body: { render: () => {
-                if (this.taxons) {
-                    let renderProductCard = (product, index) => this.renderTaxonCard({ 
-                        taxon: product, index, renderIn: 'category', taxonId: product.id 
-                    })
-                    return (<CategoryView {...props} renderProductCard={renderProductCard} products={products}/>)
+            body: {
+                render: () => {
+                    if (this.taxons) {
+                        let renderProductCard = (product, index) => this.renderTaxonCard({
+                            taxon: product, index, renderIn: 'category', taxonId: product.id
+                        })
+                        return (<CategoryView {...props} renderProductCard={renderProductCard} products={products} />)
+                    }
+                    else {
+                        let renderProductCard = (product, index) => this.renderCard({ product, index, renderIn: 'category' })
+                        return (<CategoryView {...props} renderProductCard={renderProductCard} products={products} />)
+                    }
                 }
-                else {
-                    let renderProductCard = (product, index) => this.renderCard({ product, index, renderIn: 'category' })
-                    return (<CategoryView {...props} renderProductCard={renderProductCard} products={products}/>)
-                }
-            } },
+            },
             header: { title: taxonName, buttons }
         })
     }
-    payment = async (obj:I_shippingOptions) => {
+    payment = async (obj: I_shippingOptions) => {
         //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
         let { rsa, actionClass } = this.getAppState();
         let result = await this.sabt(obj);
@@ -159,23 +166,23 @@ export default class ShopClass implements I_ShopClass {
         }
         else { return false }
     }
-    
+
     /******** */
-    
-    
+
+
     //جمع قیمت سبد خرید بدون تخفیف
-    getCartVariantsTotal = (cartVariants:I_cartVariant[]) => {
+    getCartVariantsTotal = (cartVariants: I_cartVariant[]) => {
         let total = 0;
-        for(let i = 0; i < cartVariants.length; i++){
+        for (let i = 0; i < cartVariants.length; i++) {
             total += cartVariants[i].variant.Price
         }
         return total;
     }
-    getAmounts = (shippingOptions:I_shippingOptions, container?:string) => {
+    getAmounts = (shippingOptions: I_shippingOptions, container?: string) => {
         if (this.cartId === 'Bundle') { return this.getAmounts_Bundle(shippingOptions, container) }
         else { return this.getAmounts_all(shippingOptions, container) }
     }
-    getAmounts_all(shippingOptions:I_shippingOptions, container?:string) {
+    getAmounts_all(shippingOptions: I_shippingOptions, container?: string) {
         let { actionClass } = this.getAppState();
         let cartVariants = this.getCartVariants();
         let total = this.getCartVariantsTotal(cartVariants)
@@ -184,7 +191,7 @@ export default class ShopClass implements I_ShopClass {
         let { marketingdetails, DocumentTotal } = factorDetails;
         let { DiscountList, ClubPoints = {} } = marketingdetails;
         let { DiscountValueUsed, DiscountPercentage, PaymentDiscountPercent, PaymentDiscountValue, PromotionValueUsed } = DiscountList;
-        let discounts:I_discount[] = []
+        let discounts: I_discount[] = []
         if (PaymentDiscountPercent && PaymentDiscountValue) {
             discounts.push({ percent: PaymentDiscountPercent, value: PaymentDiscountValue, title: 'تخفیف نحوه پرداخت' })
         }
@@ -196,7 +203,7 @@ export default class ShopClass implements I_ShopClass {
         }
         return { total, discounts, payment: DocumentTotal, ClubPoints }
     }
-    getAmounts_Bundle = (shippingOptions:I_shippingOptions, container?:string) => {
+    getAmounts_Bundle = (shippingOptions: I_shippingOptions, container?: string) => {
         let { actionClass, backOffice } = this.getAppState();
         let { PayDueDate_options } = backOffice;
         let cartVariants = this.getCartVariants();
@@ -209,7 +216,7 @@ export default class ShopClass implements I_ShopClass {
         let payment = total;
         let { PayDueDate, discountCodeInfo, giftCodeInfo } = shippingOptions || {};
         let cashPercent = 100;
-        let discounts:I_discount[] = [];
+        let discounts: I_discount[] = [];
         if (PayDueDate) {
             let PayDueDateOption = PayDueDate_options.find((o) => o.value === PayDueDate);
             let percent = PayDueDateOption.discountPercent;
@@ -244,12 +251,12 @@ export default class ShopClass implements I_ShopClass {
         let cartTab = cart[this.cartId];
         if (!cartTab) { return [] }
         let cartItems = [];
-        if (this.taxons) {cartItems = this.dicToArray((cartTab as I_cartTab_isTaxon).taxons)}
-        else {cartItems = this.dicToArray((cartTab as I_cartTab).products)}
+        if (this.taxons) { cartItems = this.dicToArray((cartTab as I_cartTab_taxon).taxons) }
+        else { cartItems = this.dicToArray((cartTab as I_cartTab).products) }
         if (this.cartId === 'Bundle') { return this.getCartProducts_Bundle(cartItems, renderIn) }
         else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions) }
     }
-    
+
     getCartProducts_all = (cartItems, renderIn, shippingOptions) => {//notice // shippingOptions here never used
         if (this.taxons) {
             let hasErrors = cartItems.filter((cartItem, i) => {
@@ -260,7 +267,7 @@ export default class ShopClass implements I_ShopClass {
 
                 let taxon = this.taxons.find((o) => o.id === cartItem.taxonId)
                 let errors = cartItem.errors;
-                let props = {taxon,renderIn}
+                let props = { taxon, renderIn }
                 return this.renderTaxonCard(props)
             })
         }
@@ -280,7 +287,7 @@ export default class ShopClass implements I_ShopClass {
     fix(value, v = 0) {
         try { return +value.toFixed(v) }
         catch { return 0 }
-    }   
+    }
     getFactorItems = (shippingOptions, container) => {
         let amounts = this.getAmounts(shippingOptions, container);
         let { total, payment, discounts, ClubPoints } = amounts;
@@ -398,11 +405,11 @@ export default class ShopClass implements I_ShopClass {
             SettleType, PaymentTime, DeliveryType, PayDueDate
         }
     }
-    getMarketingLines = (cartVariants:I_cartVariant[]) => {
+    getMarketingLines = (cartVariants: I_cartVariant[]) => {
         if (this.cartId === 'Bundle') { return this.getMarketingLiens_Bundle(cartVariants) }
-        else { return cartVariants.map((o:I_cartVariant)=>{return {ItemCode:o.variantId,ItemQty:o.count}}) }
+        else { return cartVariants.map((o: I_cartVariant) => { return { ItemCode: o.variantId, ItemQty: o.count } }) }
     }
-    getMarketingLiens_Bundle(cartVariants:I_cartVariant[]) {
+    getMarketingLiens_Bundle(cartVariants: I_cartVariant[]) {
         let list = [];
         for (let j = 0; j < cartVariants.length; j++) {
             let cartVariant = cartVariants[j];
@@ -422,7 +429,7 @@ export default class ShopClass implements I_ShopClass {
             }
         })
     }
-    getPaymentButtonText = (shippingOptions:I_shippingOptions) => {
+    getPaymentButtonText = (shippingOptions: I_shippingOptions) => {
         if (this.cartId === 'Bundle') { return shippingOptions.SettleType !== 2 ? 'پرداخت' : 'ثبت' }
         else { return 'ارسال برای ویزیتور' }
     }
@@ -500,10 +507,10 @@ export default class ShopClass implements I_ShopClass {
 //description
 //products
 //renderProductCard function
-type I_CategoryView = {billboard?:string,description?:string,renderProductCard:Function,products:I_product[]}
-function CategoryView(props:I_CategoryView) {
-    let [searchValue,setSearchValue] = useState<string>('')
-    let {billboard,description,renderProductCard,products} = props
+type I_CategoryView = { billboard?: string, description?: string, renderProductCard: Function, products: I_product[] }
+function CategoryView(props: I_CategoryView) {
+    let [searchValue, setSearchValue] = useState<string>('')
+    let { billboard, description, renderProductCard, products } = props
     function search_layout() {
         return { html: <SearchBox value={searchValue} onChange={(searchValue) => setSearchValue(searchValue)} /> }
     }
@@ -515,95 +522,84 @@ function CategoryView(props:I_CategoryView) {
         if (!description) { return false }
         return { html: description, style: { textAlign: 'right', padding: '0 12px' } }
     }
-    function products_layout(){
-        return {gap: 12,column: getProductsBySearch().map((product, index) => product_layout(product, index))}
+    function products_layout() {
+        return { gap: 12, column: getProductsBySearch().map((product, index) => product_layout(product, index)) }
     }
     function product_layout(product, index) {
         if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
         return { html: renderProductCard(product, index), className: 'of-visible' }
     }
     function getProductsBySearch() {
-        return products.filter((o) => {
-            if (!searchValue) { return true }
-            return o.name.indexOf(searchValue) !== -1
-        })
+        return products.filter((o) => !searchValue || o.name.indexOf(searchValue) !== -1)
     }
-    return (
-        <RVD
-            layout={{
-                className: 'theme-popup-bg',
-                column: [
-                    search_layout(),
-                    {flex: 1, className: 'ofy-auto',gap:12,column: [banner_layout(),description_layout(),products_layout()]},
-                    { size: 12 }
-                ],
-            }}
-        />
-    )
+    function body_layout() {
+        return { flex: 1, className: 'ofy-auto m-b-12', gap: 12, column: [banner_layout(), description_layout(), products_layout()] }
+    }
+    return (<RVD layout={{ className: 'theme-popup-bg', column: [search_layout(), body_layout()] }} />)
 }
-type I_TaxonCard = {taxon:I_ShopClass_taxon,cartId:string,renderIn:I_shopRenderIn,renderProductCard:any}
-function TaxonCard(props:I_TaxonCard) {
-    let {apis,Shop,cart}:I_app_state = useContext(appContext);
+type I_TaxonCard = { taxon: I_ShopClass_taxon, cartId: string, renderIn: I_shopRenderIn, renderProductCard: any }
+function TaxonCard(props: I_TaxonCard) {
+    let { apis, Shop, cart }: I_app_state = useContext(appContext);
     let storage = AIOStorage('taxonCardToggle');
-    let {taxon,cartId,renderIn,renderProductCard} = props;
-    let [open,setOpen] = useState<boolean>(storage.load({name:'toggle' +taxon.id,def:false}))
-    let [products,setProducts] = useState<I_product[] | undefined>()
-    async function click(){setOpen(!open); storage.save({name:'toggle' +taxon.id,value:!open})}
-    
+    let { taxon, cartId, renderIn, renderProductCard } = props;
+    let [open, setOpen] = useState<boolean>(storage.load({ name: 'toggle' + taxon.id, def: false }))
+    let [products, setProducts] = useState<I_product[] | undefined>()
+    async function click() { setOpen(!open); storage.save({ name: 'toggle' + taxon.id, value: !open }) }
+
     function close_layout() {
         return (
-            <RVD 
-                layout={{ 
-                    className: 'p-12 theme-box-shadow', onClick:()=>click(), 
-                    row:[
-                        {size:36,align:'vh',html:<Icon path={mdiChevronLeft} size={.8}/>},
-                        {html: taxon.name,align:'v'}
-                    ] 
-                }} 
+            <RVD
+                layout={{
+                    className: 'p-12 theme-box-shadow', onClick: () => click(),
+                    row: [
+                        { size: 36, align: 'vh', html: <Icon path={mdiChevronLeft} size={.8} /> },
+                        { html: taxon.name, align: 'v' }
+                    ]
+                }}
             />
         )
     }
-    function groupDiscount_layout(){
-        if(renderIn !== 'cart' && renderIn !== 'shipping'){return false}
-        let cartTab = cart[cartId] as I_cartTab_isTaxon;
-        if(!cartTab){return false}
+    function groupDiscount_layout() {
+        if (renderIn !== 'cart' && renderIn !== 'shipping') { return false }
+        let cartTab = cart[cartId] as I_cartTab_taxon;
+        if (!cartTab) { return false }
         let cartLength = Object.keys(cartTab.taxons).length;
         return {
-            align: 'v',html: `تخفیف گروه کالا ${0.5 * cartLength} درصد`,
+            align: 'v', html: `تخفیف گروه کالا ${0.5 * cartLength} درصد`,
             className: 'fs-10', style: { color: 'green', background: '#fff' }
         }
     }
-    function taxonName_layout(){
+    function taxonName_layout() {
         return {
-            onClick:(e)=>{e.stopPropagation(); this.click()},
-            row:[
-                {html:<Icon path={mdiChevronDown} size={0.8}/>,align:'vh',size:36},
+            onClick: (e) => { e.stopPropagation(); this.click() },
+            row: [
+                { html: <Icon path={mdiChevronDown} size={0.8} />, align: 'vh', size: 36 },
                 { html: taxon.name, flex: 1, align: 'v' },
             ]
         }
     }
-    function products_layout(){return { column: products.map((o, i) => { return { html: renderProductCard(o, i) } }) }}
-    function range_layout(){
-        let Min = SplitNumber(taxon.min),Max = SplitNumber(taxon.max);
+    function products_layout() { return { column: products.map((o, i) => { return { html: renderProductCard(o, i) } }) } }
+    function range_layout() {
+        let Min = SplitNumber(taxon.min), Max = SplitNumber(taxon.max);
         return {
             gap: 12, align: 'v', className: 'fs-10', style: { color: 'orange' },
-            row: [{ html: `حداقل مبلغ ${Min} ریال` },{ html: `حداکثر مبلغ ${Max} ریال` },]
+            row: [{ html: `حداقل مبلغ ${Min} ریال` }, { html: `حداکثر مبلغ ${Max} ریال` },]
         }
     }
     function open_layout() {
-        return (<RVD layout={{className: 'p-12 theme-box-shadow',column: [taxonName_layout(),products_layout(),groupDiscount_layout(),range_layout()]}}/>)
+        return (<RVD layout={{ className: 'p-12 theme-box-shadow', column: [taxonName_layout(), products_layout(), groupDiscount_layout(), range_layout()] }} />)
     }
-    useEffect(()=>{getProducts()},[cart,open])
-    async function getProducts(){
-        if(renderIn === 'cart' || renderIn === 'shipping'){
-            let cartTab = cart[cartId] as I_cartTab_isTaxon;
+    useEffect(() => { getProducts() }, [cart, open])
+    async function getProducts() {
+        if (renderIn === 'cart' || renderIn === 'shipping') {
+            let cartTab = cart[cartId] as I_cartTab_taxon;
             let productDic = cartTab.taxons[taxon.id].products;
             let products = []
-            for(let productId in productDic){products.push(productDic[productId])}
+            for (let productId in productDic) { products.push(productDic[productId]) }
             setProducts(products)
         }
         else {
-            let {CampaignId,PriceListNum} = Shop[cartId]
+            let { CampaignId, PriceListNum } = Shop[cartId]
             let products = await apis.request({
                 api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
                 parameter: { id: taxon.id, cartId, CampaignId, PriceListNum },
@@ -612,7 +608,7 @@ function TaxonCard(props:I_TaxonCard) {
             setProducts(products)
         }
     }
-    return open && products?open_layout():close_layout()
+    return open && products ? open_layout() : close_layout()
 }
 type I_RegularCard = { product: I_product, cartId: string, cartName: string, taxonId, CampaignId?: number, renderIn, index?: number, loading?: boolean, onClick?: Function, type?: 'horizontal' | 'vertical' }
 function RegularCard(props: I_RegularCard) {
@@ -801,10 +797,10 @@ function RegularCard(props: I_RegularCard) {
     return type === 'horizontal' ? horizontal_layout() : vertical_layout()
 
 }
-type I_BundleCard = { cartName: string, product: I_product, renderIn: I_shopRenderIn, count: { qtyInPacks: any, count: number }, index?: number,onClick?:Function }
+type I_BundleCard = { cartName: string, product: I_product, renderIn: I_shopRenderIn, count: { qtyInPacks: any, count: number }, index?: number, onClick?: Function }
 function BundleCard(props: I_BundleCard) {
     let { actionClass }: I_app_state = useContext(appContext)
-    let { cartName, product, renderIn, count, index = 0,onClick } = props;
+    let { cartName, product, renderIn, count, index = 0, onClick } = props;
     let [mounted, setMounted] = useState<boolean>(false)
     function title_layout() {
         if (!cartName) { return false }
@@ -895,11 +891,11 @@ function BundleCard(props: I_BundleCard) {
                 className: 'theme-box-shadow theme-card-bg theme-border-radius theme-gap-h p-12 of-visible rvd-rotate-card' + (mounted ? ' mounted' : ''),
                 onClick,
                 column: [
-                    title_layout(),{ size: 6 },
+                    title_layout(), { size: 6 },
                     {
-                        gap:12,row: [
-                            {size: 114, column: [image_layout()]},
-                            {flex: 1,column: [name_layout(),{ size: 6 },detail_layout(),{ flex: 1 },price_layout()]}
+                        gap: 12, row: [
+                            { size: 114, column: [image_layout()] },
+                            { flex: 1, column: [name_layout(), { size: 6 }, detail_layout(), { flex: 1 }, price_layout()] }
                         ]
                     },
                 ]
@@ -907,26 +903,26 @@ function BundleCard(props: I_BundleCard) {
         />
     )
 }
-type I_RegularPage = {product:I_product,onShowCart:Function,cartId:string, taxonId?:string, CampaignId?:number}
-function RegularPage(props:I_RegularPage) {
-    let {product,onShowCart,cartId, taxonId, CampaignId} = props;
-    let [mounted,setMounted] = useState<boolean>(false)
-    let [selectedVariant,setSelectedVariant] = useState<I_variant|undefined>()
-    let [optionValues,setOptionValues] = useState<any>()
-    let [ovs,setOvs] = useState([])
-    let [options,setOptions] = useState([])
-    let [showDetails,setShowDetails] = useState<boolean>(false)
-    let [srcIndex,setSrcIndex] = useState<number>(0)
-    useEffect(()=>{
+type I_RegularPage = { product: I_product, onShowCart: Function, cartId: string, taxonId?: string, CampaignId?: number }
+function RegularPage(props: I_RegularPage) {
+    let { product, onShowCart, cartId, taxonId, CampaignId } = props;
+    let [mounted, setMounted] = useState<boolean>(false)
+    let [selectedVariant, setSelectedVariant] = useState<I_variant | undefined>()
+    let [optionValues, setOptionValues] = useState<any>()
+    let [ovs, setOvs] = useState([])
+    let [options, setOptions] = useState([])
+    let [showDetails, setShowDetails] = useState<boolean>(false)
+    let [srcIndex, setSrcIndex] = useState<number>(0)
+    useEffect(() => {
         setMounted(true)
-        let {ovs,options} = getVariants()
+        let { ovs, options } = getVariants()
         setOvs(ovs)
         setOptions(options)
         let firstVariant = product.inStock ? (product.variants.filter((o) => o.inStock)[0]) : undefined;
         let optionValues = firstVariant ? { ...firstVariant.optionValues } : undefined;
         setOptionValues(optionValues)
         setSelectedVariant(firstVariant)
-    },[])
+    }, [])
     function getVariants() {
         let { variants, optionTypes } = product;
         let optionTypesDict = {}
@@ -953,7 +949,7 @@ function RegularPage(props:I_RegularPage) {
             }
             options.push({ text: str.join(' -- '), value: id, variant: variants[i], style: { height: 36 } })
         }
-        return {ovs,options}
+        return { ovs, options }
     }
     function getVariantBySelected(selected) {
         for (let i = 0; i < product.variants.length; i++) {
@@ -1131,7 +1127,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         };
     }
     function addToCart_layout() {
-        if (!selectedVariant || !selectedVariant.inStock) {return { html: '' }}
+        if (!selectedVariant || !selectedVariant.inStock) { return { html: '' } }
         return {
             column: [
                 { flex: 1 },
@@ -1186,39 +1182,49 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
         };
     }
     if (!this.mounted) { return null }
-    return (<RVD layout={{className: "theme-popup-bg",gap:12,column: [this.body_layout(),this.showCart_layout(),this.footer_layout()]}}/>);
+    return (<RVD layout={{ className: "theme-popup-bg", gap: 12, column: [this.body_layout(), this.showCart_layout(), this.footer_layout()] }} />);
 }
-class BundlePage extends Component {
-    state = {}
-    mounted: boolean;
-    componentDidMount() {
-        this.mounted = true;
-        let { cartItem } = this.props;
-        let count = false;
-        if (cartItem) { count = cartItem.count }
-        else { count = this.getQtyInPacks() }
-        this.setState({ count })
-    }
-    getQtyInPacks() {
-        let { product } = this.props;
-        let { variants } = product;
-        let qtyInPacks = {};
-        let packQty = 0
-        for (let i = 0; i < variants.length; i++) {
-            let variant = variants[i];
-            qtyInPacks[variant.id] = variant.variants.map((o, j) => {
-                return { optionValueId: o.Code, unitPrice: variant.unitPrice, optionValueName: o.Name, count: j === 0 ? variant.qty : 0, step: o.Step }
-            })
+type I_BundeCard = { product: I_product, maxCart?: number }
+function BundlePage(props: I_BundeCard) {
+    let { cart }: I_app_state = useContext(appContext);
+    let { product, maxCart = 40 } = props;
+    let [cartProductBundle, setCartProductBundle] = useState<I_cartProduct_bundle>({ variants: {}, product: props.product, count: 0 })
+    let [mounted, setMounted] = useState<boolean>(false)
+    useEffect(() => {
+        setMounted(true)
+        try {
+            let cartTab = cart.Bundle as I_cartTab;
+            let cartProductBundle: I_cartProduct_bundle = cartTab.products[product.id] as I_cartProduct_bundle;
+            setCartProductBundle(cartProductBundle)
         }
-        return { packQty, qtyInPacks };
-    }
-    changeCount(count) {
+        catch { }
+    }, [])
+    let cartTimeout;
+    // getQtyInPacks() {
+    //     let { product } = this.props;
+    //     let { variants } = product;
+    //     let cartProduct = {product,products:{}};
+    //     let packQty = 0
+    //     for (let i = 0; i < variants.length; i++) {
+    //         let variant = variants[i];
+    //         qtyInPacks[variant.id] = variant.variants.map((o, j) => {
+    //             return { optionValueId: o.Code, unitPrice: variant.unitPrice, optionValueName: o.Name, count: j === 0 ? variant.qty : 0, step: o.Step }
+    //         })
+    //     }
+    //     return { packQty, qtyInPacks };
+    // }
+    function changeCount(count) {
         this.setState({ count });
-        clearTimeout(this.cartTimeout);
-        this.cartTimeout = setTimeout(() => {
-            this.updateCart()
-        }, 1000)
+        clearTimeout(cartTimeout);
+        cartTimeout = setTimeout(() => this.updateCart(), 1000)
     }
+    async updateCart(remove) {
+        let { count } = this.state;
+        let { packQty } = count;
+        let { onChangeCount } = this.props;
+        onChangeCount(packQty === 0 || remove ? 0 : count)
+    }
+
     cartTimeout(cartTimeout: any) {
         throw new Error("Method not implemented.");
     }
@@ -1246,15 +1252,14 @@ class BundlePage extends Component {
             ]
         };
     }
-    changePackQty(v) {
-        let { product, maxCart = 40 } = this.props;
-        let { count } = this.state;
-        let { packQty, qtyInPacks } = count;
-        packQty = packQty || 0;
-        packQty += v;
-        if (packQty < 0) { packQty = 0 }
-        if (packQty > maxCart) { packQty = maxCart }
-        count.packQty = packQty;
+
+    function changePackQty(v) {
+        let newCartProductBundle = JSON.parse(JSON.stringify(cartProductBundle))
+        let { count, variants } = newCartProductBundle;
+        count += v;
+        if (count < 0) { count = 0 }
+        if (count > maxCart) { count = maxCart }
+        newCartProductBundle.count = count;
         for (let i = 0; i < product.variants.length; i++) {
             let variant = product.variants[i];
             let qtyInPack = qtyInPacks[variant.id];
@@ -1451,12 +1456,6 @@ class BundlePage extends Component {
             ],
         };
     }
-    async updateCart(remove) {
-        let { count } = this.state;
-        let { packQty } = count;
-        let { onChangeCount } = this.props;
-        onChangeCount(packQty === 0 || remove ? 0 : count)
-    }
     cart_layout() {
         let { count } = this.state;
         if (!count) { return false }
@@ -1520,184 +1519,161 @@ class BundlePage extends Component {
         );
     }
 }
-class ForoosheVijeSlider extends Component {
-    state = { count: this.props.count, prevCount: this.props.count }
-    render() {
-        let { count, prevCount } = this.state;
-        if (this.props.count !== prevCount) {
-            setTimeout(() => {
-                this.setState({
-                    count: this.props.count,
-                    prevCount: this.props.count
-                })
-            }, 0)
-        }
-        let { optionValueName, totalQty, onChange = () => { }, max, step } = this.props;
-        let percent = (count / totalQty * 100).toFixed(0);
-
-
-        return (
-            <RVD
-                layout={{
-                    column: [
-                        { html: optionValueName, align: 'v', className: 'theme-medium-font-color fs-12 bold' },
-                        {
-
-                            row: [
-                                {
-                                    flex: 1,
-                                    html: (
-                                        <AIOInput
-                                            type='slider'
-                                            attrs={{ style: { padding: '0 30px' } }}
-                                            scaleStep={[max]}
-                                            scaleStyle={(value) => { if (value === max) { return { background: '#2BBA8F' } } }}
-                                            labelStep={[max]}
-                                            labelStyle={(value) => { if (value === max) { return { color: '#2BBA8F', fontSize: 12, top: 43 } } }}
-                                            start={0} direction='left'
-                                            end={totalQty}
-                                            max={max}
-                                            step={step}
-                                            value={count}
-                                            lineStyle={{ height: 4 }}
-                                            showValue={true}
-                                            fillStyle={(index) => {
-                                                if (index === 0) { return { height: 4, background: '#2BBA8F' } }
-                                            }}
-                                            valueStyle={{
-                                                background: '#2BBA8F', height: 14, top: -24,
-                                                display: 'flex', alignItems: 'center', fontSize: 12
-                                            }}
-                                            pointStyle={{ background: '#2BBA8F', width: 16, height: 16, zIndex: 1000 }}
-                                            onChange={(count) => { this.setState({ count }); onChange(count) }}
-                                            after={<div style={{ padding: '0 3px', color: '#666', width: 24, borderRadius: 6, fontSize: 10 }}>{percent + '%'}</div>}
-                                        />
-                                    ),
-                                    align: 'v'
-                                },
-                                // {
-                                //     html:<div style={{background:'#2BBA8F',padding:'0 3px',color:'#fff',width:36,borderRadius:6}}>{count}</div>,align:'vh'
-                                // }
-                            ]
-                        }
-                    ]
-                }}
-            />
-        )
-    }
-}
-
-class CartButton extends Component{
-    static contextType = appContext;
-    openCart(e){
-        e.stopPropagation();
-        let {actionClass} = this.context;
-        let {product} = this.props;
-        actionClass.openPopup('cart',product.cartId)
-    }
-    render(){
-        let {cart,actionClass} = this.context;
-        let {variantId,product,renderIn,onChange = ()=>{},cartId,taxonId,CampaignId} = this.props;
-        if(!product){console.error(`CartButton missing product props`)}
-        if(!product.cartId){console.error(`CartButton missing cartId in product props`)}
-        let cartTab = cart[cartId];
-        let count = 0;
-        if(variantId){
-            if(cartTab){
-                if(taxonId){
-                    if(cartTab.items[taxonId]){
-                        if(cartTab.items[taxonId].items[variantId]){
-                            count = cartTab.items[taxonId].items[variantId].count;    
-                        }
-                    }
-                }
-                else {
-                    if(cartTab.items[variantId]){
-                        count = cartTab.items[variantId].count;    
-                    }
-                }
-            }
-            
-            
-        }
-        else {
-            if(['product','cart','category'].indexOf(renderIn) === -1){
-                console.error('missing varinatId in ProductCard Component due render in cart page or product page')
-            }
-        }
-        let layout;
-        if(!count){
-            layout = {
-                html:()=>(
-                    <button 
-                        onClick={() => {
-                            actionClass.changeCart({variantId,product,count:1,cartId,taxonId,CampaignId})
-                            onChange(1)
-                        }} 
-                        className="button-2"
-                        style={{fontSize:12,height:36,padding:'0 8px'}}
-                    >افزودن به سبد خرید</button>
-                )
-            }
-        }
-        else if(renderIn === 'shipping'){
-            layout = {
-                align:'h',gap:3,className:'fs-12 color3B55A5',onClick:(e)=>this.openCart(e),
-                row:[{html:<Icon path={mdiCart} size={1}/>,align:'vh'},{html:count,align:'v',className:'fs-18'}]
-            }
-        }
-        else{
-            layout={
-                column:[
-                    {show:renderIn === 'product',align:'vh',html:'تعداد در سبد خرید',className:'fs-12 color3B55A5'},
+type I_ForoosheVijeSlider = { count: number, optionValueName: string, totalQty: number, onChange: any, max?: number, step?: number }
+function ForoosheVijeSlider(props: I_ForoosheVijeSlider) {
+    let [count, setCount] = useState<number>(props.count)
+    let { optionValueName, totalQty, onChange = () => { }, max, step } = props;
+    useEffect(() => {
+        setCount(props.count)
+    }, [props.count])
+    let percent = (count / totalQty * 100).toFixed(0);
+    return (
+        <RVD
+            layout={{
+                column: [
+                    { html: optionValueName, align: 'v', className: 'theme-medium-font-color fs-12 bold' },
                     {
-                        html:()=>(
-                            <ProductCount 
-                                value={count} 
-                                onChange={(count) => {
-                                    actionClass.changeCart({product,variantId,count,cartId,taxonId,CampaignId})
-                                    onChange(count)
-                                }} 
-                            />
-                        )
+
+                        row: [
+                            {
+                                flex: 1,
+                                html: (
+                                    <AIOInput
+                                        type='slider'
+                                        attrs={{ style: { padding: '0 30px' } }}
+                                        scaleStep={[max]}
+                                        scaleStyle={(value) => { if (value === max) { return { background: '#2BBA8F' } } }}
+                                        labelStep={[max]}
+                                        labelStyle={(value) => { if (value === max) { return { color: '#2BBA8F', fontSize: 12, top: 43 } } }}
+                                        start={0} direction='left'
+                                        end={totalQty}
+                                        max={max}
+                                        step={step}
+                                        value={count}
+                                        lineStyle={{ height: 4 }}
+                                        showValue={true}
+                                        fillStyle={(index) => {
+                                            if (index === 0) { return { height: 4, background: '#2BBA8F' } }
+                                        }}
+                                        valueStyle={{
+                                            background: '#2BBA8F', height: 14, top: -24,
+                                            display: 'flex', alignItems: 'center', fontSize: 12
+                                        }}
+                                        pointStyle={{ background: '#2BBA8F', width: 16, height: 16, zIndex: 1000 }}
+                                        onChange={(count) => { setCount(count); onChange(count) }}
+                                        after={<div style={{ padding: '0 3px', color: '#666', width: 24, borderRadius: 6, fontSize: 10 }}>{percent + '%'}</div>}
+                                    />
+                                ),
+                                align: 'v'
+                            },
+                            // {
+                            //     html:<div style={{background:'#2BBA8F',padding:'0 3px',color:'#fff',width:36,borderRadius:6}}>{count}</div>,align:'vh'
+                            // }
+                        ]
                     }
                 ]
+            }}
+        />
+    )
+}
+type I_CartButton = { product: I_product, renderIn: I_shopRenderIn, variantId: string, onChange?: Function, cartId: string, taxonId?: string }
+function CartButton(props: I_CartButton) {
+    let { actionClass, cart }: I_app_state = useContext(appContext);
+    let { product, renderIn, variantId, onChange = () => { }, taxonId, cartId } = props;
+    function openCart(e) {
+        e.stopPropagation();
+        actionClass.openPopup('cart', product.cartId)
+    }
+    let count = 0;
+    if (cart[cartId]) {
+        if (taxonId) {
+            let cartTab = cart[cartId] as I_cartTab_taxon
+            if (cartTab.taxons[taxonId]) {
+                if (cartTab.taxons[taxonId].products[product.id]) {
+                    if (cartTab.taxons[taxonId].products[product.id].variants[variantId]) {
+                        count = cartTab.taxons[taxonId].products[product.id].variants[variantId].count as number;
+                    }
+                }
             }
         }
-        return (<RVD layout={layout}/>)
-    }
-}
+        else {
+            let cartTab = cart[cartId] as I_cartTab
+            if (cartTab.products[product.id]) {
+                if (cartTab.products[product.id].variants[variantId]) {
+                    count = cartTab.products[product.id].variants[variantId].count as number;
+                }
+            }
 
-class ProductCount extends Component{
-    static contextType = appContext;
-    constructor(props){
-        super(props);
-        let {value} = this.props;
-        this.state = {value,prevValue:value,popup:false}
+        }
     }
-    change(value,min = this.props.min || 0){
+    let layout;
+    if (!count) {
+        layout = {
+            html: () => (
+                <button
+                    onClick={() => {
+                        actionClass.changeCart({ variantId, product, count: 1, cartId, taxonId })
+                        onChange(1)
+                    }}
+                    className="button-2"
+                    style={{ fontSize: 12, height: 36, padding: '0 8px' }}
+                >افزودن به سبد خرید</button>
+            )
+        }
+    }
+    else if (renderIn === 'shipping') {
+        layout = {
+            align: 'h', gap: 3, className: 'fs-12 color3B55A5', onClick: (e) => openCart(e),
+            row: [{ html: <Icon path={mdiCart} size={1} />, align: 'vh' }, { html: count, align: 'v', className: 'fs-18' }]
+        }
+    }
+    else {
+        layout = {
+            column: [
+                { show: renderIn === 'product', align: 'vh', html: 'تعداد در سبد خرید', className: 'fs-12 color3B55A5' },
+                {
+                    html: () => (
+                        <ProductCount
+                            value={count}
+                            onChange={(count) => {
+                                actionClass.changeCart({ product, variantId, count, cartId, taxonId })
+                                onChange(count)
+                            }}
+                        />
+                    )
+                }
+            ]
+        }
+    }
+    return (<RVD layout={layout} />)
+}
+type I_ProductCount = { value: number, min?: number, max?: number, onChange?: Function }
+function ProductCount(props: I_ProductCount) {
+    let { actionClass, rsa }: I_app_state = useContext(appContext);
+    let [value, setValue] = useState<number>(props.value)
+    let [popup, setPopup] = useState<boolean>(false)
+    let { onChange, max = Infinity } = props;
+    let changeTimeout;
+    useEffect(() => {
+        setValue(props.value)
+    }, [props.value])
+    function change(value, min = props.min || 0) {
         value = +value;
-        if(isNaN(value)){value = 0}
-        let {onChange,max = Infinity} = this.props;
-        this.setState({value});
-        clearTimeout(this.changeTimeout);
-        this.changeTimeout = setTimeout(()=>{
-            if(value > max){value = max}
-            if(value < min){value = min}
+        if (isNaN(value)) { value = 0 }
+        setValue(value);
+        clearTimeout(changeTimeout);
+        changeTimeout = setTimeout(() => {
+            if (value > max) { value = max }
+            if (value < min) { value = min }
             onChange(value)
-        },500)
-        
+        }, 500)
     }
-    changeTimeout(changeTimeout: any) {
-        throw new Error("Method not implemented.");
-    }
-    touchStart(dir,touch,isTouch){
-        if(touch && !isTouch){return}
-        if(!touch && isTouch){return}
-        let {value} = this.state;
-        this.change(value + dir)
-        if(touch){$(window).bind('touchend',$.proxy(this.touchEnd,this))}
-        else{$(window).bind('mouseup',$.proxy(this.touchEnd,this))}
+    function touchStart(dir, touch, isTouch) {
+        if (touch && !isTouch) { return }
+        if (!touch && isTouch) { return }
+        change(value + dir)
+        if (touch) { $(window).bind('touchend', touchEnd) }
+        else { $(window).bind('mouseup', touchEnd) }
         // clearTimeout(this.timeout);
         // clearInterval(this.interval);
         // this.timeout = setTimeout(()=>{
@@ -1707,212 +1683,187 @@ class ProductCount extends Component{
         //     this.change(value + dir,Math.max(min,1))
         //   },60)
         // },800)
-      }
-      touchEnd(){
-        $(window).unbind('touchend',this.touchEnd)
-        $(window).unbind('mouseup',this.touchEnd)
+    }
+    function touchEnd() {
+        $(window).unbind('touchend', touchEnd)
+        $(window).unbind('mouseup', touchEnd)
         // clearTimeout(this.timeout)
         // clearInterval(this.interval) 
-      }
-      openPopup(){
-        let {actionClass,rsa} = this.context;
-        let {value} = this.state;
+    }
+    function openPopup() {
         let config = {
-            onChange:(value)=>{
-                this.change(value);
+            onChange: (value) => {
+                change(value);
                 rsa.removeModal()
             },
-            onRemove:()=>{
-                this.change(0)
+            onRemove: () => {
+                change(0)
                 rsa.removeModal()
             },
-            onClose:()=>{
-                rsa.removeModal()
-            },
+            onClose: () => rsa.removeModal(),
             value,
         }
-        actionClass.openPopup('count-popup',config)
-      }
-    render(){
-        let {value,prevValue} = this.state;
-        let {onChange,max = Infinity,style} = this.props;
-        if(this.props.value !== prevValue){setTimeout(()=>this.setState({value:this.props.value,prevValue:this.props.value}),0)}
-        let touch = 'ontouchstart' in document.documentElement;
-        return (
-            <>
-                <RVD
-                layout={{
-                    childsProps: { align: "vh" },
-                    style:{height:36,...style},
-                    attrs:{onClick:(e)=>e.stopPropagation()},
-                    row: [
-                        {
-                            html: (
-                                <div 
-                                    onMouseDown={(e)=>this.touchStart(1,touch,false)} 
-                                    onTouchStart={(e)=>this.touchStart(1,touch,true)} 
-                                    className={'product-count-button' + (value >= max?' disabled':'')}
-                                >
-                                    <Icon path={mdiPlus} size={1}/>
-                                </div>
-                            ),
-                            align:'vh',
-                            show:onChange!== undefined
-                        },
-                        { 
-                            show:!!value,
-                            flex:1,
-                            html:(
-                                <div
-                                    className='product-count-input'
-                                    onClick={()=>this.openPopup()}
-                                >{value}</div>
-                            )
-                        },
-                        {
-                            html: ()=>(
-                                <div 
-                                    onMouseDown={(e) =>this.touchStart(-1,touch,false)} 
-                                    onTouchStart={(e) =>this.touchStart(-1,touch,true)} 
-                                    className='product-count-button'
-                                >
-                                    <Icon path={mdiMinus} size={1}/>
-                                </div>),
-                            show:value > 1 && onChange!== undefined
-                        },
-                        {
-                            html: ()=>(
-                                <div 
-                                    onClick={(e)=>this.change(0)} 
-                                    className='product-count-button'
-                                >
-                                    <Icon path={mdiTrashCanOutline} size={0.8}/>
-                                </div>
-                            ),
-                            show:value === 1 && onChange!== undefined
-                        },
-                    ] 
-                }}
-            />
-            </>
-        )
+        actionClass.openPopup('count-popup', config)
     }
+    let touch = 'ontouchstart' in document.documentElement;
+    return (
+        <RVD
+            layout={{
+                childsProps: { align: "vh" },
+                style: { height: 36 },
+                attrs: { onClick: (e) => e.stopPropagation() },
+                row: [
+                    {
+                        html: (
+                            <div
+                                onMouseDown={(e) => touchStart(1, touch, false)}
+                                onTouchStart={(e) => touchStart(1, touch, true)}
+                                className={'product-count-button' + (value >= max ? ' disabled' : '')}
+                            >
+                                <Icon path={mdiPlus} size={1} />
+                            </div>
+                        ),
+                        align: 'vh', show: onChange !== undefined
+                    },
+                    {
+                        show: !!value, flex: 1,
+                        html: (<div className='product-count-input' onClick={() => openPopup()} >{value}</div>)
+                    },
+                    {
+                        html: () => (
+                            <div
+                                onMouseDown={(e) => touchStart(-1, touch, false)}
+                                onTouchStart={(e) => touchStart(-1, touch, true)}
+                                className='product-count-button'
+                            >
+                                <Icon path={mdiMinus} size={1} />
+                            </div>),
+                        show: value > 1 && onChange !== undefined
+                    },
+                    {
+                        html: () => (
+                            <div onClick={(e) => change(0)} className='product-count-button'>
+                                <Icon path={mdiTrashCanOutline} size={0.8} />
+                            </div>
+                        ),
+                        show: value === 1 && onChange !== undefined
+                    },
+                ]
+            }}
+        />
+    )
 }
-
-class CountPopup extends Component{
-    dom: React.RefObject<unknown>;
-    constructor(props){
-        super(props);
-        this.dom = createRef();
-        this.state = {value:props.value}
-    }
-    offset(v){
-        let {value} = this.state;
+type I_CountPopup = { value: number, onRemove: any, onChange: any }
+export function CountPopup(props: I_CountPopup) {
+    const dom = useRef<HTMLInputElement>(null)
+    let { onRemove, onChange } = props;
+    let [value, setValue] = useState<any>(props.value)
+    function offset(v) {
         value = +value;
-        if(isNaN(value)){value = 0}
+        if (isNaN(value)) { value = 0 }
         value += v;
-        if(value < 0){value = 0}
+        if (value < 0) { value = 0 }
         return value;
     }
-    change(v){
-        this.eventHandler('window','mouseup',$.proxy(this.mouseup,this));
-        this.setState({value:this.offset(v)});
-        clearTimeout(this.timeout)
-        clearInterval(this.interval)
-        this.timeout = setTimeout(()=>{
-            this.interval = setInterval(()=>{
-                this.setState({value:this.offset(v)});
-            },10);
-        },700)
+    let timeout, interval;
+    function change(v) {
+        eventHandler('window', 'mouseup', mouseup);
+        setValue(offset(v));
+        clearTimeout(timeout)
+        clearInterval(interval)
+        timeout = setTimeout(() => interval = setInterval(() => setValue(offset(v)), 10), 700)
     }
-    timeout(timeout: any) {
-        throw new Error("Method not implemented.");
-    }
-    interval(interval: any) {
-        throw new Error("Method not implemented.");
-    }
-    mouseup(){
-        this.eventHandler('window','mouseup',this.mouseup,'unbind');
+    function mouseup() {
+        this.eventHandler('window', 'mouseup', this.mouseup, 'unbind');
         clearTimeout(this.timeout)
         clearInterval(this.interval)
     }
-    eventHandler(selector, event, action, type = "bind") {
-        var me = {mousedown: "touchstart",mousemove: "touchmove",mouseup: "touchend"};
+    function eventHandler(selector, event, action, type = "bind") {
+        var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" };
         event = "ontouchstart" in document.documentElement ? me[event] : event;
-        var element = typeof selector === "string" ? (selector === "window"? $(window): $(selector)): selector;
+        var element = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
         element.unbind(event, action);
-        if (type === "bind") {element.bind(event, action);}
+        if (type === "bind") { element.bind(event, action); }
     }
-    render(){
-        let {value} = this.state;
-        let {onRemove,onChange} = this.props;
-        let touch = "ontouchstart" in document.documentElement;
-        return (
-            <RVD
-                layout={{
-                    style:{height:'100%',padding:12},
-                    onClick:(e)=>e.stopPropagation(),
-                    column:[
-                        {
-                            gap:3,
-                            row:[
-                                {
-                                    size:48,html:<Icon path={mdiPlusThick} size={1}/>,align:'vh',onClick:()=>this.change(1),
-                                    attrs:{
-                                        [touch?'onTouchStart':'onMouseDown']:()=>this.change(1)
-                                    }
-                                },
-                                {
-                                    flex:1,
-                                    html:(
-                                        <input 
-                                            type='number' value={value} min={0}
-                                            ref={this.dom}
-                                            onChange={(e)=>{
-                                                let val = e.target.value;
-                                                this.setState({value:val});
-                                            }}
-                                            onClick={()=>{
-                                                $(this.dom.current).focus().select()
-                                            }}
-                                            style={{width:'100%',border:'1px solid lightblue',height:36,textAlign:'center',borderRadius:4}}
-                                        />
-                                    )
-                                },
-                                {
-                                    size:48,html:<Icon path={mdiMinusThick} size={1}/>,align:'vh',
-                                    attrs:{
-                                        [touch?'onTouchStart':'onMouseDown']:()=>this.change(-1)
-                                    }
-                                }
-                            ]
-                        },
-                        {size:12},
-                        {
-                            row:[
-                                {
-                                    flex:1,
-                                    html:(
-                                        <button 
-                                            className='button-2' style={{background:'red',border:'none'}}
-                                            onClick={()=>onRemove()}
-                                        >حذف محصول</button>
-                                    )
-                                },
-                                {size:12},
-                                {
-                                    flex:1,
-                                    html:(
-                                        <button onClick={()=>onChange(value)} className='button-2'>
-                                                تایید
-                                        </button>
-                                    )
-                                },
-                            ]
-                        },
-                    ]
-                }}
-            />
-        )
+    let touch = "ontouchstart" in document.documentElement;
+    function changeButton_layout(dir: 1 | -1) {
+        return {
+            size: 48, html: <Icon path={mdiPlusThick} size={1} />, align: 'vh',
+            attrs: { [touch ? 'onTouchStart' : 'onMouseDown']: () => change(dir) }
+        }
+    }
+    function input_layout() {
+        return {
+            flex: 1,
+            html: (
+                <input
+                    type='number' value={value} min={0}
+                    ref={dom}
+                    onChange={(e) => setValue(e.target.value)}
+                    onClick={() => $(dom.current).focus().select()}
+                    style={{ width: '100%', border: '1px solid lightblue', height: 36, textAlign: 'center', borderRadius: 4 }}
+                />
+            )
+        }
+    }
+    return (
+        <RVD
+            layout={{
+                style: { height: '100%', padding: 12 }, onClick: (e) => e.stopPropagation(), gap: 12,
+                column: [
+                    { gap: 3, row: [changeButton_layout(1), input_layout(), changeButton_layout(-1)] },
+                    {
+                        gap: 12, row: [
+                            { flex: 1, html: (<button className='button-2' style={{ background: 'red', border: 'none' }} onClick={() => onRemove()}>حذف محصول</button>) },
+                            { flex: 1, html: (<button onClick={() => onChange(value)} className='button-2'>تایید</button>) }
+                        ]
+                    },
+                ]
+            }}
+        />
+    )
+}
+
+
+
+let cartsample = {
+    "c39839": {
+        "Bundle": {
+            "taxons": {
+                "EXBR0030": {
+                    "taxon": {
+                        "cartId": "Bundle",
+                        "id": "EXBR0030",
+                        "name": "بسته 7 وات 3 کارتنی",
+                        "price": 61715280,
+                        "products": [
+                            {
+                                "id": "2372K3",
+                                "name": "  لامپ 7 وات",
+                                "unitPrice": 233770,
+                                "qty": 300,
+                                "step": 50,
+                                "variants": [
+                                    { "Code": "2372", "Name": "مهتابی", "Step": 50, "QtyCoef": 1, "PriceCoef": 1 },
+                                    { "Code": "2370", "Name": "آفتابی", "Step": 50, "QtyCoef": 1, "PriceCoef": 1 }
+                                ],
+                                "id": "  لامپ 7 وات"
+                            }
+                        ],
+                        "src": "https://spree.burux.com/rails/active_storage/disk/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDVG9JYTJWNVNTSWhhbUowYkdKMU9IcGxiV3AxYmpVemJIbDNPWEIxYUhjME9IWnFaZ1k2QmtWVU9oQmthWE53YjNOcGRHbHZia2tpTjJsdWJHbHVaVHNnWm1sc1pXNWhiV1U5SWpkM0xtcHdaeUk3SUdacGJHVnVZVzFsS2oxVlZFWXRPQ2NuTjNjdWFuQm5CanNHVkRvUlkyOXVkR1Z1ZEY5MGVYQmxTU0lQYVcxaFoyVXZhbkJsWndZN0JsUTZFWE5sY25acFkyVmZibUZ0WlRvS2JHOWpZV3c9IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2tleSJ9fQ==--e1b398d6a5192ee4e3a52494ac8cc3486456c3a9/7w.jpg"
+                    },
+                    "taxonId": "EXBR0030",
+                    "count": 1,
+                    "products": {
+                        "لامپ 7 وات": {
+                            "variants": {
+                                "2372": { count: 300, cartId: 'Bundle', productId: "لامپ 7 وات", variantId: "2372" },
+                                "2370": { count: 0, cartId: 'Bundle', productId: "لامپ 7 وات", variantId: "2370" },
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -948,6 +948,8 @@ export default function kharidApis({baseUrl,helper}) {
         }
       }
       let result = products
+      console.log('bndl',products)
+
       return {result}
     },
   }

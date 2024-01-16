@@ -76,6 +76,13 @@ export default function vitrinApis({ baseUrl, helper }) {
             }
             return { mock: false, result: categories };
         },
+        async v_price_suggestion({variant,price},{userInfo}){
+            let response = await Axios.post(`${baseUrl}/vitrinProductPrice/createByVendor`,{Price:price,B1Code:variant.id,UserId:userInfo.id});
+            let result;
+            if (response.data.isSuccess === true) { result = true }
+            else { result = response.data.message }
+            return { result }
+        },
         async v_miarze_brands() {
             return { mock: true }
         },

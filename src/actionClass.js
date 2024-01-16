@@ -680,6 +680,10 @@ let mins = [
             msfReport({actionName:'open vitrin categories',actionId:19,tagName:'vitrin',eventName:'page view'})
             addModal({body: {render},id: 'categories',header: { title: 'دسته بندی محصولات' }})
         }
+        else if(type === 'vitrin-price-suggestion'){
+            let {render} = parameter;
+            addModal({body: {render},id: type,header: { title: 'گزارش اشکال قیمت' }})
+        }
         else if (type === 'profile') {
             let { userInfo,Login,updateProfile} = this.getProps();
             msfReport({actionName:'open profile',actionId:20,tagName:'profile',eventName:'page view'})

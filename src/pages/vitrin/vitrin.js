@@ -493,6 +493,7 @@ class ProductCard extends Component {
     getSelectedVariantIds(){
         let {vitrin} = this.context,{vitrinSelected} = vitrin;
         let {product} = this.props;
+        if(!vitrinSelected){return []}
         let res = vitrinSelected[product.id]
         if(!res){return []}
         return res.variantIds; 
@@ -593,6 +594,18 @@ class ProductPage extends Component{
             ]
         }
     }
+    openPopup(variant) {
+        let {apis,rsa,actionClass} = this.context;
+        actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion onSubmit={(price)=>{
+            apis.request({
+                api:'vitrin.v_price_suggestion',
+                description:'پیشنهاد قیمت ویترین',
+                parameter:{variant,price},
+                message:{success:true},
+                onSuccess:()=>rsa.removeModal()
+            })
+        }}/>})
+    }
     buttons_layout(variant){
         let {vitrin} = this.context;
         let { product } = this.props;
@@ -603,7 +616,7 @@ class ProductPage extends Component{
             row: [
                 {html: (<button className={'v-product-page-add-button' + (selected?' selected':'')} onClick={() => vitrin.updateVitrinSelected(product,variant.id)}>{text}</button>)},
                 { flex: 1 },
-                {html: (<button className='v-product-card-price-problem' onClick={() => this.openPopup()}>با قیمت موافق نیستم</button>)}
+                {html: (<button className='v-product-card-price-problem' onClick={() => this.openPopup(variant)}>با قیمت موافق نیستم</button>)}
             ]
         }
     }
@@ -713,4 +726,36 @@ function ProductError(type,parameter){
         }
     }
     $$[type]()   
+}
+
+function VitrinPriceSuggestion({onSubmit}){
+    let [price,setPrice] = useState('');
+    function submit(){
+        if(!price){return}
+        onSubmit(price)
+    }
+    function description_layout(){
+        return {
+            html:'بابت اتفاق پیش آمده متاسفیم. ما همواره در حال بررسی قیمت ها و ارائه قیمت رقابتی در بازار ِآنلاین هستیم. قیمت پیشنهادی خود را وارد کنید. در اسرع وقت کارشناسان ما قیمت پیشنهادی شما رو بررسی خواهند کرد'
+        }
+    }
+    function input_layout(){
+        return {
+            html:(
+                <AIOInput className='w-100' after='تومان'
+                    type='number' placeholder='قیمت پیشنهادی شما'
+                    value={price}
+                    onChange={(price)=>setPrice(price)}
+                />
+            )
+        }
+    }
+    function submit_layout(){
+        return {
+            html:(
+                <button disabled={!price} className='button-2' onClick={()=>submit()}>تایید</button>
+            )
+        }
+    }
+    return (<RVD layout={{className:'p-12',gap:12,column:[description_layout(),input_layout(),submit_layout()]}}/>)
 }

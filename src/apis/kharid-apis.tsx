@@ -38,6 +38,7 @@ type I_apiFunctions = {
   getProductFullDetail: I_ni,
   getTaxonProducts: I_ni,
   getSpreeProducts: I_ni,
+  getProductsByTaxon:(p:{ taxonId:string, taxonName:string, count?:number,CampaignId?:number, PriceListNum?:number },appState:I_app_state)=>Promise<{result:I_product[]}>
   getModifiedProducts: I_ni,
   getCart: (p: any, appState: I_app_state) => { result: I_state_cart },
   setCart: (cart: I_state_cart, appState: I_app_state) => { result: true }
@@ -307,6 +308,11 @@ export default function kharidApis({ baseUrl, helper }) {
       let { name } = Shop.Regular;
       let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { Taxons: id.toString(), pageSize: count } });
       let result = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products, cartName: name } })
+      return { result }
+    },
+    async getProductsByTaxon({ taxonId, taxonName, count,CampaignId, PriceListNum },{apis}) {
+      let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { Taxons: taxonId, pageSize: count } });
+      let result = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products, cartName: taxonName, CampaignId, PriceListNum } })
       return { result }
     },
     async preOrders(undefined, { userInfo }) {

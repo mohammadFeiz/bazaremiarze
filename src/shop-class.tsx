@@ -110,41 +110,40 @@ export default class ShopClass implements I_ShopClass {
         }
         else {return getVariants(cart[cartId])}
     }
-    openCategory = async(id?:string) => {
+    openCategory = async(id?:string,name?:string) => {
         let { apis,rsa, actionClass, msfReport } = this.getAppState(); 
-        let props;
+        let products;
+        let taxonId = id || this.cartId;
+        let taxonName = name || this.name;
         if (this.cartId === 'Bundle') {
-            props = { products: this.products }
+            products = this.products 
         }
-        else if (this.cartId === 'Regular') {
-            let { spreeCategories } = this.getAppState();
-            let products = await this.getCategoryProducts(id);
-            let { billboard, name, description } = spreeCategories.dic[id];
-            return { billboard, products, description }
+        else{
+            products = await apis.request({
+                api: 'kharid.getProductsByTaxon', description: 'دریافت محصولات تکزون', def: [],
+                parameter: { taxonId,taxonName, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
+                cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'taxon_' + taxonId }
+            });
         }
-        else {
-            if (!this.products) {
-                if (this.taxons) {
-                    this.products = [...this.taxons]
-                }
-                else {
-                    this.products = await apis.request({
-                        api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
-                        parameter: { id: this.cartId, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
-                        cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'campaigns.campaignProducts.item_' + this.cartId }
-                    });
-                }
-            }
-            return { billboard: this.billboard, products: this.products, description: this.description, title: this.name, isTaxon: !!this.taxons }
-        }
-
-        msfReport({ actionName: 'open category', actionId: 4, targetName: res.title, targetId: id, tagName: 'kharid', eventName: 'page view' })
+        let props = { billboard: this.billboard, products, description: this.description, title: this.name }
+        msfReport({ actionName: 'open category', actionId: 4, targetName: taxonName, targetId: id, tagName: 'kharid', eventName: 'page view' })
         let buttons = actionClass.getHeaderIcons({ cart: true })
         rsa.addModal({
             id: 'shop-class-category',
             position: 'fullscreen',
-            body: { render: () => this.getCategory(res) },
-            header: { title: res.title, buttons }
+            body: { render: () => {
+                if (this.taxons) {
+                    let renderProductCard = (product, index) => this.renderTaxonCard({ 
+                        taxon: product, index, renderIn: 'category', taxonId: product.id 
+                    })
+                    return (<CategoryView {...props} renderProductCard={renderProductCard} products={products}/>)
+                }
+                else {
+                    let renderProductCard = (product, index) => this.renderCard({ product, index, renderIn: 'category' })
+                    return (<CategoryView {...props} renderProductCard={renderProductCard} products={products}/>)
+                }
+            } },
+            header: { title: taxonName, buttons }
         })
     }
     payment = async (obj:I_shippingOptions) => {
@@ -427,20 +426,6 @@ export default class ShopClass implements I_ShopClass {
         if (this.cartId === 'Bundle') { return shippingOptions.SettleType !== 2 ? 'پرداخت' : 'ثبت' }
         else { return 'ارسال برای ویزیتور' }
     }
-    getCategory = ({ products }) => {
-        let props = {billboard:this.billboard,description:this.description}
-        if (this.taxons) {
-            let renderProductCard = (product, index) => this.renderTaxonCard({ 
-                taxon: product, index, renderIn: 'category', taxonId: product.id 
-            })
-            return (<CategoryView {...props} renderProductCard={renderProductCard} products={products}/>)
-        }
-        else {
-            let renderProductCard = (product, index) => this.renderCard({ product, index, renderIn: 'category' })
-            return (<CategoryView {...props} renderProductCard={renderProductCard} products={products}/>)
-        }
-
-    }
     async getCategoryProducts(id, count) {
         let { apis } = this.getAppState();
         return await apis.request({
@@ -515,65 +500,46 @@ export default class ShopClass implements I_ShopClass {
 //description
 //products
 //renderProductCard function
-class CategoryView extends Component {
-    constructor(props) {
-        super(props);
-        this.state = { searchValue: '' }
+type I_CategoryView = {billboard?:string,description?:string,renderProductCard:Function,products:I_product[]}
+function CategoryView(props:I_CategoryView) {
+    let [searchValue,setSearchValue] = useState<string>('')
+    let {billboard,description,renderProductCard,products} = props
+    function search_layout() {
+        return { html: <SearchBox value={searchValue} onChange={(searchValue) => setSearchValue(searchValue)} /> }
     }
-    search_layout() {
-        let { searchValue } = this.state;
-        return { html: <SearchBox value={searchValue} onChange={(searchValue) => this.setState({ searchValue })} /> }
-    }
-    banner_layout() {
-        let { billboard } = this.props;
+    function banner_layout() {
         if (!billboard) { return false }
         return { html: <img src={billboard} alt='' width='100%' /> }
     }
-    description_layout() {
-        let { description } = this.props;
+    function description_layout() {
         if (!description) { return false }
         return { html: description, style: { textAlign: 'right', padding: '0 12px' } }
     }
-    product_layout(product, index) {
-        let { searchValue } = this.state;
-        let { renderProductCard } = this.props;
-        if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
-        return { html: renderProductCard(product, index, product.isTaxon ? (products) => { product.products = products; this.setState({}) } : undefined), className: 'of-visible' }
+    function products_layout(){
+        return {gap: 12,column: getProductsBySearch().map((product, index) => product_layout(product, index))}
     }
-    getProductsBySearch(products) {
-        let { searchValue } = this.state;
+    function product_layout(product, index) {
+        if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
+        return { html: renderProductCard(product, index), className: 'of-visible' }
+    }
+    function getProductsBySearch() {
         return products.filter((o) => {
             if (!searchValue) { return true }
             return o.name.indexOf(searchValue) !== -1
         })
     }
-    render() {
-        let { products = [] } = this.props;
-        return (
-            <RVD
-                layout={{
-                    className: 'theme-popup-bg',
-                    column: [
-                        this.search_layout(),
-                        {
-                            flex: 1, className: 'ofy-auto',
-                            column: [
-                                this.banner_layout(),
-                                { size: 12 },
-                                this.description_layout(),
-                                { size: 12 },
-                                {
-                                    gap: 12,
-                                    column: this.getProductsBySearch(products).map((product, index) => this.product_layout(product, index))
-                                }
-                            ]
-                        },
-                        { size: 12 }
-                    ],
-                }}
-            />
-        )
-    }
+    return (
+        <RVD
+            layout={{
+                className: 'theme-popup-bg',
+                column: [
+                    search_layout(),
+                    {flex: 1, className: 'ofy-auto',gap:12,column: [banner_layout(),description_layout(),products_layout()]},
+                    { size: 12 }
+                ],
+            }}
+        />
+    )
 }
 type I_TaxonCard = {taxon:I_ShopClass_taxon,cartId:string,renderIn:I_shopRenderIn,renderProductCard:any}
 function TaxonCard(props:I_TaxonCard) {
@@ -655,7 +621,7 @@ function RegularCard(props: I_RegularCard) {
     let { product, cartId, taxonId, CampaignId, renderIn, cartName, index, loading, onClick, type = 'horizontal' } = props;
     function image_layout() {
         let { srcs = [] } = product;
-        return { size: 116, align: 'vh', html: <img src={srcs[0] || NoSrc} width={'100%'} alt='' /> }
+        return { size: 116, align: 'vh', html: <img src={srcs[0] || NoSrc as string} width={'100%'} alt='' /> }
     }
     function count_layout() {
         let cartTab = cart[cartId];
@@ -929,11 +895,11 @@ function BundleCard(props: I_BundleCard) {
                 className: 'theme-box-shadow theme-card-bg theme-border-radius theme-gap-h p-12 of-visible rvd-rotate-card' + (mounted ? ' mounted' : ''),
                 onClick,
                 column: [
-                    this.title_layout(),{ size: 6 },
+                    title_layout(),{ size: 6 },
                     {
                         gap:12,row: [
-                            {size: 114, column: [this.image_layout()]},
-                            {flex: 1,column: [this.name_layout(),{ size: 6 },this.detail_layout(),{ flex: 1 },this.price_layout()]}
+                            {size: 114, column: [image_layout()]},
+                            {flex: 1,column: [name_layout(),{ size: 6 },detail_layout(),{ flex: 1 },price_layout()]}
                         ]
                     },
                 ]
@@ -941,27 +907,27 @@ function BundleCard(props: I_BundleCard) {
         />
     )
 }
-type I_RegularPage = {product:I_product}
+type I_RegularPage = {product:I_product,onShowCart:Function,cartId:string, taxonId?:string, CampaignId?:number}
 function RegularPage(props:I_RegularPage) {
-    let {product} = props;
+    let {product,onShowCart,cartId, taxonId, CampaignId} = props;
     let [mounted,setMounted] = useState<boolean>(false)
     let [selectedVariant,setSelectedVariant] = useState<I_variant|undefined>()
-    let [optionValues,setOptionValues] = useState<>()
+    let [optionValues,setOptionValues] = useState<any>()
+    let [ovs,setOvs] = useState([])
+    let [options,setOptions] = useState([])
+    let [showDetails,setShowDetails] = useState<boolean>(false)
+    let [srcIndex,setSrcIndex] = useState<number>(0)
     useEffect(()=>{
         setMounted(true)
         let {ovs,options} = getVariants()
+        setOvs(ovs)
+        setOptions(options)
         let firstVariant = product.inStock ? (product.variants.filter((o) => o.inStock)[0]) : undefined;
         let optionValues = firstVariant ? { ...firstVariant.optionValues } : undefined;
-        set
-        this.setState({
-            optionValues, showDetails: true,
-            selectedVariant: firstVariant, srcIndex: 0
-        });
+        setOptionValues(optionValues)
+        setSelectedVariant(firstVariant)
     },[])
-    componentDidMount() {
-        
-    }
-    getVariants() {
+    function getVariants() {
         let { variants, optionTypes } = product;
         let optionTypesDict = {}
         let optionValuesDict = {}
@@ -974,8 +940,8 @@ function RegularPage(props:I_RegularPage) {
                 optionValuesDict[id] = name;
             }
         }
-        let res = [];
-        this.ovs = []
+        let options = [];
+        let ovs = []
 
         for (let i = 0; i < variants.length; i++) {
             let { optionValues, inStock, id } = variants[i];
@@ -983,15 +949,13 @@ function RegularPage(props:I_RegularPage) {
             let str = [];
             for (let prop in optionValues) {
                 str.push(optionTypesDict[prop] + ' : ' + optionValuesDict[optionValues[prop]])
-                this.ovs.push(optionValuesDict[optionValues[prop]]);
+                ovs.push(optionValuesDict[optionValues[prop]]);
             }
-            str = str.join(' -- ')
-            res.push({ text: str, value: id, variant: variants[i], style: { height: 36 } })
+            options.push({ text: str.join(' -- '), value: id, variant: variants[i], style: { height: 36 } })
         }
-        this.options = res;
+        return {ovs,options}
     }
-    getVariantBySelected(selected) {
-        let { product } = this.props;
+    function getVariantBySelected(selected) {
         for (let i = 0; i < product.variants.length; i++) {
             let variant = product.variants[i];
             let { optionValues } = variant;
@@ -1008,43 +972,26 @@ function RegularPage(props:I_RegularPage) {
         }
         return false;
     }
-    changeOptionType(obj) {
-        let { optionValues } = this.state;
-        let keys = Object.keys(obj)
-        for (let i = 0; i < keys.length; i++) {
-            //let key = keys[i];
-            let newSelected;
-            // if(obj[key] === optionValues[key]){
-            //     newSelected = {...optionValues,[key]:undefined};
-            // }
-            // else{
-            newSelected = { ...optionValues, ...obj };
-            //}
-            let variant = this.getVariantBySelected(newSelected);
-            this.setState({
-                optionValues: newSelected,
-                selectedVariant: variant
-            });
-        }
+    function changeOptionType(obj) {
+        let newSelected = { ...optionValues, ...obj };
+        let variant = this.getVariantBySelected(newSelected);
+        setOptionValues(newSelected); setSelectedVariant(variant)
     }
-    body_layout() {
-        let { product } = this.props;
+    function body_layout() {
         let { name, optionTypes, details, srcs } = product;
-        let { srcIndex, selectedVariant } = this.state;
         let code = selectedVariant ? selectedVariant.code : undefined;
         return {
             flex: 1, className: "ofy-auto", gap: 12,
             column: [
-                this.image_layout(name, code, srcs[srcIndex]),
-                this.options_layout(),
-                this.optionTypes_layout(optionTypes),
-                this.details_layout(details),
+                image_layout(name, code, srcs[srcIndex]),
+                options_layout(),
+                optionTypes_layout(optionTypes),
+                details_layout(details),
 
             ],
         };
     }
-    image_layout(name, code, src) {
-        let { product } = this.props, { srcIndex } = this.state;
+    function image_layout(name, code, src) {
         return {
             size: 346, className: "theme-box-shadow theme-card-bg theme-border-radius m-h-12",
             column: [
@@ -1064,18 +1011,15 @@ function RegularPage(props:I_RegularPage) {
             ]
         };
     }
-    options_layout() {
-        let { product } = this.props;
+    function options_layout() {
         if (product.optionTypes.length < 2) { return false }
-        let { selectedVariant } = this.state;
-
         return {
             className: 'theme-card-bg theme-box-shadow theme-border-radius m-h-12', hide_xs: true,
             column: [
                 { size: 12 },
                 {
                     row: [
-                        { html: `(${this.options.length}) انتخاب اقلام موجود`, align: 'v', className: 'p-h-12 theme-medium-font-color fs-14 bold', style: { direction: 'ltr' } },
+                        { html: `(${options.length}) انتخاب اقلام موجود`, align: 'v', className: 'p-h-12 theme-medium-font-color fs-14 bold', style: { direction: 'ltr' } },
                         { flex: 1 }
                     ]
                 },
@@ -1089,18 +1033,14 @@ function RegularPage(props:I_RegularPage) {
                             popover={{ fitHorizontal: true }}
                             value={selectedVariant ? selectedVariant.id : undefined}
                             optionStyle={{ height: 28, fontSize: 12 }}
-                            onChange={(value, obj) => {
-                                this.changeOptionType(obj.option.variant.optionValues)
-                            }}
+                            onChange={(value, obj) => changeOptionType(obj.option.variant.optionValues)}
                         />
                     )
                 }
             ]
-
         }
     }
-    optionTypes_layout(optionTypes) {
-        let { optionValues } = this.state;
+    function optionTypes_layout(optionTypes) {
         if (!optionValues || !optionTypes) { return { html: '' } }
         return {
             className: "theme-card-bg theme-box-shadow theme-border-radius gap-no-color m-h-12 p-12",
@@ -1116,7 +1056,7 @@ function RegularPage(props:I_RegularPage) {
                                 {
                                     className: "ofx-auto", gap: 12,
                                     row: Object.keys(items).filter((o) => {
-                                        return this.ovs.indexOf(items[o]) !== -1
+                                        return ovs.indexOf(items[o]) !== -1
                                     }).map((o) => {
                                         let itemId = o.toString();
                                         let active = false, style;
@@ -1130,7 +1070,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
                                         }
                                         let className = 'fs-12 p-v-3 p-h-12 br-4 product-option-value';
                                         if (active) { className += ' active'; }
-                                        return { html: items[itemId], align: "vh", className, style, onClick: () => this.changeOptionType({ [id]: itemId }) };
+                                        return { html: items[itemId], align: "vh", className, style, onClick: () => changeOptionType({ [id]: itemId }) };
                                     })
                                 }
                             ]
@@ -1140,15 +1080,14 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
             ]
         };
     }
-    details_layout(details) {
-        let { showDetails } = this.state;
+    function details_layout(details) {
         if (!details) { return false }
         return {
             className: "theme-card-bg theme-box-shadow theme-border-radius p-12 m-h-12",
             column: [
                 {
                     size: 36, childsProps: { align: 'v' },
-                    onClick: (() => this.setState({ showDetails: !showDetails })),
+                    onClick: (() => setShowDetails(!showDetails)),
                     className: 'theme-medium-font-color',
                     row: [
                         { size: 24, align: 'vh', html: <Icon path={showDetails ? mdiChevronDown : mdiChevronLeft} size={0.8} /> },
@@ -1170,8 +1109,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
             ]
         };
     }
-    showCart_layout() {
-        let { onShowCart } = this.props;
+    function showCart_layout() {
         return {
             onClick: onShowCart,
             className: 'p-h-12 bgFFF', size: 36, align: 'v',
@@ -1182,22 +1120,18 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
             ]
         }
     }
-    footer_layout() {
+    function footer_layout() {
         return {
             size: 80, style: { boxShadow: '0 0px 6px 1px rgba(0,0,0,.1)' }, className: "p-h-12 bg-fff",
             row: [
-                this.addToCart_layout(),
+                addToCart_layout(),
                 { flex: 1 },
-                this.price_layout()
+                price_layout()
             ],
         };
     }
-    addToCart_layout() {
-        let { product, cartId, taxonId, CampaignId } = this.props;
-        let { selectedVariant } = this.state;
-        if (!selectedVariant || !selectedVariant.inStock) {
-            return { html: '' }
-        }
+    function addToCart_layout() {
+        if (!selectedVariant || !selectedVariant.inStock) {return { html: '' }}
         return {
             column: [
                 { flex: 1 },
@@ -1206,7 +1140,7 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
             ]
         }
     }
-    price_layout() {
+    function price_layout() {
         let { selectedVariant } = this.state;
         if (!selectedVariant || !selectedVariant.inStock) {
             return { column: [{ flex: 1 }, { html: "ناموجود", className: "colorD83B01 bold fs-14" }, { flex: 1 }] };
@@ -1251,23 +1185,8 @@ in product by id = ${this.props.product.id} there is an optionType by id = ${id}
             ],
         };
     }
-    render() {
-        if (!this.mounted) { return null }
-        return (
-            <RVD
-                layout={{
-                    className: "theme-popup-bg",
-                    column: [
-                        { size: 12 },
-                        this.body_layout(),
-                        { size: 12 },
-                        this.showCart_layout(),
-                        this.footer_layout()
-                    ],
-                }}
-            />
-        );
-    }
+    if (!this.mounted) { return null }
+    return (<RVD layout={{className: "theme-popup-bg",gap:12,column: [this.body_layout(),this.showCart_layout(),this.footer_layout()]}}/>);
 }
 class BundlePage extends Component {
     state = {}

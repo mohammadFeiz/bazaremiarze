@@ -119,7 +119,7 @@ export type I_PaydueDate_option = {
 export type I_state_backOffice_accessPhoneNumber = {phoneNumber:string,access:{[field:string]:boolean}};
 //////backOffice
 export type I_shippingOptions = {
-    PaymentTime?:number, PayDueDate?:number, DeliveryType?:number, giftCodeInfo?:any, discountCodeInfo?:any,CampaignId?:number,address?:string
+    PaymentTime?:number, PayDueDate?:number, DeliveryType?:number,SettleType?:number, giftCodeInfo?:any, discountCodeInfo?:any,CampaignId?:number,address?:string
 }
 export type I_marketingLine = {ItemCode:string,ItemQty:number}
 export type I_spreeCategory = { showType:'icon' | 'slider', id:string,active:boolean,billboard?:string,icon?:string,name:string }

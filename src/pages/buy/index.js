@@ -92,7 +92,7 @@ export default class Buy extends Component {
             let {name,icon,id} = o;
             return {
               flex:1,align:'vh',style:{maxWidth:220},
-              onClick:()=>Shop.Regular.openCategory(id),
+              onClick:()=>Shop.Regular.openCategory(id,name),
               // onClick:async ()=>{
               //   let category = await Shop.Regular.getCategoryProps(id)
               //   this.setState({category})
@@ -127,7 +127,7 @@ export default class Buy extends Component {
       column:sliders.map(({name,id,products})=>{
         return {
           className:'of-visible',style:{marginBottom:12},
-          html:()=><CategorySlider title={name} products={products} showAll={()=>Shop.Regular.openCategory(id)}/>
+          html:()=><CategorySlider title={name} products={products} showAll={()=>Shop.Regular.openCategory(id,name)}/>
         }
       })
     }

@@ -99,7 +99,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                 isAdmin,isSuperAdmin,
                 cardCode: userInfo.cardCode,
                 groupName: customer.groupName,
-                itemPrices: b1Info.itemPrices,
+                itemPrices: b1Info.itemPrices.map((o)=>{return {itemCode:o.itemCode,qtyRelation:o.qtyRelation,canSell:o.canSell,manSku:o.mainSku}}),
                 slpcode: customer.slpcode,
                 slpname: customer.slpname,
                 groupCode: customer.groupCode,

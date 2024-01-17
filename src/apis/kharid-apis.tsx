@@ -605,8 +605,9 @@ export default function kharidApis({ baseUrl, helper }) {
     },
     
     async getSpreeProducts({ cartId,taxonId, pageSize = 250, pageNumber, ids, Name }, { userInfo, b1Info, apis,Shop,actionClass }) {
+      let {cardCode} = userInfo,{itemPrices} = b1Info;
       let body = {
-        CardCode: userInfo.cardCode, Taxons:taxonId || cartId, Name, ids, PerPage: pageSize, Page: pageNumber,
+        CardCode: cardCode, Taxons:taxonId || cartId, Name, ids, PerPage: pageSize, Page: pageNumber,
         ProductFields: "id,name,type,sku,slug,default_variant,images,price",
         VariantFields: "id,sku,type,images",
         Include: "default_variant,images"
@@ -618,7 +619,13 @@ export default function kharidApis({ baseUrl, helper }) {
       const spreeProducts:I_spreeProduct[] = spreeResult.data;
       const spreeIncluded:I_spreeIncluded = apis.request({ api: 'kharid.sortIncluded', description: '', parameter: spreeResult });
       
-      let b1Data;
+      let b1Data = itemPrices.map((i) => {
+        return {
+          "itemCode": i.itemCode,
+          "mainSku": i.mainSku,
+          "canSell": i.canSell
+        };
+      });
       let products = await apis.request({ api: 'kharid.getModifiedProducts', description: '', parameter: { spreeProducts,spreeIncluded, b1Result: b1Data } })
       let {CampaignId,PriceListNum} = Shop[cartId];
       let items_for_fixPrice = products.map(({ defaultVariant }) => { return { ItemCode: defaultVariant.id, itemCode: defaultVariant.id, ItemQty: 1, itemQty: 1 }; })

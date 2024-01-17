@@ -75,19 +75,10 @@ export type I_userInfo = {
 
 }
 export type I_B1Info = {
-    itemPrices:any[],//notice
-    salePeople:{
-        mobile:string
-    },
-    customer:{
-        ballance:number,
-        groupName:string,
-        slpcode:string,
-        slpname:string,
-        groupCode:string
-    }
+    itemPrices:{itemCode: any,mainSku: any,canSell: boolean}[],//notice
+    salePeople:{mobile:string},
+    customer:{ballance:number,groupName:string,slpcode:string,slpname:string,groupCode:string}
 }
-
 export type I_register = {
     landlineNumber: string,
     landline: string,

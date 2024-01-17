@@ -75,7 +75,7 @@ export type I_userInfo = {
 
 }
 export type I_B1Info = {
-    itemPrices:{itemCode: any,mainSku: any,canSell: boolean}[],//notice
+    itemPrices:{itemCode: any,mainSku?: any,canSell: boolean,qtyRelation:number}[],//notice
     salePeople:{mobile:string},
     customer:{ballance:number,groupName:string,slpcode:string,slpname:string,groupCode:string}
 }

@@ -619,14 +619,7 @@ export default function kharidApis({ baseUrl, helper }) {
       const spreeProducts:I_spreeProduct[] = spreeResult.data;
       const spreeIncluded:I_spreeIncluded = apis.request({ api: 'kharid.sortIncluded', description: '', parameter: spreeResult });
       
-      let b1Data = itemPrices.map((i) => {
-        return {
-          "itemCode": i.itemCode,
-          "mainSku": i.mainSku,
-          "canSell": i.canSell
-        };
-      });
-      let products = await apis.request({ api: 'kharid.getModifiedProducts', description: '', parameter: { spreeProducts,spreeIncluded, b1Result: b1Data } })
+      let products = await apis.request({ api: 'kharid.getModifiedProducts', description: '', parameter: { spreeProducts,spreeIncluded } })
       let {CampaignId,PriceListNum} = Shop[cartId];
       let items_for_fixPrice = products.map(({ defaultVariant }) => { return { ItemCode: defaultVariant.id, itemCode: defaultVariant.id, ItemQty: 1, itemQty: 1 }; })
       let fixPrice_results:I_fixPrice_return[] = actionClass.fixPrice({ items:items_for_fixPrice, CampaignId, PriceListNum })
@@ -643,8 +636,8 @@ export default function kharidApis({ baseUrl, helper }) {
       if (Array.isArray(products)) { result = { products, total } }
       return { result }
     },
-    async getModifiedProducts(p:{spreeProducts:I_spreeProduct[],spreeIncluded:I_spreeIncluded,b1Result:any},{apis}) {
-      let { spreeProducts,spreeIncluded, b1Result } = p;
+    async getModifiedProducts(p:{spreeProducts:I_spreeProduct[],spreeIncluded:I_spreeIncluded},{apis}) {
+      let { spreeProducts,spreeIncluded } = p;
       let allProducts = [];
       for (const product of spreeProducts) {
         let { relationships } = product;

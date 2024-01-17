@@ -318,7 +318,6 @@ export type I_product = {
     PymntDscnt:number,
     FinalPrice:number, 
     Price:number,
-    price:number,
     optionTypes:I_product_optionType[],
     defaultVariant:I_variant,
     hasFullDetail?:boolean,
@@ -335,7 +334,6 @@ export type I_product_optionType = {
 }
 export type I_variant = {
     id:string,
-    code:string,
     inStock:boolean,
     isDefault:boolean
     B1Dscnt:number,

@@ -7,26 +7,18 @@ import { I_ShopProps, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_va
 type I_chekcCode_return = any;
 type I_updateProductPrice_return = I_product[]
 type I_getCampaigns_return = { cartId: string, name: string, id: string, src: string, CampaignId: number, PriceListNum: number }[];
-type I_getCampaignProducts_return = I_product[]
-type I_getCategoryProducts_return = I_product[]
 type I_getCategories_return = { name: string, id: string }[]
 type I_ni = (p: any, appState?: I_app_state) => any
 type I_apiFunctions = {
   checkCode: (p: { code: string }) => Promise<{ result: I_chekcCode_return }>,
   updateProductPrice: (
-    p: {
-      products: I_product[],
-      CampaignId?: number,
-      PriceListNum?: number,
-      cartName: string
-    },
+    p: {products: I_product[],cartId:string},
     appState: I_app_state
   ) => { result: I_updateProductPrice_return },
   tarikhche_sefareshate_kharid: I_ni,
   mahsoolate_sefareshe_kharid: I_ni,
   getCampaigns: (ids: string[]) => Promise<{ result: I_getCampaigns_return }>,
-  getCampaignProducts: (p: I_ShopProps, appState: I_app_state) => Promise<{ result: I_getCampaignProducts_return }>,
-  getCategoryProducts: (p: { id: string, count?: number }, appState: I_app_state) => Promise<{ result: I_getCategoryProducts_return }>
+  getTaxonProducts:(p:{ taxonId?:string, cartId:string,count?:number }, appState: I_app_state)=>Promise<{result:I_product[]}>
   preOrders: I_ni,
   search: I_ni,
   getCategories: (ids: string[], appState?: I_app_state) => Promise<{ result: I_getCategories_return }>
@@ -36,9 +28,7 @@ type I_apiFunctions = {
   getMappedAllProducts: I_ni,
   payment: I_ni,
   getProductFullDetail: I_ni,
-  getTaxonProducts: I_ni,
   getSpreeProducts: I_ni,
-  getProductsByTaxon: (p: { taxonId: string, taxonName: string, count?: number, CampaignId?: number, PriceListNum?: number }, appState: I_app_state) => Promise<{ result: I_product[] }>
   getModifiedProducts: I_ni,
   getCart: (p: any, appState: I_app_state) => { result: I_state_cart },
   setCart: (cart: I_state_cart, appState: I_app_state) => { result: true }
@@ -59,11 +49,12 @@ export default function kharidApis({ baseUrl, helper }) {
         return { result: response.data.message || response.data.Message }
       }
     },
-    updateProductPrice({ products, CampaignId, PriceListNum, cartName }, { actionClass }) {
+    updateProductPrice({ products, cartId }, { actionClass,Shop }) {
       if (!products.length) { return { result: [] } }
-      let items = products.map(({ defaultVariant }) => { return { ItemCode: defaultVariant.code, itemCode: defaultVariant.code, ItemQty: 1, itemQty: 1 }; })
+      let {CampaignId,PriceListNum} = Shop[cartId];
+      let items = products.map(({ defaultVariant }) => { return { ItemCode: defaultVariant.id, itemCode: defaultVariant.id, ItemQty: 1, itemQty: 1 }; })
       let fixed = actionClass.fixPrice({ items, CampaignId, PriceListNum })
-      let res = products.map((o, i) => { return { ...o, ...fixed[i], cartName } })
+      let res:I_product[] = products.map((o, i) => { return { ...o, ...fixed[i] } })
       return { result: res };
     },
     async tarikhche_sefareshate_kharid(undefined, { userInfo }) {
@@ -300,20 +291,9 @@ export default function kharidApis({ baseUrl, helper }) {
 
       return { result: campaigns };
     },
-    async getCampaignProducts({ id, CampaignId, PriceListNum, name }, { apis }) {
-      let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { Taxons: id } });
-      let result = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products, CampaignId, PriceListNum, cartName: name } });
-      return { result };
-    },
-    async getCategoryProducts({ id, count }, { apis, Shop }) {
-      let { name } = Shop.Regular;
-      let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { Taxons: id.toString(), pageSize: count } });
-      let result = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products, cartName: name } })
-      return { result }
-    },
-    async getProductsByTaxon({ taxonId, taxonName, count, CampaignId, PriceListNum }, { apis }) {
-      let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { Taxons: taxonId, pageSize: count } });
-      let result = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products, cartName: taxonName, CampaignId, PriceListNum } })
+    async getTaxonProducts({ taxonId, cartId,count }, { apis }) {
+      let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { Taxons: taxonId || cartId, pageSize: count } });
+      let result:I_product[] = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products,cartId } })
       return { result }
     },
     async preOrders(undefined, { userInfo }) {
@@ -393,8 +373,8 @@ export default function kharidApis({ baseUrl, helper }) {
         // console.error('b1_item is :', b1_item);
       }
       let result = {
-        id, optionValues, discountPrice, price, inStock, srcs,
-        dropShipping, code, discountPercent, isDefault: defaultVariantId === id
+        id:code, optionValues, discountPrice, price, inStock, srcs,
+        dropShipping, discountPercent, isDefault: defaultVariantId === id
       };
       return { result }
     },
@@ -445,7 +425,7 @@ export default function kharidApis({ baseUrl, helper }) {
           finalResult.push({
             name: item.attributes.name, id: item.id,
             dropShipping, inStock: !!itemFromB1 && !!itemFromB1.canSell, details: [], optionTypes: [], variants: [], srcs,
-            defaultVariant: { code: defaultVariantSku, srcs },
+            defaultVariant: { id: defaultVariantSku, srcs },
             price: 0, discountPrice: 0, discountPercent: 0
           });
         }
@@ -540,10 +520,10 @@ export default function kharidApis({ baseUrl, helper }) {
       let result = Shop[cartId].payment(obj);
       return { result }
     },
-    async getProductFullDetail({ id, code, product }, { b1Info, actionClass, apis }) {
+    async getProductFullDetail(product , { b1Info, actionClass, apis }) {
       //پروداکت رو همینجوری برای اینکه یک چیزی ریترن بشه فرستادم تو از کد و آی دی آبجکت کامل پروداکت رو بساز و ریترن کن
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
-        { Ids: id, PerPage: 250, Include: "variants,option_types,product_properties,images" }
+        { Ids: product.id, PerPage: 250, Include: "variants,option_types,product_properties,images" }
       );
       if (res.data.data.status === 500) { return { result: false } }
       const productResult = res.data.data.data[0];
@@ -554,18 +534,13 @@ export default function kharidApis({ baseUrl, helper }) {
       let variants = [];
       let details = [];
       let optionTypes = [];
-      const defaultVariantId = product.defaultVariant.code;
+      const defaultVariantId = product.defaultVariant.id;
       let response = await apis.request({ api: 'kharid.sortIncluded', description: '', parameter: res.data.data });
       let { include_optionTypes, include_details, meta_optionTypes } = response;
       for (let i = 0; i < relationships.option_types.data.length; i++) {
         let { id } = relationships.option_types.data[i];
         id = id.toString();
-        if (!meta_optionTypes[id]) {
-          // console.error(`in product by id = ${product.id} in relationships.option_types.data[${i}] id is ${id}. but we cannot find this id in meta.filters.option_values`)
-          // console.log('product is', product)
-          // console.log('meta.filters.option_values is', meta_optionTypes)
-          continue;
-        }
+        if (!meta_optionTypes[id]) {continue;}
         let { option_values } = meta_optionTypes[id];
         let { attributes } = include_optionTypes[id];
         let items = {}
@@ -592,12 +567,11 @@ export default function kharidApis({ baseUrl, helper }) {
         if (!sss) { sss = {} }
         let { canSell, qtyRelation } = sss;
         variants.push({
-          id: varId,
           optionValues,
           inStock: !!canSell,
           dropShipping: qtyRelation === 4,
           srcs,
-          code: varSku,
+          id: varSku,
           isDefault: defaultVariantId === varId,
           ...price
         });
@@ -614,30 +588,6 @@ export default function kharidApis({ baseUrl, helper }) {
       product.variants = variants;
       product.optionTypes = optionTypes;
       return { result: product };
-    },
-    async getTaxonProducts({ loadType, Taxons, Name }, { userInfo, b1Info, apis }) {
-      let res = await Axios.post(`${baseUrl}/Spree/Products`,
-        {
-          CardCode: userInfo.cardCode, Taxons, PerPage: 250, Skame: Name,
-          Include: loadType === 0 ? "default_variant,images" : "variants,option_types,product_properties,taxons,images,default_variant"
-        }
-      );
-
-      if (res.data.data.status === 500) { return { result: false } }
-      const spreeData = res.data.data;
-      const b1Data = b1Info.itemPrices.map((i) => {
-        return {
-          "itemCode": i.itemCode,
-          "price": 0,
-          "finalPrice": 0,
-          "b1Dscnt": 0,
-          "cmpgnDscnt": 0,
-          "pymntDscnt": 0,
-          "canSell": i.canSell
-        };
-      });
-      let result = await apis.request({ api: 'kharid.getMappedAllProducts', description: '', parameter: { spreeResult: spreeData, b1Result: b1Data, loadType } })
-      return { result };
     },
     async getSpreeProducts({ Taxons, pageSize = 250, pageNumber, ids, Name, vitrin }, { userInfo, b1Info, apis }) {
       let body = {
@@ -725,46 +675,34 @@ export default function kharidApis({ baseUrl, helper }) {
           continue
         }
         let defaultVariantProps = {
-          "id": defalutVariantId,
           "discountPrice": 0,
           "price": 0,
           inStock: true,
           "dropShipping": true,
           "srcs": [],
-          "code": sku,
+          "id": sku,
           "discountPercent": 0,
           "isDefault": true
         };
         let productProps = {}
-        if (vitrin) {
-          let price = product.attributes.price;
-          productProps = {
-            inStock: defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs: iimages,
-            name: product.attributes.name, defaultVariant: defaultVariantProps,
-            Price: price, FinalPrice: price, discountPrice: 0, discountPercent: 0, id: product.id
-          }
+        const itemFromB1 = b1Result.find((x) => {
+          if (x.itemCode === sku) { return true }
+          if (x.mainSku === sku) { return true }
+          return false
+        });
+        if (!itemFromB1) {
+          console.error(`spree item with sku = ${sku} is not match with any item in B1`);
+          console.error(`product is : `, product);
+          console.error(`default variant is : `, defaultVariant);
+          continue
         }
-        else {
-          const itemFromB1 = b1Result.find((x) => {
-            if (x.itemCode === sku) { return true }
-            if (x.mainSku === sku) { return true }
-            return false
-          });
-          if (!itemFromB1) {
-            console.error(`spree item with sku = ${sku} is not match with any item in B1`);
-            console.error(`product is : `, product);
-            console.error(`default variant is : `, defaultVariant);
-            continue
-          }
-          defaultVariantProps.inStock = !!itemFromB1 && !!itemFromB1.canSell;
-          defaultVariantProps.dropShipping = itemFromB1.qtyRelation === 4;
-          productProps = {
-            inStock: defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs: iimages,
-            name: product.attributes.name, defaultVariant: defaultVariantProps,
-            price: 0, discountPrice: 0, discountPercent: 0, id: product.id
-          }
+        defaultVariantProps.inStock = !!itemFromB1 && !!itemFromB1.canSell;
+        defaultVariantProps.dropShipping = itemFromB1.qtyRelation === 4;
+        productProps = {
+          inStock: defaultVariantProps.inStock, details: [], optionTypes: [], variants: [defaultVariantProps], srcs: iimages,
+          name: product.attributes.name, defaultVariant: defaultVariantProps,
+          price: 0, discountPrice: 0, discountPercent: 0, id: product.id
         }
-
         allProducts.push(productProps);
       }
       return { result: allProducts };

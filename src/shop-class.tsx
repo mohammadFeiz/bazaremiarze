@@ -66,7 +66,7 @@ export default class ShopClass implements I_ShopClass {
                 if (!product.hasFullDetail) {
                     product = await apis.request({
                         api: 'kharid.getProductFullDetail',
-                        parameter: { id: product.id, code: product.defaultVariant.code, product }
+                        parameter: product
                     })
                     product.hasFullDetail = true;
                 }
@@ -77,7 +77,6 @@ export default class ShopClass implements I_ShopClass {
                     header: { title: this.name, buttons: actionClass.getHeaderIcons({ cart: true }) }
                 })
             },
-            onRemove: () => actionClass.changeCart({ count: 0, variantId: product.code, product, cartId: this.cartId })
         }
         return (<RegularCard key={product.id} {...props} />)
     }
@@ -105,16 +104,15 @@ export default class ShopClass implements I_ShopClass {
     openCategory = async (id?: string, name?: string) => {
         let { apis, rsa, actionClass, msfReport } = this.getAppState();
         let products;
-        let taxonId = id || this.cartId;
         let taxonName = name || this.name;
         if (this.cartId === 'Bundle') {
             products = this.products
         }
         else {
             products = await apis.request({
-                api: 'kharid.getProductsByTaxon', description: 'دریافت محصولات تکزون', def: [],
-                parameter: { taxonId, taxonName, CampaignId: this.CampaignId, PriceListNum: this.PriceListNum },
-                cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'taxon_' + taxonId }
+                api: 'kharid.getTaxonProducts', description: 'دریافت محصولات تکزون', def: [],
+                parameter: { cartId:this.cartId,taxonId:id },
+                cache: { time: 30 * 24 * 60 * 60 * 1000, name: `taxonProducts.cartId_${this.cartId}${id?`_taxonId_${id}`:''}` }
             });
         }
         let props = { billboard: this.billboard, products, description: this.description, title: this.name }
@@ -174,7 +172,10 @@ export default class ShopClass implements I_ShopClass {
                 let { variants, product } = parent.products[productId]
                 for (let variantId in variants) {
                     let { count, variant } = variants[variantId]
-                    res.push({ cartId, productId, variantId, product, variant, count, taxon: parent.taxon, taxonId: parent.taxonId })
+                    let obj:{product:I_product,cartId:string,productId:string,variantId:string,variant:I_variant,count:number,taxon?:I_ShopClass_taxon,taxonId?:string} = { 
+                        cartId, productId, variantId, product, variant, count, taxon: parent.taxon, taxonId: parent.taxonId 
+                    }
+                    res.push(obj)
                 }
             }
             return res
@@ -458,8 +459,8 @@ export default class ShopClass implements I_ShopClass {
     async getCategoryProducts(id, count) {
         let { apis } = this.getAppState();
         return await apis.request({
-            api: 'kharid.getCategoryProducts', parameter: { id, count }, description: 'دریافت محصولات دسته بندی', def: [],
-            cache: { time: 30 * 24 * 60 * 60 * 1000, name: 'categories.categoryProducts.item_' + id + (count ? count : '') }
+            api: 'kharid.getTaxonProducts', parameter: { cartId:this.cartId,taxonId:id, count }, description: 'دریافت محصولات دسته بندی', def: [],
+            cache: { time: 30 * 24 * 60 * 60 * 1000, name: `taxonProducts.cartId_${this.cartId}${id?`_taxonId_${id}`:''}${count?`_count_${count}`:''}` }
         });
     }
     renderCartFactor = (button = true) => {
@@ -621,11 +622,10 @@ function TaxonCard(props: I_TaxonCard) {
             setProducts(products)
         }
         else {
-            let { CampaignId, PriceListNum } = Shop[cartId]
             let products = await apis.request({
-                api: 'kharid.getCampaignProducts', description: 'دریافت محصولات کمپین', def: [],
-                parameter: { id: taxon.id, cartId, CampaignId, PriceListNum },
-                cache: { time: 30 * 24 * 60 * 60 * 1000, name: `campaigns.campaignProducts.item_${cartId}_${taxon.id}` }
+                api: 'kharid.getTaxonProducts', description: 'دریافت محصولات کمپین', def: [],
+                parameter: { cartId,taxonId:taxon.id },
+                cache: { time: 30 * 24 * 60 * 60 * 1000, name: `taxonProducts.cartId_${cartId}_taxonId_${taxon.id}` }
             });
             setProducts(products)
         }
@@ -657,7 +657,8 @@ function RegularCard(props: I_RegularCard) {
             cartVariants = Shop[cartId].getCartVariants({productId:product.id})
         }
         if (!cartVariants.length) { return false }
-        let column = cartVariants.map(({product,variant,count,variantId}) => {
+        let column = cartVariants.map((p:{product:I_product,variant:I_variant,count:number,variantId:string}) => {
+            let {product,variant,count,variantId} = p;
             let { optionTypes } = product;
             let { optionValues } = variant;
             let details = [];
@@ -937,8 +938,7 @@ function RegularPage(props: I_RegularPage) {
         setSelectedVariant(variant)
     }
     function body_layout() {
-        let { name, optionTypes, details, srcs } = product;
-        let code = selectedVariant ? selectedVariant.code : undefined;
+        let { optionTypes, details } = product;
         return {
             flex: 1, className: "ofy-auto", gap: 12,
             column: [
@@ -1095,7 +1095,6 @@ function RegularPage(props: I_RegularPage) {
         }
     }
     function price_layout() {
-        let { selectedVariant } = this.state;
         if (!selectedVariant || !selectedVariant.inStock) {
             return { column: [{ flex: 1 }, { html: "ناموجود", className: "colorD83B01 bold fs-14" }, { flex: 1 }] };
         }

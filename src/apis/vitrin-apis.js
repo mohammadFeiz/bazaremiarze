@@ -50,32 +50,6 @@ export default function vitrinApis({ baseUrl, helper }) {
             let res = await Axios.get(`${baseUrl}/vitrin/VitrinProductsByCardCode?cardCode=${userInfo.cardCode}`);
             return { result: res.data.data }
         },
-        async v_category_options(parameter, { apis }) {
-            let categoryOptions = await apis.request({ api: 'vitrin.v_miarze_categories' });
-            let names;
-            names = categoryOptions.map((o) => { return o.name });
-            return { mock: false, result: names }
-        },
-        async v_miarze_categories(parameter, { apis }) {
-            let res = await Axios.get(`${baseUrl}/Spree/GetAllCategoriesbyIds?ids=10709,10673`);
-            let dataResult = res.data.data.data;
-            let included = res.data.data.included;
-            let categories = dataResult.map((o) => {
-                let src = nosrc;
-                const imgData = o.relationships.image.data;
-                if (imgData !== undefined && imgData != null) {
-                    const taxonImage = included.find(x => x.type === "taxon_image" && x.id === imgData.id)
-                    if (taxonImage !== undefined && taxonImage != null) {
-                        src = "https://spree.burux.com" + taxonImage.attributes.original_url;
-                    }
-                }
-                return { name: o.attributes.name, cartId: o.attributes.name, id: o.id, src: src };
-            });
-            for (let i = 0; i < categories.length; i++) {
-                categories[i].products = await apis.request({ api: 'kharid.getCategoryProducts', parameter: categories[i].id });
-            }
-            return { mock: false, result: categories };
-        },
         async v_miarze_brands() {
             return { mock: true }
         },
@@ -318,26 +292,6 @@ export function vitrinMock() {
                 { id: '5', name: 'دریل چکشی رونیکس مدل ۱۲۱۱', src: '', price: 120000, categories: ['دریل و پیچ گوشتی'] },
                 { id: '6', name: 'دریل پیچ گوشتی شارژی مکس مدل +DL1', src: '', price: 120000, categories: ['ابزار دستی'] },
                 { id: '7', name: 'دریل بتن کن رونیکس کد 2701', src: '', price: 120000, categories: ['ابزار برقی', 'ابزار دستی'] },
-            ]
-        },
-        v_category_options() {
-            return [
-                'دریل و پیچ گوشتی',
-                'ابزار برقی',
-                'ابزار دستی'
-            ]
-        },
-        v_miarze_categories() {
-            return [
-                { name: 'محصولات روشنایی', src: vitrin_category_src },
-                { name: 'محصولات روشنایی', src: vitrin_category_src },
-                { name: 'محصولات روشنایی', src: vitrin_category_src },
-                { name: 'محصولات روشنایی', src: vitrin_category_src },
-                { name: 'محصولات روشنایی', src: vitrin_category_src },
-                { name: 'محصولات روشنایی', src: vitrin_category_src },
-                { name: 'محصولات روشنایی', src: vitrin_category_src },
-                { name: 'محصولات روشنایی', src: vitrin_category_src },
-                { name: 'محصولات روشنایی', src: vitrin_category_src },
             ]
         },
         v_miarze_brands() {

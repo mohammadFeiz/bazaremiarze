@@ -188,7 +188,7 @@ export type I_actionClass = {
             items:{itemCode:string,ItemCode:string,itemQty:number,ItemQty:number}[], 
             CampaignId?:number,PriceListNum?:number 
         }
-    )=>I_fixPrice_return[],//notice
+    )=>I_fixPrice_result[],
     getHeaderIcons:(p:{[key:string]:boolean})=>any[],
     getFactorDetails:(items:any[],shippingOptions:I_shippingOptions,container?:string)=>{
         MarketingLines:{CampaignDetails:any,ItemCode:string}[],
@@ -226,7 +226,7 @@ export type I_actionClass = {
     getBazargahOrders:()=>void,
     removeCartTab:(cartId:string)=>void
 }
-export type I_fixPrice_return = {
+export type I_fixPrice_result = {
     ItemCode: string,SalesMeasureUnit: string,NumInSale: number,Price: number,B1Dscnt: number,FinalPrice: number,PymntDscnt: number,CmpgnDscnt: number
     OnHand: {whsCode: string,qty: number,qtyLevel: number,qtyLevRel: number},   
 }
@@ -317,7 +317,7 @@ export type I_product = {
     defaultVariant:I_variant,
     hasFullDetail?:boolean,
     inStock:boolean,
-    srcs:string[],
+    images:string[],
     details:[key:string,value:string][],
     variants:I_variant[]
 };
@@ -337,7 +337,7 @@ export type I_variant = {
     FinalPrice:number, 
     Price:number,
     optionValues:I_variant_optionValues,
-    srcs:string[]
+    images:string[]
 };
 export type I_variant_optionValues = {[optiontypeId:string]:string}
 export type I_discount = { percent?:number, value:number, title:string }

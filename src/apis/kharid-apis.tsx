@@ -3,7 +3,7 @@ import nosrcImage from './../images/no-src.png';
 import nosrc from './../images/no-src.png';
 import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
-import { I_ShopProps, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_return, I_product, I_state_cart } from "../types";
+import { I_ShopProps, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_product, I_state_cart } from "../types";
 type I_chekcCode_return = any;
 type I_getCampaigns_return = { cartId: string, name: string, id: string, src: string, CampaignId: number, PriceListNum: number }[];
 type I_getCategories_return = { name: string, id: string }[]
@@ -203,14 +203,14 @@ export default function kharidApis({ baseUrl, helper }) {
         return { ...i, src: nosrcImage, details: [] };
       })
 
-      let srcs = await Axios.post(`${baseUrl}/Spree/Products`, {
+      let images = await Axios.post(`${baseUrl}/Spree/Products`, {
         Skus: Skus.toString(),
         PerPage: 250,
         Include: "default_variant,images"
       });
-      const included = srcs.data.data.included;
+      const included = images.data.data.included;
 
-      for (const item of srcs.data.data.data) {
+      for (const item of images.data.data.data) {
 
         const defaultVariantId = item.relationships.default_variant.data.id;
         const defaultVariantImagesId = item.relationships.images.data.map(x => x.id);
@@ -223,10 +223,10 @@ export default function kharidApis({ baseUrl, helper }) {
           console.error('items is:', item)
           continue
         }
-        const srcs = defaultVariantImages.map(x => "https://spree.burux.com" + x.attributes.original_url);
+        const images = defaultVariantImages.map(x => "https://spree.burux.com" + x.attributes.original_url);
         let firstItem = products.find(x => x.itemCode === defaultVariantSku);
         if (firstItem === null || firstItem === undefined) continue;
-        firstItem.src = srcs[0];
+        firstItem.src = images[0];
       }
 
       //PayDueDate:'ByDelivery',
@@ -513,6 +513,27 @@ export default function kharidApis({ baseUrl, helper }) {
       let result = Shop[cartId].payment(obj);
       return { result }
     },
+    async sortIncluded(spreeResult) {
+      let sorted:I_spreeIncluded = { 
+        optionTypes_dic: {}, details_dic: {}, images_dic: {}, meta_optionTypes_dic: {}, variants_dic: {} ,
+        optionTypes_list: [], details_list: [], images_list: [], meta_optionTypes_list: [], variants_list: [] 
+      }
+      for (let i = 0; i < spreeResult.included.length; i++) {
+        let include = spreeResult.included[i];
+        let { type, id } = include;
+        id = id.toString();
+        if (type === 'option_type') { sorted.optionTypes_dic[id] = include; sorted.optionTypes_list.push(include) }
+        else if (type === 'product_property') { sorted.details_dic[id] = include; sorted.details_list.push(include) }
+        else if (type === 'image') { sorted.images_dic[id] = include; sorted.images_list.push(include) }
+        else if (type === 'variant') { sorted.variants_dic[id] = include; sorted.variants_list.push(include) }
+      }
+      for (let i = 0; i < spreeResult.meta.filters.option_types.length; i++) {
+        let optionType = spreeResult.meta.filters.option_types[i];
+        sorted.meta_optionTypes_dic[optionType.id.toString()] = optionType;
+        sorted.meta_optionTypes_list.push(optionType)
+      }
+      return { result: sorted }
+    },
     async getProductFullDetail(product , { b1Info, actionClass, apis }) {
       //پروداکت رو همینجوری برای اینکه یک چیزی ریترن بشه فرستادم تو از کد و آی دی آبجکت کامل پروداکت رو بساز و ریترن کن
       let res = await Axios.post(`${baseUrl}/Spree/Products`,
@@ -582,52 +603,40 @@ export default function kharidApis({ baseUrl, helper }) {
       product.optionTypes = optionTypes;
       return { result: product };
     },
-    async sortIncluded(spreeResult) {
-      let sorted:I_spreeIncluded = { 
-        optionTypes_dic: {}, details_dic: {}, images_dic: {}, meta_optionTypes_dic: {}, variants_dic: {} ,
-        optionTypes_list: [], details_list: [], images_list: [], meta_optionTypes_list: [], variants_list: [] 
-      }
-      for (let i = 0; i < spreeResult.included.length; i++) {
-        let include = spreeResult.included[i];
-        let { type, id } = include;
-        id = id.toString();
-        if (type === 'option_type') { sorted.optionTypes_dic[id] = include; sorted.optionTypes_list.push(include) }
-        else if (type === 'product_property') { sorted.details_dic[id] = include; sorted.details_list.push(include) }
-        else if (type === 'image') { sorted.images_dic[id] = include; sorted.images_list.push(include) }
-        else if (type === 'variant') { sorted.variants_dic[id] = include; sorted.variants_list.push(include) }
-      }
-      for (let i = 0; i < spreeResult.meta.filters.option_types.length; i++) {
-        let optionType = spreeResult.meta.filters.option_types[i];
-        sorted.meta_optionTypes_dic[optionType.id.toString()] = optionType;
-        sorted.meta_optionTypes_list.push(optionType)
-      }
-      return { result: sorted }
-    },
     
     async getSpreeProducts({ cartId,taxonId, pageSize = 250, pageNumber, ids, Name }, { userInfo, b1Info, apis,Shop,actionClass }) {
       let {cardCode} = userInfo,{itemPrices} = b1Info;
+      let {CampaignId,PriceListNum} = Shop[cartId];
       let body = {
         CardCode: cardCode, Taxons:taxonId || cartId, Name, ids, PerPage: pageSize, Page: pageNumber,
         ProductFields: "id,name,type,sku,slug,default_variant,images,price",
-        VariantFields: "id,sku,type,images",
-        Include: "default_variant,images"
+        VariantFields: "id,sku,type,images",Include: "default_variant,images"
       }
-      let res = await Axios.post(`${baseUrl}/Spree/Products`, body);
-      if (!res.data.isSuccess) { return { result: res.data.message } }
+      let res = await Axios.post(`${baseUrl}/Spree/Products`, body); if (!res.data.isSuccess) { return { result: res.data.message } }
       const spreeResult:I_spreeResult = res.data.data;
       if (!spreeResult) { return { result: 'خطا در دریافت اطلاعات اسپری' } }
       const spreeProducts:I_spreeProduct[] = spreeResult.data;
       const spreeIncluded:I_spreeIncluded = apis.request({ api: 'kharid.sortIncluded', description: '', parameter: spreeResult });
-      
-      let products = await apis.request({ api: 'kharid.getModifiedProducts', description: '', parameter: { spreeProducts,spreeIncluded } })
-      let {CampaignId,PriceListNum} = Shop[cartId];
-      let items_for_fixPrice = products.map(({ defaultVariant }) => { return { ItemCode: defaultVariant.id, itemCode: defaultVariant.id, ItemQty: 1, itemQty: 1 }; })
-      let fixPrice_results:I_fixPrice_return[] = actionClass.fixPrice({ items:items_for_fixPrice, CampaignId, PriceListNum })
+      let products = [];
+      for (const product of spreeProducts) {
+        let { relationships } = product;
+        const sku = spreeIncluded.variants_dic[relationships.default_variant.data.id].attributes.sku;
+        if (!sku) {continue}
+        let images = relationships.images.data.map(({id})=>`https://spree.burux.com${spreeIncluded.images_dic[id.toString()].attributes.styles[9].url}`)
+        let defaultVariantProps = {"id": sku};
+        const itemFromB1 = itemPrices.find((o) =>  o.itemCode === sku || o.mainSku === sku);
+        if (!itemFromB1) {continue}
+        let fixPrice_payload = {items:[{ ItemCode: sku, itemCode: sku, ItemQty: 1, itemQty: 1 }], CampaignId, PriceListNum}
+        let fixPrice_results:I_fixPrice_result[] = actionClass.fixPrice(fixPrice_payload)
+        let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
+        let {qtyLevel} = fixPrice_result.OnHand;
+        let inStock = !!qtyLevel;
+        
+        let productProps = {images: images,name: product.attributes.name, defaultVariantId: sku,id: product.id}
+        products.push(productProps);
+      }
       let fixedProducts:I_product[] = products.map((baseProduct, i) => { 
         let fixPrice_result = fixPrice_results[i];
-        let {OnHand} = fixPrice_result;
-        let {qty} = OnHand;
-        let inStock = !!qty;
         let product:I_product = {...baseProduct,}
         return { ...baseProduct, ...fixPrice_results[i] } 
       })
@@ -635,22 +644,6 @@ export default function kharidApis({ baseUrl, helper }) {
       let result = { products: fixedProducts, total };
       if (Array.isArray(products)) { result = { products, total } }
       return { result }
-    },
-    async getModifiedProducts(p:{spreeProducts:I_spreeProduct[],spreeIncluded:I_spreeIncluded},{apis}) {
-      let { spreeProducts,spreeIncluded } = p;
-      let allProducts = [];
-      for (const product of spreeProducts) {
-        let { relationships } = product;
-        const sku = spreeIncluded.variants_dic[relationships.default_variant.data.id].attributes.sku;
-        if (!sku) {continue}
-        let images = relationships.images.data.map(({id})=>`https://spree.burux.com${spreeIncluded.images_dic[id.toString()].attributes.styles[9].url}`)
-        let defaultVariantProps = {"id": sku};
-        const itemFromB1 = b1Result.find((o) =>  o.itemCode === sku || o.mainSku === sku);
-        if (!itemFromB1) {continue}
-        let productProps = {variants: [defaultVariantProps], srcs: images,name: product.attributes.name, defaultVariant: defaultVariantProps,id: product.id}
-        allProducts.push(productProps);
-      }
-      return { result: allProducts };
     },
     getCart({ Shop, userInfo }) {
       let cartStorage = AIOStorage('bazaremiarzeapis');

@@ -642,8 +642,8 @@ function RegularCard(props: I_RegularCard) {
     let [mounted, setMounted] = useState<boolean>(false)
     let { product, cartId, taxonId, renderIn, index, loading, onClick, type = 'horizontal' } = props;
     function image_layout() {
-        let { srcs = [] } = product;
-        return { size: 116, align: 'vh', html: <img src={srcs[0] || NoSrc as string} width={'100%'} alt='' /> }
+        let { images = [] } = product;
+        return { size: 116, align: 'vh', html: <img src={images[0] || NoSrc as string} width={'100%'} alt='' /> }
     }
     function count_layout() {
         let cartTab = cart[cartId];
@@ -776,7 +776,7 @@ function RegularCard(props: I_RegularCard) {
         )
     }
     function vertical_layout() {
-        let { srcs = [], name } = product;
+        let { images = [], name } = product;
         return (
             <RVD
                 loading={loading}
@@ -784,7 +784,7 @@ function RegularCard(props: I_RegularCard) {
                     className: 'theme-card-bg theme-box-shadow theme-border-radius of-visible w-168 h-288 fs-14 br-12',
                     onClick,
                     column: [
-                        { size: 140, align: 'vh', html: <img src={(srcs[0] || NoSrc) as string} width={'100%'} style={{ width: 'calc(100% - 24px)', height: '100%', borderRadius: 8 }} alt='' />, style: { padding: 6, paddingBottom: 0 } },
+                        { size: 140, align: 'vh', html: <img src={(images[0] || NoSrc) as string} width={'100%'} style={{ width: 'calc(100% - 24px)', height: '100%', borderRadius: 8 }} alt='' />, style: { padding: 6, paddingBottom: 0 } },
                         { html: name, className: 'fs-12 p-v-6 p-h-12 theme-medium-font-color bold', style: { whiteSpace: 'normal' } },
                         //this.name_layout(),
                         { flex: 1 },
@@ -960,7 +960,7 @@ function RegularPage(props: I_RegularPage) {
                     childsProps: { align: "vh" },
                     row: [
                         { size: 36, html: getSvg("chevronLeft", { flip: true })},
-                        { flex: 1, html: <img src={product.srcs[srcIndex]} alt="" height="100%" /> },
+                        { flex: 1, html: <img src={product.images[srcIndex]} alt="" height="100%" /> },
                         { size: 36, html: getSvg("chevronLeft")},
                     ],
                 },

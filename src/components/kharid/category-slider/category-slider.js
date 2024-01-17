@@ -47,12 +47,12 @@ export default class CategorySlider extends Component{
   }
 let fakeProduct = {
   "inStock": true,"details": [],"optionTypes": [],
-  "variants": [{"id": "23338","discountPrice": 0,"price": 0,"inStock": true,"srcs": [],"code": "9425","discountPercent": 0,"isDefault": true}],
-  "srcs": [],
+  "variants": [{"id": "23338","discountPrice": 0,"price": 0,"inStock": true,"images": [],"code": "9425","discountPercent": 0,"isDefault": true}],
+  "images": [],
   "name": "باتری سکه ای بروکس",
   "defaultVariant": {
       "id": "23338","discountPrice": 0,"price": 0,"inStock": true,
-      "srcs": [],"code": "9425","discountPercent": 0,"isDefault": true
+      "images": [],"code": "9425","discountPercent": 0,"isDefault": true
   },
   "price": 0,"discountPrice": 0,"discountPercent": 0,"id": "12666","ItemCode": "9425",
   "OnHand": {"whsCode": "01","qty": 15804,"qtyLevel": 20000,"qtyLevRel": 1},

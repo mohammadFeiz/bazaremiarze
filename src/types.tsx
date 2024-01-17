@@ -197,7 +197,7 @@ export type I_actionClass = {
             items:{itemCode:string,ItemCode:string,itemQty:number,ItemQty:number}[], 
             CampaignId?:number,PriceListNum?:number 
         }
-    )=>any[],//notice
+    )=>I_fixPrice_return[],//notice
     getHeaderIcons:(p:{[key:string]:boolean})=>any[],
     getFactorDetails:(items:any[],shippingOptions:I_shippingOptions,container?:string)=>{
         MarketingLines:{CampaignDetails:any,ItemCode:string}[],
@@ -234,6 +234,10 @@ export type I_actionClass = {
     getGuaranteeItems:()=>void,
     getBazargahOrders:()=>void,
     removeCartTab:(cartId:string)=>void
+}
+export type I_fixPrice_return = {
+    ItemCode: string,SalesMeasureUnit: string,NumInSale: number,Price: number,B1Dscnt: number,FinalPrice: number,PymntDscnt: number,CmpgnDscnt: number
+    OnHand: {whsCode: string,qty: number,qtyLevel: number,qtyLevRel: number},   
 }
 export type I_changeCartProps = {cartId:string,taxonId?:string,variantId:string,product:I_product,count:number}
 export type I_app_state = {

@@ -5,16 +5,11 @@ import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
 import { I_ShopProps, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_product, I_state_cart } from "../types";
 type I_chekcCode_return = any;
-type I_updateProductPrice_return = I_product[]
 type I_getCampaigns_return = { cartId: string, name: string, id: string, src: string, CampaignId: number, PriceListNum: number }[];
 type I_getCategories_return = { name: string, id: string }[]
 type I_ni = (p: any, appState?: I_app_state) => any
 type I_apiFunctions = {
   checkCode: (p: { code: string }) => Promise<{ result: I_chekcCode_return }>,
-  updateProductPrice: (
-    p: {products: I_product[],cartId:string},
-    appState: I_app_state
-  ) => { result: I_updateProductPrice_return },
   tarikhche_sefareshate_kharid: I_ni,
   mahsoolate_sefareshe_kharid: I_ni,
   getCampaigns: (ids: string[]) => Promise<{ result: I_getCampaigns_return }>,
@@ -48,14 +43,6 @@ export default function kharidApis({ baseUrl, helper }) {
       else {
         return { result: response.data.message || response.data.Message }
       }
-    },
-    updateProductPrice({ products, cartId }, { actionClass,Shop }) {
-      if (!products.length) { return { result: [] } }
-      let {CampaignId,PriceListNum} = Shop[cartId];
-      let items = products.map(({ defaultVariant }) => { return { ItemCode: defaultVariant.id, itemCode: defaultVariant.id, ItemQty: 1, itemQty: 1 }; })
-      let fixed = actionClass.fixPrice({ items, CampaignId, PriceListNum })
-      let res:I_product[] = products.map((o, i) => { return { ...o, ...fixed[i] } })
-      return { result: res };
     },
     async tarikhche_sefareshate_kharid(undefined, { userInfo }) {
       let res = await Axios.post(`${baseUrl}/BOne/GetOrders`, {
@@ -292,7 +279,7 @@ export default function kharidApis({ baseUrl, helper }) {
       return { result: campaigns };
     },
     async getTaxonProducts({ taxonId, cartId,count }, { apis }) {
-      let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { Taxons: taxonId || cartId, pageSize: count } });
+      let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { taxonId,cartId, pageSize: count } });
       let result:I_product[] = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products,cartId } })
       return { result }
     },
@@ -589,10 +576,9 @@ export default function kharidApis({ baseUrl, helper }) {
       product.optionTypes = optionTypes;
       return { result: product };
     },
-    async getSpreeProducts({ Taxons, pageSize = 250, pageNumber, ids, Name, vitrin }, { userInfo, b1Info, apis }) {
+    async getSpreeProducts({ cartId,taxonId, pageSize = 250, pageNumber, ids, Name }, { userInfo, b1Info, apis,Shop,actionClass }) {
       let body = {
-        vitrin,
-        CardCode: userInfo.cardCode, Taxons, Name, ids, PerPage: pageSize, Page: pageNumber,
+        CardCode: userInfo.cardCode, Taxons:taxonId || cartId, Name, ids, PerPage: pageSize, Page: pageNumber,
         ProductFields: "id,name,type,sku,slug,default_variant,images,price",
         VariantFields: "id,sku,type,images",
         Include: "default_variant,images"
@@ -602,38 +588,17 @@ export default function kharidApis({ baseUrl, helper }) {
       const spreeData = res.data.data;
       if (!spreeData) { return { result: 'خطا در دریافت اطلاعات اسپری' } }
       let b1Data;
-      if (!vitrin) {
-        if (!b1Info.itemPrices) {
-          helper.showAlert({ type: 'error', text: `b1Info.itemPrices is not valid` })
-          return { result: [] }
-        }
-        b1Data = b1Info.itemPrices.map((i) => {
-          return {
-            "itemCode": i.itemCode,
-            "price": 0,
-            "finalPrice": 0,
-            "b1Dscnt": 0,
-            "cmpgnDscnt": 0,
-            "pymntDscnt": 0,
-            "mainSku": i.mainSku,
-            "canSell": i.canSell,
-            //"onHand": {
-            //   "whsCode": "01",
-            //   "qty": 269.3,
-            //   "qtyLevel": 300,
-            //   "qtyLevRel": "Less"
-            //}
-          };
-        });
-      }
-
-      let products = await apis.request({ api: 'kharid.getModifiedProducts', description: '', parameter: { spreeResult: spreeData, b1Result: b1Data, Taxons, vitrin } })
+      let products = await apis.request({ api: 'kharid.getModifiedProducts', description: '', parameter: { spreeResult: spreeData, b1Result: b1Data } })
+      let {CampaignId,PriceListNum} = Shop[cartId];
+      let items_for_fixPrice = products.map(({ defaultVariant }) => { return { ItemCode: defaultVariant.id, itemCode: defaultVariant.id, ItemQty: 1, itemQty: 1 }; })
+      let products_fixed = actionClass.fixPrice({ items:items_for_fixPrice, CampaignId, PriceListNum })
+      let fixedProducts:I_product[] = products.map((o, i) => { return { ...o, ...products_fixed[i] } })
       let total = spreeData.meta.total_count
-      let result = { products: [], total: 0 };
+      let result = { products: fixedProducts, total };
       if (Array.isArray(products)) { result = { products, total } }
       return { result }
     },
-    async getModifiedProducts({ spreeResult, b1Result, Taxons, vitrin }) {
+    async getModifiedProducts({ spreeResult, b1Result, vitrin }) {
       let images = spreeResult.included.filter(({ type }) => type === 'image')
       function getImagesDic() {
         let baseImageUrl = vitrin ? "https://shopback.miarze.com" : "https://spree.burux.com"

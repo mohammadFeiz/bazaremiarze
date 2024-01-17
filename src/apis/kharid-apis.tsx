@@ -3,7 +3,7 @@ import nosrcImage from './../images/no-src.png';
 import nosrc from './../images/no-src.png';
 import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
-import { I_ShopProps, I_app_state, I_product, I_state_cart } from "../types";
+import { I_ShopProps, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_product, I_state_cart } from "../types";
 type I_chekcCode_return = any;
 type I_updateProductPrice_return = I_product[]
 type I_getCampaigns_return = { cartId: string, name: string, id: string, src: string, CampaignId: number, PriceListNum: number }[];
@@ -45,7 +45,7 @@ type I_apiFunctions = {
   dargah: I_ni,
   pardakhte_kharid: I_ni,
   bundleData: I_ni,
-  daryafte_ettelaate_bundle: I_ni
+  daryafte_ettelaate_bundle: (p:any, appState: I_app_state) => { result: I_bundle_taxon[] }
 }
 export default function kharidApis({ baseUrl, helper }) {
 
@@ -806,145 +806,33 @@ export default function kharidApis({ baseUrl, helper }) {
         window.location.href = res.data.data;
       }
     },
-    async bundleData() {
-      return { result: staticBundleData }
-      let response = await Axios.get(`${baseUrl}/BackOffice/GetBelexData`);
-      let result = response.data.data.taxons;
-      return { result }
-    },
-    async daryafte_ettelaate_bundle(undefined, { apis }) {
-      let allData = await apis.request({
+    async bundleData() {return { result: staticBundleData }},
+    daryafte_ettelaate_bundle(parameter, { apis }) {
+      let allData = apis.request({
         api: 'kharid.bundleData', description: 'دریافت دیتای باندل', def: []
       })
-      var items = [];
-      for (const i1 of allData) {
-        if (i1.items) items.push(i1.items.filter(x => x.itemcodes != null));
-        if (!i1.taxons) continue;
-        for (const i2 of i1.taxons) {
-          if (i2.items) items.push(i2.items.filter(x => x.itemcodes != null));
-          if (!i2.taxons) continue;
-          for (const i3 of i2.taxons) {
-            if (i3.items) items.push(i3.items.filter(x => x.itemcodes != null));
-            if (!i3.taxons) continue;
-            for (const i4 of i3.taxons) {
-              if (i4.items) items.push(i4.items.filter(x => x.itemcodes != null));
-              if (!i4.taxons) continue;
-              for (const i5 of i4.taxons) {
-                if (i5.items) items.push(i5.items.filter(x => x.itemcodes != null));
-                if (!i5.taxons) continue;
-                for (const i6 of i5.taxons) {
-                  if (i6.items) items.push(i6.items.filter(x => x.itemcodes != null));
-                  if (!i6.taxons) continue;
-                  for (const i7 of i6.taxons) {
-                    if (i7.items) items.push(i7.items.filter(x => x.itemcodes != null));
-                    if (!i7.taxons) continue;
-                  }
-                }
-              }
+      allData = allData[0].taxons[0].taxons[0];
+      let result:I_bundle_taxon[] = allData.map(({itemname,description,itemcode,price,itemcodes,imageurl,max = Infinity})=>{
+        let taxon:I_bundle_taxon = {
+          cartId:'Bundle',description,id:itemcode,name:itemname,price,image:imageurl,max,
+          products:itemcodes.map(({mainsku,Name,Price,Qty,Variants})=>{
+            let product:I_bundle_product = {
+              id:mainsku,name:Name,qty:Qty,price:Price,
+              variants:Variants.map(({Code,Name,Step = 1})=>{
+                let variant:I_bundle_variant = {id:Code,name:Name,step:Step}
+                return variant
+              })
             }
-          }
+            return product
+          })
         }
-      }
-      var cableItems = [];
-      for (const i1 of allData.filter(x => x.taxonid === 159)) {
-        if (i1.items) cableItems.push(i1.items.filter(x => x.itemcodes != null));
-        if (!i1.taxons) continue;
-        for (const i2 of i1.taxons) {
-
-          if (i2.items) cableItems.push(i2.items.filter(x => x.itemcodes != null));
-          if (!i2.taxons) continue;
-          for (const i3 of i2.taxons) {
-
-            if (i3.items) cableItems.push(i3.items.filter(x => x.itemcodes != null));
-            if (!i3.taxons) continue;
-            for (const i4 of i3.taxons) {
-
-              if (i4.items) cableItems.push(i4.items.filter(x => x.itemcodes != null));
-              if (!i4.taxons) continue;
-              for (const i5 of i4.taxons) {
-
-                if (i5.items) cableItems.push(i5.items.filter(x => x.itemcodes != null));
-                if (!i5.taxons) continue;
-                for (const i6 of i5.taxons) {
-
-                  if (i6.items) cableItems.push(i6.items.filter(x => x.itemcodes != null));
-                  if (!i6.taxons) continue;
-
-                  for (const i7 of i6.taxons) {
-
-                    if (i7.items) cableItems.push(i7.items.filter(x => x.itemcodes != null));
-                    if (!i7.taxons) continue;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      let products = [];
-      for (const item of items) {
-
-        if (item.length) {
-
-          for (const subItem of item) {
-
-            // var subProduct = {
-            //   name:subItem.itemname,
-            //   id:subItem.itemid,
-            //   finalPrice:subItem.price,
-            //   products:subItem.itemcodes.map(x=>{
-            //     return {mainsku:x.mainsku,name:x.Name,unitPrice:x.Price,qty:x.Qty,step:x.Step,variants:x.Variants}
-            //   })
-            // };
-
-            products.push({
-              cartId: 'Bundle',
-              name: subItem.itemname,
-              clubpoint: subItem.clubpoint,
-              code: subItem.itemcode,
-              price: subItem.price,
-              cableCategory: false,
-              variants: subItem.itemcodes.map(x => {
-                return {
-                  mainsku: x.mainsku, name: x.Name, unitPrice: x.Price, qty: x.Qty, step: x.Step, variants: x.Variants,
-                  id: x.Name
-                }
-              }),
-              src: subItem.imageurl
-            });
-          }
-        }
-      }
-      for (const item of cableItems) {
-
-        if (item.length) {
-
-          for (const subItem of item) {
-
-            products.push({
-              cartId: 'Bundle',
-              clubpoint: subItem.clubpoint,
-              name: subItem.itemname,
-              code: subItem.itemcode,
-              price: subItem.price,
-              cableCategory: true,
-              variants: subItem.itemcodes.map(x => {
-                return {
-                  mainsku: x.mainsku, name: x.Name, unitPrice: x.Price, qty: x.Qty, step: x.Step, variants: x.Variants,
-                  id: x.Name
-                }
-              }),
-              src: subItem.imageurl
-            });
-          }
-        }
-      }
-      let result = products
+        return taxon
+      })
       return { result }
     },
   }
-
   return apiFunctions
 }
 
 //تقدی آنلاین
+

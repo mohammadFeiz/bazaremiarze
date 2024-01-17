@@ -467,7 +467,10 @@ export default class ActionClass implements I_actionClass {
         let cartTabs = Object.keys(cart);
         for (let i = 0; i < cartTabs.length; i++) {
             let cartTab = cart[cartTabs[i]];
-            if(cartTab.isTaxon === true){
+            if(cartTab.type === 'taxon'){
+                cartLength += Object.keys(cartTab.taxons).length;
+            }
+            else if(cartTab.type === 'Bundle'){
                 cartLength += Object.keys(cartTab.taxons).length;
             }
             else{
@@ -544,10 +547,10 @@ export default class ActionClass implements I_actionClass {
         let newCart = {}
         for(let prop in cart){
             if(prop === cartId){
-                if(cartTab.isTaxon === true){
+                if(cartTab.type === 'taxon'){
                     if(cartTab.taxons){newCart[prop] = cartTab}
                 }
-                else{
+                else if(cartTab.type === 'regular'){
                     if(cartTab.products){newCart[prop] = cartTab}
                 }
             }
@@ -562,7 +565,7 @@ export default class ActionClass implements I_actionClass {
         let reportAdd = false;
         if(taxonId){
             let newCartTab = cartTab as I_cartTab_taxon;
-            if(!newCartTab){newCartTab = {isTaxon:true,taxons:{}}}
+            if(!newCartTab){newCartTab = {type:'taxon',taxons:{}}}
             if(!newCartTab.taxons[taxonId]){
                 newCartTab.taxons[taxonId] = {taxonId,products:{}}
             }
@@ -625,5 +628,10 @@ export default class ActionClass implements I_actionClass {
         let newCart = !count?this.removeCartItem(props):this.editCartItem(props);
         apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
         this.setState({ cart: newCart });
+    }
+    setCart = (newCart:I_state_cart) => {
+        let { apis } = this.getState();
+        this.setState({cart:newCart})
+        apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
     }
 }

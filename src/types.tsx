@@ -164,18 +164,21 @@ export type I_ShopClass = {
             details?: any, loading?: boolean, index?: number, style?: any, type?: any
         }
     ) => React.ReactNode,
+    renderCard_Bundle:(p:{ taxon:I_bundle_taxon, renderIn:I_shopRenderIn, index?:number })=>React.ReactNode,
     renderPage:(product:I_product)=>React.ReactNode,
+    renderPage_Bundle:(taxon:I_bundle_taxon)=>React.ReactNode,
     renderTaxonCard: (
         p: {
             taxon: I_ShopClass_taxon, renderIn: I_shopRenderIn, index?: number, onFetchProducts?: any, errors?: any[], hasErrors?: any[]
         }
     ) => React.ReactNode,
-    getCartVariants:()=>I_cartVariant[],
+    getCartVariants:(p?:{productId?:string,taxonId?:string})=>I_cartVariant[],
     openCategory:(id?:string)=>void,
     payment:(p:I_shippingOptions)=>Promise<boolean>, 
     getCartProducts:(renderIn:I_shopRenderIn,shippingOptions?:I_shippingOptions)=>React.ReactNode[],
     renderCartFactor:()=>React.ReactNode,
     getAmounts:I_getAmounts,getAmounts_all:I_getAmounts,getAmounts_Bundle:I_getAmounts,
+    getMarketingLines_Bundle:()=>{ItemCode:any,ItemQty:number,Price:number,BasePackCode:any,BasePackQty:number}[]
 }
 export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>I_amounts;
 export type I_amounts = { total:number, discounts:I_discount[], payment:number, ClubPoints?: any };
@@ -227,6 +230,7 @@ export type I_actionClass = {
     removeCartItem:(p:I_changeCartProps)=>I_state_cart,
     editCartItem:(p:I_changeCartProps)=>I_state_cart,
     changeCart:(p:I_changeCartProps)=>void,
+    setCart:(newCart:I_state_cart)=>void,
     getGuaranteeItems:()=>void,
     getBazargahOrders:()=>void,
     removeCartTab:(cartId:string)=>void
@@ -253,7 +257,7 @@ export type I_state_spreeCategories = { icon_type: I_spreeCategory[], slider_typ
 export type I_state_Shop = {[shopId:string]:I_ShopClass}
 /////cart
 export type I_state_cart = {[cartId:string]:(I_cartTab | I_cartTab_taxon | I_cartTab_bundle)}
-export type I_cartTab = {products:{[productId:string]:I_cartProduct},isTaxon?:false}
+export type I_cartTab = {products:{[productId:string]:I_cartProduct},type:'regular'}
 export type I_cartProduct = {variants:{[variantId:string]:I_cartVariant},product:I_product}
 export type I_cartVariant = {
     cartId:string,count:number,
@@ -263,32 +267,33 @@ export type I_cartVariant = {
     error?:string
 };
 export type I_cartTab_bundle = {
-    taxons:{[taxonId:string]:I_cartTab_bundle_taxon}
+    taxons:{[taxonId:string]:I_cartTab_bundle_taxon},type:'Bundle'
 }
 export type I_cartTab_bundle_taxon = {
-    taxon:any,taxonId:string,count:number,products:{[productId:string]:I_cartTab_bundle_product}
+    count:number,products:{[productId:string]:I_cartTab_bundle_product},taxon:I_bundle_taxon
 }
 export type I_cartTab_bundle_product = {
-    [variantId:string]:I_cartTab_bundle_variant
+    variants:{[variantId:string]:I_cartTab_bundle_variant},qty:number,price:number
 }
 export type I_cartTab_bundle_variant = {
     count:number,step:number
 }
-export type I_bundle_taxon = {
-    cartId:'Bundle',id:string,name:string,price:number,products:I_bundle_product[],image:string
-}
-export type I_bundle_product = { //mainSku => id, unitPrice => price
-    id:string,namer:string,price:number,qty:number,step:number,variants:I_bundle_variant[]
-}
-export type I_bundle_variant = {//Code => id Name=> name Step => step
-    id:string,name:string,
-}
-export type I_cartTab_taxon = {taxons:{[taxonId:string]:I_cartTaxon},isTaxon:true}
+export type I_cartTab_taxon = {taxons:{[taxonId:string]:I_cartTaxon},type:'taxon'}
 export type I_cartTaxon = {
-    taxonId:string,products:{[productId:string]:I_cartProduct},taxon:I_ShopClass_taxon,
+    taxonId:string,products:{[productId:string]:I_cartProduct},
     errors?:{product:any,taxonId:string,minValue:number,maxValue:number,error:string}[]
 }
 /////cart
+export type I_bundle_taxon = {
+    cartId:'Bundle',id:string,name:string,price:number,products:I_bundle_product[],image:string,description:string,max:number
+}
+export type I_bundle_product = { //mainSku => id, unitPrice => price
+    id:string,name:string,price:number,qty:number,variants:I_bundle_variant[]
+}
+export type I_bundle_variant = {//Code => id Name=> name Step => step
+    id:string,name:string,step:number
+}
+
 export type I_report = {
     actionName: string, actionId: number, targetName?: string, targetId?: any,
     tagName: 'kharid' | 'vitrin' | 'profile' | 'other' | 'user authentication', eventName: 'action' | 'page view',
@@ -338,9 +343,10 @@ export type I_variant = {
     PymntDscnt:number,
     FinalPrice:number, 
     Price:number,
-    optionValues:{[optiontypeId:string]:string},
+    optionValues:I_variant_optionValues,
     srcs:string[]
 };
+export type I_variant_optionValues = {[optiontypeId:string]:string}
 export type I_discount = { percent?:number, value:number, title:string }
 
 

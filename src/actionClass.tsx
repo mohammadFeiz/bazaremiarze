@@ -575,7 +575,7 @@ export default class ActionClass implements I_actionClass {
             if(!newCartTab.taxons[taxonId].products[product.id].variants[variantId]){
                 reportAdd = true;
                 let variant = product.variants.find((variant)=>variant.id === variantId);
-                newCartTab.taxons[taxonId].products[product.id].variants[variantId] = {count:0,variant}
+                newCartTab.taxons[taxonId].products[product.id].variants[variantId] = {count:0,variant,cartId,productId:product.id,variantId:variant.id,product}
             }
             newCartTab.taxons[taxonId].products[product.id].variants[variantId].count = count
             let factorDetailsItems = []
@@ -606,14 +606,14 @@ export default class ActionClass implements I_actionClass {
         }
         else {
             let newCartTab = cartTab as I_cartTab;
-            if(!newCartTab){newCartTab = {products:{},isTaxon:false}}
+            if(!newCartTab){newCartTab = {products:{},type:'regular'}}
             if(!newCartTab.products[product.id]){
                 newCartTab.products[product.id] = {product,variants:{}}
             }
             if(!newCartTab.products[product.id].variants[variantId]){
                 reportAdd = true
                 let variant = product.variants.find((variant:I_variant)=>variant.id === variantId);
-                newCartTab.products[product.id].variants[variantId] = {variant,count:0}
+                newCartTab.products[product.id].variants[variantId] = {variant,count:0,cartId,variantId,productId:product.id,product}
             }
             newCartTab.products[product.id].variants[variantId].count = count;
             cartTab = newCartTab;

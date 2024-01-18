@@ -3,7 +3,7 @@ import nosrcImage from './../images/no-src.png';
 import nosrc from './../images/no-src.png';
 import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
-import { I_ShopProps, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_product, I_state_cart } from "../types";
+import { I_B1Info, I_ShopProps, I_actionClass, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_itemPrice, I_product, I_product_detail, I_product_optionType, I_state_cart, I_variant, I_variant_optionValues } from "../types";
 type I_chekcCode_return = any;
 type I_getCampaigns_return = { cartId: string, name: string, id: string, src: string, CampaignId: number, PriceListNum: number }[];
 type I_getCategories_return = { name: string, id: string }[]
@@ -13,48 +13,18 @@ type I_apiFunctions = {
   tarikhche_sefareshate_kharid: I_ni,
   mahsoolate_sefareshe_kharid: I_ni,
   getCampaigns: (ids: string[]) => Promise<{ result: I_getCampaigns_return }>,
-  getTaxonProducts:(p:{ taxonId?:string, cartId:string,count?:number }, appState: I_app_state)=>Promise<{result:I_product[]}>
+  getTaxonProducts:(p:{ taxonId?:string, cartId:string,pageSize?:number,pageNumber?:number,ids?:string,searchValue?:string }, appState: I_app_state)=>Promise<{result:I_product[]}>
   preOrders: I_ni,
   search: I_ni,
   getCategories: (ids: string[], appState?: I_app_state) => Promise<{ result: I_getCategories_return }>
-  getVariantOptionValues: I_ni,
-  getProductVariant: I_ni,
-  sortIncluded: I_ni,
-  getMappedAllProducts: I_ni,
   payment: I_ni,
-  getProductFullDetail: I_ni,
-  getSpreeProducts: I_ni,
-  getModifiedProducts: I_ni,
+  getProductFullDetail: (product:I_product,appState:I_app_state)=>Promise<{result:I_product}>,
   getCart: (p: any, appState: I_app_state) => { result: I_state_cart },
   setCart: (cart: I_state_cart, appState: I_app_state) => { result: true }
   dargah: I_ni,
   pardakhte_kharid: I_ni,
   bundleData: I_ni,
   daryafte_ettelaate_bundle: (p:any, appState: I_app_state) => { result: I_bundle_taxon[] }
-}
-type I_spreeResult = {
-  data:I_spreeProduct[],
-  included:any,
-  meta:I_spreeResult_meta
-}
-type I_spreeProduct = {
-  relationships:I_spreeProduct_relationships,
-  attributes:I_spreeProduct_attributes,
-  id:any
-}
-type I_spreeProduct_relationships = {
-  default_variant:{data:{id:any}},
-  images:{data:{id:any}[]}
-}
-type I_spreeProduct_attributes = {
-  name:string
-}
-type I_spreeIncluded = {
-  optionTypes_dic:any,details_dic:any,images_dic:any,meta_optionTypes_dic:any,variants_dic:any,
-  optionTypes_list:any[],details_list:any[],images_list:any[],meta_optionTypes_list:any[],variants_list:any[]
-}
-type I_spreeResult_meta = {
-  total_count:number
 }
 export default function kharidApis({ baseUrl, helper }) {
   let apiFunctions: I_apiFunctions = {
@@ -203,32 +173,6 @@ export default function kharidApis({ baseUrl, helper }) {
         return { ...i, src: nosrcImage, details: [] };
       })
 
-      let images = await Axios.post(`${baseUrl}/Spree/Products`, {
-        Skus: Skus.toString(),
-        PerPage: 250,
-        Include: "default_variant,images"
-      });
-      const included = images.data.data.included;
-
-      for (const item of images.data.data.data) {
-
-        const defaultVariantId = item.relationships.default_variant.data.id;
-        const defaultVariantImagesId = item.relationships.images.data.map(x => x.id);
-        const defaultVariant = included.find(x => x.type === "variant" && x.id === defaultVariantId);
-
-        const defaultVariantImages = included.filter(x => x.type === "image" && defaultVariantImagesId.includes(x.id));
-        const defaultVariantSku = defaultVariant.attributes.sku;
-        if (!defaultVariantSku) {
-          console.error('there is an item without sku');
-          console.error('items is:', item)
-          continue
-        }
-        const images = defaultVariantImages.map(x => "https://spree.burux.com" + x.attributes.original_url);
-        let firstItem = products.find(x => x.itemCode === defaultVariantSku);
-        if (firstItem === null || firstItem === undefined) continue;
-        firstItem.src = images[0];
-      }
-
       //PayDueDate:'ByDelivery',
       let dic1 = {
         'ByDelivery': 'نقد',
@@ -301,11 +245,6 @@ export default function kharidApis({ baseUrl, helper }) {
 
       return { result: campaigns };
     },
-    async getTaxonProducts({ taxonId, cartId,count }, { apis }) {
-      let { products } = await apis.request({ api: 'kharid.getSpreeProducts', description: '', parameter: { taxonId,cartId, pageSize: count } });
-      let result:I_product[] = await apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products,cartId } })
-      return { result }
-    },
     async preOrders(undefined, { userInfo }) {
       let preOrders = { waitOfVisitor: 0, waitOfPey: 0 };
       let res = await Axios.post(`${baseUrl}/Visit/PreOrderStat`, { CardCode: userInfo.cardCode });
@@ -344,306 +283,22 @@ export default function kharidApis({ baseUrl, helper }) {
       });
       return { result: categories };
     },
-    async getVariantOptionValues({ optionValues, optionTypes }) {
-      let result = {};
-      for (let optionValue of optionValues) {
-        let id = optionValue.id.toString();
-        for (let i = 0; i < optionTypes.length; i++) {
-          let optionTypeId = optionTypes[i].id.toString()
-          let items = optionTypes[i].items;
-          for (let prop in items) {
-            let itemId = prop.toString();
-            if (id === itemId) {
-              result[optionTypeId] = itemId;
-            }
-          }
-        }
-      }
-      return { result };
-    },
-    async getProductVariant({ include_variant, include_srcs, b1Result, optionTypes, defaultVariantId, product }, { apis }) {
-      let { id, attributes, relationships } = include_variant;
-      let srcs = relationships.images.data.map(({ id }) => include_srcs[id.toString()].attributes.original_url)
-      const b1_item = b1Result.find((i) => i.itemCode === attributes.sku);
-      if (!b1_item) {
-        return { result: false }
-      }
-      let price, discountPrice, discountPercent, inStock, dropShipping;
-      try { price = b1_item.finalPrice } catch { price = 0 }
-      try { discountPercent = b1_item.pymntDscnt } catch { discountPrice = 0 }
-      try { inStock = !!b1_item.canSell } catch { inStock = 0 }
-      try { dropShipping = b1_item.qtyRelation === 4 } catch { dropShipping = 0 }
-      try { discountPrice = Math.round(b1_item.price * discountPercent / 100) } catch { discountPrice = 0 }
-      let optionValues = await apis.request({ api: 'kharid.getVariantOptionValues', description: '', parameter: { optionValues: relationships.option_values.data, optionTypes } })
-      let code = '';
-      if (b1_item && b1_item.itemCode) { code = b1_item.itemCode }
-      else {
-        // console.error(`missing itemCode`)
-        // console.error('product is : ' ,product);
-        // console.error('b1_item is :', b1_item);
-      }
-      let result = {
-        id:code, optionValues, discountPrice, price, inStock, srcs,
-        dropShipping, discountPercent, isDefault: defaultVariantId === id
-      };
-      return { result }
-    },
-    async getMappedAllProducts({ spreeResult, b1Result, loadType }, { apis }) {
-      if (loadType === 0) {
-
-        const included = spreeResult.included;
-        let finalResult = [];
-
-        for (const item of spreeResult.data) {
-
-          const defaultVariantId = item.relationships.default_variant.data.id;
-          const defaultVariantImagesId = item.relationships.images.data.map(x => x.id);
-          const defaultVariant = included.find(x => x.type === "variant" && x.id === defaultVariantId);
-          const defaultVariantImages = included.filter(x => x.type === "image" && defaultVariantImagesId.includes(x.id));
-          const defaultVariantSku = defaultVariant.attributes.sku;
-
-          if (!defaultVariantSku) {
-            // console.error('there is an item without sku');
-            // console.error('items is:',item)
-            continue
-          }
-          const itemFromB1 = b1Result.find(x => x.itemCode === defaultVariantSku);
-          const srcs = defaultVariantImages.map(x => {
-            return "https://spree.burux.com" + x.attributes.original_url;
-          });
-
-          if (itemFromB1 === undefined) continue;
-
-          const dropShipping = itemFromB1.qtyRelation === 4;
-          finalResult.push({
-            name: item.attributes.name, id: item.id,
-            dropShipping, inStock: !!itemFromB1 && !!itemFromB1.canSell, details: [], optionTypes: [], variants: [], srcs,
-            defaultVariant: { id: defaultVariantSku, srcs },
-            price: 0, discountPrice: 0, discountPercent: 0
-          });
-        }
-
-        return { result: finalResult };
-      }
-
-      let products = spreeResult.data;
-      let { include_optionTypes, include_variants, include_details, include_srcs, meta_optionTypes } = await apis.request({ api: 'kharid.sortIncluded', description: '', parameter: spreeResult });
-      var finalResult = [];
-      for (let product of products) {
-        let { relationships } = product;
-
-        if (!relationships.variants.data || !relationships.variants.data.length) {
-          // console.error(`product width id = ${product.id} has not any varinat`)
-          // console.log('spree item is', product);
-          continue;
-        }
-        let optionTypes = [];
-        for (let i = 0; i < relationships.option_types.data.length; i++) {
-          let { id } = relationships.option_types.data[i];
-          id = id.toString();
-          if (!meta_optionTypes[id]) {
-            // console.error(`in product by id = ${product.id} in relationships.option_types.data[${i}] id is ${id}. but we cannot find this id in meta.filters.option_values`)
-            // console.log('product is', product)
-            // console.log('meta.filters.option_values is', meta_optionTypes)
-            continue;
-          }
-          let { option_values } = meta_optionTypes[id];
-          let { attributes } = include_optionTypes[id];
-          let items = {}
-          for (let j = 0; j < option_values.length; j++) {
-            let o = option_values[j];
-            items[o.id.toString()] = o.presentation;
-          }
-          optionTypes.push({ id, name: attributes.name, items })
-        }
-        if (!optionTypes.length) { continue }
-        let details = [];
-        for (let i = 0; i < relationships.product_properties.data.length; i++) {
-          let detail = relationships.product_properties.data[i];
-          let { id } = detail;
-          id = id.toString();
-          let { attributes } = include_details[id];
-          let { name, value } = attributes;
-          details.push([name, value])
-        }
-        let srcs = [];
-        for (let i = 0; i < relationships.images.data.length; i++) {
-          let { id } = relationships.images.data[i];
-          id = id.toString();
-          let { attributes } = include_srcs[id];
-          let { original_url } = attributes;
-          srcs.push("https://spree.burux.com" + original_url)
-        }
-        let variants = [];
-        let defaultVariant;
-        let inStock = false;
-        let defaultVariantId = product.relationships.default_variant.data.id;
-        for (let i = 0; i < relationships.variants.data.length; i++) {
-          let { id } = relationships.variants.data[i];
-          id = id.toString();
-          let variant = await apis.request({
-            api: 'kharid.getProductVariant', description: '',
-            parameter: { include_variant: include_variants[id], include_srcs, b1Result, optionTypes, defaultVariantId, product }
-          })
-          if (variant === false) { continue }
-          if (variant.isDefault) { defaultVariant = variant }
-          inStock = !!inStock || !!variant.inStock;
-          variants.push(variant)
-        }
-        let price = 0, discountPrice = 0, discountPercent = 0;
-        if (defaultVariant) {
-          price = defaultVariant.price;
-          discountPrice = defaultVariant.discountPrice;
-          discountPercent = defaultVariant.discountPercent;
-        }
-        else {
-          console.error(`product width id = ${product.id} has not default variant`)
-          console.log('spree item is', product);
-          continue;
-        }
-        finalResult.push({
-          inStock, details, optionTypes, variants, srcs, name: product.attributes.name, defaultVariant,
-          price, discountPrice, discountPercent, id: product.id
-        })
-      }
-      return { result: finalResult };
-    },
     async payment(obj, { Shop }) {
       let { cartId } = obj;
       let result = Shop[cartId].payment(obj);
       return { result }
     },
-    async sortIncluded(spreeResult) {
-      let sorted:I_spreeIncluded = { 
-        optionTypes_dic: {}, details_dic: {}, images_dic: {}, meta_optionTypes_dic: {}, variants_dic: {} ,
-        optionTypes_list: [], details_list: [], images_list: [], meta_optionTypes_list: [], variants_list: [] 
-      }
-      for (let i = 0; i < spreeResult.included.length; i++) {
-        let include = spreeResult.included[i];
-        let { type, id } = include;
-        id = id.toString();
-        if (type === 'option_type') { sorted.optionTypes_dic[id] = include; sorted.optionTypes_list.push(include) }
-        else if (type === 'product_property') { sorted.details_dic[id] = include; sorted.details_list.push(include) }
-        else if (type === 'image') { sorted.images_dic[id] = include; sorted.images_list.push(include) }
-        else if (type === 'variant') { sorted.variants_dic[id] = include; sorted.variants_list.push(include) }
-      }
-      for (let i = 0; i < spreeResult.meta.filters.option_types.length; i++) {
-        let optionType = spreeResult.meta.filters.option_types[i];
-        sorted.meta_optionTypes_dic[optionType.id.toString()] = optionType;
-        sorted.meta_optionTypes_list.push(optionType)
-      }
-      return { result: sorted }
+    async getProductFullDetail(product , appState) {
+      let spree = new Spree(appState);
+      let result = await spree.getProductFullDetail(product)
+      return { result };
     },
-    async getProductFullDetail(product , { b1Info, actionClass, apis }) {
-      //پروداکت رو همینجوری برای اینکه یک چیزی ریترن بشه فرستادم تو از کد و آی دی آبجکت کامل پروداکت رو بساز و ریترن کن
-      let res = await Axios.post(`${baseUrl}/Spree/Products`,
-        { Ids: product.id, PerPage: 250, Include: "variants,option_types,product_properties,images" }
-      );
-      if (res.data.data.status === 500) { return { result: false } }
-      const productResult = res.data.data.data[0];
-      if (productResult === undefined) { return { result: {} }; }
-
-      const included = res.data.data.included;
-      let { relationships } = productResult;
-      let variants = [];
-      let details = [];
-      let optionTypes = [];
-      const defaultVariantId = product.defaultVariant.id;
-      let response = await apis.request({ api: 'kharid.sortIncluded', description: '', parameter: res.data.data });
-      let { include_optionTypes, include_details, meta_optionTypes } = response;
-      for (let i = 0; i < relationships.option_types.data.length; i++) {
-        let { id } = relationships.option_types.data[i];
-        id = id.toString();
-        if (!meta_optionTypes[id]) {continue;}
-        let { option_values } = meta_optionTypes[id];
-        let { attributes } = include_optionTypes[id];
-        let items = {}
-        for (let j = 0; j < option_values.length; j++) {
-          let o = option_values[j];
-          items[o.id.toString()] = o.presentation;
-        }
-        optionTypes.push({ id, name: attributes.presentation, items })
-      }
-      for (const item of relationships.variants.data) {
-        const variant = included.find(x => x.type === "variant" && x.id === item.id);
-        let varId = variant.id.toString();
-        let varSku = variant.attributes.sku;
-        if (!varSku) { continue }
-        let optionValues = await apis.request({ api: 'kharid.getVariantOptionValues', parameter: { optionValues: variant.relationships.option_values.data, optionTypes } })
-        const variantImagesId = variant.relationships.images.data.map(x => x.id);
-        const variantImages = included.filter(x => x.type === "image" && variantImagesId.includes(x.id));
-        const srcs = variantImages.map(x => {
-          return "https://spree.burux.com" + x.attributes.original_url;
-        });
-        let price = actionClass.fixPrice({ items: [{ ItemCode: varSku, itemCode: varSku, ItemQty: 1, itemQty: 1 }] })[0];
-        if (price === undefined) continue;
-        let sss = b1Info.itemPrices.find(x => x.itemCode === varSku || x.mainSku === varSku);
-        if (!sss) { sss = {} }
-        let { canSell, qtyRelation } = sss;
-        variants.push({
-          optionValues,
-          inStock: !!canSell,
-          dropShipping: qtyRelation === 4,
-          srcs,
-          id: varSku,
-          isDefault: defaultVariantId === varId,
-          ...price
-        });
-      }
-      for (let i = 0; i < relationships.product_properties.data.length; i++) {
-        let detail = relationships.product_properties.data[i];
-        let { id } = detail;
-        id = id.toString();
-        let { attributes } = include_details[id];
-        let { name, value } = attributes;
-        details.push([name, value])
-      }
-      product.details = details;
-      product.variants = variants;
-      product.optionTypes = optionTypes;
-      return { result: product };
-    },
-    
-    async getSpreeProducts({ cartId,taxonId, pageSize = 250, pageNumber, ids, Name }, { userInfo, b1Info, apis,Shop,actionClass }) {
-      let {cardCode} = userInfo,{itemPrices} = b1Info;
-      let {CampaignId,PriceListNum} = Shop[cartId];
-      let body = {
-        CardCode: cardCode, Taxons:taxonId || cartId, Name, ids, PerPage: pageSize, Page: pageNumber,
-        ProductFields: "id,name,type,sku,slug,default_variant,images,price",
-        VariantFields: "id,sku,type,images",Include: "default_variant,images"
-      }
-      let res = await Axios.post(`${baseUrl}/Spree/Products`, body); if (!res.data.isSuccess) { return { result: res.data.message } }
-      const spreeResult:I_spreeResult = res.data.data;
-      if (!spreeResult) { return { result: 'خطا در دریافت اطلاعات اسپری' } }
-      const spreeProducts:I_spreeProduct[] = spreeResult.data;
-      const spreeIncluded:I_spreeIncluded = apis.request({ api: 'kharid.sortIncluded', description: '', parameter: spreeResult });
-      let products = [];
-      for (const product of spreeProducts) {
-        let { relationships } = product;
-        const sku = spreeIncluded.variants_dic[relationships.default_variant.data.id].attributes.sku;
-        if (!sku) {continue}
-        let images = relationships.images.data.map(({id})=>`https://spree.burux.com${spreeIncluded.images_dic[id.toString()].attributes.styles[9].url}`)
-        let defaultVariantProps = {"id": sku};
-        const itemFromB1 = itemPrices.find((o) =>  o.itemCode === sku || o.mainSku === sku);
-        if (!itemFromB1) {continue}
-        let fixPrice_payload = {items:[{ ItemCode: sku, itemCode: sku, ItemQty: 1, itemQty: 1 }], CampaignId, PriceListNum}
-        let fixPrice_results:I_fixPrice_result[] = actionClass.fixPrice(fixPrice_payload)
-        let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
-        let {qtyLevel} = fixPrice_result.OnHand;
-        let inStock = !!qtyLevel;
-        
-        let productProps = {images: images,name: product.attributes.name, defaultVariantId: sku,id: product.id}
-        products.push(productProps);
-      }
-      let fixedProducts:I_product[] = products.map((baseProduct, i) => { 
-        let fixPrice_result = fixPrice_results[i];
-        let product:I_product = {...baseProduct,}
-        return { ...baseProduct, ...fixPrice_results[i] } 
-      })
-      let total = spreeResult.meta.total_count
-      let result = { products: fixedProducts, total };
-      if (Array.isArray(products)) { result = { products, total } }
-      return { result }
+    async getTaxonProducts(p, appState) {
+      let spree = new Spree(appState);
+      let {products,total} = await spree.getTaxonProducts(p)
+      //products:I_product[] = appState.apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products,cartId:p.cartId } })
+      
+      return { result:products }
     },
     getCart({ Shop, userInfo }) {
       let cartStorage = AIOStorage('bazaremiarzeapis');
@@ -712,3 +367,211 @@ export default function kharidApis({ baseUrl, helper }) {
 
 //تقدی آنلاین
 
+type I_spreeResult = {
+  data:I_spreeProduct[],
+  included:any,
+  meta:I_spreeResult_meta
+}
+type I_spreeProduct = {
+  relationships:I_spreeProduct_relationships,
+  attributes:I_spreeProduct_attributes,
+  id:any
+}
+type I_spreeVariant = {attributes:{sku:any},relationships:I_spreeVariant_relationships}
+type I_spreeVariant_relationships = {
+  option_values:{data:{id:any}[]},
+  images:{data:{id:any}[]}
+}
+type I_spreeImage = {attributes:{original_url:string,styles:{url:string}[]}}
+type I_spreeProduct_relationships = {
+  default_variant:{data:{id:any}},
+  images:{data:{id:any}[]},
+  option_types:{data:{id:any}[]},
+  variants:{data:{id:any}[]},
+  product_properties:{data:{id:any}[]}
+}
+type I_spreeProduct_attributes = {
+  name:string
+}
+type I_spreeIncluded = {
+  optionTypes:any,
+  details:{[id:string]:I_spreeDetail},
+  images:{[id:string]:I_spreeImage},
+  meta_optionTypes:any,
+  variants:{[id:string]:I_spreeVariant}
+}
+type I_spreeDetail = {attributes:{name:string,value:any}}
+type I_spreeResult_meta = {
+  total_count:number,
+  filters:{option_types:{id:any}[]}
+}
+type I_Spree = {
+  appState:I_app_state,
+  getIncluded:(spreeResult:I_spreeResult)=>I_spreeIncluded,
+  request:(p:{body?:I_Spree_p,product?:I_product})=>Promise<I_spreeResult | false>,
+  getTaxonProducts:(p:I_Spree_p)=>Promise<{products:I_product[],total:number}>,
+  getProductFullDetail:(product:I_product)=>Promise<I_product>,
+  getOptionTypes:(spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded)=>I_product_optionType[],
+  getVariants:(spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,optionTypes:I_product_optionType[]) =>I_variant[],
+  getVariantOptionValues:(relationships:I_spreeVariant_relationships,optionTypes:I_product_optionType[]) => I_variant_optionValues,
+  getDetails:(spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded) => I_product_detail[]
+}
+type I_Spree_p = {cartId:string,taxonId?:string,searchValue?:string,ids?:string,pageSize?:number,pageNumber?:number}
+
+
+class Spree implements I_Spree{
+  appState:I_app_state;
+  constructor(appState){
+    this.appState = appState; 
+  }
+  getIncluded = (spreeResult:I_spreeResult)=>{
+    let sorted:I_spreeIncluded = { 
+      optionTypes: {}, details: {}, images: {}, meta_optionTypes: {}, variants: {}
+    }
+    for (let i = 0; i < spreeResult.included.length; i++) {
+      let include = spreeResult.included[i];
+      let { type, id } = include;
+      id = id.toString();
+      if (type === 'option_type') { sorted.optionTypes[id] = include; }
+      else if (type === 'product_property') { sorted.details[id] = include; }
+      else if (type === 'image') { sorted.images[id] = include; }
+      else if (type === 'variant') { sorted.variants[id] = include; }
+    }
+    for (let i = 0; i < spreeResult.meta.filters.option_types.length; i++) {
+      let optionType = spreeResult.meta.filters.option_types[i];
+      sorted.meta_optionTypes[optionType.id.toString()] = optionType;
+    }
+    return sorted
+  }
+  request = async (p:{body?:I_Spree_p,product?:I_product})=>{
+    let {userInfo,baseUrl} = this.appState;
+    let body:any;
+    if(p.product){body = { Ids: p.product.id, PerPage: 250, Include: "variants,option_types,product_properties,images" }}
+    else if(p.body){
+      let {cartId,taxonId,searchValue,ids,pageSize = 250,pageNumber} = p.body;
+      body = {
+        CardCode: userInfo.cardCode, Taxons:taxonId || cartId, Name:searchValue, ids, PerPage: pageSize, Page: pageNumber,
+        ProductFields: "id,name,type,sku,slug,default_variant,images,price",
+        VariantFields: "id,sku,type,images",Include: "default_variant,images"
+      }
+    }
+    let res = await Axios.post(`${baseUrl}/Spree/Products`, body); 
+    if (!res.data.isSuccess) { alert(res.data.message); return false}
+    return res.data.data as I_spreeResult;
+  }
+  getTaxonProducts = async (parameter:I_Spree_p)=>{
+    let {cartId} = parameter;
+    let spreeResult = await this.request({body:parameter});
+    if(spreeResult === false){
+      alert('خطا در دریافت اطلاعات اسپری');
+      return {products:[],total:0}
+    }
+    let total:number = spreeResult.meta.total_count;
+    const spreeProducts:I_spreeProduct[] = spreeResult.data;
+    const spreeIncluded:I_spreeIncluded = this.getIncluded(spreeResult)
+    let products:I_product[] = [];
+    for (const spreeProduct of spreeProducts) {
+      let product = this.getProduct(spreeProduct,spreeIncluded,cartId)
+      if(product === false){total--}
+      else {products.push(product)}
+    }
+    return { products, total }
+  }
+  getProductFullDetail = async (product:I_product) => {
+    let spreeResult = await this.request({product})
+    if(spreeResult === false){return product}
+    let spreeProducts:I_spreeProduct[] = spreeResult.data;
+    let spreeProduct:I_spreeProduct = spreeProducts[0];
+    let spreeIncluded:I_spreeIncluded = this.getIncluded(spreeResult);
+    let optionTypes:I_product_optionType[] = this.getOptionTypes(spreeProduct,spreeIncluded);
+    let variants:I_variant[] = this.getVariants(spreeProduct,spreeIncluded,optionTypes);
+    let details:I_product_detail[] = this.getDetails(spreeProduct,spreeIncluded)
+    return {...product,optionTypes,variants,details}
+  }
+  getOptionTypes = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded) => {
+    let {relationships} = spreeProduct,{option_types} = relationships;
+    let optionTypes:I_product_optionType[] = [];
+    for (let i = 0; i < option_types.data.length; i++) {
+      let { id } = option_types.data[i];
+      id = id.toString();
+      if (!spreeIncluded.meta_optionTypes[id]) {continue;}
+      let { option_values } = spreeIncluded.meta_optionTypes[id];
+      let { attributes } = spreeIncluded.optionTypes[id];
+      let items = {}
+      for (let j = 0; j < option_values.length; j++) {
+        let {id,presentation} = option_values[j];
+        items[id.toString()] = presentation;
+      }
+      optionTypes.push({ id, name: attributes.presentation, items })
+    }
+    return optionTypes;
+  }
+  getVariants = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,optionTypes:I_product_optionType[]) => {
+    let {b1Info,actionClass} = this.appState;
+    let variants:I_variant[] = []
+    for (const spreeVariant of spreeProduct.relationships.variants.data) {
+      const {attributes,relationships}:I_spreeVariant = spreeIncluded.variants[spreeVariant.id.toString()]
+      let sku = attributes.sku;
+      if (!sku) { continue }
+      let optionValues = this.getVariantOptionValues(relationships,optionTypes)
+      let images = relationships.images.data.map(({id})=>{
+        return `https://spree.burux.com${spreeIncluded.images[id].attributes.original_url}`
+      })
+      let fixPrice_results:I_fixPrice_result[] = actionClass.fixPrice({ items: [{ ItemCode: sku, itemCode: sku, ItemQty: 1, itemQty: 1 }] });
+      let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
+      let {OnHand,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
+      let {canSell,qtyRelation} = b1Info.itemPrices.find(o => o.itemCode === sku || o.mainSku === sku);
+      //let dropShipping = qtyRelation === 4
+      let inStock = !!OnHand.qtyLevel && !!canSell;
+      let variant:I_variant = {optionValues,inStock,images,id: sku,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price}
+      variants.push(variant);
+    }
+    return variants;
+  }
+  getVariantOptionValues = (relationships:I_spreeVariant_relationships,optionTypes:I_product_optionType[]) => {
+    let {option_values} = relationships;
+    let optionValues:I_variant_optionValues = {};
+    for (let optionValue of option_values.data) {
+      let id = optionValue.id.toString();
+      for (let i = 0; i < optionTypes.length; i++) {
+        let optionTypeId = optionTypes[i].id.toString()
+        let items = optionTypes[i].items;
+        for (let prop in items) {
+          let itemId = prop.toString();
+          if (id === itemId) {
+            optionValues[optionTypeId] = itemId;
+          }
+        }
+      }
+    }
+    return optionValues;
+  }
+  getDetails = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded) => {
+    let details:I_product_detail[] = [];
+    for (let i = 0; i < spreeProduct.relationships.product_properties.data.length; i++) {
+      let {id} = spreeProduct.relationships.product_properties.data[i];
+      id = id.toString();
+      let { attributes } = spreeIncluded.details[id];
+      let { name, value } = attributes;
+      details.push([name, value])
+    }
+    return details;
+  }
+  getProduct = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,cartId:string) => { 
+    let {b1Info,actionClass,Shop} = this.appState;
+    let {CampaignId,PriceListNum} = Shop[cartId];
+    let { relationships,attributes,id } = spreeProduct,name = attributes.name;
+    const sku = spreeIncluded.variants[relationships.default_variant.data.id].attributes.sku;
+    if (!sku) {return false}
+    let images = relationships.images.data.map(({id})=>`https://spree.burux.com${spreeIncluded.images[id.toString()].attributes.styles[9].url}`)
+    const itemFromB1 = b1Info.itemPrices.find((o) =>  o.itemCode === sku || o.mainSku === sku);
+    if (!itemFromB1) {return false}
+    let fixPrice_payload = {items:[{ ItemCode: sku, itemCode: sku, ItemQty: 1, itemQty: 1 }], CampaignId, PriceListNum}
+    let fixPrice_results:I_fixPrice_result[] = actionClass.fixPrice(fixPrice_payload)
+    let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
+    let {OnHand,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
+    let {qtyLevel} = OnHand;
+    let product:I_product = {images,name,id,inStock:!!qtyLevel,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price,hasFullDetail:false}
+    return product;
+  }
+}

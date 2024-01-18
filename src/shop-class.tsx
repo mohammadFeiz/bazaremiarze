@@ -1365,10 +1365,10 @@ function BundlePage(props: I_BundeCard) {
             setSubmitLoading(true)
             setTimeout(()=>{
                 setSubmitLoading(false);
-                actionClass.openPopup('cart');
+                actionClass.openPopup('cart','Bundle');
             },2000)    
         }
-        else {actionClass.openPopup('cart');}
+        else {actionClass.openPopup('cart','Bundle');}
     }
     function body_layout(){
         return { flex: 1, className: "ofy-auto m-v-12", gap: 12, column: [image_layout(), taxonDetails_layout(), count_layout()] }
@@ -1434,7 +1434,7 @@ function CartButton(props: I_CartButton) {
     let { product, renderIn, variantId, onChange = () => { }, taxonId, cartId } = props;
     function openCart(e) {
         e.stopPropagation();
-        actionClass.openPopup('cart', product.cartId)
+        actionClass.openPopup('cart', cartId)
     }
     let count = 0;
     if (cart[cartId]) {

@@ -75,10 +75,11 @@ export type I_userInfo = {
 
 }
 export type I_B1Info = {
-    itemPrices:{itemCode: any,mainSku?: any,canSell: boolean,qtyRelation:number}[],//notice
+    itemPrices:I_itemPrice[],//notice
     salePeople:{mobile:string},
     customer:{ballance:number,groupName:string,slpcode:string,slpname:string,groupCode:string}
 }
+export type I_itemPrice = {itemCode: any,mainSku?: any,canSell: boolean,qtyRelation:number}
 export type I_register = {
     landlineNumber: string,
     landline: string,
@@ -302,35 +303,34 @@ export type I_updateProfile = (loginModel: I_AIOLogin_model, mode: 'register' | 
 
 
 export type I_product = {
-    description: any;
-    clubpoint: any;
-    name:string,
-    cartId:string,
-    ItemCode:string,
+    //مواردی که ابتدا دریافت می شود
     id:string,
+    name:string,
+    images:string[],
+    inStock:boolean,
     B1Dscnt:number,
     CmpgnDscnt:number,
     PymntDscnt:number,
     FinalPrice:number, 
     Price:number,
-    optionTypes:I_product_optionType[],
-    defaultVariant:I_variant,
-    hasFullDetail?:boolean,
-    inStock:boolean,
-    images:string[],
-    details:[key:string,value:string][],
-    variants:I_variant[]
+    hasFullDetail:boolean,
+    
+    //مواردی که با کلیک روی محصول دریافت می شود
+    description?: any;
+    clubpoint?: any;
+    optionTypes?:I_product_optionType[],
+    details?:I_product_detail[],
+    variants?:I_variant[]
 };
-export type I_product_bundle = any;
+export type I_product_detail = [key:string,value:string];
 export type I_product_optionType = {
     id:string,
     name:string,
-    items:{[optionValueId:string]:string}[]
+    items:{[optionValueId:string]:string}
 }
 export type I_variant = {
     id:string,
     inStock:boolean,
-    isDefault:boolean
     B1Dscnt:number,
     CmpgnDscnt:number,
     PymntDscnt:number,

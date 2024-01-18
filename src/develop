@@ -1,1 +1,3 @@
 update backOffice data on server => b1Id => CampaignId
+srcs => images
+dropShipping:boolean in all of project if is exist, replace by qtyRelation === 4

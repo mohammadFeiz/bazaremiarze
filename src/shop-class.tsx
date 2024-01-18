@@ -2,7 +2,7 @@ import React, { Fragment, useContext, useEffect, useState, useRef } from "react"
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import AIOStorage from 'aio-storage';
 import { Icon } from '@mdi/react';
-import { mdiPlusThick, mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline } from "@mdi/js";
+import { mdiPlusThick, mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline, mdiClose } from "@mdi/js";
 import Axios from 'axios';
 import SplitNumber from "./npm/aio-functions/split-number";
 import Shipping from "./components/kharid/shipping/shipping";
@@ -38,11 +38,17 @@ export default class ShopClass implements I_ShopClass {
     description?: string;
     icon?: string;
 
-    
-    renderCard_Bundle = (p) => {
+    renderPage_Bundle = (taxon:I_bundle_taxon)=><BundlePage taxon={taxon} />
+    getCartProducts_Bundle = (renderIn) => {
+        let {cart} = this.getAppState();
+        let cartTab = cart.Bundle as I_cartTab_bundle; if(!cartTab){return []}
+        let cartTaxons:I_cartTab_bundle_taxon[] = this.dicToArray(cartTab.taxons); 
+        return cartTaxons.map(({ taxon },index) => this.renderCard_Bundle({ taxon, index, renderIn }))
+    }
+    renderCard_Bundle = (p:{ taxon:I_bundle_taxon, renderIn:I_shopRenderIn, index?:number }) => {
         //{ taxon: I_bundle_taxon, renderIn: I_shopRenderIn, index?: number, onClick?: Function }
         let { taxon, renderIn, index } = p;
-        let { apis, rsa, actionClass, msfReport, cart } = this.getAppState();
+        let { rsa, msfReport } = this.getAppState();
         let props = {
             taxon,renderIn,index,
             onClick: async () => {
@@ -50,7 +56,7 @@ export default class ShopClass implements I_ShopClass {
                 rsa.addModal({
                     position: 'fullscreen', id: 'product',
                     body: { render: () => this.renderPage_Bundle(taxon) },
-                    header: { title: this.name, buttons: actionClass.getHeaderIcons({ cart: true }) }
+                    header:false
                 })
             }
         }
@@ -80,7 +86,6 @@ export default class ShopClass implements I_ShopClass {
         }
         return (<RegularCard key={product.id} {...props} />)
     }
-    renderPage_Bundle = (taxon:I_bundle_taxon)=><BundlePage taxon={taxon} />
     renderPage = (product:I_product) => {
         let { actionClass } = this.getAppState()
         let props = {
@@ -269,30 +274,22 @@ export default class ShopClass implements I_ShopClass {
         payment = payment * cashPercent / 100;
         return { total, discounts, payment, ClubPoints: {} };//notice // ClubPoints!!!!
     }
-    getCartProducts_Bundle = (cartItems, renderIn) => {
-        return cartItems.map(({ product, count, variantId }) => this.renderCard({ product, count, variantId, renderIn }))
-    }
     getCartProducts = (renderIn, shippingOptions) => {
         let { cart } = this.getAppState();
         let cartTab = cart[this.cartId];
         if (!cartTab) { return [] }
+        if(this.cartId === 'Bundle'){return this.getCartProducts_Bundle(renderIn)}
         let cartItems = [];
         if (this.taxons) { cartItems = this.dicToArray((cartTab as I_cartTab_taxon).taxons) }
         else { cartItems = this.dicToArray((cartTab as I_cartTab).products) }
-        if (this.cartId === 'Bundle') { return this.getCartProducts_Bundle(cartItems, renderIn) }
-        else { return this.getCartProducts_all(cartItems, renderIn, shippingOptions) }
+        if (this.cartId === 'Bundle') {  }
+        else { return this.getCartProducts_all(cartItems, renderIn) }
     }
 
-    getCartProducts_all = (cartItems, renderIn, shippingOptions) => {//notice // shippingOptions here never used
+    getCartProducts_all = (cartItems, renderIn) => {
         if (this.taxons) {
-            let hasErrors = cartItems.filter((cartItem, i) => {
-                let errors = cartItem.errors;
-                return errors && errors.length
-            })
             return cartItems.map((cartItem, i) => {
-
                 let taxon = this.taxons.find((o) => o.id === cartItem.taxonId)
-                let errors = cartItem.errors;
                 let props = { taxon, renderIn }
                 return this.renderTaxonCard(props)
             })
@@ -459,8 +456,8 @@ export default class ShopClass implements I_ShopClass {
     async getCategoryProducts(id, count) {
         let { apis } = this.getAppState();
         return await apis.request({
-            api: 'kharid.getTaxonProducts', parameter: { cartId:this.cartId,taxonId:id, count }, description: 'دریافت محصولات دسته بندی', def: [],
-            cache: { time: 30 * 24 * 60 * 60 * 1000, name: `taxonProducts.cartId_${this.cartId}${id?`_taxonId_${id}`:''}${count?`_count_${count}`:''}` }
+            api: 'kharid.getTaxonProducts', parameter: { cartId:this.cartId,taxonId:id, pageSize:count,pageNumber:1 }, description: 'دریافت محصولات دسته بندی', def: [],
+            cache: { time: 30 * 24 * 60 * 60 * 1000, name: `taxonProducts.${this.cartId}${id?`.${id}`:''}${count?`_count${count}`:''}` }
         });
     }
     renderCartFactor = (button = true) => {
@@ -816,11 +813,18 @@ function BundleCard(props: I_BundleCard) {
     }
     function image_layout() {
         return {
-            column: [
-                { flex: 1, size: 114, html: <img src={taxon.image} alt='' width='100%' height='100%' className='br-12' /> },
-                { show: renderIn === 'cart', size: 30, html: 'حذف از سبد', align: 'vh', style: { color: 'red' }, className: 'bold fs-14' }
-            ]
+            flex: 1, html: <img src={taxon.image} alt='' height='100%' className='br-12' />
         }
+    }
+    function count_layout(){
+        let count;
+        try{
+            let cartTab = cart.Bundle as I_cartTab_bundle;
+            count = cartTab.taxons[taxon.id].count
+        }
+        catch{count = 0}
+        if(!count){return false}
+        return {align:'vh',html:count,className:'fs-12',style:{color:'red'}}
     }
     function name_layout() {
         return { html: taxon.name, className: 'fs-14 theme-dark-font-color bold', style: { textAlign: 'right' } }
@@ -871,7 +875,7 @@ function BundleCard(props: I_BundleCard) {
                     title_layout(), { size: 6 },
                     {
                         gap: 12, row: [
-                            { size: 114, column: [image_layout()] },
+                            { size: 114, column: [image_layout(),count_layout()] },
                             { flex: 1, column: [name_layout(), { size: 6 }, detail_layout(), { flex: 1 }, price_layout()] }
                         ]
                     },
@@ -1140,25 +1144,27 @@ function RegularPage(props: I_RegularPage) {
     }
     return (<RVD layout={{ className: "theme-popup-bg", gap: 12, column: [body_layout(), showCart_layout(), footer_layout()] }} />);
 }
-type I_BundeCard = { taxon: I_bundle_taxon }
-function BundlePage(props: I_BundeCard) {
-    let { cart, actionClass }: I_app_state = useContext(appContext);
+type I_BundePage = { taxon: I_bundle_taxon }
+function BundlePage(props: I_BundePage) {
+    let { cart, actionClass,rsa }: I_app_state = useContext(appContext);
     let { taxon } = props;
     const defaultCartTaxon: I_cartTab_bundle_taxon = { products: {}, taxon: props.taxon, count: 0 }
     let [cartTaxon, setCartTaxon] = useState<I_cartTab_bundle_taxon>(defaultCartTaxon)
     let [submitLoading,setSubmitLoading] = useState<boolean>(false)
     let cartTimeout;
-    function changeCartTaxon(newCartTaxon: I_cartTab_bundle_taxon) {
+    function setCart(newCartTaxon){
+        let newCart: I_state_cart = JSON.parse(JSON.stringify(cart));
+        let cartTab: I_cartTab_bundle = newCart.Bundle as I_cartTab_bundle;
+        if (!cartTab) { newCart.Bundle = { taxons: {},type:'Bundle' } }
+        if (!cartTab.taxons[taxon.id]) { cartTab.taxons[taxon.id] = newCartTaxon }
+        newCart.Bundle = cartTab;
+        actionClass.setCart(newCart)
+    }
+    function changeCartTaxon(newCartTaxon: I_cartTab_bundle_taxon,delay?:boolean) {
         setCartTaxon(newCartTaxon);
         clearTimeout(cartTimeout);
-        cartTimeout = setTimeout(() => {
-            let newCart: I_state_cart = JSON.parse(JSON.stringify(cart));
-            let cartTab: I_cartTab_bundle = newCart.Bundle as I_cartTab_bundle;
-            if (!cartTab) { newCart.Bundle = { taxons: {},type:'Bundle' } }
-            if (!cartTab.taxons[taxon.id]) { cartTab.taxons[taxon.id] = newCartTaxon }
-            newCart.Bundle = cartTab;
-            actionClass.setCart(newCart)
-        }, 1000)
+        if(delay === false){setCart(newCartTaxon)}
+        else {cartTimeout = setTimeout(() => setCart(newCartTaxon), 1000)}
     }
     useEffect(() => {
         try {
@@ -1370,10 +1376,19 @@ function BundlePage(props: I_BundeCard) {
         }
         else {actionClass.openPopup('cart','Bundle');}
     }
+    function header_layout(){
+        return {
+            size:48,align:'v',className:'p-r-12',
+            row:[
+                {html:taxon.name,className:'fs-12 bold',flex:1},
+                {html:<Icon path={mdiClose} size={1}/>,size:48,align:'vh',onClick:()=>{fixCart(); rsa.removeModal();}}
+            ]
+        }
+    }
     function body_layout(){
         return { flex: 1, className: "ofy-auto m-v-12", gap: 12, column: [image_layout(), taxonDetails_layout(), count_layout()] }
     }
-    return (<RVD layout={{className: "theme-popup-bg",column: [body_layout(),footer_layout()]}}/>);
+    return (<RVD layout={{className: "theme-popup-bg",column: [header_layout(),body_layout(),footer_layout()]}}/>);
 }
 type I_BundleSlider = { count: number, variantName: string, totalCount: number, onChange: any, max: number, step: number }
 function BundleSlider(props: I_BundleSlider) {
@@ -1428,7 +1443,7 @@ function BundleSlider(props: I_BundleSlider) {
         />
     )
 }
-type I_CartButton = { product: I_product, renderIn: I_shopRenderIn, variantId: string, onChange?: Function, cartId: string, taxonId?: string }
+type I_CartButton = { product: I_product, renderIn: I_shopRenderIn, variantId?: string, onChange?: Function, cartId: string, taxonId?: string }
 function CartButton(props: I_CartButton) {
     let { actionClass, cart }: I_app_state = useContext(appContext);
     let { product, renderIn, variantId, onChange = () => { }, taxonId, cartId } = props;
@@ -1436,7 +1451,7 @@ function CartButton(props: I_CartButton) {
         e.stopPropagation();
         actionClass.openPopup('cart', cartId)
     }
-    let count = 0;
+    let count:number = 0;
     if (cart[cartId]) {
         if (taxonId) {
             let cartTab = cart[cartId] as I_cartTab_taxon
@@ -1458,8 +1473,17 @@ function CartButton(props: I_CartButton) {
 
         }
     }
+    function icon_layout(count){
+        return {
+            align: 'h', gap: 3, className: 'fs-12 color3B55A5', onClick: (e) => openCart(e),
+            row: [{ html: <Icon path={mdiCart} size={1} />, align: 'vh' }, { html: count, align: 'v', className: 'fs-18' }]
+        }
+    }
     let layout;
-    if (!count) {
+    if (renderIn === 'shipping') {
+        layout = icon_layout(count)
+    }
+    else if (!count) {
         layout = {
             html: () => (
                 <button
@@ -1471,12 +1495,6 @@ function CartButton(props: I_CartButton) {
                     style={{ fontSize: 12, height: 36, padding: '0 8px' }}
                 >افزودن به سبد خرید</button>
             )
-        }
-    }
-    else if (renderIn === 'shipping') {
-        layout = {
-            align: 'h', gap: 3, className: 'fs-12 color3B55A5', onClick: (e) => openCart(e),
-            row: [{ html: <Icon path={mdiCart} size={1} />, align: 'vh' }, { html: count, align: 'v', className: 'fs-18' }]
         }
     }
     else {

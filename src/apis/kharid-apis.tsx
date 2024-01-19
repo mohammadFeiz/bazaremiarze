@@ -3,7 +3,7 @@ import nosrcImage from './../images/no-src.png';
 import nosrc from './../images/no-src.png';
 import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
-import { I_B1Info, I_ShopProps, I_actionClass, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_itemPrice, I_product, I_product_detail, I_product_optionType, I_state_cart, I_variant, I_variant_optionValues } from "../types";
+import { I_B1Info, I_ShopProps, I_actionClass, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_itemPrice, I_product, I_product_category, I_product_detail, I_product_optionType, I_state_cart, I_variant, I_variant_optionValues } from "../types";
 type I_chekcCode_return = any;
 type I_getCampaigns_return = { cartId: string, name: string, id: string, src: string, CampaignId: number, PriceListNum: number }[];
 type I_getCategories_return = { name: string, id: string }[]
@@ -13,7 +13,7 @@ type I_apiFunctions = {
   tarikhche_sefareshate_kharid: I_ni,
   mahsoolate_sefareshe_kharid: I_ni,
   getCampaigns: (ids: string[]) => Promise<{ result: I_getCampaigns_return }>,
-  getTaxonProducts:(p:{ taxonId?:string, cartId:string,pageSize?:number,pageNumber?:number,ids?:string,searchValue?:string }, appState: I_app_state)=>Promise<{result:I_product[]}>
+  getTaxonProducts:(p:{ category:I_product_category, cartId:string,pageSize?:number,pageNumber?:number,ids?:string,searchValue?:string }, appState: I_app_state)=>Promise<{result:I_product[]}>
   preOrders: I_ni,
   search: I_ni,
   getCategories: (ids: string[], appState?: I_app_state) => Promise<{ result: I_getCategories_return }>
@@ -408,17 +408,18 @@ type I_spreeResult_meta = {
 type I_Spree = {
   appState:I_app_state,
   getIncluded:(spreeResult:I_spreeResult)=>I_spreeIncluded,
-  request:(p:{body?:I_Spree_p,product?:I_product})=>Promise<I_spreeResult | false>,
-  getTaxonProducts:(p:I_Spree_p)=>Promise<{products:I_product[],total:number}>,
+  request:(p:{body?:I_Spree_getTaxonProducts,product?:I_product})=>Promise<I_spreeResult | false>,
+  getTaxonProducts:(p:I_Spree_getTaxonProducts)=>Promise<{products:I_product[],total:number}>,
   getProductFullDetail:(product:I_product)=>Promise<I_product>,
   getOptionTypes:(spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded)=>I_product_optionType[],
   getVariants:(spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,optionTypes:I_product_optionType[]) =>I_variant[],
   getVariantOptionValues:(relationships:I_spreeVariant_relationships,optionTypes:I_product_optionType[]) => I_variant_optionValues,
   getDetails:(spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded) => I_product_detail[]
 }
-type I_Spree_p = {cartId:string,taxonId?:string,searchValue?:string,ids?:string,pageSize?:number,pageNumber?:number}
-
-
+type I_Spree_getTaxonProducts = {
+  searchValue?:string,ids?:string,pageSize?:number,pageNumber?:number,
+  category:I_product_category
+}
 class Spree implements I_Spree{
   appState:I_app_state;
   constructor(appState){
@@ -443,14 +444,14 @@ class Spree implements I_Spree{
     }
     return sorted
   }
-  request = async (p:{body?:I_Spree_p,product?:I_product})=>{
+  request = async (p:{body?:I_Spree_getTaxonProducts,product?:I_product})=>{
     let {userInfo,baseUrl} = this.appState;
     let body:any;
     if(p.product){body = { Ids: p.product.id, PerPage: 250, Include: "variants,option_types,product_properties,images" }}
     else if(p.body){
-      let {cartId,taxonId,searchValue,ids,pageSize = 250,pageNumber} = p.body;
+      let {category,searchValue,ids,pageSize = 250,pageNumber} = p.body;
       body = {
-        CardCode: userInfo.cardCode, Taxons:taxonId || cartId, Name:searchValue, ids, PerPage: pageSize, Page: pageNumber,
+        CardCode: userInfo.cardCode, Taxons:category.categoryId || category.cartId, Name:searchValue, ids, PerPage: pageSize, Page: pageNumber,
         ProductFields: "id,name,type,sku,slug,default_variant,images,price",
         VariantFields: "id,sku,type,images",Include: "default_variant,images"
       }
@@ -459,8 +460,8 @@ class Spree implements I_Spree{
     if (!res.data.isSuccess) { alert(res.data.message); return false}
     return res.data.data as I_spreeResult;
   }
-  getTaxonProducts = async (parameter:I_Spree_p)=>{
-    let {cartId} = parameter;
+  getTaxonProducts = async (parameter:I_Spree_getTaxonProducts)=>{
+    let {category} = parameter;
     let spreeResult = await this.request({body:parameter});
     if(spreeResult === false){
       alert('خطا در دریافت اطلاعات اسپری');
@@ -471,7 +472,7 @@ class Spree implements I_Spree{
     const spreeIncluded:I_spreeIncluded = this.getIncluded(spreeResult)
     let products:I_product[] = [];
     for (const spreeProduct of spreeProducts) {
-      let product = this.getProduct(spreeProduct,spreeIncluded,cartId)
+      let product = this.getProduct(spreeProduct,spreeIncluded,category)
       if(product === false){total--}
       else {products.push(product)}
     }
@@ -557,9 +558,9 @@ class Spree implements I_Spree{
     }
     return details;
   }
-  getProduct = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,cartId:string) => { 
+  getProduct = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,category:I_product_category) => { 
     let {b1Info,actionClass,Shop} = this.appState;
-    let {CampaignId,PriceListNum} = Shop[cartId];
+    let {CampaignId,PriceListNum} = Shop[category.cartId];
     let { relationships,attributes,id } = spreeProduct,name = attributes.name;
     const sku = spreeIncluded.variants[relationships.default_variant.data.id].attributes.sku;
     if (!sku) {return false}
@@ -571,7 +572,7 @@ class Spree implements I_Spree{
     let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
     let {OnHand,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
     let {qtyLevel} = OnHand;
-    let product:I_product = {images,name,id,inStock:!!qtyLevel,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price,hasFullDetail:false}
+    let product:I_product = {category,images,name,id,inStock:!!qtyLevel,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price,hasFullDetail:false}
     return product;
   }
 }

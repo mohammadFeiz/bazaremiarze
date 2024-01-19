@@ -134,14 +134,14 @@ export type I_ShopProps = {
     icon?:string,
     maxCart?:number,
     PriceListNum?:number,
-    taxons?:I_ShopClass_taxon[],
+    taxons?:I_taxon[],
 } 
-export type I_ShopClass_taxon = {id:string,name:string,min:number,max:number,products?:I_product[]}
+export type I_taxon = {id:string,name:string,min:number,max:number,products?:I_product[]}
 export type I_ShopClass = {
     id: string,
     name: string,
     cartId: string,
-    taxons?: I_ShopClass_taxon[],
+    taxons?: I_taxon[],
     maxCart?:number,
     CampaignId?:number,
     PriceListNum?: number,
@@ -149,32 +149,30 @@ export type I_ShopClass = {
     products?: I_product;
     description?: string;
     icon?:string,
-    
-    renderCard: (
+    getCategoryItems:(p?:{categoryId:string,categoryName:string})=>Promise<any[]>,
+    renderCard_Regular: (
+        p: {product: I_product, renderIn: I_renderIn, index: number,loading?: boolean, type?: 'horizontal' | 'vertical'}
+    ) => React.ReactNode,
+    renderCard_Bundle:(p:{ taxon:I_bundle_taxon, renderIn:I_renderIn, index?:number })=>React.ReactNode,
+    renderCard_taxon: (
         p: {
-            product: I_product, renderIn: I_shopRenderIn, variantId?: string, count?: number,
-            details?: any, loading?: boolean, index?: number, style?: any, type?: any
+            taxon: I_taxon, renderIn: I_renderIn, index?: number, onFetchProducts?: any, errors?: any[], hasErrors?: any[]
         }
     ) => React.ReactNode,
-    renderCard_Bundle:(p:{ taxon:I_bundle_taxon, renderIn:I_shopRenderIn, index?:number })=>React.ReactNode,
-    renderPage:(product:I_product)=>React.ReactNode,
-    renderPage_Bundle:(taxon:I_bundle_taxon)=>React.ReactNode,
-    renderTaxonCard: (
-        p: {
-            taxon: I_ShopClass_taxon, renderIn: I_shopRenderIn, index?: number, onFetchProducts?: any, errors?: any[], hasErrors?: any[]
-        }
-    ) => React.ReactNode,
+    getProductById:(productId:string,productCategory:I_product_category)=>Promise<I_product>,
+    renderCartItems:(renderIn:I_renderIn)=>Promise<any[]>
+    openCategory:(p?:{categoryId: string, categoryName: string})=>void,
     getCartVariants:(p?:{productId?:string,taxonId?:string})=>I_cartVariant[],
-    openCategory:(id?:string)=>void,
     payment:(p:I_shippingOptions)=>Promise<boolean>, 
-    getCartProducts:(renderIn:I_shopRenderIn,shippingOptions?:I_shippingOptions)=>React.ReactNode[],
-    renderCartFactor:()=>React.ReactNode,
+    renderCartFactor:(button?:boolean)=>Promise<React.ReactNode>,
     getAmounts:I_getAmounts,getAmounts_all:I_getAmounts,getAmounts_Bundle:I_getAmounts,
     getMarketingLines_Bundle:()=>{ItemCode:any,ItemQty:number,Price:number,BasePackCode:any,BasePackQty:number}[]
+    getFactorItems:(shippingOptions:I_shippingOptions,container:string)=>Promise<I_factorItem[]>
 }
-export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>I_amounts;
+export type I_factorItem = {key:string,value:string,className?:string}
+export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>Promise<I_amounts>;
 export type I_amounts = { total:number, discounts:I_discount[], payment:number, ClubPoints?: any };
-export type I_shopRenderIn = 'product'|'shipping'|'cart'|'category';
+export type I_renderIn = 'product'|'shipping'|'cart'|'category';
 export type I_actionClass = {
     getNavItems:()=>{
         text:string | (()=>string),icon:()=>React.ReactNode,render:()=>React.ReactNode,id:string
@@ -191,11 +189,7 @@ export type I_actionClass = {
         }
     )=>I_fixPrice_result[],
     getHeaderIcons:(p:{[key:string]:boolean})=>any[],
-    getFactorDetails:(items:any[],shippingOptions:I_shippingOptions,container?:string)=>{
-        MarketingLines:{CampaignDetails:any,ItemCode:string}[],
-        DocumentTotal:number,
-        marketingdetails:{ DiscountList:any, ClubPoints:any }
-    },
+    getFactorDetails:(items:any[],shippingOptions:I_shippingOptions,container?:string)=>I_getFactorDetails_result,
     openPopup:(key:string,parameter?:any)=>void,
     getCodeDetails:(p:{giftCodeInfo:any,discountCodeInfo:any})=>any,
     getState:()=>I_app_state,
@@ -227,11 +221,16 @@ export type I_actionClass = {
     getBazargahOrders:()=>void,
     removeCartTab:(cartId:string)=>void
 }
+export type I_getFactorDetails_result = {
+    MarketingLines:{CampaignDetails:any,ItemCode:string}[],
+    DocumentTotal:number,
+    marketingdetails:{ DiscountList:any, ClubPoints:any }
+}
 export type I_fixPrice_result = {
     ItemCode: string,SalesMeasureUnit: string,NumInSale: number,Price: number,B1Dscnt: number,FinalPrice: number,PymntDscnt: number,CmpgnDscnt: number
     OnHand: {whsCode: string,qty: number,qtyLevel: number,qtyLevRel: number},   
 }
-export type I_changeCartProps = {cartId:string,taxonId?:string,variantId:string,product:I_product,count:number}
+export type I_changeCartProps = {taxonId?:string,variantId:string,product:I_product,count:number}
 export type I_app_state = {
     backOffice:I_state_backOffice,
     apis:I_AIOService_class,
@@ -254,13 +253,15 @@ export type I_state_Shop = {[shopId:string]:I_ShopClass}
 /////cart
 export type I_state_cart = {[cartId:string]:(I_cartTab | I_cartTab_taxon | I_cartTab_bundle)}
 export type I_cartTab = {products:{[productId:string]:I_cartProduct},type:'regular'}
-export type I_cartProduct = {variants:{[variantId:string]:I_cartVariant},product:I_product}
+export type I_cartProduct = {productId:string,productCategory:I_product_category,variants:{[variantId:string]:I_cartVariant}}
 export type I_cartVariant = {
-    cartId:string,count:number,
-    variant:I_variant,variantId:string,
-    product:I_product,productId:string,
-    taxon?:I_ShopClass_taxon,taxonId?:string,
-    error?:string
+    productCategory:I_product_category,count:number,
+    variantId:string,
+    productId:string,
+    taxonId?:string,
+    error?:string,
+    minValue?:number,
+    maxValue?:number
 };
 export type I_cartTab_bundle = {
     taxons:{[taxonId:string]:I_cartTab_bundle_taxon},type:'Bundle'
@@ -276,8 +277,7 @@ export type I_cartTab_bundle_variant = {
 }
 export type I_cartTab_taxon = {taxons:{[taxonId:string]:I_cartTaxon},type:'taxon'}
 export type I_cartTaxon = {
-    taxonId:string,products:{[productId:string]:I_cartProduct},
-    errors?:{product:any,taxonId:string,minValue:number,maxValue:number,error:string}[]
+    taxonId:string,products:{[productId:string]:I_cartProduct}
 }
 /////cart
 export type I_bundle_taxon = {
@@ -314,7 +314,7 @@ export type I_product = {
     FinalPrice:number, 
     Price:number,
     hasFullDetail:boolean,
-    
+    category:{cartId:string,cartName:string,categoryId?:string,categoryName?:string}, //اطلاعات دسته بندی محصول
     //مواردی که با کلیک روی محصول دریافت می شود
     description?: any;
     clubpoint?: any;
@@ -328,6 +328,8 @@ export type I_product_optionType = {
     name:string,
     items:{[optionValueId:string]:string}
 }
+export type I_product_category = {cartId:string,cartName:string,categoryId?:string,categoryName?:string}
+
 export type I_variant = {
     id:string,
     inStock:boolean,

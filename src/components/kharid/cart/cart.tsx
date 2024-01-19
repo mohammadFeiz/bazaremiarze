@@ -10,19 +10,38 @@ export default function Cart(props:I_Cart) {
   let {cartId} = props;
   let { cart,Shop } = context;
   let [activeTabId,setActiveTabId] = useState<string|false>(false)
+  let [factor,setFactor] = useState<React.ReactNode>()
+  let [items,setItems] = useState<any[]>([])
   let tabs = Object.keys(cart);
-  useEffect(()=>update(),[])
+  useEffect(()=>{
+    update(true)
+  },[])
   useEffect(()=> {
-    if(activeTabId !== false && !cart[activeTabId]){update()}
+    update(false)
   },[cart])
-  function update() {
-    let activeTabId = cartId || tabs[0] || false;
-    this.setActiveTabId(activeTabId)
+  async function update(initial) {
+    let activeTabId:false | string = false;
+    if(initial){
+      if(props.cartId){activeTabId = props.cartId}
+      else{activeTabId = tabs[0] || false}
+    }
+    if(activeTabId !== false && !cart[activeTabId]){activeTabId = false}
+    setActiveTabId(activeTabId);
+    if(activeTabId){
+      let factor = await Shop[activeTabId].renderCartFactor();
+      let items = await Shop[activeTabId].renderCartItems('cart');
+      setFactor(factor);
+      setItems(items);
+    }
+    else {
+      setFactor(false)
+    }
   }
   function getBadge(option:string){
     let cartTab = cart[option]
     let length:number;
-    if(cartTab.isTaxon === true){length = Object.keys(cartTab.taxons).length}
+    if(cartTab.type === 'taxon'){length = Object.keys(cartTab.taxons).length}
+    else if(cartTab.type === 'Bundle'){length = Object.keys(cartTab.taxons).length}
     else{length = Object.keys(cartTab.products).length}
     return <div className='tab-badge'>{length}</div>
   }
@@ -55,15 +74,12 @@ export default function Cart(props:I_Cart) {
     }
   }
   function products_layout() {
-    if (!activeTabId) { return empty_layout() }
-    let productCards = Shop[activeTabId].getCartProducts('cart');
-    if (!productCards.length) { return empty_layout() }
-    return { flex: 1, className: 'ofy-auto', gap: 12, column: productCards.map((card) => { return { html: card } }) }
+    if (!items.length) { return empty_layout() }
+    return { flex: 1, className: 'ofy-auto', gap: 12, column: items.map((cartItem) => { return { html: cartItem } }) }
   }
   function payment_layout() {
-    if (!activeTabId) { return false }
-    let { renderCartFactor } = Shop[activeTabId];
-    return { html: renderCartFactor() }
+    if (!factor) { return false }
+    return { html: factor }
   }
   return (
     <RVD

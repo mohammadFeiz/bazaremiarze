@@ -23,7 +23,7 @@ export default class Billboard extends Component{
         if(renderIn === 'buy'){
             for(let shopId in Shop){
                 let ShopClass = Shop[shopId]
-                if(ShopClass.billboard){
+                if(shopId !== 'Regular' && ShopClass.billboard){
                     let {billboard,icon,name} = ShopClass;
                     items.push({name,billboard,icon,onClick:()=>Shop.openCategory()})
                 }

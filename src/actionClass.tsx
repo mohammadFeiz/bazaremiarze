@@ -8,7 +8,7 @@ import { mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList,mdiCodeBraces, mdi
 import getSvg from './utils/getSvg';
 import Register from './components/register/register';
 import PriceList from './popups/price-list/price-list';
-import BackOffice from './back-office-panel';
+import BackOffice from './back-office-panel.tsx';
 import {CountPopup} from './shop-class.tsx';
 import PasswordPopup from './components/password-popup/password-popup';
 import OrdersHistory from './components/kharid/orders-history/orders-history';
@@ -20,7 +20,7 @@ import SabteGarantiJadidBaJoziat from './components/garanti/sabte-garanti-jadid-
 import Search from './components/kharid/search/search';
 import Wallet from './popups/wallet/wallet';
 import TanzimateKifePool from './components/kife-pool/tanzimate-kife-pool/tanzimate-kife-pool';
-import Cart from './components/kharid/cart/cart.tsx';
+import {Cart} from './shop-class.tsx';
 import Sefareshe_Ersal_Shode_Baraye_Vizitor from './components/kharid/sefareshe-ersal-shode-baraye-vizitor/sefareshe-ersal-shode-baraye-vizitor';
 import Home from "./pages/home/index";
 import Buy from "./pages/buy/index";
@@ -28,7 +28,7 @@ import Bazargah from "./pages/bazargah/bazargah";
 import Profile from "./pages/profile/profile";
 import Vitrin from './pages/vitrin/vitrin';
 import taxonCampaign from './taxonCampaign';
-import { I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, I_userInfo, I_B1Info, I_state_cart, I_cartTab, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartTab_taxon, I_cartProduct, I_variant, I_actionClass, I_changeCartProps, I_getFactorDetails_result } from './types';
+import { I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, I_userInfo, I_B1Info, I_state_cart, I_cartTab, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartTab_taxon, I_cartProduct, I_variant, I_actionClass, I_changeCartProps, I_getFactorDetails_result, I_ShopProps } from './types';
 export default class ActionClass implements I_actionClass {
     getState:()=>I_app_state;
     setState:(p:any)=>void
@@ -63,10 +63,10 @@ export default class ActionClass implements I_actionClass {
         let wait_to_send = await apis.request({ api: 'bazargah.daryafte_sefareshate_bazargah', parameter: { type: 'wait_to_send' }, loading: false, description: 'دریافت سفارشات در انتظار ارسال بازارگاه' });
         this.setState({ bazargahOrders: { ...bazargahOrders, wait_to_get, wait_to_send } })
     }
-    removeCartTab = (cartId:string) => {
+    removeCartTab = (shopId:string) => {
         let { cart } = this.getState();
         let newCart = {}
-        for (let prop in cart) { if (prop !== cartId) { newCart[prop] = cart[prop] } }
+        for (let prop in cart) { if (prop !== shopId) { newCart[prop] = cart[prop] } }
         this.setState({ cart: newCart })
     }
     getNavItems = () => {
@@ -106,11 +106,12 @@ export default class ActionClass implements I_actionClass {
         let Shop:I_state_Shop = {}
         Shop.Regular = new ShopClass({getAppState: () => this.getState(),config: Regular})
         if (Bundle.active) {
-            Shop.Bundle = new ShopClass({getAppState: () => this.getState(),config: { ...Bundle, cartId: 'Bundle' }})
+            let shopProps:I_ShopProps = { ...Bundle, shopId: 'Bundle' }
+            Shop.Bundle = new ShopClass({getAppState: () => this.getState(),config: shopProps})
         }
         for (let i = 0; i < spreeCampaigns.length; i++) {
             let spreeCampaign = spreeCampaigns[i];
-            if(spreeCampaign.id === '10818'){
+            if(spreeCampaign.shopId === '10818'){
                 let list = taxonCampaign;
                 let cacheCampaigns = apis.getCache('campaigns') || {}
                 let {campaignProducts = {}} = cacheCampaigns;                
@@ -119,11 +120,12 @@ export default class ActionClass implements I_actionClass {
                     return {id,name,products,min,max}
                 })
             }
-            let { id, active,taxons  } = spreeCampaign;
+            let { shopId, active,taxons  } = spreeCampaign;
             if (!active) { continue }
-            Shop[id] = new ShopClass({
+            let shopProps:I_ShopProps = { ...spreeCampaign, shopId,taxons:taxons && taxons.length?taxons:undefined }
+            Shop[shopId] = new ShopClass({
                 getAppState: () => this.getState(),
-                config: { ...spreeCampaign, cartId: id,taxons:taxons && taxons.length?taxons:undefined }
+                config: shopProps
             })
         }
         
@@ -244,7 +246,7 @@ export default class ActionClass implements I_actionClass {
         }
         else if (type === 'cart') {
             msfReport({actionName:'open cart',actionId:27,tagName:'kharid',eventName:'page view'})
-            addModal({ id: type, position: 'fullscreen', body: { render: () => <Cart cartId={parameter} /> }, header: { title: 'سبد خرید' } })
+            addModal({ id: type, position: 'fullscreen', body: { render: () => <Cart shopId={parameter} /> }, header: { title: 'سبد خرید' } })
         }
         else if (type === 'sefareshe-ersal-shode-baraye-vizitor') {
             addModal({
@@ -495,9 +497,9 @@ export default class ActionClass implements I_actionClass {
     }
     removeCartItem = (p:I_changeCartProps)=>{
         let {taxonId,variantId,product} = p;
-        let {cartId} = product.category;
+        let {shopId} = product.category;
         let { cart,msfReport,Shop } = this.getState();
-        let cartTab = cart[cartId];
+        let cartTab = cart[shopId];
         if(taxonId){
             let newCartTab = cartTab as I_cartTab_taxon;
             let cartTaxon:I_cartTaxon = newCartTab.taxons[taxonId];
@@ -521,7 +523,7 @@ export default class ActionClass implements I_actionClass {
                         factorDetailsItems.push({ ItemCode: variantId, ItemQty: count })
                     }
                 }
-                let CampaignId = Shop[cartId].CampaignId;
+                let CampaignId = Shop[shopId].CampaignId;
                 let factorDetails:I_getFactorDetails_result = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
                 let { MarketingLines } = factorDetails;
                 for(let i = 0; i < MarketingLines.length; i++){
@@ -548,7 +550,7 @@ export default class ActionClass implements I_actionClass {
         msfReport({actionName:'remove from cart',actionId:23,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})    
         let newCart = {}
         for(let prop in cart){
-            if(prop === cartId){
+            if(prop === shopId){
                 if(cartTab.type === 'taxon'){
                     if(cartTab.taxons){newCart[prop] = cartTab}
                 }
@@ -562,9 +564,9 @@ export default class ActionClass implements I_actionClass {
     }
     editCartItem = (p:I_changeCartProps)=>{
         let {taxonId,variantId,count,product} = p; 
-        let {cartId} = product.category;
+        let {shopId} = product.category;
         let { Shop,cart,msfReport } = this.getState();
-        let cartTab = cart[cartId];
+        let cartTab = cart[shopId];
         let reportAdd = false;
         if(taxonId){
             let newCartTab = cartTab as I_cartTab_taxon;
@@ -591,7 +593,7 @@ export default class ActionClass implements I_actionClass {
                     factorDetailsItems.push({ ItemCode: variantId, ItemQty: count }) 
                 }
             }
-            let CampaignId = Shop[cartId].CampaignId;
+            let CampaignId = Shop[shopId].CampaignId;
             let factorDetails = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
             let { MarketingLines } = factorDetails;
             for(let i = 0; i < MarketingLines.length; i++){
@@ -623,7 +625,7 @@ export default class ActionClass implements I_actionClass {
             cartTab = newCartTab;
         }
         if(reportAdd){msfReport({actionName:'add to cart',actionId:24,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})}
-        return {...cart,[cartId]:cartTab}
+        return {...cart,[shopId]:cartTab}
     }
     changeCart = (p:I_changeCartProps) => {
         let { count, variantId, product,taxonId } = p;

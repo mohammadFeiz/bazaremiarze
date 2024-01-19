@@ -4,7 +4,7 @@ import PageError from './components/page-error';
 import Landing from './components/landing';
 import AIOLogin from './npm/aio-login/aio-login';
 import AIOLog from 'aio-log';
-import AIOService from 'aio-service';
+import AIOService from './npm/aio-service/aio-service.js';
 import getApiFunctions from './apis/apis.ts';
 import './App.css';
 import './theme.css';

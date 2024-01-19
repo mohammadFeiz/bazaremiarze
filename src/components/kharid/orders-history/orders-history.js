@@ -104,17 +104,17 @@ export default class OrdersHistory extends Component {
         ],
       }
     }
-    cartId_layout(){
+    shopId_layout(){
       let {order} = this.props;
       let res = localStorage.getItem('storage-order-popup-' + order.mainDocNum);
-      let cartId
+      let shopId
       if(typeof res === 'string'){
         res = JSON.parse(res);
         res = res.data.details.campaignName;
-        cartId = res;
+        shopId = res;
       }
       return {
-        html:cartId,style:{color:'orange'},className:'fs-10 bold'
+        html:shopId,style:{color:'orange'},className:'fs-10 bold'
       }
     }
     render() {
@@ -127,7 +127,7 @@ export default class OrdersHistory extends Component {
           layout={{
             onClick,
             className: "theme-card-bg theme-box-shadow theme-border-radius theme-gap-h p-12 rvd-rotate-card" + (mounted?' mounted':''),
-            column: [this.cartId_layout(),this.header_layout(),this.footer_layout(),],
+            column: [this.shopId_layout(),this.header_layout(),this.footer_layout(),],
           }}
         />
       );

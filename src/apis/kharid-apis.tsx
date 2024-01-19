@@ -5,15 +5,16 @@ import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
 import { I_B1Info, I_ShopProps, I_actionClass, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_itemPrice, I_product, I_product_category, I_product_detail, I_product_optionType, I_state_cart, I_variant, I_variant_optionValues } from "../types";
 type I_chekcCode_return = any;
-type I_getCampaigns_return = { cartId: string, name: string, id: string, src: string, CampaignId: number, PriceListNum: number }[];
+type I_getCampaigns_return = { shopName: string, id: string, src: string, CampaignId: number, PriceListNum: number }[];
 type I_getCategories_return = { name: string, id: string }[]
 type I_ni = (p: any, appState?: I_app_state) => any
+export type I_getTaxonProducts_p = { category:I_product_category,pageSize?:number,pageNumber?:number,ids?:string,searchValue?:string }
 type I_apiFunctions = {
   checkCode: (p: { code: string }) => Promise<{ result: I_chekcCode_return }>,
   tarikhche_sefareshate_kharid: I_ni,
   mahsoolate_sefareshe_kharid: I_ni,
   getCampaigns: (ids: string[]) => Promise<{ result: I_getCampaigns_return }>,
-  getTaxonProducts:(p:{ category:I_product_category, cartId:string,pageSize?:number,pageNumber?:number,ids?:string,searchValue?:string }, appState: I_app_state)=>Promise<{result:I_product[]}>
+  getTaxonProducts:(p:I_getTaxonProducts_p, appState: I_app_state)=>Promise<{result:I_product[]}>
   preOrders: I_ni,
   search: I_ni,
   getCategories: (ids: string[], appState?: I_app_state) => Promise<{ result: I_getCategories_return }>
@@ -240,7 +241,8 @@ export default function kharidApis({ baseUrl, helper }) {
         let obj;
         try { obj = JSON.parse(o.attributes.meta_description) }
         catch { obj = {}; }
-        return { cartId: o.attributes.name, name: o.attributes.name, id: o.id, src: src, CampaignId: obj.CampaignId, PriceListNum: obj.PriceListNum };
+        let result:I_getCampaigns_return = { shopName: o.attributes.name, id: o.id, src, CampaignId: obj.CampaignId, PriceListNum: obj.PriceListNum };
+        return result;
       });
 
       return { result: campaigns };
@@ -284,8 +286,8 @@ export default function kharidApis({ baseUrl, helper }) {
       return { result: categories };
     },
     async payment(obj, { Shop }) {
-      let { cartId } = obj;
-      let result = Shop[cartId].payment(obj);
+      let { shopId } = obj;
+      let result = Shop[shopId].payment(obj);
       return { result }
     },
     async getProductFullDetail(product , appState) {
@@ -293,23 +295,23 @@ export default function kharidApis({ baseUrl, helper }) {
       let result = await spree.getProductFullDetail(product)
       return { result };
     },
-    async getTaxonProducts(p, appState) {
+    async getTaxonProducts(p:I_getTaxonProducts_p, appState) {
       let spree = new Spree(appState);
       let {products,total} = await spree.getTaxonProducts(p)
-      //products:I_product[] = appState.apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products,cartId:p.cartId } })
+      //products:I_product[] = appState.apis.request({ api: 'kharid.updateProductPrice', description: '', parameter: { products,shopId:p.shopId } })
       
       return { result:products }
     },
     getCart({ Shop, userInfo }) {
       let cartStorage = AIOStorage('bazaremiarzeapis');
       let cart = cartStorage.load({ name: 'cart.' + userInfo.cardCode, def: {} });
-      let cartIds = Object.keys(Shop);
+      let shopIds = Object.keys(Shop);
       let keys = Object.keys(cart)
       let newCart = {}
       for (let i = 0; i < keys.length; i++) {
-        let cartId = keys[i];
-        if (cartIds.indexOf(cartId) === -1) { continue }
-        newCart[cartId] = cart[cartId]
+        let shopId = keys[i];
+        if (shopIds.indexOf(shopId) === -1) { continue }
+        newCart[shopId] = cart[shopId]
       }
       return { result: newCart }
     },
@@ -345,7 +347,7 @@ export default function kharidApis({ baseUrl, helper }) {
       allData = allData[0].taxons[0].taxons[0];
       let result:I_bundle_taxon[] = allData.map(({itemname,description,itemcode,price,itemcodes,imageurl,max = Infinity})=>{
         let taxon:I_bundle_taxon = {
-          cartId:'Bundle',description,id:itemcode,name:itemname,price,image:imageurl,max,
+          shopId:'Bundle',description,id:itemcode,name:itemname,price,image:imageurl,max,
           products:itemcodes.map(({mainsku,Name,Price,Qty,Variants})=>{
             let product:I_bundle_product = {
               id:mainsku,name:Name,qty:Qty,price:Price,
@@ -409,7 +411,7 @@ type I_Spree = {
   appState:I_app_state,
   getIncluded:(spreeResult:I_spreeResult)=>I_spreeIncluded,
   request:(p:{body?:I_Spree_getTaxonProducts,product?:I_product})=>Promise<I_spreeResult | false>,
-  getTaxonProducts:(p:I_Spree_getTaxonProducts)=>Promise<{products:I_product[],total:number}>,
+  getTaxonProducts:(p:I_getTaxonProducts_p)=>Promise<{products:I_product[],total:number}>,
   getProductFullDetail:(product:I_product)=>Promise<I_product>,
   getOptionTypes:(spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded)=>I_product_optionType[],
   getVariants:(spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,optionTypes:I_product_optionType[]) =>I_variant[],
@@ -451,7 +453,7 @@ class Spree implements I_Spree{
     else if(p.body){
       let {category,searchValue,ids,pageSize = 250,pageNumber} = p.body;
       body = {
-        CardCode: userInfo.cardCode, Taxons:category.categoryId || category.cartId, Name:searchValue, ids, PerPage: pageSize, Page: pageNumber,
+        CardCode: userInfo.cardCode, Taxons:category.categoryId || category.shopId, Name:searchValue, ids, PerPage: pageSize, Page: pageNumber,
         ProductFields: "id,name,type,sku,slug,default_variant,images,price",
         VariantFields: "id,sku,type,images",Include: "default_variant,images"
       }
@@ -460,7 +462,7 @@ class Spree implements I_Spree{
     if (!res.data.isSuccess) { alert(res.data.message); return false}
     return res.data.data as I_spreeResult;
   }
-  getTaxonProducts = async (parameter:I_Spree_getTaxonProducts)=>{
+  getTaxonProducts = async (parameter:I_getTaxonProducts_p)=>{
     let {category} = parameter;
     debugger
     let spreeResult = await this.request({body:parameter});
@@ -561,7 +563,7 @@ class Spree implements I_Spree{
   }
   getProduct = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,category:I_product_category) => { 
     let {b1Info,actionClass,Shop} = this.appState;
-    let {CampaignId,PriceListNum} = Shop[category.cartId];
+    let {CampaignId,PriceListNum} = Shop[category.shopId];
     let { relationships,attributes,id } = spreeProduct,name = attributes.name;
     const sku = spreeIncluded.variants[relationships.default_variant.data.id].attributes.sku;
     if (!sku) {return false}

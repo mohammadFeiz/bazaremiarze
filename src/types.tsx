@@ -44,7 +44,9 @@ export type I_AIOService_request = (obj:{
     api:string,parameter?:any,loading?:boolean,onCatch?:I_AIOService_onCatch,
     message?:{error?:boolean | string,success?:boolean | string},
     description?:string,getError?:I_AIOService_getError,def?:any,
-    cache?:{time:number,name:string}
+    cache?:{time:number,name:string},
+    onSuccess?:(any)=>void,
+    onError?:(message:string)=>void
 })=>any
 export type I_AIOService_class = {
     request:I_AIOService_request,
@@ -105,10 +107,14 @@ export type I_state_backOffice = {
     spreeCampaigns:I_ShopProps[],
     spreeCategories:I_spreeCategory[],
     activeManager:{bazargah:boolean,garanti:boolean,priceList:boolean,vitrin:boolean,wallet:boolean}
-    PayDueDate_options:I_PaydueDate_option[]
+    PayDueDate_options:I_PaydueDate_option[],
+    PaymentTime_options:I_PaymentTime_option[],
+    DeliveryType_options:I_DeliveryType_option[]
 }
 export type I_PaydueDate_option = {
     cashPercent:number,days:number,discountPercent:number,id:string,text:string,value:number,_id:string}
+export type I_PaymentTime_option = {text:string,value:number}
+export type I_DeliveryType_option = {text:string,value:number}
 export type I_state_backOffice_accessPhoneNumber = {phoneNumber:string,access:{[field:string]:boolean}};
 //////backOffice
 export type I_shippingOptions = {
@@ -128,8 +134,8 @@ export type I_ShopProps = {
     SettleType:number,
     SettleTypes:number[],
     active:boolean,
-    id:string,
-    name:string,
+    shopId:string,
+    shopName:string,
     getAppState?:()=>any,
     billboard?:string,
     icon?:string,
@@ -139,9 +145,8 @@ export type I_ShopProps = {
 } 
 export type I_taxon = {id:string,name:string,min:number,max:number,products?:I_product[]}
 export type I_ShopClass = {
-    id: string,
-    name: string,
-    cartId: string,
+    shopName: string,
+    shopId: string,
     taxons?: I_taxon[],
     maxCart?:number,
     CampaignId?:number,
@@ -169,6 +174,7 @@ export type I_ShopClass = {
     getAmounts:I_getAmounts,getAmounts_all:I_getAmounts,getAmounts_Bundle:I_getAmounts,
     getMarketingLines_Bundle:()=>{ItemCode:any,ItemQty:number,Price:number,BasePackCode:any,BasePackQty:number}[]
     getFactorItems:(shippingOptions:I_shippingOptions,container:string)=>Promise<I_factorItem[]>
+    getPaymentButtonText:(shippingOptions: I_shippingOptions) => string
 }
 export type I_factorItem = {key:string,value:string,className?:string}
 export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>Promise<I_amounts>;
@@ -220,7 +226,7 @@ export type I_actionClass = {
     setCart:(newCart:I_state_cart)=>void,
     getGuaranteeItems:()=>void,
     getBazargahOrders:()=>void,
-    removeCartTab:(cartId:string)=>void
+    removeCartTab:(shopId:string)=>void
 }
 export type I_getFactorDetails_result = {
     MarketingLines:{CampaignDetails:any,ItemCode:string}[],
@@ -252,7 +258,7 @@ export type I_app_state = {
 export type I_state_spreeCategories = { icon_type: I_spreeCategory[], slider_type: I_spreeCategory[], dic: {} }
 export type I_state_Shop = {[shopId:string]:I_ShopClass}
 /////cart
-export type I_state_cart = {[cartId:string]:(I_cartTab | I_cartTab_taxon | I_cartTab_bundle)}
+export type I_state_cart = {[shopId:string]:(I_cartTab | I_cartTab_taxon | I_cartTab_bundle)}
 export type I_cartTab = {products:{[productId:string]:I_cartProduct},type:'regular'}
 export type I_cartProduct = {productId:string,productCategory:I_product_category,variants:{[variantId:string]:I_cartVariant}}
 export type I_cartVariant = {
@@ -282,7 +288,7 @@ export type I_cartTaxon = {
 }
 /////cart
 export type I_bundle_taxon = {
-    cartId:'Bundle',id:string,name:string,price:number,products:I_bundle_product[],image:string,description:string,max:number
+    shopId:'Bundle',id:string,name:string,price:number,products:I_bundle_product[],image:string,description:string,max:number
 }
 export type I_bundle_product = { //mainSku => id, unitPrice => price
     id:string,name:string,price:number,qty:number,variants:I_bundle_variant[]
@@ -315,7 +321,7 @@ export type I_product = {
     FinalPrice:number, 
     Price:number,
     hasFullDetail:boolean,
-    category:{cartId:string,cartName:string,categoryId?:string,categoryName?:string}, //اطلاعات دسته بندی محصول
+    category:{shopId:string,shopName:string,categoryId?:string,categoryName?:string}, //اطلاعات دسته بندی محصول
     //مواردی که با کلیک روی محصول دریافت می شود
     description?: any;
     clubpoint?: any;
@@ -329,7 +335,7 @@ export type I_product_optionType = {
     name:string,
     items:{[optionValueId:string]:string}
 }
-export type I_product_category = {cartId:string,cartName:string,categoryId?:string,categoryName?:string}
+export type I_product_category = {shopId:string,shopName:string,categoryId?:string,categoryName?:string}
 
 export type I_variant = {
     id:string,

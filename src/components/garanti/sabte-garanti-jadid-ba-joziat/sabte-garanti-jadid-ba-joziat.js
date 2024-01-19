@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import RVD from "./../../../npm/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
-import ProductCount from "./../../../components/kharid/product-count/product-count";
 import AIOInput from "../../../npm/aio-input/aio-input";
 import {Icon} from '@mdi/react';
 import {mdiChevronLeft} from '@mdi/js';
@@ -59,19 +58,19 @@ export default class SabteGarantiJadidBaJoziat extends Component {
                     style={{padding:0}}
                     getValue={{
                         count:(row) => {
-                            return (
-                                <ProductCount value={row.tedad} onChange={(value) => {
-                                    let { items } = this.state;
-                                    row.Qty = value;
-                                    if(value === 0){
-                                        this.setState({ items: items.filter((o) => row.code !== o.code) })
-                                    }
-                                    else{
-                                        this.setState({ items });
-                                    }
+                            // return (
+                            //     <ProductCount value={row.tedad} onChange={(value) => {
+                            //         let { items } = this.state;
+                            //         row.Qty = value;
+                            //         if(value === 0){
+                            //             this.setState({ items: items.filter((o) => row.code !== o.code) })
+                            //         }
+                            //         else{
+                            //             this.setState({ items });
+                            //         }
                                     
-                                }} />
-                            )
+                            //     }} />
+                            // )
                         },
                         color:(row)=>{
                             let options = row.optionValues.map(({text,value})=>{

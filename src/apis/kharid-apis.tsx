@@ -462,6 +462,7 @@ class Spree implements I_Spree{
   }
   getTaxonProducts = async (parameter:I_Spree_getTaxonProducts)=>{
     let {category} = parameter;
+    debugger
     let spreeResult = await this.request({body:parameter});
     if(spreeResult === false){
       alert('خطا در دریافت اطلاعات اسپری');

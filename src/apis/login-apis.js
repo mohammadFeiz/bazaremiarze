@@ -79,7 +79,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             }).then((response) => { return response.json(); }).then((data) => { return data; }).catch(function (error) { return null; });
             Logger.add('b1Info', { customer: b1Info.customer, salePeople: b1Info.salePeople }, 'b1Info')
             let itemPrices = b1Info.itemPrices.map((o)=>{return {itemCode:o.itemCode,qtyRelation:o.qtyRelation,canSell:o.canSell,manSku:o.mainSku}})
-            return { result:{...b1Info,itemPrices} }
+            return { result:{salePeople:b1Info.salePeople || {},customer:b1Info.customer,itemPrices} }
         }
     }
 }

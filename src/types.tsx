@@ -34,7 +34,8 @@ export type I_AIOLogin_class = {
     logout:()=>void
 }
 export type I_AIOLogin_class_render_parameter = {
-    profile?:{model:any,onSubmit:(model:any)=>void,fields:any[]}
+    profile?:{model:any,onSubmit:(model:any)=>void,fields:any[]},
+    appState?:any
 }
 
 /////aio-login

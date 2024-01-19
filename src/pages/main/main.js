@@ -172,7 +172,6 @@ export default class Main extends Component {
     let {vitrin} = this.state;
     vitrin.fetchData();
     let {backOffice,actionClass} = this.state;
-    await actionClass.startPricing()
     this.setState(await actionClass.getShopState());
     this.setState({spreeCategories:actionClass.getSpreeCategories(backOffice)})
     if (backOffice.activeManager.garanti && b1Info.customer.slpcode) { actionClass.getGuaranteeItems(); }

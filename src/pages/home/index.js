@@ -320,7 +320,7 @@ class Call extends Component{
     render(){
         let {onClose} = this.props;
         let {b1Info} = this.context;
-        let mobile = b1Info.salePeople.mobile;
+        let mobile = b1Info.salePeople?b1Info.salePeople.mobile:undefined;
         
         return (
             <RVD

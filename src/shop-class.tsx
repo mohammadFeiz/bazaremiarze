@@ -7,7 +7,6 @@ import Axios from 'axios';
 import SplitNumber from "./npm/aio-functions/split-number";
 import Shipping from "./components/kharid/shipping/shipping";
 import NoSrc from './images/no-src.png';
-import CartButton from './components/kharid/cart-button';
 import getSvg from "./utils/getSvg";
 import AIOInput from "./npm/aio-input/aio-input";
 import $ from 'jquery';

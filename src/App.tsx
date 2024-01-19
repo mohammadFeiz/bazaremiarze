@@ -25,33 +25,6 @@ const getUrlUserId: I_getUrlUserId = function () {
   catch { userId = undefined }
   return userId;
 }
-type I_getApisInstance = (baseUrl: string, getState: Function) => I_AIOService_class
-const getApisInstance: I_getApisInstance = function (baseUrl, getState) {
-  return new AIOService({ getApiFunctions, getState, baseUrl, id: 'bazaremiarzeapis' });
-}
-type I_getLoginInstance_parameter = {
-  onSubmit: I_AIOLogin_onSubmit, checkToken: I_AIOLogin_checkToken,
-  renderApp: I_AIOLogin_renderApp, renderLogin: I_AIOLogin_renderLogin,
-  renderSplash: I_AIOLogin_renderSplash
-}
-type I_getLoginInstance = (obj: I_getLoginInstance_parameter) => I_AIOLogin_class
-const getLoginInstance: I_getLoginInstance = function (parameter) {
-  let { onSubmit, checkToken, renderApp, renderLogin, renderSplash } = parameter;
-  let userId = getUrlUserId();
-  let props: I_AIOLogin_props = {
-    id: 'bazarmiarezelogin', modes: ['OTPNumber', 'phoneNumber'], timer: 5, otpLength: 4, userId, splashTime: 2500, onSubmit, checkToken,
-    renderApp, renderLogin, renderSplash,
-    register: {
-      type: 'mode', text: 'ثبت نام در بازار می ارزه',
-      fields: [
-        ['*firstname', '*lastname'],
-        ['*storeName_text_نام فروشگاه', { input: { type: 'text' }, field: 'value.phone', label: 'شماره تلفن ثابت', validations: [['required'], ['length>', 10]] }],
-        ['password', 'repassword'], '*location', '*address', ['*state', '*city']
-      ]
-    }
-  }
-  return new AIOLogin(props)
-}
 type I_Report = (parameter: I_Report_parameter) => void;
 const Report: I_Report = function (parameter) {
   let { phoneNumber, userId, apis, actionName } = parameter;
@@ -63,77 +36,21 @@ const Report: I_Report = function (parameter) {
 }
 
 export default function App() {
-  const getAppProps = (token:string) => {
-    apis.setToken(token);
-    return { apis, Login, Logger, userInfo,b1Info, backOffice, baseUrl, updateProfile, msfReport }
-  }
+  let [baseUrl] = useState<string>(getBaseUrl());
+  let [urlUserId] = useState<string>(getUrlUserId());
   
-  const renderApp: I_AIOLogin_renderApp = ({ token }) => <Main {...getAppProps(token)} />
-  const renderLogin: I_AIOLogin_renderLogin = (loginForm) => <Splash content={() => loginForm} />
-  const renderSplash: I_AIOLogin_renderSplash = () => <Splash loading={true} />
+  let [Logger] = useState(new AIOLog('bmlog'))
+  let [showLanding,setShowLanding] = useState<boolean>(true);
+  let [pageError, setPageError] = useState<{ text: string, subtext: string }>()
+  let [backOffice,setBackOffice] = useState<I_state_backOffice | undefined>()
+  let [userInfo, setUserInfo] = useState<I_userInfo | undefined>()
+  let [b1Info, setB1Info] = useState<I_B1Info | undefined>()
+  let [apis] = useState<I_AIOService_class>(new AIOService({ getApiFunctions,getState:()=>{return {Logger}}, baseUrl, id: 'bazaremiarzeapis' }))
   const onSubmit: I_AIOLogin_onSubmit = async (model: I_AIOLogin_model, mode: I_AIOLogin_mode) => {
     if (mode === 'OTPNumber') { onSubmit_OTPNumber(model) }
     else if (mode === 'OTPCode') { onSubmit_OTPCode(model, mode) }
     else if (mode === 'phoneNumber') { onSubmit_phoneNumber(model, mode) }
     else if (mode === 'register') { onSubmit_register(model) }
-  }
-  const onSubmit_onCatch: I_AIOService_onCatch = (error) => {
-    let result: string | undefined;
-    try { result = error.response.data.Message }
-    catch { setPageError({ text: 'سرویس دهنده در دسترس نمی باشد', subtext: 'Users/FirstStep' }) }
-    return result;
-  }
-  const onSubmit_OTPNumber = async (model: I_AIOLogin_model) => {
-    let res = await apis.request({ api: 'login.OTPNumber', parameter: model.login.userId, onCatch: onSubmit_onCatch, loading: false, description: 'ارسال شماره همراه' })
-    if (typeof res === 'object') {
-      //در اوتی پی بعد از ارسال شماره یک آی دی دریافت می شود که در ای پی آی او تی پی کد مورد نیاز است پس ما این آی دی رو در دیس ذخیره می کنیم
-      setUserId(res.id);
-      Login.setStorage('userId', model.login.userId);
-      Login.setMode('OTPCode')
-    }
-  }
-  const onSubmit_OTPCode = async (model: I_AIOLogin_model, mode: I_AIOLogin_mode) => {
-    let userInfo = await apis.request({ api: 'login.loginByOTPCode', onCatch: onSubmit_onCatch, parameter: { id: userId, otpCode: model.login.password }, loading: false, description: 'ارسال کد یکبار مصرف' })
-    handleLoginResponse(userInfo, model.login.userId, mode)
-  }
-  const onSubmit_phoneNumber = async (model: I_AIOLogin_model, mode: I_AIOLogin_mode) => {
-    let userInfo = await apis.request({ api: 'login.loginByPhoneNumber', onCatch: onSubmit_onCatch, parameter: { phoneNumber: model.login.userId, password: model.login.password }, loading: false, description: 'ورود با شماره همراه و رمز عبور' })
-    handleLoginResponse(userInfo, model.login.userId, mode)
-  }
-  const handleLoginResponse = async (userInfo:I_userInfo, userId, mode) => {
-    if (typeof userInfo === 'string') {
-      msfReport({
-        actionName: `login by ${mode}`, actionId: mode === 'OTPCode' ? 0 : 1, result: 'unsuccess',
-        message: userInfo, tagName: 'user authentication', eventName: 'action'
-      }, { userId });
-      return;
-    }
-    let { accessToken } = userInfo;
-    let token = accessToken.access_token;
-    let b1Info = await getB1Info(userInfo);
-    if (!b1Info) { return }
-    let registered = await apis.request({ api: 'login.checkIsRegistered', parameter: userId, loading: false, description: 'دریافت اطلاعات ثبت نام' });
-    if (registered) {
-      Login.setStorage('userInfo', userInfo);
-      Login.setStorage('userId', userId);
-      Login.setStorage('token', token);
-      Login.setMode('auth');
-    }
-    else { Login.setMode('register'); }
-    msfReport({ actionName: `login by ${mode}`, actionId: mode === 'OTPCode' ? 0 : 1, result: 'success', tagName: 'user authentication', eventName: 'action' }, userId)
-    setUserInfo(userInfo);
-  }
-  
-  const onSubmit_register = async (model: I_AIOLogin_model) => {
-    msfReport({ actionName: `register`, actionId: 3, result: 'success', tagName: 'user authentication', eventName: 'action' }, { phoneNumber: model.login.userId })
-    updateProfile(model, 'register', () => window.location.reload())
-  }
-  const msfReport: I_msfReport = (obj, p) => {
-    let { id = p.userId,phoneNumber = p.phoneNumber } = userInfo || {};
-    let { actionName, actionId, eventName, targetName, targetId, tagName } = obj
-    Report({
-      apis, userId: id, phoneNumber, actionName, actionId, eventName, targetName, targetId, tagName
-    })
   }
   const checkToken: I_AIOLogin_checkToken = async (token) => {
     let backOffice = await apis.request({ api: 'login.getBackOffice', parameter: apis, description: 'دریافت تنظیمات اولیه', loading: false })
@@ -155,6 +72,87 @@ export default function App() {
       } 
     }
   }
+  function renderApp({ token,appState }){
+    apis.setToken(token);
+    return <Main {...appState} />
+  }
+  const renderLogin: I_AIOLogin_renderLogin = (loginForm) => <Splash content={() => loginForm} />
+  const renderSplash: I_AIOLogin_renderSplash = () => <Splash loading={true} />
+  let AIOLoginProps: I_AIOLogin_props = {
+    id: 'bazarmiarezelogin', modes: ['OTPNumber', 'phoneNumber'], timer: 5, otpLength: 4, userId:urlUserId, splashTime: 2500, 
+    onSubmit,checkToken,renderApp, renderLogin, renderSplash,
+    register: {
+      type: 'mode', text: 'ثبت نام در بازار می ارزه',
+      fields: [
+        ['*firstname', '*lastname'],
+        ['*storeName_text_نام فروشگاه', { input: { type: 'text' }, field: 'value.phone', label: 'شماره تلفن ثابت', validations: [['required'], ['length>', 10]] }],
+        ['password', 'repassword'], '*location', '*address', ['*state', '*city']
+      ]
+    }
+  }
+  let [Login] = useState<I_AIOLogin_class>(new AIOLogin(AIOLoginProps))
+  
+  const onSubmit_onCatch: I_AIOService_onCatch = (error) => {
+    let result: string | undefined;
+    try { result = error.response.data.Message }
+    catch { setPageError({ text: 'سرویس دهنده در دسترس نمی باشد', subtext: 'Users/FirstStep' }) }
+    return result;
+  }
+  async function onSubmit_OTPNumber(model: I_AIOLogin_model){
+    let res = await apis.request({ api: 'login.OTPNumber', parameter: model.login.userId, onCatch: onSubmit_onCatch, loading: false, description: 'ارسال شماره همراه' })
+    if (typeof res === 'object') {
+      //در اوتی پی بعد از ارسال شماره یک آی دی دریافت می شود که در ای پی آی او تی پی کد مورد نیاز است پس ما این آی دی رو در دیس ذخیره می کنیم
+      Login.setStorage('userInfo',{id:res.id});
+      Login.setStorage('userId', model.login.userId);
+      Login.setMode('OTPCode')
+    }
+  }
+  const onSubmit_OTPCode = async (model: I_AIOLogin_model, mode: I_AIOLogin_mode) => {
+    let {id} = Login.getStorage('userInfo') 
+    let userInfo = await apis.request({ api: 'login.loginByOTPCode', onCatch: onSubmit_onCatch, parameter: { id, otpCode: model.login.password }, loading: false, description: 'ارسال کد یکبار مصرف' })
+    handleLoginResponse(userInfo, model.login.userId, mode)
+  }
+  const onSubmit_phoneNumber = async (model: I_AIOLogin_model, mode: I_AIOLogin_mode) => {
+    let userInfo = await apis.request({ api: 'login.loginByPhoneNumber', onCatch: onSubmit_onCatch, parameter: { phoneNumber: model.login.userId, password: model.login.password }, loading: false, description: 'ورود با شماره همراه و رمز عبور' })
+    handleLoginResponse(userInfo, model.login.userId, mode)
+  }
+  const handleLoginResponse = async (userInfo:I_userInfo, userId, mode) => {
+    if (typeof userInfo === 'string') {
+      msfReport({
+        actionName: `login by ${mode}`, actionId: mode === 'OTPCode' ? 0 : 1, result: 'unsuccess',
+        message: userInfo, tagName: 'user authentication', eventName: 'action'
+      }, { userId });
+      return;
+    }
+    let { accessToken } = userInfo;
+    let token = accessToken.access_token;
+    let b1Info:I_B1Info = await getB1Info(userInfo);
+    if (!b1Info) { return }
+    let registered = await apis.request({ api: 'login.checkIsRegistered', parameter: userId, loading: false, description: 'دریافت اطلاعات ثبت نام' });
+    if (registered) {
+      Login.setStorage('userInfo', userInfo);
+      Login.setStorage('userId', userId);
+      Login.setStorage('token', token);
+      Login.setMode('auth');
+    }
+    else { Login.setMode('register'); }
+    msfReport({ actionName: `login by ${mode}`, actionId: mode === 'OTPCode' ? 0 : 1, result: 'success', tagName: 'user authentication', eventName: 'action' }, userId)
+    setUserInfo(userInfo);
+    setB1Info(b1Info)
+  }
+  
+  const onSubmit_register = async (model: I_AIOLogin_model) => {
+    msfReport({ actionName: `register`, actionId: 3, result: 'success', tagName: 'user authentication', eventName: 'action' }, { phoneNumber: model.login.userId })
+    updateProfile(model, 'register', () => window.location.reload())
+  }
+  const msfReport: I_msfReport = (obj, p) => {
+    let { id = p.userId,phoneNumber = p.phoneNumber } = userInfo || {};
+    let { actionName, actionId, eventName, targetName, targetId, tagName } = obj
+    Report({
+      apis, userId: id, phoneNumber, actionName, actionId, eventName, targetName, targetId, tagName
+    })
+  }
+  
   const getB1Info = async (userInfo:I_userInfo) => {
     return await apis.request({ api: 'login.getB1Info', parameter: {userInfo,Logger}, description: 'دریافت اطلاعات b1', loading: false })
   }
@@ -188,17 +186,9 @@ export default function App() {
       callback()
     }
   }
-  let [baseUrl] = useState<string>(getBaseUrl());
-  let [showLanding,setShowLanding] = useState<boolean>(true);
-  let [pageError, setPageError] = useState<{ text: string, subtext: string }>()
-  let [Logger] = useState(new AIOLog('bmlog'))
-  let [backOffice,setBackOffice] = useState<I_state_backOffice | undefined>()
-  let [Login] = useState<I_AIOLogin_class>(getLoginInstance({ onSubmit, checkToken, renderLogin, renderApp, renderSplash }))
-  let [apis] = useState<I_AIOService_class>(getApisInstance(baseUrl, () => { return {} }))
-  let [userInfo, setUserInfo] = useState<I_userInfo | undefined>()
-  let [b1Info, setB1Info] = useState<I_B1Info | undefined>()
-  let [userId, setUserId] = useState();
   if (pageError) { return <PageError {...pageError} /> }
-  if (showLanding && backOffice.landing && backOffice.active_landing) { return <Landing onClose={() => setShowLanding(false)} items={backOffice.landing} /> }
-  return Login.render()
+  if (showLanding && backOffice && backOffice.landing && backOffice.active_landing) { return <Landing onClose={() => setShowLanding(false)} items={backOffice.landing} /> }
+  let appState = { apis, Login, Logger, userInfo,b1Info, backOffice, baseUrl, updateProfile, msfReport };
+  return Login.render({appState})
 }
+

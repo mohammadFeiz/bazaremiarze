@@ -127,7 +127,7 @@ export type I_backOffice_versions = {
     all?: number
 }
 export type I_backOffice_vitrinCategory = {
-    name:string,imageUrl?:string,id:any,open:boolean,
+    name:string,imageUrl?:any,id:any,open:boolean,
     childs?:I_backOffice_vitrinCategory[]
 }
 export type I_backOffice_content = {type:'billboard' | 'image' | 'description' | 'label',url?:string,text?:string,id:string,active:boolean,linkTo?:string}
@@ -161,6 +161,7 @@ export type I_ShopProps = {
 export type I_taxon = {id:string,name:string,min:number,max:number,products?:I_product[]}
 export type I_ShopClass = {
     shopName: string,
+    active:boolean,
     shopId: string,
     taxons?: I_taxon[],
     maxCart?:number,
@@ -170,7 +171,7 @@ export type I_ShopClass = {
     products?: I_product;
     description?: string;
     icon?:string,
-    getCategoryItems:(p?:{categoryId:string,categoryName:string})=>Promise<any[]>,
+    getCategoryItems:(p?: { categoryId?: string, categoryName?: string,count?:number })=>Promise<any[]>,
     renderCard_Regular: (
         p: {product: I_product, renderIn: I_renderIn, index: number,loading?: boolean, type?: 'horizontal' | 'vertical'}
     ) => React.ReactNode,
@@ -194,7 +195,7 @@ export type I_ShopClass = {
 export type I_factorItem = {key:string,value:string,className?:string}
 export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>Promise<I_amounts>;
 export type I_amounts = { total:number, discounts:I_discount[], payment:number, ClubPoints?: any };
-export type I_renderIn = 'product'|'shipping'|'cart'|'category';
+export type I_renderIn = 'product'|'shipping'|'cart'|'category' | 'slider';
 export type I_actionClass = {
     getNavItems:()=>{
         text:string | (()=>string),icon:()=>React.ReactNode,render:()=>React.ReactNode,id:string
@@ -268,7 +269,8 @@ export type I_app_state = {
     msfReport:I_msfReport,
     bazargahOrders:{wait_to_get?:[],wait_to_send?:[]},
     actionClass:I_actionClass,
-    baseUrl:string
+    baseUrl:string,
+    spreeCategories:I_state_spreeCategories
 }
 export type I_state_spreeCategories = { icon_type: I_spreeCategory[], slider_type: I_spreeCategory[], dic: {} }
 export type I_state_Shop = {[shopId:string]:I_ShopClass}
@@ -303,7 +305,7 @@ export type I_cartTaxon = {
 }
 /////cart
 export type I_bundle_taxon = {
-    shopId:'Bundle',id:string,name:string,price:number,products:I_bundle_product[],image:string,description:string,max:number
+    shopId:'Bundle',id:string,name:string,price:number,products:I_bundle_product[],image:any,description:string,max:number
 }
 export type I_bundle_product = { //mainSku => id, unitPrice => price
     id:string,name:string,price:number,qty:number,variants:I_bundle_variant[]
@@ -328,7 +330,7 @@ export type I_product = {
     //مواردی که ابتدا دریافت می شود
     id:string,
     name:string,
-    images:string[],
+    images:any[],
     inStock:boolean,
     B1Dscnt:number,
     CmpgnDscnt:number,
@@ -336,7 +338,7 @@ export type I_product = {
     FinalPrice:number, 
     Price:number,
     hasFullDetail:boolean,
-    category:{shopId:string,shopName:string,categoryId?:string,categoryName?:string}, //اطلاعات دسته بندی محصول
+    category:{shopId:string,shopName:string,categoryId?:string,categoryName?:string,taxonId?:string,taxonName?:string}, //اطلاعات دسته بندی محصول
     //مواردی که با کلیک روی محصول دریافت می شود
     description?: any;
     clubpoint?: any;
@@ -350,7 +352,7 @@ export type I_product_optionType = {
     name:string,
     items:{[optionValueId:string]:string}
 }
-export type I_product_category = {shopId:string,shopName:string,categoryId?:string,categoryName?:string}
+export type I_product_category = {shopId:string,shopName:string,categoryId?:string,categoryName?:string,taxonId?:string,taxonName?:string}
 
 export type I_variant = {
     id:string,
@@ -361,7 +363,7 @@ export type I_variant = {
     FinalPrice:number, 
     Price:number,
     optionValues:I_variant_optionValues,
-    images:string[]
+    images:any[]
 };
 export type I_variant_optionValues = {[optiontypeId:string]:string}
 export type I_discount = { percent?:number, value:number, title:string }

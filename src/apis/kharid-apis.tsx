@@ -19,6 +19,7 @@ type I_apiFunctions = {
   search: I_ni,
   getCategories: (ids: string[], appState?: I_app_state) => Promise<{ result: I_getCategories_return }>
   payment: I_ni,
+  getFakeProduct:()=>{result:I_product},
   getProductFullDetail: (product:I_product,appState:I_app_state)=>Promise<{result:I_product}>,
   getCart: (p: any, appState: I_app_state) => { result: I_state_cart },
   setCart: (cart: I_state_cart, appState: I_app_state) => { result: true }
@@ -290,6 +291,22 @@ export default function kharidApis({ baseUrl, helper }) {
       let result = Shop[shopId].payment(obj);
       return { result }
     },
+    getFakeProduct(){
+      let product:I_product = {
+        id:'1231',
+        name:'محصول تستی',
+        images:[nosrc],
+        inStock:true,
+        B1Dscnt:10,
+        CmpgnDscnt:10,
+        PymntDscnt:10,
+        FinalPrice:200000, 
+        Price:220000,
+        hasFullDetail:false,
+        category:{shopId:'Regular',shopName:'خرید عادی'}
+      }
+      return {result:product}
+    },
     async getProductFullDetail(product , appState) {
       let spree = new Spree(appState);
       let result = await spree.getProductFullDetail(product)
@@ -453,7 +470,7 @@ class Spree implements I_Spree{
     else if(p.body){
       let {category,searchValue,ids,pageSize = 250,pageNumber} = p.body;
       body = {
-        CardCode: userInfo.cardCode, Taxons:category.categoryId || category.shopId, Name:searchValue, ids, PerPage: pageSize, Page: pageNumber,
+        CardCode: userInfo.cardCode, Taxons:category.categoryId || category.taxonId || category.shopId, Name:searchValue, ids, PerPage: pageSize, Page: pageNumber,
         ProductFields: "id,name,type,sku,slug,default_variant,images,price",
         VariantFields: "id,sku,type,images",Include: "default_variant,images"
       }
@@ -478,6 +495,7 @@ class Spree implements I_Spree{
       if(product === false){total--}
       else {products.push(product)}
     }
+    debugger
     return { products, total }
   }
   getProductFullDetail = async (product:I_product) => {

@@ -27,6 +27,7 @@ export default class ShopClass implements I_ShopClass {
     /****type defined**** */
     getAppState: () => I_app_state;
     shopId: string;
+    active:boolean;
     shopName: string;
     taxons?: I_taxon[];
     maxCart?: number;
@@ -41,7 +42,7 @@ export default class ShopClass implements I_ShopClass {
         let categoryItems = await this.getCategoryItems(productCategory);
         return categoryItems.find((o: I_product) => o.id === productId)
     }
-    getCategoryItems = async (p?: { categoryId?: string, categoryName?: string }) => {
+    getCategoryItems = async (p?: { categoryId?: string, categoryName?: string,count?:number }) => {
         let { apis } = this.getAppState();
         if (this.shopId === 'Bundle') {
             if (!this.categoryItems) {
@@ -51,18 +52,19 @@ export default class ShopClass implements I_ShopClass {
         }
         else if (this.taxons) { this.categoryItems = this.taxons; return this.categoryItems }
         else if (this.shopId === 'Regular') {
+            let key = `${p.categoryId}${p.count?`_count${p.count}`:''}`;
             if (!this.categoryItems) { this.categoryItems = {} }
-            if (!this.categoryItems[p.categoryId]) {
+            if (!this.categoryItems[key]) {
                 let description: string = `دریافت محصولات دسته بندی ${p.categoryName}`;
-                let cacheName: string = `taxonProducts.Regular.${p.categoryId}`;
+                let cacheName: string = `taxonProducts.Regular.${key}`;
                 let parameter: I_getTaxonProducts_p = { category: { shopId: 'Regular', shopName: 'خرید عادی', categoryId: p.categoryId, categoryName: p.categoryName } }
                 let request = {
                     api: 'kharid.getTaxonProducts', description, def: [], parameter,
                     cache: { time: 30 * 24 * 60 * 60 * 1000, name: cacheName }
                 }
-                this.categoryItems[p.categoryId] = await apis.request(request);
+                this.categoryItems[key] = await apis.request(request);
             }
-            return this.categoryItems[p.categoryId];
+            return this.categoryItems[key];
         }
         else {
             if (!this.categoryItems) {
@@ -108,7 +110,10 @@ export default class ShopClass implements I_ShopClass {
     ) => {
         let { product, renderIn, index, loading, type } = p;
         let cartVariants: I_cartVariant[] = this.getCartVariants({ productId: product.id });
-        let props: I_RegularCard = { cartVariants, product, renderIn, loading, index, type, shopId: this.shopId, onClick: this.openProductPage.bind(this) }
+        let props: I_RegularCard = { 
+            cartVariants, product, renderIn, loading, index, type, shopId: this.shopId, 
+            onClick: ()=>this.openProductPage(product)
+        }
         return (<RegularCard key={product.id} {...props} />)
     }
     renderCard_taxon = (p: { taxon: I_taxon, renderIn: I_renderIn }) => {
@@ -140,8 +145,8 @@ export default class ShopClass implements I_ShopClass {
             header: false
         })
     }
-    openProductPage = async (p: { product: I_product, taxonId?: string }) => {
-        let { product, taxonId } = p;
+    openProductPage = async (product: I_product) => {
+        let taxonId = product.category.taxonId;
         let { apis, rsa, actionClass, msfReport } = this.getAppState();
         if (!product.hasFullDetail) {
             product = await apis.request({ api: 'kharid.getProductFullDetail', parameter: product })
@@ -152,7 +157,7 @@ export default class ShopClass implements I_ShopClass {
             position: 'fullscreen', id: 'product',
             body: {
                 render: () => {
-                    let props: I_RegularPage = { product, shopId: this.shopId, taxonId }
+                    let props: I_RegularPage = { product, shopId: this.shopId }
                     return <RegularPage {...props} />
                 }
             },
@@ -458,14 +463,6 @@ export default class ShopClass implements I_ShopClass {
         if (this.shopId === 'Bundle') { return shippingOptions.SettleType !== 2 ? 'پرداخت' : 'ثبت' }
         else { return 'ارسال برای ویزیتور' }
     }
-    async getCategoryProducts(id, count) {
-        let { apis } = this.getAppState();
-        let parameter: I_getTaxonProducts_p = { category: { shopId: this.shopId, shopName: this.shopName, categoryId: id }, pageSize: count, pageNumber: 1 }
-        return await apis.request({
-            api: 'kharid.getTaxonProducts', parameter, description: 'دریافت محصولات دسته بندی', def: [],
-            cache: { time: 30 * 24 * 60 * 60 * 1000, name: `taxonProducts.${this.shopId}${id ? `.${id}` : ''}${count ? `_count${count}` : ''}` }
-        });
-    }
     renderCartFactor = async (button = true) => {
         let res = await this.getAmounts(undefined, 'cart');
         let { payment } = res;
@@ -528,11 +525,6 @@ export default class ShopClass implements I_ShopClass {
         )
     }
 }
-//props
-//billboard
-//description
-//products
-//renderProductCard function
 type I_CategoryView = { billboard?: string, description?: string, renderItem: Function, items: any[] }
 function CategoryView(props: I_CategoryView) {
     let [searchValue, setSearchValue] = useState<string>('')
@@ -571,16 +563,12 @@ function TaxonCard(props: I_TaxonCard) {
     let [open, setOpen] = useState<boolean>(storage.load({ name: 'toggle' + taxon.id, def: false }))
     let [products, setProducts] = useState<I_product[] | undefined>()
     async function click() { setOpen(!open); storage.save({ name: 'toggle' + taxon.id, value: !open }) }
-
     function close_layout() {
         return (
             <RVD
                 layout={{
                     className: 'p-12 theme-box-shadow', onClick: () => click(),
-                    row: [
-                        { size: 36, align: 'vh', html: <Icon path={mdiChevronLeft} size={.8} /> },
-                        { html: taxon.name, align: 'v' }
-                    ]
+                    row: [{ size: 36, align: 'vh', html: <Icon path={mdiChevronLeft} size={.8} /> },{ html: taxon.name, align: 'v' }]
                 }}
             />
         )
@@ -597,7 +585,7 @@ function TaxonCard(props: I_TaxonCard) {
     }
     function taxonName_layout() {
         return {
-            onClick: (e) => { e.stopPropagation(); this.click() },
+            onClick: (e) => { e.stopPropagation(); click() },
             row: [
                 { html: <Icon path={mdiChevronDown} size={0.8} />, align: 'vh', size: 36 },
                 { html: taxon.name, flex: 1, align: 'v' },
@@ -608,7 +596,7 @@ function TaxonCard(props: I_TaxonCard) {
     function range_layout() {
         let Min = SplitNumber(taxon.min), Max = SplitNumber(taxon.max);
         return {
-            gap: 12, align: 'v', className: 'fs-10', style: { color: 'orange' },
+            gap: 12, align: 'v', className: 'fs-10', style: { color: '#60B4D0',background:'#eee',padding:'3px 6px' },
             row: [{ html: `حداقل مبلغ ${Min} ریال` }, { html: `حداکثر مبلغ ${Max} ریال` },]
         }
     }
@@ -625,7 +613,7 @@ function TaxonCard(props: I_TaxonCard) {
             setProducts(products)
         }
         else {
-            let parameter: I_getTaxonProducts_p = { category: { shopId, shopName, categoryId: taxon.id, categoryName: taxon.name } }
+            let parameter: I_getTaxonProducts_p = { category: { shopId, shopName, taxonId: taxon.id, taxonName: taxon.name } }
             let products = await apis.request({
                 api: 'kharid.getTaxonProducts', description: `دریافت محصولات تکزون ${taxon.name}`, def: [], parameter,
                 cache: { time: 30 * 24 * 60 * 60 * 1000, name: `taxonProducts.${shopId}.${taxon.id}` }
@@ -671,7 +659,7 @@ function RegularCard(props: I_RegularCard) {
                             { show: !isNaN(unitTotal), className: 'theme-light-font-color fs-12', html: () => `مجموع ${SplitNumber(unitTotal)} ریال` }
                         ]
                     },
-                    { html: (<CartButton renderIn={renderIn} product={product} variantId={variantId} shopId={shopId} taxonId={taxonId} />), align: 'vh' }
+                    { html: (<CartButton renderIn={renderIn} product={product} variantId={variantId} />), align: 'vh' }
                 ]
             }
         })
@@ -685,7 +673,6 @@ function RegularCard(props: I_RegularCard) {
         return { html: name, className: 'fs-12 theme-medium-font-color bold', style: { whiteSpace: 'normal', textAlign: 'right' } }
     }
     function discount_layout() {
-        let { product } = this.props;
         let { inStock, Price, B1Dscnt = 0, CmpgnDscnt = 0, PymntDscnt = 0 } = product;
         if (!Price || !inStock) { return false }
         return {
@@ -780,7 +767,7 @@ function RegularCard(props: I_RegularCard) {
                     column: [
                         { size: 140, align: 'vh', html: <img src={(images[0] || NoSrc) as string} width={'100%'} style={{ width: 'calc(100% - 24px)', height: '100%', borderRadius: 8 }} alt='' />, style: { padding: 6, paddingBottom: 0 } },
                         { html: name, className: 'fs-12 p-v-6 p-h-12 theme-medium-font-color bold', style: { whiteSpace: 'normal' } },
-                        //this.name_layout(),
+                        //name_layout(),
                         { flex: 1 },
                         discount_layout(),
                         price_layout(),
@@ -881,10 +868,11 @@ function BundleCard(props: I_BundleCard) {
         />
     )
 }
-type I_RegularPage = { product: I_product, shopId: string, taxonId?: string }
+type I_RegularPage = { product: I_product, shopId: string }
 function RegularPage(props: I_RegularPage) {
     let { actionClass, Shop }: I_app_state = useContext(appContext);
-    let { product, shopId, taxonId } = props;
+    let { product, shopId } = props;
+    let taxonId = product.category.taxonId;
     let [selectedVariant, setSelectedVariant] = useState<I_variant | undefined>()
     let [selectedDic, setSelectedDic] = useState<I_variant_optionValues | undefined>()
     let [existOptionValueNames, setExistOptionValueNames] = useState<string[]>([])
@@ -1093,7 +1081,7 @@ function RegularPage(props: I_RegularPage) {
         return {
             column: [
                 { flex: 1 },
-                { html: (<CartButton variantId={selectedVariant.id} product={product} renderIn='product' shopId={shopId} taxonId={taxonId} />) },
+                { html: (<CartButton variantId={selectedVariant.id} product={product} renderIn='product' />) },
                 { flex: 1 }
             ]
         }
@@ -1102,9 +1090,6 @@ function RegularPage(props: I_RegularPage) {
         if (!selectedVariant || !selectedVariant.inStock) {
             return { column: [{ flex: 1 }, { html: "ناموجود", className: "colorD83B01 bold fs-14" }, { flex: 1 }] };
         }
-        let { cartItem = {} } = this.props;
-        //یا یک را اضافه می کنم چون اگه تعداد صفر بود قیمت واحد رو نشون بده
-        let count = cartItem.count || 1;
         let { B1Dscnt, CmpgnDscnt, PymntDscnt } = selectedVariant;
         return {
             column: [
@@ -1112,7 +1097,7 @@ function RegularPage(props: I_RegularPage) {
                 {
                     row: [
                         { flex: 1 },
-                        { show: !!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt, html: () => <del>{SplitNumber(selectedVariant.Price * count)}</del>, className: "theme-light-font-color" },
+                        { show: !!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt, html: () => <del>{SplitNumber(selectedVariant.Price)}</del>, className: "theme-light-font-color" },
                         { size: 1 },
                         {
                             html: "%" + B1Dscnt, show: !!B1Dscnt,
@@ -1133,7 +1118,7 @@ function RegularPage(props: I_RegularPage) {
                 {
                     row: [
                         { flex: 1 },
-                        { html: SplitNumber(selectedVariant.FinalPrice * count), className: "theme-dark-font-color bold" },
+                        { html: SplitNumber(selectedVariant.FinalPrice), className: "theme-dark-font-color bold" },
                         { size: 6 },
                         { html: "ریال", className: "theme-dark-font-color bold" },
                     ],
@@ -1456,10 +1441,11 @@ function BundleSlider(props: I_BundleSlider) {
         />
     )
 }
-type I_CartButton = { product: I_product, renderIn: I_renderIn, variantId?: string, onChange?: Function, shopId: string, taxonId?: string }
+type I_CartButton = { product: I_product, renderIn: I_renderIn, variantId?: string, onChange?: Function }
 function CartButton(props: I_CartButton) {
     let { actionClass, cart }: I_app_state = useContext(appContext);
-    let { product, renderIn, variantId, onChange = () => { }, taxonId, shopId } = props;
+    let { product, renderIn, variantId, onChange = () => { } } = props;
+    let {shopId,taxonId} = product.category;
     function openCart(e) {
         e.stopPropagation();
         actionClass.openPopup('cart', shopId)
@@ -1557,21 +1543,10 @@ function ProductCount(props: I_ProductCount) {
         change(value + dir)
         if (touch) { $(window).bind('touchend', touchEnd) }
         else { $(window).bind('mouseup', touchEnd) }
-        // clearTimeout(this.timeout);
-        // clearInterval(this.interval);
-        // this.timeout = setTimeout(()=>{
-        //   this.interval = setInterval(()=>{
-        //     let {value} = this.state;
-        //     let {min = 0} = this.props;
-        //     this.change(value + dir,Math.max(min,1))
-        //   },60)
-        // },800)
     }
     function touchEnd() {
         $(window).unbind('touchend', touchEnd)
         $(window).unbind('mouseup', touchEnd)
-        // clearTimeout(this.timeout)
-        // clearInterval(this.interval) 
     }
     function openPopup() {
         let config = {
@@ -1641,47 +1616,12 @@ export function CountPopup(props: I_CountPopup) {
     const dom = useRef<HTMLInputElement>(null)
     let { onRemove, onChange } = props;
     let [value, setValue] = useState<any>(props.value)
-    function offset(v) {
-        value = +value;
-        if (isNaN(value)) { value = 0 }
-        value += v;
-        if (value < 0) { value = 0 }
-        return value;
-    }
-    let timeout, interval;
-    function change(v) {
-        eventHandler('window', 'mouseup', mouseup);
-        setValue(offset(v));
-        clearTimeout(timeout)
-        clearInterval(interval)
-        timeout = setTimeout(() => interval = setInterval(() => setValue(offset(v)), 10), 700)
-    }
-    function mouseup() {
-        this.eventHandler('window', 'mouseup', this.mouseup, 'unbind');
-        clearTimeout(this.timeout)
-        clearInterval(this.interval)
-    }
-    function eventHandler(selector, event, action, type = "bind") {
-        var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" };
-        event = "ontouchstart" in document.documentElement ? me[event] : event;
-        var element = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
-        element.unbind(event, action);
-        if (type === "bind") { element.bind(event, action); }
-    }
-    let touch = "ontouchstart" in document.documentElement;
-    function changeButton_layout(dir: 1 | -1) {
-        return {
-            size: 48, html: <Icon path={mdiPlusThick} size={1} />, align: 'vh',
-            attrs: { [touch ? 'onTouchStart' : 'onMouseDown']: () => change(dir) }
-        }
-    }
     function input_layout() {
         return {
             flex: 1,
             html: (
-                <input
-                    type='number' value={value} min={0}
-                    ref={dom}
+                <AIOInput
+                    type='number' value={value} min={0} attrs={{ref:dom}}
                     onChange={(e) => setValue(e.target.value)}
                     onClick={() => $(dom.current).focus().select()}
                     style={{ width: '100%', border: '1px solid lightblue', height: 36, textAlign: 'center', borderRadius: 4 }}
@@ -1694,7 +1634,7 @@ export function CountPopup(props: I_CountPopup) {
             layout={{
                 style: { height: '100%', padding: 12 }, onClick: (e) => e.stopPropagation(), gap: 12,
                 column: [
-                    { gap: 3, row: [changeButton_layout(1), input_layout(), changeButton_layout(-1)] },
+                    { gap: 3, row: [input_layout()] },
                     {
                         gap: 12, row: [
                             { flex: 1, html: (<button className='button-2' style={{ background: 'red', border: 'none' }} onClick={() => onRemove()}>حذف محصول</button>) },
@@ -1706,8 +1646,6 @@ export function CountPopup(props: I_CountPopup) {
         />
     )
 }
-
-
 type I_Cart = { shopId: string }
 export function Cart(props: I_Cart) {
     let context: I_app_state = useContext(appContext);
@@ -1798,59 +1736,59 @@ export function Cart(props: I_Cart) {
 
 type I_Shipping = { shopId: string, shopName: string }
 function Shipping(props: I_Shipping) {
-    let { userInfo, b1Info, backOffice,Shop,apis, Logger,actionClass,msfReport }: I_app_state = useContext(appContext);
+    let { userInfo, b1Info, backOffice, Shop, apis, Logger, actionClass, msfReport }: I_app_state = useContext(appContext);
     let { shopId, shopName } = props;
-    let [code,setCode] = useState<{discount:string,gift:string}>({discount:'',gift:''})
-    let [codeState,setCodeState] = useState<{discount:boolean,gift:boolean}>({discount:false,gift:false})
-    let [codeInfo,setCodeInfo] = useState<{discount:any,gift:any}>({discount:undefined,gift:undefined})
-    let [data,setData] = useState<{[key:string]:{value:number,options:any[]}}>({})
-    let [mounted,setMounted] = useState<boolean>(false)
-    let [factorItems,setFactorItems] = useState<I_factorItem[]>([])
-    let [cartItems,setCartItems] = useState<any[]>([])
+    let [code, setCode] = useState<{ discount: string, gift: string }>({ discount: '', gift: '' })
+    let [codeState, setCodeState] = useState<{ discount: boolean, gift: boolean }>({ discount: false, gift: false })
+    let [codeInfo, setCodeInfo] = useState<{ discount: any, gift: any }>({ discount: undefined, gift: undefined })
+    let [data, setData] = useState<{ [key: string]: { value: number, options: any[] } }>({})
+    let [mounted, setMounted] = useState<boolean>(false)
+    let [factorItems, setFactorItems] = useState<I_factorItem[]>([])
+    let [cartItems, setCartItems] = useState<any[]>([])
     function details_layout(list: { key: string, value: any, className?: string }[]) {
         return {
             className: 'box p-12 m-h-12',
             column: list.map(({ key, value, className = 'theme-medium-font-color fs-14' }) => {
                 return {
                     size: 36, childsProps: { align: 'v' },
-                    row: [{ html: key + ':', className },{ flex: 1 },{ html: value, className }]
+                    row: [{ html: key + ':', className }, { flex: 1 }, { html: value, className }]
                 }
             })
         }
     }
-    function getParams(data){
-        let {PayDueDate,DeliveryType,PaymentTime} = data;
+    function getParams(data) {
+        let { PayDueDate, DeliveryType, PaymentTime } = data;
         let SettleType = actionClass.getSettleType(PayDueDate.value);
-        return { 
-            SettleType, PayDueDate:PayDueDate.value, DeliveryType:DeliveryType.value, PaymentTime:PaymentTime.value, 
-            address: userInfo.address, giftCodeInfo:codeInfo.gift, discountCodeInfo:codeInfo.discount 
+        return {
+            SettleType, PayDueDate: PayDueDate.value, DeliveryType: DeliveryType.value, PaymentTime: PaymentTime.value,
+            address: userInfo.address, giftCodeInfo: codeInfo.gift, discountCodeInfo: codeInfo.discount
         }
     }
-    async function getFactorItems(data){
+    async function getFactorItems(data) {
         let ShopClass = Shop[shopId];
         let { getFactorItems } = ShopClass;
         let params = getParams(data)
-        let factorItems:I_factorItem[] = await getFactorItems(params, 'shipping')
+        let factorItems: I_factorItem[] = await getFactorItems(params, 'shipping')
         setFactorItems(factorItems)
     }
-    async function getCartItems(){
+    async function getCartItems() {
         let cartItems = await Shop[shopId].renderCartItems('shipping');
         setCartItems(cartItems);
     }
     useEffect(() => { onMount() }, [])
-    useEffect(()=>{
+    useEffect(() => {
         getFactorItems(data)
-    },[data])
+    }, [data])
     async function onMount() {
         let defaultShipping = backOffice[shopId]
         if (!defaultShipping) {
             defaultShipping = backOffice.spreeCampaigns.find((o) => o.shopId === shopId)
         }
-        let {PayDueDate,PaymentTime,DeliveryType} = defaultShipping
+        let { PayDueDate, PaymentTime, DeliveryType } = defaultShipping
         let data = {
-            PayDueDate:{value:PayDueDate,options:backOffice.PayDueDate_options.filter(({ value }) => defaultShipping.PayDueDates.indexOf(value) !== -1)},
-            PaymentTime:{value:PaymentTime,options:backOffice.PaymentTime_options.filter(({ value }) => defaultShipping.PaymentTime.indexOf(value) !== -1)},
-            DeliveryType:{value:DeliveryType,options:backOffice.DeliveryType_options.filter(({ value }) => defaultShipping.DeliveryType.indexOf(value) !== -1)}
+            PayDueDate: { value: PayDueDate, options: backOffice.PayDueDate_options.filter(({ value }) => defaultShipping.PayDueDates.indexOf(value) !== -1) },
+            PaymentTime: { value: PaymentTime, options: backOffice.PaymentTime_options.filter(({ value }) => defaultShipping.PaymentTime.indexOf(value) !== -1) },
+            DeliveryType: { value: DeliveryType, options: backOffice.DeliveryType_options.filter(({ value }) => defaultShipping.DeliveryType.indexOf(value) !== -1) }
         }
         setData(data)
         getFactorItems(data);
@@ -1862,7 +1800,7 @@ function Shipping(props: I_Shipping) {
             className: 'box p-12 m-h-12',
             column: [
                 { size: 36, align: 'v', className: 'theme-medium-font-color fs-12 bold', html: 'آدرس تحویل' },
-                {className: 'fs-14 theme-medium-font-color bgF1F1F1 p-12 br-4', html: userInfo.address, size: 72}
+                { className: 'fs-14 theme-medium-font-color bgF1F1F1 p-12 br-4', html: userInfo.address, size: 72 }
             ]
         }
     }
@@ -1871,7 +1809,7 @@ function Shipping(props: I_Shipping) {
             className: 'box p-12 m-h-12',
             column: [
                 { size: 36, align: 'v', className: 'theme-medium-font-color fs-12 bold', html: 'شماره تلفن' },
-                {className: 'fs-14 theme-medium-font-color bgF1F1F1 p-12 br-4', html: userInfo.phoneNumber, style: { minHeight: 36 }}
+                { className: 'fs-14 theme-medium-font-color bgF1F1F1 p-12 br-4', html: userInfo.phoneNumber, style: { minHeight: 36 } }
             ]
         }
     }
@@ -1892,7 +1830,7 @@ function Shipping(props: I_Shipping) {
         let column = [];
         if (codeInfo.gift) {
             try {
-                let details = actionClass.getCodeDetails({ giftCodeInfo:codeInfo.gift,discountCodeInfo:codeInfo.discount })
+                let details = actionClass.getCodeDetails({ giftCodeInfo: codeInfo.gift, discountCodeInfo: codeInfo.discount })
                 if (details.PromotionValue) {
                     column.push({
                         style: { color: 'green' }, html: `کارت هدیه به مبلغ ${details.PromotionValue} روی فاکتور اعمال شد`
@@ -1903,7 +1841,7 @@ function Shipping(props: I_Shipping) {
         }
         if (codeInfo.discount) {
             try {
-                let details = actionClass.getCodeDetails({ discountCodeInfo:codeInfo.discount,giftCodeInfo:codeInfo.gift })
+                let details = actionClass.getCodeDetails({ discountCodeInfo: codeInfo.discount, giftCodeInfo: codeInfo.gift })
                 if (details.DiscountPercentage) {
                     column.push({
                         style: { color: 'green' }, html: `کد تخفیف ${`${details.DiscountPercentage} درصد`} تا سقف ${details.DiscountMaxValue} روی فاکتور اعمال شد `
@@ -1935,7 +1873,7 @@ function Shipping(props: I_Shipping) {
                             onClick={async () => {
                                 await apis.request({
                                     api: "kharid.payment", description: 'عملیات ثبت و پرداخت',
-                                    parameter: { ...params,shopId },
+                                    parameter: { ...params, shopId },
                                     onSuccess: () => {
                                         msfReport({ actionName: 'send to visitor', actionId: 234, tagName: 'kharid', result: 'success', eventName: 'action' })
                                     },
@@ -1951,7 +1889,7 @@ function Shipping(props: I_Shipping) {
             ]
         }
     }
-    function getCodeAfter(type:'gift' | 'discount') {
+    function getCodeAfter(type: 'gift' | 'discount') {
         let state = codeState[type]
         let value = code[type]
         let text, className = '';
@@ -1966,46 +1904,46 @@ function Shipping(props: I_Shipping) {
             <button disabled={!value || value.length < 5} onClick={() => checkCode(type)} className={'shipping-code-button' + (className ? ' ' + className : '')}>{text}</button>
         )
     }
-    function checkCode(type:'gift' | 'discount') {
+    function checkCode(type: 'gift' | 'discount') {
         if (codeState[type]) {
-            setCodeState({...codeState,[type]:false})
-            setCodeInfo({...codeInfo,[type]:undefined})
+            setCodeState({ ...codeState, [type]: false })
+            setCodeInfo({ ...codeInfo, [type]: undefined })
             return
         }
-        let description = {'giftCode': 'کارت هدیه','discountCode': 'کد تخفیف'}[type]
+        let description = { 'giftCode': 'کارت هدیه', 'discountCode': 'کد تخفیف' }[type]
         apis.request({
             api: 'kharid.checkCode',
             description: `ارسال ${description}`,
-            parameter: { type, code:code[type] },
+            parameter: { type, code: code[type] },
             onSuccess: (obj = {}) => {
                 Logger.add(`اطلاعات دریافت شده از ${description}`, obj, type)
-                setCodeState({...codeState,[type]:true})
-                setCodeInfo({...codeInfo,[type]:obj})
+                setCodeState({ ...codeState, [type]: true })
+                setCodeInfo({ ...codeInfo, [type]: obj })
             },
             onError: () => {
-                setCode({...code,[type]:''})
-                setCodeInfo({...codeInfo,[type]:undefined})
+                setCode({ ...code, [type]: '' })
+                setCodeInfo({ ...codeInfo, [type]: undefined })
             },
             onCatch: (response) => {
                 return response.response.data.Message;
             }
         })
     }
-    function code_layout(type:'gift' | 'discount') {
-        let placeholder = {'gift': 'کارت هدیه','discount': 'کد تخفیف'}[type]
+    function code_layout(type: 'gift' | 'discount') {
+        let placeholder = { 'gift': 'کارت هدیه', 'discount': 'کد تخفیف' }[type]
         let value = code[type];
         return {
             className: 'box m-h-12',
             html: (
                 <AIOInput
                     key={type} type='text' value={value} disabled={!!codeState[type]} style={{ height: 36 }}
-                    placeholder={`${placeholder} را وارد کنید`} onChange={(v) => setCode({ ...code,[type]: v })}
+                    placeholder={`${placeholder} را وارد کنید`} onChange={(v) => setCode({ ...code, [type]: v })}
                     after={getCodeAfter(type)} before={placeholder}
                 />
             )
         }
     }
-    function options_layout(key,title, cond = true) {
+    function options_layout(key, title, cond = true) {
         let value = data[key].value;
         let options = data[key].options;
         if (!cond || value === undefined) { return false }
@@ -2016,26 +1954,19 @@ function Shipping(props: I_Shipping) {
                 {
                     html: (
                         <AIOInput
-                            key={key}
-                            style={{ padding: 0 }}
-                            className='shipping-options fs-12'
-                            type='radio'
+                            key={key} style={{ padding: 0 }} className='shipping-options fs-12' type='radio' options={options} value={value}
                             optionAfter={(option) => {
                                 if (option.discountPercent) { return <div style={{ whiteSpace: 'nowrap' }}>{`${option.discountPercent}% تخفیف`}</div> }
                             }}
-                            options={options}
                             optionAttrs={{ style: { height: 36, width: '100%', padding: 0 } }}
-                            value={value}
-                            onChange={(newValue) => {
-                                this.setState({ [key]: newValue })
-                            }}
+                            onChange={(newValue) => setData({ ...data,[key]:{...data[key],value:newValue} })}
                         />
                     )
                 }
             ]
         }
     }
-    
+
     if (!mounted) { return null }
     return (
         <>
@@ -2065,10 +1996,10 @@ function Shipping(props: I_Shipping) {
                                 { size: 12 },
                                 options_layout('PayDueDate', 'مهلت تسویه', data.PaymentTime.value !== 5),
                                 { size: 12 },
-                                // this.code_layout('gift'),
+                                // code_layout('gift'),
                                 // { size: 12 },
-                                // this.code_layout('discount'),
-                                //this.codeView_layout(),
+                                // code_layout('discount'),
+                                //codeView_layout(),
                                 products_layout()
                             ],
                         },
@@ -2078,4 +2009,47 @@ function Shipping(props: I_Shipping) {
             />
         </>
     )
-}  
+}
+
+type I_CategorySlider = {
+    products?: I_product[],title:string,showAll:Function
+}
+export function CategorySlider(props: I_CategorySlider) {
+    let { Shop,apis }: I_app_state = useContext(appContext);
+    let { products,title,showAll } = props;
+    function products_layout() {
+        let loading = false;
+        if (!products) {
+            let fakeProduct = apis.request({api:'khaird.getFakeProduct'});
+            loading = true;
+            products = [fakeProduct, fakeProduct, fakeProduct, fakeProduct, fakeProduct]
+        }
+        return {
+            gap: 16, className: 'ofx-auto p-b-12',
+            row: products.map((product, i) => {
+                return {
+                    className: 'of-visible',
+                    html: (Shop.Regular.renderCard_Regular({ type: 'vertical', product, loading, renderIn: 'slider',index:i }))
+                }
+            }),
+        }
+    }
+    return (
+        <RVD
+            layout={{
+                style: { padding: 12 }, className: 'ofx-visible',
+                column: [
+                    {
+                        size: 36,
+                        row: [
+                            { html: title, className: "fs-14 theme-dark-font-color bold", align: "v" },
+                            { flex: 1 },
+                            { show: !!showAll && !!products && !!products.length, html: "مشاهده همه", className: "fs-12 theme-link-font-color bold", align: "v", onClick: () => showAll() }
+                        ]
+                    },
+                    products_layout(),
+                ],
+            }}
+        />
+    )
+}

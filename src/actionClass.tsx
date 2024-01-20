@@ -22,7 +22,7 @@ import Wallet from './popups/wallet/wallet';
 import TanzimateKifePool from './components/kife-pool/tanzimate-kife-pool/tanzimate-kife-pool';
 import {Cart} from './shop-class.tsx';
 import Sefareshe_Ersal_Shode_Baraye_Vizitor from './components/kharid/sefareshe-ersal-shode-baraye-vizitor/sefareshe-ersal-shode-baraye-vizitor';
-import Home from "./pages/home/index";
+import Home from "./pages/home/home.tsx";
 import Buy from "./pages/buy/index";
 import Bazargah from "./pages/bazargah/bazargah";
 import Profile from "./pages/profile/profile";

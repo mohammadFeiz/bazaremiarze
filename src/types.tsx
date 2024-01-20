@@ -250,7 +250,7 @@ export type I_getFactorDetails_result = {
 }
 export type I_fixPrice_result = {
     ItemCode: string,SalesMeasureUnit: string,NumInSale: number,Price: number,B1Dscnt: number,FinalPrice: number,PymntDscnt: number,CmpgnDscnt: number
-    OnHand: {whsCode: string,qty: number,qtyLevel: number,qtyLevRel: number},   
+    OnHand?: {whsCode?: string,qty?: number,qtyLevel?: number,qtyLevRel?: number} | null,   
 }
 export type I_changeCartProps = {taxonId?:string,variantId:string,product:I_product,count:number}
 export type I_app_state = {

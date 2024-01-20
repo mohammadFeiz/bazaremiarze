@@ -460,7 +460,6 @@ export default class ShopClass implements I_ShopClass {
     }
     async getCategoryProducts(id, count) {
         let { apis } = this.getAppState();
-        debugger
         let parameter: I_getTaxonProducts_p = { category: { shopId: this.shopId, shopName: this.shopName, categoryId: id }, pageSize: count, pageNumber: 1 }
         return await apis.request({
             api: 'kharid.getTaxonProducts', parameter, description: 'دریافت محصولات دسته بندی', def: [],

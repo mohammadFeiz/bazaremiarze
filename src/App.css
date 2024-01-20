@@ -59,7 +59,7 @@ body{
   .rsa-sidemenu {
     box-shadow: -7px 0px 20px 0px rgb(0 0 0 / 15%);
     border-left: 1px solid #a4a4a542;
-	background:rgba(59, 85, 165, 1);
+	background:rgba(59, 85, 165, 1) !important;
 }
 .rsa-sidemenu-item{
 	color:#fff;

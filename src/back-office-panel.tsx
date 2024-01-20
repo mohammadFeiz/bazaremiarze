@@ -370,7 +370,7 @@ export default function BackOffice(props: I_BackOffice) {
         "PayDueDates": [1,20,21,17,18,23,22,16,15,19,6],
         "PaymentTimes": [1,2,5],
         "DeliveryTypes": [12,13,15,11],
-        "shopId": "",
+        "shopId": "Regular",
         "CampaignId": 0
       },
       "Bundle": {
@@ -956,13 +956,13 @@ export default function BackOffice(props: I_BackOffice) {
     return { html: (<AIOInput type='tabs' className='back-office-primary-tabs' value={tab} options={tabs} onChange={(tab: I_BackOffice_tabName) => setTab(tab)} />) }
   }
   function modelCorrection(model) {
-    let { versions = {} } = model;
-    let newVersions = { ...versions };
-    let list = ['all', 'campaignProducts', 'categories', 'cart']
-    for (let i = 0; i < list.length; i++) {
-      if (newVersions[list[i]] === undefined) { newVersions[list[i]] = 1; }
-    }
-    model.versions = newVersions;
+    // let { versions = {} } = model;
+    // let newVersions = { ...versions };
+    // let list = ['all', 'campaignProducts', 'categories', 'cart']
+    // for (let i = 0; i < list.length; i++) {
+    //   if (newVersions[list[i]] === undefined) { newVersions[list[i]] = 1; }
+    // }
+    // model.versions = newVersions;
     return model
   }
   function footer_layout() {
@@ -970,7 +970,7 @@ export default function BackOffice(props: I_BackOffice) {
     return {
       html: <button className='back-office-submit-button' onClick={() => {
         let admins = model.accessPhoneNumbers.map((o) => o.phoneNumber)
-        model = this.modelCorrection(model);
+        model = modelCorrection(model);
         apis.request({ api: 'backOffice.set_backoffice', parameter: { model, admins }, message: { success: true }, description: 'بروزرسانی پنل کمپین', onSuccess: () => { window.location.reload() } })
       }}>بروزرسانی</button>
     }

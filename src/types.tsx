@@ -98,10 +98,13 @@ export type I_register = {
 }
 //////backOffice
 export type I_state_backOffice = {
-    accessPhoneNumbers:I_state_backOffice_accessPhoneNumber[]
-    landing:{type:'billboard' | 'image' | 'description' | 'label',url?:string,text?:string}[],
+    colors:any,
+    accessPhoneNumbers:I_backOffice_accessPhoneNumber[]
+    landing:I_backOffice_content[],
+    homeContent:I_backOffice_content[],
     active_landing:boolean,
-    isAdmin:(userInfo:I_userInfo)=>boolean,isSuperAdmin:(userInfo:I_userInfo)=>boolean
+    active_homeContent:boolean,
+    isAdmin?:(userInfo:I_userInfo)=>boolean,isSuperAdmin?:(userInfo:I_userInfo)=>boolean
     Regular:I_ShopProps,
     Bundle:I_ShopProps,
     spreeCampaigns:I_ShopProps[],
@@ -109,13 +112,30 @@ export type I_state_backOffice = {
     activeManager:{bazargah:boolean,garanti:boolean,priceList:boolean,vitrin:boolean,wallet:boolean}
     PayDueDate_options:I_PaydueDate_option[],
     PaymentTime_options:I_PaymentTime_option[],
-    DeliveryType_options:I_DeliveryType_option[]
+    DeliveryType_options:I_DeliveryType_option[],
+    bazargah: {
+        forsate_ersale_sefareshe_bazargah: number,
+        forsate_akhze_sefareshe_bazargah: number
+    },
+    versions: I_backOffice_versions,
+    vitrinCategories,
 }
+export type I_backOffice_versions = {
+    login?: number,
+    taxonProducts?: number,
+    cart?: number,
+    all?: number
+}
+export type I_backOffice_vitrinCategory = {
+    name:string,imageUrl?:string,id:any,open:boolean,
+    childs?:I_backOffice_vitrinCategory[]
+}
+export type I_backOffice_content = {type:'billboard' | 'image' | 'description' | 'label',url?:string,text?:string,id:string,active:boolean,linkTo?:string}
 export type I_PaydueDate_option = {
-    cashPercent:number,days:number,discountPercent:number,id:string,text:string,value:number,_id:string}
-export type I_PaymentTime_option = {text:string,value:number}
-export type I_DeliveryType_option = {text:string,value:number}
-export type I_state_backOffice_accessPhoneNumber = {phoneNumber:string,access:{[field:string]:boolean}};
+    cashPercent:number,days:number,discountPercent:number,id?:string,text:string,value:any,_id:string}
+export type I_PaymentTime_option = {text:string,value:any,id?:string}
+export type I_DeliveryType_option = {text:string,value:any,id?:string}
+export type I_backOffice_accessPhoneNumber = {phoneNumber:string,access:{[field:string]:boolean},name:string};
 //////backOffice
 export type I_shippingOptions = {
     PaymentTime?:number, PayDueDate?:number, DeliveryType?:number,SettleType?:number, giftCodeInfo?:any, discountCodeInfo?:any,CampaignId?:number,address?:string
@@ -124,24 +144,19 @@ export type I_marketingLine = {ItemCode:string,ItemQty:number}
 export type I_spreeCategory = { showType:'icon' | 'slider', id:string,active:boolean,billboard?:string,icon?:string,name:string }
 
 export type I_ShopProps = {
-    CampaignId:number,
-    DeliveryType:number,
-    DeliveryTypes:number[],
-    PayDueDate:number,
-    PayDueDates:number[],
-    PaymentTime:number,
-    PaymentTimes:number[],
-    SettleType:number,
-    SettleTypes:number[],
     active:boolean,
-    shopId:string,
     shopName:string,
+    PayDueDate:number,PaymentTime:number,DeliveryType:number,
+    PayDueDates:number[],PaymentTimes:number[],DeliveryTypes:number[],
+    CampaignId:number,
+    shopId:string,
     getAppState?:()=>any,
     billboard?:string,
     icon?:string,
     maxCart?:number,
     PriceListNum?:number,
     taxons?:I_taxon[],
+    description?:string
 } 
 export type I_taxon = {id:string,name:string,min:number,max:number,products?:I_product[]}
 export type I_ShopClass = {

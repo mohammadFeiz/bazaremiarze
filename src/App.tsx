@@ -9,7 +9,7 @@ import getApiFunctions from './apis/apis.ts';
 import './App.css';
 import './theme.css';
 import Splash from './components/spalsh/splash';
-import { I_AIOLogin_checkToken, I_AIOLogin_class, I_AIOLogin_mode, I_AIOLogin_model, I_AIOLogin_onSubmit, I_AIOLogin_props, I_AIOLogin_renderApp, I_AIOLogin_renderLogin, I_AIOLogin_renderSplash, I_AIOService_class, I_AIOService_onCatch, I_B1Info, I_Report_parameter, I_msfReport, I_state_backOffice, I_state_backOffice_accessPhoneNumber, I_updateProfile, I_userInfo } from './types';
+import { I_AIOLogin_checkToken, I_AIOLogin_class, I_AIOLogin_mode, I_AIOLogin_model, I_AIOLogin_onSubmit, I_AIOLogin_props, I_AIOLogin_renderApp, I_AIOLogin_renderLogin, I_AIOLogin_renderSplash, I_AIOService_class, I_AIOService_onCatch, I_B1Info, I_Report_parameter, I_msfReport, I_state_backOffice, I_backOffice_accessPhoneNumber, I_updateProfile, I_userInfo } from './types';
 type I_getBaseUrl = () => string
 const getBaseUrl: I_getBaseUrl = function () {
   //return "https://apimy.burux.com/api/v1";

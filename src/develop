@@ -6,6 +6,14 @@ implement cart on ShopClass
 ba bastane bundlepage bayad maghadire sabad eslah shavad
 change getCartProducts in all of project to renderCartItems (because of async may should place this data to state and get by componentDidMount)
 cache productFullDetail? if yes should implement
+
+backOffice =>
+   shop
+      name => shopName
+      B1Id => CampaignId
+      id => shopId
+    spreeCampaigns => shop[]
+
 cacheVersions = {
     taxonProducts:{
         Regular:{

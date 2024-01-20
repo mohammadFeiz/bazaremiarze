@@ -127,6 +127,7 @@ class App extends Component {
     let appSetting = await apis.request({api:'login.getBackOffice',parameter:apis,description:'دریافت تنظیمات اولیه',loading:false})
     if(typeof appSetting === 'object'){
       let {backOffice,landing} = appSetting;
+      console.log(backOffice)
       this.setState({backOffice,landing})
       if(!token){return false}
       let isTokenValid = await apis.request({api: 'login.checkToken', parameter: token,loading:false,onCatch: () => 'خطای 10037.این کد خطا را به پشتیبانی اعلام کنید'})

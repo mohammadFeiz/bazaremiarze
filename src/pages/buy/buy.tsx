@@ -5,7 +5,7 @@ import {CategorySlider} from "../../shop-class";
 import "./index.css";
 import Billboard from "../../components/billboard/billboard";
 import { I_app_state, I_product, I_spreeCategory } from "../../types";
-type I_slider = {products:I_product[],name:string,id:any}
+type I_slider = {getProducts:()=>Promise<I_product[]>,name:string,id:any}
 export default function Buy() {
   let {Shop,spreeCategories,backOffice}:I_app_state = useContext(appContext);
   let [sliders,setSliders] = useState<I_slider[]>([])
@@ -15,8 +15,8 @@ export default function Buy() {
     for(let i = 0; i < slider_type.length; i++){
       let o:I_spreeCategory = slider_type[i];
       let {id,name} = o;
-      let products = await Shop.Regular.getCategoryItems({categoryId:id,categoryName:name,count:6});
-      sliders.push({products,name,id})
+      let getProducts = async ()=>await Shop.Regular.getCategoryItems({categoryId:id,categoryName:name,count:6});
+      sliders.push({getProducts,name,id})
     }
     setSliders(sliders)
   }
@@ -48,10 +48,10 @@ export default function Buy() {
     return {
       className:'of-visible',
       column:sliders.map((o:I_slider)=>{
-        let {name,id,products} = o;
+        let {name,id,getProducts} = o;
         return {
           className:'of-visible',style:{marginBottom:12},
-          html:()=><CategorySlider title={name} products={products} showAll={()=>Shop.Regular.openCategory({categoryId:id,categoryName:name})}/>
+          html:()=><CategorySlider title={name} getProducts={getProducts} showAll={()=>Shop.Regular.openCategory({categoryId:id,categoryName:name})}/>
         }
       })
     }

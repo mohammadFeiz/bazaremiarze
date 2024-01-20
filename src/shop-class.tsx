@@ -15,6 +15,7 @@ import appContext from './app-context';
 import { I_ShopClass, I_taxon, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_cartTab, I_cartTab_bundle, I_cartTab_bundle_product, I_cartTab_bundle_taxon, I_cartTab_taxon, I_cartTaxon, I_cartVariant, I_discount, I_product, I_product_optionType, I_shippingOptions, I_renderIn, I_state_cart, I_variant, I_variant_optionValues, I_cartProduct, I_product_category, I_getFactorDetails_result, I_factorItem } from "./types";
 import { I_getTaxonProducts_p } from "./apis/kharid-apis";
 import noItemSrc from './images/not-found.png';
+import nosrc from './images/no-src.png';
 
 
 export default class ShopClass implements I_ShopClass {
@@ -46,7 +47,10 @@ export default class ShopClass implements I_ShopClass {
         let { apis } = this.getAppState();
         if (this.shopId === 'Bundle') {
             if (!this.categoryItems) {
-                this.categoryItems = apis.request({ api: 'kharid.daryafte_ettelaate_bundle', description: 'دریافت لیست باندل', def: [] });
+                apis.request({ 
+                    api: 'kharid.daryafte_ettelaate_bundle', description: 'دریافت لیست باندل', def: [],
+                    onSuccess:(list)=>this.categoryItems = list 
+                });
             }
             return this.categoryItems;
         }
@@ -56,7 +60,7 @@ export default class ShopClass implements I_ShopClass {
             if (!this.categoryItems) { this.categoryItems = {} }
             if (!this.categoryItems[key]) {
                 let description: string = `دریافت محصولات دسته بندی ${p.categoryName}`;
-                let cacheName: string = `taxonProducts.Regular.${key}`;
+                let cacheName: string = `categoryProducts.${key}`;
                 let parameter: I_getTaxonProducts_p = { category: { shopId: 'Regular', shopName: 'خرید عادی', categoryId: p.categoryId, categoryName: p.categoryName } }
                 let request = {
                     api: 'kharid.getTaxonProducts', description, def: [], parameter,
@@ -2012,15 +2016,35 @@ function Shipping(props: I_Shipping) {
 }
 
 type I_CategorySlider = {
-    products?: I_product[],title:string,showAll:Function
+    getProducts: ()=>Promise<I_product[]>,title:string,showAll:Function
 }
 export function CategorySlider(props: I_CategorySlider) {
     let { Shop,apis }: I_app_state = useContext(appContext);
-    let { products,title,showAll } = props;
+    let { title,showAll } = props;
+    let [products,setProducts] = useState<I_product[]>()
+    useEffect(()=>{
+        getProducts()
+    },[])
+    async function getProducts(){
+        let products = await props.getProducts();
+        setProducts(products)
+    } 
     function products_layout() {
         let loading = false;
         if (!products) {
-            let fakeProduct = apis.request({api:'khaird.getFakeProduct'});
+            let fakeProduct = {
+                id:'1231',
+                name:'محصول تستی',
+                images:[nosrc],
+                inStock:true,
+                B1Dscnt:10,
+                CmpgnDscnt:0,
+                PymntDscnt:10,
+                FinalPrice:200000, 
+                Price:220000,
+                hasFullDetail:false,
+                category:{shopId:'Regular',shopName:'خرید عادی'}
+            };
             loading = true;
             products = [fakeProduct, fakeProduct, fakeProduct, fakeProduct, fakeProduct]
         }

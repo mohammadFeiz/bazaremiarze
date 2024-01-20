@@ -123,6 +123,7 @@ export type I_state_backOffice = {
 export type I_backOffice_versions = {
     login?: number,
     taxonProducts?: number,
+    categoryProducts?:number,
     cart?: number,
     all?: number
 }

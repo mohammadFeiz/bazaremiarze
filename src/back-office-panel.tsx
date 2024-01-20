@@ -578,6 +578,7 @@ export default function BackOffice(props: I_BackOffice) {
       "versions": {
         "login": 22,
         "taxonProducts": 1,
+        "categoryProducts":1,
         "cart": 23,
         "all": 18
       },

@@ -26,7 +26,7 @@ type I_apiFunctions = {
   dargah: I_ni,
   pardakhte_kharid: I_ni,
   bundleData: I_ni,
-  daryafte_ettelaate_bundle: (p:any, appState: I_app_state) => { result: I_bundle_taxon[] }
+  daryafte_ettelaate_bundle: (p:any, appState: I_app_state) => Promise<{ result: I_bundle_taxon[] }>
 }
 export default function kharidApis({ baseUrl, helper }) {
   let apiFunctions: I_apiFunctions = {
@@ -357,11 +357,12 @@ export default function kharidApis({ baseUrl, helper }) {
       }
     },
     async bundleData() {return { result: staticBundleData }},
-    daryafte_ettelaate_bundle(parameter, { apis }) {
-      let allData = apis.request({
+    async daryafte_ettelaate_bundle(parameter, { apis }) {
+      let allData = await apis.request({
         api: 'kharid.bundleData', description: 'دریافت دیتای باندل', def: []
       })
-      allData = allData[0].taxons[0].taxons[0];
+      allData = allData[0].taxons[0].taxons[0].taxons;
+      debugger
       let result:I_bundle_taxon[] = allData.map(({itemname,description,itemcode,price,itemcodes,imageurl,max = Infinity})=>{
         let taxon:I_bundle_taxon = {
           shopId:'Bundle',description,id:itemcode,name:itemname,price,image:imageurl,max,

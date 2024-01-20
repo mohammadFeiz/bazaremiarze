@@ -23,7 +23,7 @@ import TanzimateKifePool from './components/kife-pool/tanzimate-kife-pool/tanzim
 import {Cart} from './shop-class.tsx';
 import Sefareshe_Ersal_Shode_Baraye_Vizitor from './components/kharid/sefareshe-ersal-shode-baraye-vizitor/sefareshe-ersal-shode-baraye-vizitor';
 import Home from "./pages/home/home.tsx";
-import Buy from "./pages/buy/index";
+import Buy from "./pages/buy/buy.tsx";
 import Bazargah from "./pages/bazargah/bazargah";
 import Profile from "./pages/profile/profile";
 import Vitrin from './pages/vitrin/vitrin';

@@ -362,8 +362,13 @@ export default function kharidApis({ baseUrl, helper }) {
         api: 'kharid.bundleData', description: 'دریافت دیتای باندل', def: []
       })
       allData = allData[0].taxons[0].taxons[0].taxons;
-      debugger
-      let result:I_bundle_taxon[] = allData.map(({itemname,description,itemcode,price,itemcodes,imageurl,max = Infinity})=>{
+      let taxons = []
+      for(let i = 0; i < allData.length; i++){
+        let {items} = allData[i];
+        taxons = [...taxons,...items]
+      }
+      let result:I_bundle_taxon[] = taxons.map((t)=>{
+        let {itemname,description,itemcode,price,itemcodes,imageurl,max = Infinity} = t;
         let taxon:I_bundle_taxon = {
           shopId:'Bundle',description,id:itemcode,name:itemname,price,image:imageurl,max,
           products:itemcodes.map(({mainsku,Name,Price,Qty,Variants})=>{

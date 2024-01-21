@@ -72,6 +72,7 @@
     border-radius:0 0 6px 6px;
     border-top:none;
     color:#fff;
+    padding:0 !important;
 }
 .back-office-panel .aio-form-label{
     color:var(--bo-color-4);
@@ -369,4 +370,7 @@
 }
 .back-office-cachebutton.active{
     background: green;
+}
+.back-office .aio-input-form .aio-input-table-cell .aio-input{
+    border:none !important;
 }

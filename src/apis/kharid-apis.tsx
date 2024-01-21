@@ -477,7 +477,7 @@ class Spree implements I_Spree{
     else if(p.body){
       let {category,searchValue,ids,pageSize = 250,pageNumber} = p.body;
       body = {
-        CardCode: userInfo.cardCode, Taxons:category.categoryId || category.taxonId || category.shopId, Name:searchValue, ids, PerPage: pageSize, Page: pageNumber,
+        CardCode: userInfo.cardCode, Taxons:category.taxonId || category.shopId, Name:searchValue, ids, PerPage: pageSize, Page: pageNumber,
         ProductFields: "id,name,type,sku,slug,default_variant,images,price",
         VariantFields: "id,sku,type,images",Include: "default_variant,images"
       }
@@ -513,7 +513,7 @@ class Spree implements I_Spree{
     let optionTypes:I_product_optionType[] = this.getOptionTypes(spreeProduct,spreeIncluded);
     let variants:I_variant[] = this.getVariants(spreeProduct,spreeIncluded,optionTypes);
     let details:I_product_detail[] = this.getDetails(spreeProduct,spreeIncluded)
-    return {...product,optionTypes,variants,details}
+    return {...product,optionTypes,variants,details,hasFullDetail:true}
   }
   getOptionTypes = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded) => {
     let {relationships} = spreeProduct,{option_types} = relationships;

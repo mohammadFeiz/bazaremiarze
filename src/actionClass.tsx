@@ -4,7 +4,7 @@ import UrlToJson from './npm/aio-functions/url-to-json';
 import Pricing from './pricing';
 import ShopClass from './shop-class.tsx';
 import { Icon } from '@mdi/react';
-import { mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList,mdiCodeBraces, mdiExitToApp, mdiCash, mdiSecurity, mdiSkullScan, mdiCart,mdiStore, mdiHome, mdiShopping, mdiAccountBox } from "@mdi/js";
+import { mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList,mdiCodeBraces, mdiExitToApp, mdiCash, mdiSecurity, mdiSkullScan, mdiCart,mdiStore, mdiHome, mdiShopping, mdiAccountBox, mdiDelete } from "@mdi/js";
 import getSvg from './utils/getSvg';
 import Register from './components/register/register';
 import PriceList from './popups/price-list/price-list';
@@ -248,7 +248,15 @@ export default class ActionClass implements I_actionClass {
         }
         else if (type === 'cart') {
             msfReport({actionName:'open cart',actionId:27,tagName:'kharid',eventName:'page view'})
-            addModal({ id: type, position: 'fullscreen', body: { render: () => <Cart shopId={parameter} /> }, header: { title: 'سبد خرید' } })
+            addModal({ 
+                id: type, position: 'fullscreen', body: { render: () => <Cart shopId={parameter} /> }, 
+                header: { 
+                    title: 'سبد خرید',
+                    buttons:[
+                        [<Icon path={mdiDelete} size={1}/>,{onClick:()=>this.setCart({}),className:'align-vh'}]
+                    ] 
+                } 
+            })
         }
         else if (type === 'sefareshe-ersal-shode-baraye-vizitor') {
             addModal({
@@ -620,7 +628,6 @@ export default class ActionClass implements I_actionClass {
             }
             if(!newCartTab.products[product.id].variants[variantId]){
                 reportAdd = true
-                let variant = product.variants.find((variant:I_variant)=>variant.id === variantId);
                 newCartTab.products[product.id].variants[variantId] = {count:0,productCategory:product.category,variantId,productId:product.id}
             }
             newCartTab.products[product.id].variants[variantId].count = count;

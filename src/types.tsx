@@ -124,7 +124,6 @@ export type I_state_backOffice = {
 export type I_backOffice_versions = {
     login?: number,
     taxonProducts?: number,
-    categoryProducts?:number,
     cart?: number,
     all?: number
 }
@@ -174,7 +173,7 @@ export type I_ShopClass = {
     products?: I_product;
     description?: string;
     icon?:string,
-    getCategoryItems:(p?: { categoryId?: string, categoryName?: string,count?:number })=>Promise<any[]>,
+    getCategoryItems:(taxonId?: string, productId?: string)=>Promise<any[]>,
     renderCard_Regular: (
         p: {product: I_product, renderIn: I_renderIn, index: number,loading?: boolean, type?: 'horizontal' | 'vertical'}
     ) => React.ReactNode,
@@ -186,7 +185,7 @@ export type I_ShopClass = {
     ) => React.ReactNode,
     getProductById:(productId:string,productCategory:I_product_category)=>Promise<I_product>,
     renderCartItems:(renderIn:I_renderIn)=>Promise<any[]>
-    openCategory:(p?:{categoryId: string, categoryName: string})=>void,
+    openCategory:(taxonId?:any)=>void,
     getCartVariants:(p?:{productId?:string,taxonId?:string})=>I_cartVariant[],
     payment:(p:I_shippingOptions)=>Promise<boolean>, 
     renderCartFactor:(button?:boolean)=>Promise<React.ReactNode>,
@@ -343,7 +342,7 @@ export type I_product = {
     FinalPrice:number, 
     Price:number,
     hasFullDetail:boolean,
-    category:{shopId:string,shopName:string,categoryId?:string,categoryName?:string,taxonId?:string,taxonName?:string}, //اطلاعات دسته بندی محصول
+    category:I_product_category, //اطلاعات دسته بندی محصول
     //مواردی که با کلیک روی محصول دریافت می شود
     description?: any;
     clubpoint?: any;
@@ -357,7 +356,7 @@ export type I_product_optionType = {
     name:string,
     items:{[optionValueId:string]:string}
 }
-export type I_product_category = {shopId:string,shopName:string,categoryId?:string,categoryName?:string,taxonId?:string,taxonName?:string}
+export type I_product_category = {shopId:string,shopName:string,taxonId?:string,taxonName?:string}
 
 export type I_variant = {
     id:string,

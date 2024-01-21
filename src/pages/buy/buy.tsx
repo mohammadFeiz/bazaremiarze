@@ -15,7 +15,11 @@ export default function Buy() {
     for(let i = 0; i < slider_type.length; i++){
       let o:I_spreeCategory = slider_type[i];
       let {id,name} = o;
-      let getProducts = async ()=>await Shop.Regular.getCategoryItems({categoryId:id,categoryName:name,count:6});
+      let getProducts = async ()=>{
+        debugger
+        let products = await Shop.Regular.getCategoryItems(id)
+        return products;
+      };
       sliders.push({getProducts,name,id})
     }
     setSliders(sliders)
@@ -33,7 +37,7 @@ export default function Buy() {
             if(o === false){return {flex:1}}
             let {name,icon,id} = o as I_spreeCategory;
             return {
-              flex:1,align:'vh',style:{maxWidth:220},gap:6,onClick:()=>Shop.Regular.openCategory({categoryId:id,categoryName:name}),
+              flex:1,align:'vh',style:{maxWidth:220},gap:6,onClick:()=>Shop.Regular.openCategory(id),
               column:[{html:<img src={icon} width='100%' alt=''/>,align:'vh'},{html:name,className:'fs-14 bold',align:'vh'}]
             }
           })
@@ -51,7 +55,7 @@ export default function Buy() {
         let {name,id,getProducts} = o;
         return {
           className:'of-visible',style:{marginBottom:12},
-          html:()=><CategorySlider title={name} getProducts={getProducts} showAll={()=>Shop.Regular.openCategory({categoryId:id,categoryName:name})}/>
+          html:()=><CategorySlider title={name} getProducts={getProducts} showAll={()=>Shop.Regular.openCategory(id)}/>
         }
       })
     }

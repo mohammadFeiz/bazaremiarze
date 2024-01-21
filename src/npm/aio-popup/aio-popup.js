@@ -1,2 +1,2 @@
-import AIOPopup from 'aio-popup';
+import AIOPopup from './index';
 export default AIOPopup;

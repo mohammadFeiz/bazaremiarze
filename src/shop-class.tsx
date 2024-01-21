@@ -2,7 +2,7 @@ import React, { Fragment, useContext, useEffect, useState, useRef } from "react"
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import AIOStorage from 'aio-storage';
 import { Icon } from '@mdi/react';
-import { mdiPlusThick, mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline, mdiClose, mdiCheck, mdiInformationOffOutline, mdiInformationOutline, mdiInformation } from "@mdi/js";
+import { mdiPlusThick, mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline, mdiClose, mdiCheck, mdiInformationOffOutline, mdiInformationOutline, mdiInformation, mdiArrowDown, mdiArrowUp } from "@mdi/js";
 import Axios from 'axios';
 import SplitNumber from "./npm/aio-functions/split-number";
 import NoSrc from './images/no-src.png';
@@ -41,73 +41,75 @@ export default class ShopClass implements I_ShopClass {
     products?: I_product;
     description?: string;
     icon?: string;
-    categoryItems?: any;
     itemType: 'Product' | 'Bundle' | 'Taxon'
     getProductById = async (productId: string, productCategory: I_product_category) => {
-        let categoryItems = await this.getCategoryItems(productCategory);
+        let categoryItems = await this.getCategoryItems(productCategory.taxonId,productId);
         return categoryItems.find((o: I_product) => o.id === productId)
     }
-    getCategoryItems = async (p?: { categoryId?: string, categoryName?: string, count?: number }) => {
+    getCategoryItems = async (taxonId?:string,productId?:string) => {
         let { apis } = this.getAppState();
-        if (this.shopId === 'Bundle') {
-            if (!this.categoryItems) {
-                this.categoryItems = await apis.request({
-                    api: 'kharid.daryafte_ettelaate_bundle', description: 'دریافت لیست باندل', def: [],
-                });
-            }
-            return this.categoryItems;
+        if (this.itemType === 'Bundle') {
+            return await apis.request({
+                api: 'kharid.daryafte_ettelaate_bundle', description: 'دریافت لیست باندل', def: [],
+            });
         }
-        else if (this.taxons) { this.categoryItems = this.taxons; return this.categoryItems }
-        else if (this.shopId === 'Regular') {
-            let key = `${p.categoryId}${p.count ? `_count${p.count}` : ''}`;
-            if (!this.categoryItems) { this.categoryItems = {} }
-            if (!this.categoryItems[key]) {
-                let description: string = `دریافت محصولات دسته بندی ${p.categoryName}`;
-                let cacheName: string = `categoryProducts.${key}`;
-                let parameter: I_getTaxonProducts_p = { category: { shopId: 'Regular', shopName: 'خرید عادی', categoryId: p.categoryId, categoryName: p.categoryName } }
-                let request = {
-                    api: 'kharid.getTaxonProducts', description, def: [], parameter, loading: false,
-                    cache: { time: 30 * 24 * 60 * 60 * 1000, name: cacheName }
-                }
-                this.categoryItems[key] = await apis.request(request);
-            }
-            return this.categoryItems[key];
-        }
-        else {
-            if (!this.categoryItems) {
-                let description = `دریافت محصولات ${this.shopName}`;
-                let cacheName = `taxonProducts.${this.shopId}`;
-                let parameter: I_getTaxonProducts_p = { category: { shopId: this.shopId, shopName: this.shopName } }
-                this.categoryItems = await apis.request({
-                    api: 'kharid.getTaxonProducts', description, def: [], parameter, loading: false,
-                    cache: { time: 30 * 24 * 60 * 60 * 1000, name: cacheName }
+        else if (this.itemType === 'Taxon') { 
+            if(taxonId){return this.taxons}
+            let taxon = this.taxons.find((o:I_taxon)=>o.id === taxonId);
+            if(!productId){return taxon}
+            if(!taxon.products){
+                let parameter: I_getTaxonProducts_p = { category: { shopId:this.shopId, shopName:this.shopName, taxonId: taxon.id, taxonName: taxon.name } }
+                let products = await apis.request({
+                    api: 'kharid.getTaxonProducts', description: `دریافت محصولات تکزون ${taxon.name}`, def: [], parameter,
+                    cache: { time: 30 * 24 * 60 * 60 * 1000, name: `taxonProducts.${this.shopId}.${taxon.id}` }
                 });
+                taxon.products = products;
             }
-            return this.categoryItems;
+            return taxon.products.find((o:I_product)=>o.id === productId)
+        }
+        else if (this.itemType === 'Product') {
+            let parameter:I_getTaxonProducts_p,cacheName:string;
+            let description = `دریافت محصولات ${this.shopName}`
+            let taxonName:string;
+            if(taxonId){
+                let {spreeCategories} = this.getAppState();
+                taxonName = spreeCategories.dic[taxonId].name;
+                parameter = { category: { shopId: this.shopId, shopName: this.shopName, taxonId,taxonName } }
+                cacheName = `taxonProducts.${this.shopId}.${taxonId}`;
+                description += ` دسته بندی ${taxonName}`;
+                
+            }
+            else {
+                taxonName = this.shopName;
+                parameter = { category: { shopId: this.shopId, shopName: this.shopName }}
+                cacheName = `taxonProducts.${this.shopId}`;
+            }
+            let request = {api: 'kharid.getTaxonProducts', description, def: [], parameter, loading: false,cache: { time: 30 * 24 * 60 * 60 * 1000, name: cacheName }}
+            return await apis.request(request)
         }
     }
-    openCategory = async (p?: { categoryId: string, categoryName: string }) => {
-        let { rsa, actionClass, msfReport } = this.getAppState();
-        let items = await this.getCategoryItems(p);
-        let taxonName = p ? p.categoryName : this.shopName;
-        let taxonId = p ? p.categoryId : this.shopId;
+    openCategory = async (taxonId?:string) => {
+        let { rsa, actionClass, msfReport,spreeCategories } = this.getAppState();
+        let items = await this.getCategoryItems(taxonId);
+        let name = taxonId ? spreeCategories.dic[taxonId].name : this.shopName;
+        let id = taxonId ? taxonId : this.shopId;
         let props: I_CategoryView = {
             billboard: this.billboard, items, description: this.description, itemType: this.itemType,
             renderItem: (item: I_product | I_bundle_taxon | I_taxon, index?: number) => this.renderCard({ item, renderIn: 'category', index })
         }
-        msfReport({ actionName: 'open category', actionId: 4, targetName: taxonName, targetId: taxonId, tagName: 'kharid', eventName: 'page view' })
+        msfReport({ actionName: 'open category', actionId: 4, targetName: name, targetId: id, tagName: 'kharid', eventName: 'page view' })
         let buttons = actionClass.getHeaderIcons({ cart: true })
         rsa.addModal({
             id: 'shop-class-category', position: 'fullscreen',
             body: { render: () => <CategoryView {...props} /> },
-            header: { title: taxonName, buttons }
+            header: { title: name, buttons }
         })
     }
     renderCard = (p: { item: I_product | I_taxon | I_bundle_taxon, renderIn: I_renderIn, index?: number }) => {
         let { item, renderIn, index } = p;
-        if (this.shopId === 'Bundle') { return this.renderCard_Bundle({ taxon: item as I_bundle_taxon, renderIn, index }) }
-        if (this.taxons) { return this.renderCard_taxon({ taxon: item as I_taxon, renderIn }) }
-        else { return this.renderCard_Regular({ product: item as I_product, renderIn, index }) }
+        if (this.itemType === 'Bundle') { return this.renderCard_Bundle({ taxon: item as I_bundle_taxon, renderIn, index }) }
+        if (this.itemType === 'Taxon') { return this.renderCard_taxon({ taxon: item as I_taxon, renderIn }) }
+        if (this.itemType === 'Product') { return this.renderCard_Regular({ product: item as I_product, renderIn, index }) }
     }
     renderCard_Regular = (
         p: {
@@ -119,7 +121,7 @@ export default class ShopClass implements I_ShopClass {
         let cartVariants: I_cartVariant[] = this.getCartVariants({ productId: product.id });
         let props: I_RegularCard = {
             cartVariants, product, renderIn, loading, index, type, shopId: this.shopId,
-            onClick: () => this.openProductPage(product)
+            onClick: async () => await this.openProductPage(product)
         }
         return (<RegularCard key={product.id} {...props} />)
     }
@@ -162,7 +164,6 @@ export default class ShopClass implements I_ShopClass {
             let key = keys.join('.');
             let list = apis.getCache(key);
             list = list.map((o:I_product)=>o.id === product.id?product:o)
-            this.categoryItems = this.categoryItems.map((o:I_product)=>o.id === product.id?product:o)
             apis.setCache(key,list)
         }
         msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
@@ -370,7 +371,7 @@ export default class ShopClass implements I_ShopClass {
         }
         else {
             let cartTab = cart[this.shopId] as I_cartTab;
-            let cartProducts = this.dicToArray(cartTab.products);
+            let cartProducts:I_cartProduct[] = this.dicToArray(cartTab.products);
             return cartProducts.map(async (cartProduct: I_cartProduct, index: number) => {
                 let { variants: cartVariants, productId, productCategory } = cartProduct;
                 let product = await this.getProductById(productId, productCategory);
@@ -660,7 +661,20 @@ function TaxonCard(props: I_TaxonCard) {
         let Min = SplitNumber(taxon.min), Max = SplitNumber(taxon.max);
         return {
             gap: 12, align: 'v', className: 'fs-10', style: { color: '#60B4D0', background: '#eee', padding: '3px 6px' },
-            row: [{ html: `حداقل مبلغ ${Min} ریال` }, { html: `حداکثر مبلغ ${Max} ریال` },]
+            row: [
+                {
+                    row:[
+                        {html:<Icon path={mdiArrowDown} size={0.7}/>,align:'vh',size:30,style:{color:'red'}},
+                        { html: `حداقل مبلغ ${Min} ریال`,align:'v' }, 
+                    ]
+                },
+                {
+                    row:[
+                        {html:<Icon path={mdiArrowUp} size={0.7}/>,align:'vh',size:30,style:{color:'green'}},
+                        { html: `حداکثر مبلغ ${Max} ریال`,align:'v' }, 
+                    ]
+                }
+            ]
         }
     }
     function open_layout() {
@@ -700,7 +714,6 @@ function RegularCard(props: I_RegularCard) {
         return { size: 116, align: 'vh', html: <img src={images[0] || NoSrc as string} width={'100%'} alt='' /> }
     }
     function count_layout() {
-        debugger
         if (!cartVariants.length) { return false }
         let column = cartVariants.map((p: I_cartVariant) => {
             let { count, variantId, taxonId } = p;
@@ -939,7 +952,6 @@ type I_RegularPage = { product: I_product, shopId: string }
 function RegularPage(props: I_RegularPage) {
     let { actionClass, Shop }: I_app_state = useContext(appContext);
     let { product, shopId } = props;
-    let taxonId = product.category.taxonId;
     let [selectedVariant, setSelectedVariant] = useState<I_variant | undefined>()
     let [selectedDic, setSelectedDic] = useState<I_variant_optionValues | undefined>()
     let [existOptionValueNames, setExistOptionValueNames] = useState<string[]>([])

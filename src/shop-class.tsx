@@ -156,6 +156,7 @@ export default class ShopClass implements I_ShopClass {
         let taxonId = product.category.taxonId;
         let { apis, rsa, actionClass, msfReport } = this.getAppState();
         if (!product.hasFullDetail) {
+            debugger
             product = await apis.request({ api: 'kharid.getProductFullDetail', parameter: product })
             product.hasFullDetail = true;
         }
@@ -288,13 +289,13 @@ export default class ShopClass implements I_ShopClass {
         for (let taxonId in cartTab.taxons) {
             let cartTaxon: I_cartTab_bundle_taxon = cartTab.taxons[taxonId];
             let { products, count: taxonCount, price: taxonPrice } = cartTaxon;
+            total += taxonCount * taxonPrice;
             for (let productId in products) {
                 let cartProduct: I_cartTab_bundle_product = products[productId];
                 let { variants, price: productPrice } = cartProduct;
                 for (let variantId in variants) {
                     let cartVariant: I_cartTab_bundle_variant = variants[variantId];
                     let { count } = cartVariant;
-                    total += taxonCount * taxonPrice;
                     marketingLines.push({ ItemCode: variantId, ItemQty: count, Price: productPrice, BasePackCode: productId, BasePackQty: taxonCount })
                 }
             }
@@ -693,6 +694,7 @@ function RegularCard(props: I_RegularCard) {
         return { size: 116, align: 'vh', html: <img src={images[0] || NoSrc as string} width={'100%'} alt='' /> }
     }
     function count_layout() {
+        debugger
         if (!cartVariants.length) { return false }
         let column = cartVariants.map((p: I_cartVariant) => {
             let { count, variantId, taxonId } = p;

@@ -370,7 +370,6 @@ export default function kharidApis({ baseUrl, helper }) {
       let result:I_bundle_taxon[] = taxons.map((t)=>{
         let {itemname,description,itemcode,price,itemcodes,imageurl,max = Infinity} = t;
         if(typeof max !== 'number'){max = Infinity}
-        debugger
         let taxon:I_bundle_taxon = {
           shopId:'Bundle',description,id:itemcode,name:itemname,price,image:imageurl,max,
           products:itemcodes.map(({mainsku,Name,Price,Qty,Variants})=>{
@@ -503,7 +502,6 @@ class Spree implements I_Spree{
       if(product === false){total--}
       else {products.push(product)}
     }
-    debugger
     return { products, total }
   }
   getProductFullDetail = async (product:I_product) => {

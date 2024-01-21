@@ -193,7 +193,7 @@ export type I_ShopClass = {
     getMarketingLines_Bundle:()=>{ItemCode:any,ItemQty:number,Price:number,BasePackCode:any,BasePackQty:number}[]
     getFactorItems:(shippingOptions:I_shippingOptions,container:string)=>Promise<I_factorItem[]>
     getPaymentButtonText:(shippingOptions: I_shippingOptions) => string,
-    getBundleCartDetails:()=>{cartVariants:I_cartTab_bundle_variant[],total:number}
+    getBundleCartDetails:()=>{marketingLines:I_marketingLine_bundle[],total:number}
 }
 export type I_factorItem = {key:string,value:string,className?:string}
 export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>Promise<I_amounts>;
@@ -245,7 +245,8 @@ export type I_actionClass = {
     setCart:(newCart:I_state_cart)=>void,
     getGuaranteeItems:()=>void,
     getBazargahOrders:()=>void,
-    removeCartTab:(shopId:string)=>void
+    removeCartTab:(shopId:string)=>void,
+    removeCartBundleTaxon:(taxon:I_bundle_taxon) =>void
 }
 export type I_getFactorDetails_result = {
     MarketingLines:{CampaignDetails:any,ItemCode:string}[],
@@ -294,7 +295,7 @@ export type I_cartTab_bundle = {
     taxons:{[taxonId:string]:I_cartTab_bundle_taxon},type:'Bundle'
 }
 export type I_cartTab_bundle_taxon = {
-    count:number,products:{[productId:string]:I_cartTab_bundle_product},taxon:I_bundle_taxon
+    count:number,products:{[productId:string]:I_cartTab_bundle_product},price:number,taxonId:any
 }
 export type I_cartTab_bundle_product = {
     variants:{[variantId:string]:I_cartTab_bundle_variant},qty:number,price:number

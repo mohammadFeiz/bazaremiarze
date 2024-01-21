@@ -28,7 +28,7 @@ import Bazargah from "./pages/bazargah/bazargah";
 import Profile from "./pages/profile/profile";
 import Vitrin from './pages/vitrin/vitrin';
 import taxonCampaign from './taxonCampaign';
-import { I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, I_userInfo, I_B1Info, I_state_cart, I_cartTab, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartTab_taxon, I_cartProduct, I_variant, I_actionClass, I_changeCartProps, I_getFactorDetails_result, I_ShopProps } from './types';
+import { I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, I_userInfo, I_B1Info, I_state_cart, I_cartTab, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartTab_taxon, I_cartProduct, I_variant, I_actionClass, I_changeCartProps, I_getFactorDetails_result, I_ShopProps, I_cartTab_bundle, I_taxon, I_bundle_product, I_bundle_taxon } from './types';
 export default class ActionClass implements I_actionClass {
     getState:()=>I_app_state;
     setState:(p:any)=>void
@@ -628,6 +628,28 @@ export default class ActionClass implements I_actionClass {
         }
         if(reportAdd){msfReport({actionName:'add to cart',actionId:24,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})}
         return {...cart,[shopId]:cartTab}
+    }
+    removeCartBundleTaxon = (taxon:I_bundle_taxon) => {
+        let {cart} = this.getState();
+        let newCart: I_state_cart = JSON.parse(JSON.stringify(cart));
+        let cartTab: I_cartTab_bundle = newCart.Bundle as I_cartTab_bundle;
+        let newTaxons = {},length = 0;
+        for(let taxonId in cartTab.taxons){
+            if(taxonId !== taxon.id){
+                length++;
+                newTaxons[taxonId] = cartTab.taxons[taxonId]
+            }
+        }
+        if(!length){
+            let fixedCart = {};
+            for(let cartId in cart){if(cartId !== 'Bundle'){fixedCart[cartId] = cart[cartId]}}
+            newCart = fixedCart;
+        }
+        else{
+            cartTab.taxons = newTaxons;
+            newCart.Bundle = cartTab;
+        }
+        this.setCart(newCart)
     }
     changeCart = (p:I_changeCartProps) => {
         let { count, variantId, product,taxonId } = p;

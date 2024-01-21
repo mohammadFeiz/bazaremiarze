@@ -157,7 +157,8 @@ export type I_ShopProps = {
     maxCart?:number,
     PriceListNum?:number,
     taxons?:I_taxon[],
-    description?:string
+    description?:string,
+    itemType:'Product' | 'Taxon' | 'Bundle'
 } 
 export type I_taxon = {id:string,name:string,min:number,max:number,products?:I_product[]}
 export type I_ShopClass = {
@@ -205,7 +206,7 @@ export type I_actionClass = {
         text:string,icon:()=>React.ReactNode,onClick:()=>void
     }[],
     getSideFooter:()=>React.ReactNode,
-    getShopState:()=>{Shop:I_state_Shop,cart:I_state_cart},
+    getShopState:()=>Promise<{Shop:I_state_Shop,cart:I_state_cart}>,
     fixPrice:(
         p:{ 
             items:{itemCode:string,ItemCode:string,itemQty:number,ItemQty:number}[], 

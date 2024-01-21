@@ -21,7 +21,7 @@ type I_apiFunctions = {
   payment: I_ni,
   getFakeProduct:()=>{result:I_product},
   getProductFullDetail: (product:I_product,appState:I_app_state)=>Promise<{result:I_product}>,
-  getCart: (p: any, appState: I_app_state) => { result: I_state_cart },
+  getCart: (p: any, appState: I_app_state) => Promise<{ result: I_state_cart }>,
   setCart: (cart: I_state_cart, appState: I_app_state) => { result: true }
   dargah: I_ni,
   pardakhte_kharid: I_ni,
@@ -319,7 +319,7 @@ export default function kharidApis({ baseUrl, helper }) {
       
       return { result:products }
     },
-    getCart({ Shop, userInfo }) {
+    async getCart({ Shop, userInfo }) {
       let cartStorage = AIOStorage('bazaremiarzeapis');
       let cart = cartStorage.load({ name: 'cart.' + userInfo.cardCode, def: {} });
       let shopIds = Object.keys(Shop);
@@ -369,6 +369,8 @@ export default function kharidApis({ baseUrl, helper }) {
       }
       let result:I_bundle_taxon[] = taxons.map((t)=>{
         let {itemname,description,itemcode,price,itemcodes,imageurl,max = Infinity} = t;
+        if(typeof max !== 'number'){max = Infinity}
+        debugger
         let taxon:I_bundle_taxon = {
           shopId:'Bundle',description,id:itemcode,name:itemname,price,image:imageurl,max,
           products:itemcodes.map(({mainsku,Name,Price,Qty,Variants})=>{

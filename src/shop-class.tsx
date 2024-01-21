@@ -2,7 +2,7 @@ import React, { Fragment, useContext, useEffect, useState, useRef } from "react"
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import AIOStorage from 'aio-storage';
 import { Icon } from '@mdi/react';
-import { mdiPlusThick, mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline, mdiClose, mdiCheck } from "@mdi/js";
+import { mdiPlusThick, mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline, mdiClose, mdiCheck, mdiInformationOffOutline, mdiInformationOutline, mdiInformation } from "@mdi/js";
 import Axios from 'axios';
 import SplitNumber from "./npm/aio-functions/split-number";
 import NoSrc from './images/no-src.png';
@@ -11,8 +11,11 @@ import AIOInput from "./npm/aio-input/aio-input";
 import $ from 'jquery';
 import bundleBoxSrc from './images/bundle-box.jpg';
 import SearchBox from './components/search-box/index';
+import aftabisrc from './images/aftabi.png';
+import mahtabisrc from './images/mahtabi.png';
+import yakhisrc from './images/yakhi.png';
 import appContext from './app-context';
-import { I_ShopClass, I_taxon, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_cartTab, I_cartTab_bundle, I_cartTab_bundle_product, I_cartTab_bundle_taxon, I_cartTab_taxon, I_cartTaxon, I_cartVariant, I_discount, I_product, I_product_optionType, I_shippingOptions, I_renderIn, I_state_cart, I_variant, I_variant_optionValues, I_cartProduct, I_product_category, I_getFactorDetails_result, I_factorItem } from "./types";
+import { I_ShopClass, I_taxon, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_cartTab, I_cartTab_bundle, I_cartTab_bundle_product, I_cartTab_bundle_taxon, I_cartTab_taxon, I_cartTaxon, I_cartVariant, I_discount, I_product, I_product_optionType, I_shippingOptions, I_renderIn, I_state_cart, I_variant, I_variant_optionValues, I_cartProduct, I_product_category, I_getFactorDetails_result, I_factorItem, I_cartTab_bundle_variant } from "./types";
 import { I_getTaxonProducts_p } from "./apis/kharid-apis";
 import noItemSrc from './images/not-found.png';
 import nosrc from './images/no-src.png';
@@ -38,7 +41,8 @@ export default class ShopClass implements I_ShopClass {
     products?: I_product;
     description?: string;
     icon?: string;
-    categoryItems?: any
+    categoryItems?: any;
+    itemType:'Product' | 'Bundle' | 'Taxon'
     getProductById = async (productId: string, productCategory: I_product_category) => {
         let categoryItems = await this.getCategoryItems(productCategory);
         return categoryItems.find((o: I_product) => o.id === productId)
@@ -47,9 +51,8 @@ export default class ShopClass implements I_ShopClass {
         let { apis } = this.getAppState();
         if (this.shopId === 'Bundle') {
             if (!this.categoryItems) {
-                apis.request({ 
-                    api: 'kharid.daryafte_ettelaate_bundle', description: 'دریافت لیست باندل', def: [],
-                    onSuccess:(list)=>this.categoryItems = list 
+                this.categoryItems =  await apis.request({ 
+                    api: 'kharid.daryafte_ettelaate_bundle', description: 'دریافت لیست باندل', def: [], 
                 });
             }
             return this.categoryItems;
@@ -63,7 +66,7 @@ export default class ShopClass implements I_ShopClass {
                 let cacheName: string = `categoryProducts.${key}`;
                 let parameter: I_getTaxonProducts_p = { category: { shopId: 'Regular', shopName: 'خرید عادی', categoryId: p.categoryId, categoryName: p.categoryName } }
                 let request = {
-                    api: 'kharid.getTaxonProducts', description, def: [], parameter,
+                    api: 'kharid.getTaxonProducts', description, def: [], parameter,loading:false,
                     cache: { time: 30 * 24 * 60 * 60 * 1000, name: cacheName }
                 }
                 this.categoryItems[key] = await apis.request(request);
@@ -76,7 +79,7 @@ export default class ShopClass implements I_ShopClass {
                 let cacheName = `taxonProducts.${this.shopId}`;
                 let parameter: I_getTaxonProducts_p = { category: { shopId: this.shopId, shopName: this.shopName } }
                 this.categoryItems = await apis.request({
-                    api: 'kharid.getTaxonProducts', description, def: [], parameter,
+                    api: 'kharid.getTaxonProducts', description, def: [], parameter,loading:false,
                     cache: { time: 30 * 24 * 60 * 60 * 1000, name: cacheName }
                 });
             }
@@ -89,7 +92,7 @@ export default class ShopClass implements I_ShopClass {
         let taxonName = p ? p.categoryName : this.shopName;
         let taxonId = p ? p.categoryId : this.shopId;
         let props: I_CategoryView = {
-            billboard: this.billboard, items, description: this.description,
+            billboard: this.billboard, items, description: this.description,itemType:this.itemType,
             renderItem: (item: I_product | I_bundle_taxon | I_taxon, index?: number) => this.renderCard({ item, renderIn: 'category', index })
         }
         msfReport({ actionName: 'open category', actionId: 4, targetName: taxonName, targetId: taxonId, tagName: 'kharid', eventName: 'page view' })
@@ -131,7 +134,7 @@ export default class ShopClass implements I_ShopClass {
     renderCard_Bundle = (p: { taxon: I_bundle_taxon, renderIn: I_renderIn, index?: number }) => {
         //{ taxon: I_bundle_taxon, renderIn: I_renderIn, index?: number, onClick?: Function }
         let { taxon, renderIn, index } = p;
-        let props = { taxon, renderIn, index, onClick: this.openBundlePage.bind(this) }
+        let props = { taxon, renderIn, index, onClick: ()=>this.openBundlePage({taxon}) }
         return (<BundleCard key={taxon.id} {...props} />)
     }
     openBundlePage = (p: { taxon: I_bundle_taxon }) => {
@@ -529,7 +532,7 @@ export default class ShopClass implements I_ShopClass {
         )
     }
 }
-type I_CategoryView = { billboard?: string, description?: string, renderItem: Function, items: any[] }
+type I_CategoryView = { billboard?: string, description?: string, renderItem: Function, items: (I_product | I_bundle_taxon | I_taxon)[],itemType:'Product'|'Taxon'|'Bundle' }
 function CategoryView(props: I_CategoryView) {
     let [searchValue, setSearchValue] = useState<string>('')
     let { billboard, description, renderItem, items } = props
@@ -801,7 +804,7 @@ function BundleCard(props: I_BundleCard) {
     }
     function image_layout() {
         return {
-            flex: 1, html: <img src={taxon.image} alt='' height='100%' className='br-12' />
+            flex: 1, html: <img src={taxon.image} alt='' width='100%' className='br-12' />
         }
     }
     function count_layout() {
@@ -826,12 +829,13 @@ function BundleCard(props: I_BundleCard) {
                 let product = taxon.products[i];
                 let cartProduct: I_cartTab_bundle_product = cartTaxon.products[product.id];
                 let str = `${product.name} ( `;
-                for (let j = 0; j < product.variants.length; i++) {
-                    let variant = product.variants[i];
-                    let count = cartProduct.variants[variant.id];
-                    if (!count) { continue }
-                    str += `${variant.name} : ${count} واحد - `;
+                for (let j = 0; j < product.variants.length; j++) {
+                    let variant = product.variants[j];
+                    let cartVariant:I_cartTab_bundle_variant = cartProduct.variants[variant.id];
+                    let count = cartVariant.count;
+                    str += `${variant.name} : ${count} واحد${j < product.variants.length - 1?' - ':''}`;
                 }
+                str += ` )`
                 ps.push(str)
             }
             return {
@@ -1137,6 +1141,7 @@ type I_BundlePage = { taxon: I_bundle_taxon }
 function BundlePage(props: I_BundlePage) {
     let { cart, actionClass, rsa }: I_app_state = useContext(appContext);
     let { taxon } = props;
+    if(typeof taxon.max !== 'number'){taxon.max = Infinity}
     const defaultCartTaxon: I_cartTab_bundle_taxon = { products: {}, taxon: props.taxon, count: 0 }
     let [cartTaxon, setCartTaxon] = useState<I_cartTab_bundle_taxon>(defaultCartTaxon)
     let [submitLoading, setSubmitLoading] = useState<boolean>(false)
@@ -1144,8 +1149,10 @@ function BundlePage(props: I_BundlePage) {
     function setCart(newCartTaxon) {
         let newCart: I_state_cart = JSON.parse(JSON.stringify(cart));
         let cartTab: I_cartTab_bundle = newCart.Bundle as I_cartTab_bundle;
-        if (!cartTab) { newCart.Bundle = { taxons: {}, type: 'Bundle' } }
-        if (!cartTab.taxons[taxon.id]) { cartTab.taxons[taxon.id] = newCartTaxon }
+        if (!cartTab) { 
+            cartTab = { taxons: {}, type: 'Bundle' };
+        }
+        cartTab.taxons[taxon.id] = newCartTaxon;
         newCart.Bundle = cartTab;
         actionClass.setCart(newCart)
     }
@@ -1233,7 +1240,7 @@ function BundlePage(props: I_BundlePage) {
     }
     function taxonCount_layout() {
         return {
-            align: 'v', className: 'p-12 br-6', style: { background: '#DCE1FF' }, gap: 12,
+            align: 'v', className: 'p-12 br-6 m-b-12', style: { background: '#DCE1FF' }, gap: 12,
             column: [
                 {
                     gap: 6, row: [
@@ -1267,9 +1274,12 @@ function BundlePage(props: I_BundlePage) {
     }
     function getFillCount(product: I_bundle_product): number {
         let selectedCount: number = 0;
-        for (let variantId in cartTaxon.products[product.id].variants) {
-            let cartVariant = cartTaxon.products[product.id].variants[variantId];
-            selectedCount += cartVariant.count
+        let cartProduct = cartTaxon.products[product.id];
+        if(cartProduct){
+            for (let variantId in cartProduct.variants) {
+                let cartVariant = cartProduct.variants[variantId];
+                selectedCount += cartVariant.count
+            }
         }
         return selectedCount;
     }
@@ -1284,7 +1294,7 @@ function BundlePage(props: I_BundlePage) {
         //تعدادی که تعیین نوع شده است
         let fillCount: number = getFillCount(product);
         return {
-            gap: 12, column: [
+            column: [
                 product_layout_label(product),
                 product_layout_sliders(product, totalCount, fillCount),
                 product_layout_message(product, totalCount, fillCount),
@@ -1293,19 +1303,25 @@ function BundlePage(props: I_BundlePage) {
         }
     }
     function product_layout_label(product: I_bundle_product) {
-        return { html: `نوع کالاها در ${cartTaxon.count + ' بسته ' + product.name} را انتخاب کنید`, align: 'v', className: 'theme-dark-font-color fs-14 bold' }
+        let {qty} = product;
+        return {
+            align:'v',className:'m-b-6',
+            row:[
+                {size:30,align:'vh',html:<Icon path={mdiInformation} size={0.7}/>,style:{color:'dodgerblue'}},
+                { html: `نوع کالاها در ${cartTaxon.count + ' بسته ' + product.name} ${`( ${qty * cartTaxon.count} عدد )`} را انتخاب کنید`, align: 'v', className: 'theme-dark-font-color fs-12 bold' }
+            ]
+        }
     }
     function product_layout_sliders(product: I_bundle_product, totalCount: number, fillCount: number) {
-        return { gap: 6, column: product.variants.map((variant: I_bundle_variant) => slider_layout(product, variant, totalCount, fillCount)) }
+        return { column: product.variants.map((variant: I_bundle_variant) => slider_layout(product, variant, totalCount, fillCount)) }
     }
     function product_layout_message(product: I_bundle_product, totalCount: number, fillCount: number) {
         let isFull = totalCount === fillCount;
         return {
-            style: { color: isFull ? '#107C10' : '#d0000a' },
+            style: { color: isFull ? '#107C10' : '#d0000a' },size:48,align:'v',
             row: [
-                { html: <Icon path={isFull ? mdiCheckCircle : mdiAlertCircle} size={0.7} /> },
-                { size: 6 },
-                { html: `${fillCount + ' عدد'} از ${product.qty + ' عدد'} کالا تعیین نوع شده`, align: 'v', className: 'fs-14 bold' }
+                { size:30,html: <Icon path={isFull ? mdiCheckCircle : mdiAlertCircle} size={0.7} />,align:'vh' },
+                { html: `${fillCount + ' عدد'} از ${(product.qty * cartTaxon.count) + ' عدد'} کالا تعیین نوع شده`, align: 'v', className: 'fs-12 bold' }
             ]
         }
     }
@@ -1322,18 +1338,40 @@ function BundlePage(props: I_BundlePage) {
             changeCartTaxon(newCartTaxon)
         }
         let sliderProps = { totalCount, max, onChange, count, variantName, step }
-        return { size: 72, html: (<BundleSlider key={product.id + variantId} {...sliderProps} />) }
+        return { html: (<BundleSlider key={product.id + variantId} {...sliderProps} />) }
     }
     function footer_layout() {
         return {
-            style: { boxShadow: '0 0px 6px 1px rgba(0,0,0,.1)' }, className: "p-24 bg-fff",
+            style: { boxShadow: '0 0px 6px 1px rgba(0,0,0,.1)' }, className: "p-12 bg-fff",align:'v',
             row: [
                 {
-                    show: !!cartTaxon.count, className: 'p-h-24 bgFFF theme-link-font-color bold',
+                    show: !!cartTaxon.count, className: 'theme-link-font-color bold',
                     html: (<button disabled={!!submitLoading} className='button-2' onClick={() => edameye_farayande_kharid()}>ادامه فرایند خرید</button>)
                 },
                 { flex: 1 },
-                { html: `${SplitNumber(taxon.price * (cartTaxon.count || 1))} ریال`, className: "theme-dark-font-color bold" }
+                {
+                    align:'v',
+                    column:[
+                        {
+                            gap:3,align:'v',className:'fs-10 theme-medium-font-color theme-link-font-color',
+                            row:[
+                                {flex:1},
+                                {html:"قیمت هر یک بسته",align:'v'},
+                                { html: `${SplitNumber(taxon.price)}`, className: "bold" },
+                                { html: `ریال` },
+                            ]
+                        },
+                        {
+                            gap:3,align:'v',className:'t-a-left',
+                            row:[
+                                {flex:1},
+                                {html:"مجموع",align:'v',className:'fs-10 theme-medium-font-color'},
+                                { html: `${SplitNumber(taxon.price * (cartTaxon.count)) }`, className: "theme-dark-font-color bold fs-20" },
+                                { html: `ریال`, className: "theme-light-font-color fs-10" },
+                            ]
+                        }
+                    ]
+                }
             ]
         }
     }
@@ -1358,7 +1396,10 @@ function BundlePage(props: I_BundlePage) {
         let hasError = fixCart();
         if (hasError) {
             setSubmitLoading(true)
-            setTimeout(() => {
+            rsa.addSnakebar({
+                text: 'تعداد سبد محصولات این بسته به طور اتوماتیک پر شد', type: 'info', onClose: false
+            })
+            setTimeout(() => {  
                 setSubmitLoading(false);
                 actionClass.openPopup('cart', 'Bundle');
             }, 2000)
@@ -1374,7 +1415,7 @@ function BundlePage(props: I_BundlePage) {
                     html: <Icon path={mdiClose} size={1} />, size: 48, align: 'vh', onClick: () => {
                         let res = fixCart();
                         if (res) {
-                            rsa.addSnakbar({
+                            rsa.addSnakebar({
                                 text: 'تعداد سبد محصولات این بسته به طور اتوماتیک پر شد', type: 'info', onClose: false
                             })
                         }
@@ -1396,6 +1437,11 @@ type I_BundleSlider = { count: number, variantName: string, totalCount: number, 
 function BundleSlider(props: I_BundleSlider) {
     let { variantName, totalCount, onChange = () => { }, max, step, count } = props;
     let percent = (count / totalCount * 100).toFixed(0);
+    let image;
+    if(variantName === 'آفتابی'){image = aftabisrc}
+    else if(variantName === 'مهتابی'){image = mahtabisrc}
+    else if(variantName === 'یخی'){image = yakhisrc}
+    
     return (
         <RVD
             layout={{
@@ -1409,28 +1455,35 @@ function BundleSlider(props: I_BundleSlider) {
                                 html: (
                                     <AIOInput
                                         type='slider'
-                                        attrs={{ style: { padding: '0 30px' } }}
+                                        attrs={{ style: { padding: 0,height:48 } }}
                                         scaleStep={[max]}
-                                        scaleStyle={(value: number) => { if (value === max) { return { background: '#2BBA8F' } } }}
+                                        scaleStyle={(value: number) => { if (value === max) { return { background: 'dodgerblue' } } }}
                                         labelStep={[max]}
-                                        labelStyle={(value: number) => { if (value === max) { return { color: '#2BBA8F', fontSize: 12, top: 43 } } }}
+                                        labelStyle={(value: number) => { if (value === max) { return { color: 'dodgerblue', fontSize: 10, top: 43 } } }}
                                         start={0} direction='left'
                                         end={totalCount}
                                         max={max}
                                         step={step}
                                         value={count}
+                                        getPointHTML={!image?undefined:()=>{
+                                            return <img src={image as string} width='30' alt=''/>
+                                        }}
                                         lineStyle={{ height: 4 }}
                                         showValue={true}
                                         fillStyle={(index: number) => {
-                                            if (index === 0) { return { height: 4, background: '#2BBA8F' } }
+                                            let background = '#2BBA8F';
+                                            if(variantName === 'آفتابی'){background = '#fae006'}
+                                            else if(variantName === 'مهتابی'){background = '#63e1f6'}
+                                            else if(variantName === 'یخی'){background = '#effd8e'}
+                                            if (index === 0) { return { height: 4, background } }
                                         }}
                                         valueStyle={{
-                                            background: '#2BBA8F', height: 14, top: -24,
+                                            color: 'dodgerblue',background:'none', height: 14, top: -28,
                                             display: 'flex', alignItems: 'center', fontSize: 12
                                         }}
-                                        pointStyle={{ background: '#2BBA8F', width: 16, height: 16, zIndex: 1000 }}
+                                        pointStyle={{ background: image?'none':'#2BBA8F', width: 16, height: 16, zIndex: 1000,top:-6 }}
                                         onChange={(newCount: number) => onChange(newCount)}
-                                        after={<div style={{ padding: '0 3px', color: '#666', width: 24, borderRadius: 6, fontSize: 10 }}>{percent + '%'}</div>}
+                                        after={<div style={{ fontWeight:'bold',padding: '0 3px', color: '#333', width: 24, borderRadius: 6, fontSize: 12 }}>{percent + '%'}</div>}
                                     />
                                 ),
                                 align: 'v'

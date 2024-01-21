@@ -100,19 +100,21 @@ export default class ActionClass implements I_actionClass {
             { text: 'خروج از حساب کاربری', icon: () => icon(mdiExitToApp), attrs: { className: 'colorFDB913' }, onClick: () => logout() }
         ]
     }
-    getShopState = () => {
+    getShopState = async () => {
         let { apis,backOffice, userInfo } = this.getState();
         let { Bundle, Regular, spreeCampaigns = [] } = backOffice;
         let Shop:I_state_Shop = {}
-        Shop.Regular = new ShopClass({getAppState: () => this.getState(),config: Regular})
+        Shop.Regular = new ShopClass({getAppState: () => this.getState(),config: {...Regular,itemtype:'Product'}})
         if (Bundle.active) {
-            let shopProps:I_ShopProps = { ...Bundle, shopId: 'Bundle' }
+            let shopProps:I_ShopProps = { ...Bundle, shopId: 'Bundle',itemType:'Bundle' }
             Shop.Bundle = new ShopClass({getAppState: () => this.getState(),config: shopProps})
         }
         for (let i = 0; i < spreeCampaigns.length; i++) {
             let spreeCampaign = spreeCampaigns[i];
+            let itemType = 'Product'
             if(spreeCampaign.shopId === '10818'){
                 let list = taxonCampaign;
+                itemType = 'Taxon';
                 let cacheCampaigns = apis.getCache('campaigns') || {}
                 let {campaignProducts = {}} = cacheCampaigns;                
                 spreeCampaign.taxons = list.map(([id,name,min,max],i)=>{
@@ -122,14 +124,14 @@ export default class ActionClass implements I_actionClass {
             }
             let { shopId, active,taxons  } = spreeCampaign;
             if (!active) { continue }
-            let shopProps:I_ShopProps = { ...spreeCampaign, shopId,taxons:taxons && taxons.length?taxons:undefined }
+            let shopProps:I_ShopProps = { ...spreeCampaign, shopId,taxons:taxons && taxons.length?taxons:undefined,itemType:itemType as('Product' | 'Taxon') }
             Shop[shopId] = new ShopClass({
                 getAppState: () => this.getState(),
                 config: shopProps
             })
         }
         
-        let cart = apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});
+        let cart = await apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});
         return {cart,Shop}
     }
     openPopup = (type:string, parameter?:any) => {
@@ -638,6 +640,7 @@ export default class ActionClass implements I_actionClass {
     setCart = (newCart:I_state_cart) => {
         let { apis } = this.getState();
         this.setState({cart:newCart})
+        console.log(newCart)
         apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
     }
 }

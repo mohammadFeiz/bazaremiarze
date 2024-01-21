@@ -192,7 +192,8 @@ export type I_ShopClass = {
     getAmounts:I_getAmounts,getAmounts_all:I_getAmounts,getAmounts_Bundle:I_getAmounts,
     getMarketingLines_Bundle:()=>{ItemCode:any,ItemQty:number,Price:number,BasePackCode:any,BasePackQty:number}[]
     getFactorItems:(shippingOptions:I_shippingOptions,container:string)=>Promise<I_factorItem[]>
-    getPaymentButtonText:(shippingOptions: I_shippingOptions) => string
+    getPaymentButtonText:(shippingOptions: I_shippingOptions) => string,
+    getBundleCartDetails:()=>{cartVariants:I_cartTab_bundle_variant[],total:number}
 }
 export type I_factorItem = {key:string,value:string,className?:string}
 export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>Promise<I_amounts>;
@@ -299,7 +300,7 @@ export type I_cartTab_bundle_product = {
     variants:{[variantId:string]:I_cartTab_bundle_variant},qty:number,price:number
 }
 export type I_cartTab_bundle_variant = {
-    count:number,step:number
+    count:number,step:number,variantId:any
 }
 export type I_cartTab_taxon = {taxons:{[taxonId:string]:I_cartTaxon},type:'taxon'}
 export type I_cartTaxon = {
@@ -315,7 +316,7 @@ export type I_bundle_product = { //mainSku => id, unitPrice => price
 export type I_bundle_variant = {//Code => id Name=> name Step => step
     id:string,name:string,step:number
 }
-
+export type I_marketingLine_bundle = { ItemCode: any, ItemQty: number, Price: number, BasePackCode: any, BasePackQty: number }
 export type I_report = {
     actionName: string, actionId: number, targetName?: string, targetId?: any,
     tagName: 'kharid' | 'vitrin' | 'profile' | 'other' | 'user authentication', eventName: 'action' | 'page view',

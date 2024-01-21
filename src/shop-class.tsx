@@ -15,7 +15,7 @@ import aftabisrc from './images/aftabi.png';
 import mahtabisrc from './images/mahtabi.png';
 import yakhisrc from './images/yakhi.png';
 import appContext from './app-context';
-import { I_ShopClass, I_taxon, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_cartTab, I_cartTab_bundle, I_cartTab_bundle_product, I_cartTab_bundle_taxon, I_cartTab_taxon, I_cartTaxon, I_cartVariant, I_discount, I_product, I_product_optionType, I_shippingOptions, I_renderIn, I_state_cart, I_variant, I_variant_optionValues, I_cartProduct, I_product_category, I_getFactorDetails_result, I_factorItem, I_cartTab_bundle_variant } from "./types";
+import { I_ShopClass, I_taxon, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_cartTab, I_cartTab_bundle, I_cartTab_bundle_product, I_cartTab_bundle_taxon, I_cartTab_taxon, I_cartTaxon, I_cartVariant, I_discount, I_product, I_product_optionType, I_shippingOptions, I_renderIn, I_state_cart, I_variant, I_variant_optionValues, I_cartProduct, I_product_category, I_getFactorDetails_result, I_factorItem, I_cartTab_bundle_variant, I_marketingLine_bundle } from "./types";
 import { I_getTaxonProducts_p } from "./apis/kharid-apis";
 import noItemSrc from './images/not-found.png';
 import nosrc from './images/no-src.png';
@@ -188,37 +188,62 @@ export default class ShopClass implements I_ShopClass {
     /******** */
 
     getCartVariants = (p?: { productId?: string, taxonId?: string }) => {
-        function getVariants(parent) {
-            let res = []
-            for (let productId in parent.products) {
-                if (p.productId !== undefined && p.productId !== productId) { continue }
-                let { variants, product } = parent.products[productId]
-                for (let variantId in variants) {
-                    let { count, variant } = variants[variantId]
-                    let obj: { product: I_product, shopId: string, productId: string, variantId: string, variant: I_variant, count: number, taxon?: I_taxon, taxonId?: string } = {
-                        shopId, productId, variantId, product, variant, count, taxon: parent.taxon, taxonId: parent.taxonId
+        const getVariants = (Parent) => {
+            if(this.itemType === 'Bundle'){
+                debugger
+                let parent = Parent as I_cartTab_bundle_taxon
+                let res = []
+                for (let productId in parent.products) {
+                    if(p && p.productId !== undefined && p.productId !== productId) { continue }
+                    let cartProduct = parent.products[productId] as I_cartTab_bundle_product
+                    let { variants } = cartProduct;
+                    for (let variantId in variants) {
+                        let { count, step } = variants[variantId]
+                        let obj:I_cartTab_bundle_variant = {count,step,variantId}
+                        res.push(obj)
                     }
-                    res.push(obj)
                 }
+                return res
             }
-            return res
+            else {
+                let res:I_cartVariant[] = []
+                let taxonId,minValue,maxValue;
+                let parent;
+                if(this.itemType === 'Taxon'){
+                    parent = Parent as I_cartTaxon;
+                    taxonId = parent.taxonId;
+                    minValue = parent.minValue;
+                    maxValue = parent.maxValue;
+                }
+                for (let productId in parent.products) {
+                    if(p && p.productId !== undefined && p.productId !== productId) { continue }
+                    let cartProduct = parent.products[productId] as I_cartProduct
+                    let { variants } = cartProduct;
+                    for (let variantId in variants) {
+                        let { count, productId,productCategory,error } = variants[variantId]
+                        let obj:I_cartVariant = {count,productId,productCategory,variantId,taxonId,minValue,maxValue,error}
+                        res.push(obj)
+                    }
+                }
+                return res
+            }
         }
         let { cart } = this.getAppState();
         let shopId = this.shopId;
         if (!cart[shopId]) { return [] }
-        if (this.taxons) {
+        if (this.taxons || shopId === 'Bundle') {
             let res = []
             let cartTab = cart[shopId] as I_cartTab_taxon;
             for (let taxonId in cartTab.taxons) {
-                if (p.taxonId !== undefined && p.taxonId !== taxonId) { continue }
-                res = [...res, getVariants(cartTab.taxons[taxonId])]
+                if(p){
+                    if (p.taxonId !== undefined && p.taxonId !== taxonId) { continue }
+                }
+                res = [...res, ...getVariants(cartTab.taxons[taxonId])]
             }
             return res
         }
         else { return getVariants(cart[shopId]) }
     }
-
-
     //جمع قیمت سبد خرید بدون تخفیف
     getCartVariantsTotal = async (cartVariants: I_cartVariant[]) => {
         let total = 0;
@@ -255,16 +280,32 @@ export default class ShopClass implements I_ShopClass {
         }
         return { total, discounts, payment: DocumentTotal, ClubPoints }
     }
+    getBundleCartDetails = () => {
+        let { cart } = this.getAppState();        
+        if (!cart.Bundle) { return {total:0,cartVariants:[]} }
+        let marketingLiens:I_marketingLine_bundle[] = []
+        let total:number = 0;
+        let cartTab:I_cartTab_bundle = cart.Bundle as I_cartTab_bundle;
+        for(let taxonId in cartTab.taxons){
+            let cartTaxon:I_cartTab_bundle_taxon = cartTab.taxons[taxonId];
+            let {products,count:taxonCount} = cartTaxon;
+            for(let productId in products){
+                let cartProduct:I_cartTab_bundle_product = products[productId];
+                let {variants,price:productPrice} = cartProduct;
+                for(let variantId in variants){
+                    let cartVariant:I_cartTab_bundle_variant = variants[variantId];
+                    let {count} = cartVariant;
+                    total += taxonCount * price;
+                    marketingLines.push({ ItemCode: variantId, ItemQty: count, Price: productPrice, BasePackCode: productId, BasePackQty: number })
+                }
+            }
+        }
+        return {cartVariants,total}
+    }
     getAmounts_Bundle = async (shippingOptions: I_shippingOptions, container?: string) => {
         let { actionClass, backOffice } = this.getAppState();
         let { PayDueDate_options } = backOffice;
-        let cartVariants = this.getCartVariants();
-        let total = 0;
-        for (let i = 0; i < cartVariants.length; i++) {
-            let { count, product } = cartVariants[i];
-            let price = product.price / (1 - (12 / 100))
-            total += count.packQty * price;
-        }
+        let {total}:{total:number,cartVariants:I_cartTab_bundle_variant[]} = this.getBundleCartDetails();
         let payment = total;
         let { PayDueDate, discountCodeInfo, giftCodeInfo } = shippingOptions || {};
         let cashPercent = 100;
@@ -464,6 +505,7 @@ export default class ShopClass implements I_ShopClass {
                 }
             }
         }
+        debugger
         return marketingLines;
     }
     getPaymentButtonText = (shippingOptions: I_shippingOptions) => {
@@ -1182,12 +1224,12 @@ function BundlePage(props: I_BundlePage) {
             if (!cartProduct) { newCartTaxon.products[product.id] = { variants: {}, qty, price } }
             if (variants.length < 2) {
                 let { id, step } = variants[0];
-                newCartTaxon.products[product.id].variants[id] = { count: qty, step }
+                newCartTaxon.products[product.id].variants[id] = { count: qty, step,variantId:id }
             }
             else {
                 for (let i = 0; i < variants.length; i++) {
                     let { id, step } = variants[i];
-                    newCartTaxon.products[product.id].variants[id] = { count: 0, step }
+                    newCartTaxon.products[product.id].variants[id] = { count: 0, step,variantId:id }
                 }
             }
         }

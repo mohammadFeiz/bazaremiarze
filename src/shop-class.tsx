@@ -153,12 +153,17 @@ export default class ShopClass implements I_ShopClass {
         })
     }
     openProductPage = async (product: I_product) => {
-        let taxonId = product.category.taxonId;
         let { apis, rsa, actionClass, msfReport } = this.getAppState();
         if (!product.hasFullDetail) {
-            debugger
             product = await apis.request({ api: 'kharid.getProductFullDetail', parameter: product })
             product.hasFullDetail = true;
+            let keys = ['taxonProducts',this.shopId];
+            if(product.category.taxonId){keys.push(product.category.taxonId)}
+            let key = keys.join('.');
+            let list = apis.getCache(key);
+            list = list.map((o:I_product)=>o.id === product.id?product:o)
+            this.categoryItems = this.categoryItems.map((o:I_product)=>o.id === product.id?product:o)
+            apis.setCache(key,list)
         }
         msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
         rsa.addModal({
@@ -306,6 +311,7 @@ export default class ShopClass implements I_ShopClass {
         let { actionClass, backOffice } = this.getAppState();
         let { PayDueDate_options } = backOffice;
         let { total }: { total: number } = this.getBundleCartDetails();
+        total = total / (1 - (12 / 100))
         let payment = total;
         let { PayDueDate, discountCodeInfo, giftCodeInfo } = shippingOptions || {};
         let cashPercent = 100;

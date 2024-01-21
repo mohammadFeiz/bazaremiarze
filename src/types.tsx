@@ -51,7 +51,8 @@ export type I_AIOService_request = (obj:{
 export type I_AIOService_class = {
     request:I_AIOService_request,
     setToken:(token:string)=>void,
-    getCache:(key:string)=>any
+    getCache:(key:string)=>any,
+    setCache:(key:string,value:any)=>void
 }
 export type I_AIOService_onCatch = (error:any)=>string | undefined
 export type I_AIOService_getError = (response:any)=>string | undefined

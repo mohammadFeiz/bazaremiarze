@@ -2467,15 +2467,15 @@ function FormSetting(props: I_FormSetting) {
             show:type === 'spreeCampaigns' && (data as I_ShopProps).itemType === 'Taxon',
             field:'value.taxons',
             input:{
-              type:'table',
+              type:'table',style:{fontSize:10},
               onAdd:true,
               onRemove:true,
               header:'لیست تکزون های کمپین',
               columns:[
-                {title:'Name',field:'row.name',input:{type:'text'}},
-                {title:'id',field:'row.id',input:{type:'text'}},
-                {title:'Min',field:'row.min',input:{type:'number',spin:false}},
-                {title:'Max',field:'row.max',input:{type:'number',spin:false}},
+                {title:'Name',value:'row.name',input:{type:'textarea'}},
+                {title:'id',value:'row.id',input:{type:'text'},width:60},
+                {title:'Min',value:'row.min',input:{type:'number',spin:false},width:56},
+                {title:'Max',value:'row.max',input:{type:'number',spin:false},width:56},
                 
               ]
             }

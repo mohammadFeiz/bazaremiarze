@@ -223,8 +223,8 @@
 .back-office .aio-button-check-in{
     background:var(--bo-color-6) !important
 }
-.back-office-form-setting .aio-form-body{
-    padding:12px;
+.back-office-form-setting .aio-input-form-body{
+    padding:6px !important;
 }
 
 .back-office-app-setting-item{
@@ -371,6 +371,16 @@
 .back-office-cachebutton.active{
     background: green;
 }
+.back-office .aio-input-form .aio-input-table-cell{
+    padding:0 !important
+}
 .back-office .aio-input-form .aio-input-table-cell .aio-input{
     border:none !important;
+    padding:0 !important;
+}
+.back-office .aio-input-form .aio-input-table{
+    border:1px solid var(--bo-color-2) !important;
+}
+.back-office .aio-input-form .aio-input-table textarea{
+    font-size: 10px;
 }

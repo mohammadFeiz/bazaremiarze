@@ -1499,7 +1499,7 @@ function VitrinSuggestion() {
   }
   function label_layout() {
     return {
-      html: 'پیشنهادات ویترین'
+      html: 'پیشنهادات ویترین',className:'p-12 p-b-0'
     }
   }
   function item_layout(item) {
@@ -1528,28 +1528,28 @@ function VitrinSuggestion() {
               gap: 6,
               row: [
                 { html: <Icon path={mdiAccount} size={.8} />, align: 'vh' },
-                { flex: 1, html: `${(typeof item.vendorName === 'string' ? item.vendorName : '').slice(0, 12)} ( ${item.cardCode || ''} )`, align: 'v', className: 'fs-12 t-a-right' },
+                { flex: 1, html: `${(typeof item.vendorName === 'string' ? item.vendorName : '').slice(0, 12)} ( ${item.cardCode || ''} )`, align: 'v', className: 't-a-right' },
               ]
             },
             {
               gap: 6,
               row: [
                 { html: <Icon path={mdiPhone} size={.8} />, align: 'vh' },
-                { flex: 1, html: item.phoneNumber || '', align: 'v', className: 'fs-12 t-a-right' }
+                { flex: 1, html: item.phoneNumber || '', align: 'v', className: 't-a-right' }
               ]
             },
             {
               gap: 6,
               row: [
                 { html: <Icon path={mdiArchive} size={.8} />, align: 'vh' },
-                { flex: 1, html: item.name, align: 'v', className: 'fs-12 t-a-right' },
+                { flex: 1, html: item.name, align: 'v', className: 't-a-right' },
               ]
             },
             {
               gap: 6,
               row: [
                 { html: <Icon path={mdiTag} size={.8} />, align: 'vh' },
-                { html: item.brand, align: 'v', flex: 1, className: 'fs-12 t-a-right' },
+                { html: item.brand, align: 'v', flex: 1, className: 't-a-right' },
               ]
             }
 
@@ -1582,7 +1582,7 @@ function VitrinSuggestion() {
     <>
       <RVD
         layout={{
-          style: { height: '100%' },
+          style: { height: '100%',color:'#fff' },
           column: [
             label_layout(),
             items_layout()
@@ -1741,7 +1741,7 @@ function Content(props: I_Content) {
             />
           )
         },
-        this.link_layout(index)
+        link_layout(index)
       ]
     }
   }
@@ -2483,7 +2483,7 @@ function FormSetting(props: I_FormSetting) {
 
         ]
       }}
-      onChange={(obj) => {debugger; onChange(obj)}}
+      onChange={(obj) => onChange(obj)}
     />
   )
 }

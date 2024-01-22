@@ -110,27 +110,11 @@ export default class ActionClass implements I_actionClass {
             Shop.Bundle = new ShopClass({getAppState: () => this.getState(),config: shopProps})
         }
         for (let i = 0; i < spreeCampaigns.length; i++) {
-            let spreeCampaign = spreeCampaigns[i];
-            let itemType = 'Product'
-            if(spreeCampaign.shopId === '10818'){
-                let list = taxonCampaign;
-                itemType = 'Taxon';
-                let cacheCampaigns = apis.getCache('campaigns') || {}
-                let {campaignProducts = {}} = cacheCampaigns;                
-                spreeCampaign.taxons = list.map(([id,name,min,max],i)=>{
-                    let products = campaignProducts[`item_10818_${id}`];
-                    return {id,name,products,min,max}
-                })
-            }
-            let { shopId, active,taxons  } = spreeCampaign;
+            let spreeCampaign:I_ShopProps = spreeCampaigns[i];
+            let { shopId, active  } = spreeCampaign;
             if (!active) { continue }
-            let shopProps:I_ShopProps = { ...spreeCampaign, shopId,taxons:taxons && taxons.length?taxons:undefined,itemType:itemType as('Product' | 'Taxon') }
-            Shop[shopId] = new ShopClass({
-                getAppState: () => this.getState(),
-                config: shopProps
-            })
+            Shop[shopId] = new ShopClass({getAppState: () => this.getState(),config: {...spreeCampaign}})
         }
-        
         let cart = await apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});
         return {cart,Shop}
     }
@@ -536,6 +520,7 @@ export default class ActionClass implements I_actionClass {
                 let CampaignId = Shop[shopId].CampaignId;
                 let factorDetails:I_getFactorDetails_result = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
                 let { MarketingLines } = factorDetails;
+                let hasError = false;
                 for(let i = 0; i < MarketingLines.length; i++){
                     let {CampaignDetails = {},ItemCode} = MarketingLines[i];
                     let productId = productIds_Dic[ItemCode]; 
@@ -544,8 +529,9 @@ export default class ActionClass implements I_actionClass {
                     let {minValue,maxValue} = BundleRowsInfos;
                     cartVariant.minValue = minValue;
                     cartVariant.maxValue = maxValue; 
-                    if(Information){cartVariant.error = Information;}
+                    if(Information){hasError = true; cartVariant.error = Information;}
                 }
+                cartTaxon.hasError = hasError;
             }
         }
         else {
@@ -582,7 +568,7 @@ export default class ActionClass implements I_actionClass {
             let newCartTab = cartTab as I_cartTab_taxon;
             if(!newCartTab){newCartTab = {type:'taxon',taxons:{}}}
             if(!newCartTab.taxons[taxonId]){
-                newCartTab.taxons[taxonId] = {taxonId,products:{}}
+                newCartTab.taxons[taxonId] = {taxonId,products:{},hasError:false}
             }
             if(!newCartTab.taxons[taxonId].products[product.id]){
                 newCartTab.taxons[taxonId].products[product.id] = {variants:{},productId:product.id,productCategory:product.category}
@@ -606,6 +592,7 @@ export default class ActionClass implements I_actionClass {
             let CampaignId = Shop[shopId].CampaignId;
             let factorDetails = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
             let { MarketingLines } = factorDetails;
+            let hasError = false;
             for(let i = 0; i < MarketingLines.length; i++){
                 let {CampaignDetails = {},ItemCode} = MarketingLines[i];
                 let productId = productIds_dic[ItemCode]; 
@@ -615,9 +602,11 @@ export default class ActionClass implements I_actionClass {
                 cartVariant.minValue = minValue;
                 cartVariant.maxValue = maxValue;            
                 if(Information){
+                    hasError = true;
                     cartVariant.error = Information
                 }
             }
+            newCartTab.taxons[taxonId].hasError = hasError;
             cartTab = newCartTab;
         }
         else {

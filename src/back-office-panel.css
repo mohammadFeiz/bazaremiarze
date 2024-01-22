@@ -54,6 +54,8 @@
 .back-office-panel{
     background: var(--bo-color-1);
     margin:12px;
+    font-size:10px;
+    margin-bottom:0;
     border:1px solid var(--bo-color-2);
     color:#fff;   
 }

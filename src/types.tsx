@@ -173,7 +173,7 @@ export type I_ShopClass = {
     products?: I_product;
     description?: string;
     icon?:string,
-    getCategoryItems:(taxonId?: string, productId?: string)=>Promise<any[]>,
+    getShopItems:(taxonId?: string, productId?: string)=>Promise<any[]>,
     renderCard_Regular: (
         p: {product: I_product, renderIn: I_renderIn, index: number,loading?: boolean, type?: 'horizontal' | 'vertical'}
     ) => React.ReactNode,
@@ -193,7 +193,8 @@ export type I_ShopClass = {
     getMarketingLines_Bundle:()=>{ItemCode:any,ItemQty:number,Price:number,BasePackCode:any,BasePackQty:number}[]
     getFactorItems:(shippingOptions:I_shippingOptions,container:string)=>Promise<I_factorItem[]>
     getPaymentButtonText:(shippingOptions: I_shippingOptions) => string,
-    getBundleCartDetails:()=>{marketingLines:I_marketingLine_bundle[],total:number}
+    getBundleCartDetails:()=>{marketingLines:I_marketingLine_bundle[],total:number},
+    updateProduct:(product:I_product)=>void
 }
 export type I_factorItem = {key:string,value:string,className?:string}
 export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>Promise<I_amounts>;
@@ -305,7 +306,7 @@ export type I_cartTab_bundle_variant = {
 }
 export type I_cartTab_taxon = {taxons:{[taxonId:string]:I_cartTaxon},type:'taxon'}
 export type I_cartTaxon = {
-    taxonId:string,products:{[productId:string]:I_cartProduct}
+    taxonId:string,products:{[productId:string]:I_cartProduct},hasError:boolean
 }
 /////cart
 export type I_bundle_taxon = {

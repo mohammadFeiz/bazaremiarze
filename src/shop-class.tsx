@@ -2,7 +2,10 @@ import React, { Fragment, useContext, useEffect, useState, useRef } from "react"
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import AIOStorage from 'aio-storage';
 import { Icon } from '@mdi/react';
-import { mdiPlusThick, mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline, mdiClose, mdiCheck, mdiInformationOffOutline, mdiInformationOutline, mdiInformation, mdiArrowDown, mdiArrowUp } from "@mdi/js";
+import { 
+    mdiChevronLeft, mdiChevronDown, mdiCheckCircle, mdiAlertCircle, mdiCart, mdiPlus, mdiMinus, mdiTrashCanOutline, mdiClose, mdiCheck, 
+    mdiInformation, mdiArrowDown, mdiArrowUp 
+} from "@mdi/js";
 import Axios from 'axios';
 import SplitNumber from "./npm/aio-functions/split-number";
 import NoSrc from './images/no-src.png';
@@ -19,7 +22,7 @@ import { I_ShopClass, I_taxon, I_app_state, I_bundle_product, I_bundle_taxon, I_
 import { I_getTaxonProducts_p } from "./apis/kharid-apis";
 import noItemSrc from './images/not-found.png';
 import nosrc from './images/no-src.png';
-
+import './shop-class.css';
 
 export default class ShopClass implements I_ShopClass {
     constructor({ getAppState, config }) {
@@ -42,21 +45,26 @@ export default class ShopClass implements I_ShopClass {
     description?: string;
     icon?: string;
     itemType: 'Product' | 'Bundle' | 'Taxon'
+    items:I_bundle_taxon[] | I_product[] | I_taxon[] | {[taxonId:string]:I_product[]}
     getProductById = async (productId: string, productCategory: I_product_category) => {
-        let categoryItems = await this.getCategoryItems(productCategory.taxonId,productId);
-        return categoryItems.find((o: I_product) => o.id === productId)
+        let shopItems = await this.getShopItems(productCategory.taxonId,productId);
+        return shopItems.find((o: I_product) => o.id === productId)
     }
-    getCategoryItems = async (taxonId?:string,productId?:string) => {
+    getShopItems = async (taxonId?:string,productId?:string) => {
         let { apis } = this.getAppState();
         if (this.itemType === 'Bundle') {
-            return await apis.request({
-                api: 'kharid.daryafte_ettelaate_bundle', description: 'دریافت لیست باندل', def: [],
-            });
+            if(!this.items){
+                let bundleItems:I_bundle_taxon[] = await apis.request({
+                    api: 'kharid.daryafte_ettelaate_bundle', description: 'دریافت لیست باندل', def: [],
+                })
+                this.items = bundleItems;
+            }
+            return this.items
         }
         else if (this.itemType === 'Taxon') { 
-            if(taxonId){return this.taxons}
-            let taxon = this.taxons.find((o:I_taxon)=>o.id === taxonId);
-            if(!productId){return taxon}
+            if(!this.items){this.items = this.taxons as I_taxon[]}
+            if(!taxonId){return this.items}
+            let taxon:I_taxon = (this.items as I_taxon[]).find((o:I_taxon)=>o.id === taxonId) as I_taxon;
             if(!taxon.products){
                 let parameter: I_getTaxonProducts_p = { category: { shopId:this.shopId, shopName:this.shopName, taxonId: taxon.id, taxonName: taxon.name } }
                 let products = await apis.request({
@@ -65,32 +73,40 @@ export default class ShopClass implements I_ShopClass {
                 });
                 taxon.products = products;
             }
+            if(!productId){return taxon}
             return taxon.products.find((o:I_product)=>o.id === productId)
         }
         else if (this.itemType === 'Product') {
-            let parameter:I_getTaxonProducts_p,cacheName:string;
-            let description = `دریافت محصولات ${this.shopName}`
-            let taxonName:string;
             if(taxonId){
-                let {spreeCategories} = this.getAppState();
-                taxonName = spreeCategories.dic[taxonId].name;
-                parameter = { category: { shopId: this.shopId, shopName: this.shopName, taxonId,taxonName } }
-                cacheName = `taxonProducts.${this.shopId}.${taxonId}`;
-                description += ` دسته بندی ${taxonName}`;
-                
+                if(!this.items){this.items = {}}
+                if(!this.items[taxonId]){
+                    let {spreeCategories} = this.getAppState();
+                    let taxonName = spreeCategories.dic[taxonId].name;
+                    let parameter = { category: { shopId: this.shopId, shopName: this.shopName, taxonId,taxonName } }
+                    let cacheName = `taxonProducts.Regular.${taxonId}`;
+                    let description = `دریافت محصولات ${this.shopName} دسته بندی ${taxonName}`;
+                    let request = {api: 'kharid.getTaxonProducts', description, def: [], parameter, loading: false,cache: { time: 30 * 24 * 60 * 60 * 1000, name: cacheName }}
+                    let products = await apis.request(request)
+                    this.items[taxonId] = products;
+                }
+                return this.items[taxonId]
             }
             else {
-                taxonName = this.shopName;
-                parameter = { category: { shopId: this.shopId, shopName: this.shopName }}
-                cacheName = `taxonProducts.${this.shopId}`;
+                if(!this.items){
+                    let parameter = { category: { shopId: this.shopId, shopName: this.shopName }}
+                    let cacheName = `taxonProducts.${this.shopId}`;
+                    let description = `دریافت محصولات ${this.shopName}`;
+                    let request = {api: 'kharid.getTaxonProducts', description, def: [], parameter, loading: false,cache: { time: 30 * 24 * 60 * 60 * 1000, name: cacheName }}
+                    let products = await apis.request(request)
+                    this.items = products;
+                }
+                return this.items;
             }
-            let request = {api: 'kharid.getTaxonProducts', description, def: [], parameter, loading: false,cache: { time: 30 * 24 * 60 * 60 * 1000, name: cacheName }}
-            return await apis.request(request)
         }
     }
     openCategory = async (taxonId?:string) => {
         let { rsa, actionClass, msfReport,spreeCategories } = this.getAppState();
-        let items = await this.getCategoryItems(taxonId);
+        let items = await this.getShopItems(taxonId);
         let name = taxonId ? spreeCategories.dic[taxonId].name : this.shopName;
         let id = taxonId ? taxonId : this.shopId;
         let props: I_CategoryView = {
@@ -121,7 +137,10 @@ export default class ShopClass implements I_ShopClass {
         let cartVariants: I_cartVariant[] = this.getCartVariants({ productId: product.id });
         let props: I_RegularCard = {
             cartVariants, product, renderIn, loading, index, type, shopId: this.shopId,
-            onClick: async () => await this.openProductPage(product)
+            onClick: async (product:I_product) => {
+                let newProduct:I_product = await this.openProductPage(product);
+                return newProduct;
+            }
         }
         return (<RegularCard key={product.id} {...props} />)
     }
@@ -129,6 +148,10 @@ export default class ShopClass implements I_ShopClass {
         let { taxon, renderIn } = p;
         let props: I_TaxonCard = {
             taxon, renderIn, shopId: this.shopId, shopName: this.shopName,
+            getProducts:async ()=>{
+                let taxonItem = await this.getShopItems(taxon.id)
+                return taxonItem.products
+            },
             renderCard: (product: I_product, index: number) => this.renderCard_Regular({ product, index, renderIn })
         }
         return (<TaxonCard key={taxon.id} {...props} />)
@@ -154,17 +177,29 @@ export default class ShopClass implements I_ShopClass {
             header: false
         })
     }
+    updateProduct = (product:I_product)=>{
+        let { apis } = this.getAppState();
+        let items:I_product[],storageKey:string;
+        if(product.category.taxonId){
+            storageKey = `taxonProduct.${this.shopId}.${product.category.taxonId}`
+            items = this.items[product.category.taxonId];
+        }
+        else {
+            storageKey = `taxonProduct.${this.shopId}`; 
+            items = this.items as I_product[];
+        }
+        let list = apis.getCache(storageKey);
+        let newList = list.map((o:I_product)=>o.id === product.id?product:o)
+        apis.setCache(storageKey,newList);
+        let index:number = items.findIndex((o:I_product)=>o.id === product.id)
+        items[index] = product;
+    }
     openProductPage = async (product: I_product) => {
         let { apis, rsa, actionClass, msfReport } = this.getAppState();
         if (!product.hasFullDetail) {
             product = await apis.request({ api: 'kharid.getProductFullDetail', parameter: product })
             product.hasFullDetail = true;
-            let keys = ['taxonProducts',this.shopId];
-            if(product.category.taxonId){keys.push(product.category.taxonId)}
-            let key = keys.join('.');
-            let list = apis.getCache(key);
-            list = list.map((o:I_product)=>o.id === product.id?product:o)
-            apis.setCache(key,list)
+            this.updateProduct(product)
         }
         msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
         rsa.addModal({
@@ -177,6 +212,7 @@ export default class ShopClass implements I_ShopClass {
             },
             header: { title: this.shopName, buttons: actionClass.getHeaderIcons({ cart: true }) }
         })
+        return product
     }
     payment = async (obj: I_shippingOptions) => {
         //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
@@ -353,8 +389,8 @@ export default class ShopClass implements I_ShopClass {
             //به دلیل هندل نشدن پرامیز در مپ جاوا اسکریپت از حلقه فور استفاده می کنم
             for (let i = 0; i < cartTaxons.length; i++) {
                 let { taxonId } = cartTaxons[i];
-                let categoryItems = await this.getCategoryItems();
-                let taxon = await categoryItems.find((o: I_bundle_taxon) => o.id === taxonId)
+                let shopItems = await this.getShopItems();
+                let taxon = await shopItems.find((o: I_bundle_taxon) => o.id === taxonId)
                 let res = await this.renderCard_Bundle({ taxon, index: i, renderIn })
                 renders.push(res)
             }
@@ -619,96 +655,62 @@ function CategoryView(props: I_CategoryView) {
     }
     return (<RVD layout={{ className: 'theme-popup-bg', column: [search_layout(), body_layout()] }} />)
 }
-type I_TaxonCard = { taxon: I_taxon, shopId: string, shopName: string, renderIn: I_renderIn, renderCard: (product: I_product, index: number) => React.ReactNode }
+type I_TaxonCard = { 
+    taxon: I_taxon, shopId: string, shopName: string, renderIn: I_renderIn, 
+    renderCard: (product: I_product, index: number) => React.ReactNode,
+    getProducts:()=>Promise<I_product[]>
+}
 function TaxonCard(props: I_TaxonCard) {
-    let { apis, cart }: I_app_state = useContext(appContext);
+    let { cart }: I_app_state = useContext(appContext);
     let storage = AIOStorage('taxonCardToggle');
-    let { taxon, shopId, shopName, renderIn, renderCard } = props;
+    let { taxon, shopId, renderIn, renderCard } = props;
     let [open, setOpen] = useState<boolean>(storage.load({ name: 'toggle' + taxon.id, def: false }))
-    let [products, setProducts] = useState<I_product[] | undefined>()
-    async function click() { setOpen(!open); storage.save({ name: 'toggle' + taxon.id, value: !open }) }
-    function close_layout() {
-        return (
-            <RVD
-                layout={{
-                    className: 'p-12 theme-box-shadow', onClick: () => click(),
-                    row: [{ size: 36, align: 'vh', html: <Icon path={mdiChevronLeft} size={.8} /> }, { html: taxon.name, align: 'v' }]
-                }}
-            />
-        )
+    let [products,setProducts] = useState<I_product[]>([])
+    async function getProducts(){
+        if(open && !products.length){setProducts(await props.getProducts())}
     }
+    useEffect(()=>{getProducts()},[open])
+    async function onClick(e) { e.stopPropagation(); setOpen(!open); storage.save({ name: 'toggle' + taxon.id, value: !open }) }
+    function name_layout(){return { html: taxon.name, flex: 1, align: 'v' }}
+    function icon_layout(){return { size: 36, align: 'vh', html: <Icon path={open?mdiChevronDown:mdiChevronLeft} size={.8} /> }}
     function groupDiscount_layout() {
-        if (renderIn !== 'cart' && renderIn !== 'shipping') { return false }
         let cartTab = cart[shopId] as I_cartTab_taxon;
         if (!cartTab) { return false }
-        let cartLength = Object.keys(cartTab.taxons).length;
-        return {
-            align: 'v', html: `تخفیف گروه کالا ${0.5 * cartLength} درصد`,
-            className: 'fs-10', style: { color: 'green', background: '#fff' }
-        }
+        let taxonIds = Object.keys(cartTab.taxons);
+        let notHasErrors = taxonIds.filter((taxonId)=>!cartTab.taxons[taxonId].hasError)
+        return {align: 'v', html: `تخفیف گروه کالا ${0.5 * notHasErrors.length} درصد`,className: 'fs-10', style: { color: 'green', background: '#fff' }}
     }
-    function taxonName_layout() {
+    function header_layout() {return {onClick,row: [icon_layout(),name_layout()]}}
+    function products_layout() {return !open?false:{ column: products.map((product: I_product, index: number) => product_layout(product,index))}}
+    function product_layout(product:I_product,index:number){return { html: renderCard(product, index) }}
+    function rangeItem_layout(type:'min'|'max'){
         return {
-            onClick: (e) => { e.stopPropagation(); click() },
-            row: [
-                { html: <Icon path={mdiChevronDown} size={0.8} />, align: 'vh', size: 36 },
-                { html: taxon.name, flex: 1, align: 'v' },
+            row:[
+                {html:<Icon path={type === 'min'?mdiArrowDown:mdiArrowUp} size={0.7}/>,align:'vh',size:30,style:{color:type === 'min'?'red':'green'}},
+                { html: `${type === 'min'?'حداقل':'حداکثر'} مبلغ ${SplitNumber(taxon[type])} ریال`,align:'v' }, 
             ]
         }
     }
-    function products_layout() { return { column: products.map((o: I_product, i: number) => { return { html: renderCard(o, i) } }) } }
-    function range_layout() {
-        let Min = SplitNumber(taxon.min), Max = SplitNumber(taxon.max);
-        return {
-            gap: 12, align: 'v', className: 'fs-10', style: { color: '#60B4D0', background: '#eee', padding: '3px 6px' },
-            row: [
-                {
-                    row:[
-                        {html:<Icon path={mdiArrowDown} size={0.7}/>,align:'vh',size:30,style:{color:'red'}},
-                        { html: `حداقل مبلغ ${Min} ریال`,align:'v' }, 
-                    ]
-                },
-                {
-                    row:[
-                        {html:<Icon path={mdiArrowUp} size={0.7}/>,align:'vh',size:30,style:{color:'green'}},
-                        { html: `حداکثر مبلغ ${Max} ریال`,align:'v' }, 
-                    ]
-                }
-            ]
-        }
-    }
-    function open_layout() {
-        return (<RVD layout={{ className: 'p-12 theme-box-shadow', column: [taxonName_layout(), products_layout(), groupDiscount_layout(), range_layout()] }} />)
-    }
-    useEffect(() => { getProducts() }, [cart, open])
-    async function getProducts() {
-        if (renderIn === 'cart' || renderIn === 'shipping') {
-            let cartTab = cart[shopId] as I_cartTab_taxon;
-            let productDic = cartTab.taxons[taxon.id].products;
-            let products = []
-            for (let productId in productDic) { products.push(productDic[productId]) }
-            setProducts(products)
-        }
-        else {
-            let parameter: I_getTaxonProducts_p = { category: { shopId, shopName, taxonId: taxon.id, taxonName: taxon.name } }
-            let products = await apis.request({
-                api: 'kharid.getTaxonProducts', description: `دریافت محصولات تکزون ${taxon.name}`, def: [], parameter,
-                cache: { time: 30 * 24 * 60 * 60 * 1000, name: `taxonProducts.${shopId}.${taxon.id}` }
-            });
-            setProducts(products)
-        }
-    }
-    return open && products ? open_layout() : close_layout()
+    function range_layout() {return {align: 'v', className: 'taxon-card-range',row: [rangeItem_layout('min'),rangeItem_layout('max')]}}
+    return (
+        <RVD 
+            layout={{ 
+                className: 'p-12 theme-box-shadow', 
+                column: [header_layout(), products_layout(), groupDiscount_layout(), range_layout()] 
+            }} 
+        />
+    )
 }
 type I_RegularCard = {
     product: I_product, shopId: string, cartVariants: I_cartVariant[],
     renderIn: I_renderIn, index: number, loading?: boolean,
-    onClick?: Function, type?: 'horizontal' | 'vertical'
+    onClick: (product:I_product)=>Promise<I_product>, type?: 'horizontal' | 'vertical'
 }
 function RegularCard(props: I_RegularCard) {
     let { Shop }: I_app_state = useContext(appContext);
+    let { shopId, renderIn, index, loading, onClick, type = 'horizontal', cartVariants = [] } = props;
     let [mounted, setMounted] = useState<boolean>(false)
-    let { product, shopId, renderIn, index, loading, onClick, type = 'horizontal', cartVariants = [] } = props;
+    let [product,setProduct] = useState<I_product>(props.product)
     function image_layout() {
         let { images = [] } = product;
         return { size: 116, align: 'vh', html: <img src={images[0] || NoSrc as string} width={'100%'} alt='' /> }
@@ -804,7 +806,11 @@ function RegularCard(props: I_RegularCard) {
                 loading={loading}
                 layout={{
                     className: 'theme-card-bg theme-box-shadow gap-no-color rvd-rotate-card' + (mounted ? ' mounted' : ''),
-                    onClick,
+                    onClick:async ()=>{
+                        //با کلیک روی پروداکت اطلاعات این پروداکت تکمیل میشه پس تکمیل شدشو می گیریم و استیت این کامپوننت رو آپدیت می کنیم
+                        let newProduct:I_product = await onClick(product);
+                        setProduct(newProduct)
+                    },
                     style: { border: '1px solid #eee' },
                     column: [
                         {
@@ -821,8 +827,7 @@ function RegularCard(props: I_RegularCard) {
                                         discount_layout(),
                                         notExist_layout(),
                                         { row: [{ flex: 1 }, price_layout()] },
-                                        { size: 6 },
-
+                                        { size: 6 }
                                     ]
                                 }
                             ]

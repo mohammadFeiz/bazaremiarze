@@ -16,7 +16,7 @@ export default function Buy() {
       let o:I_spreeCategory = slider_type[i];
       let {id,name} = o;
       let getProducts = async ()=>{
-        let products = await Shop.Regular.getShopItems(id)
+        let products = await Shop.Regular.getShopItems({taxonId:id})
         return products;
       };
       sliders.push({getProducts,name,id})

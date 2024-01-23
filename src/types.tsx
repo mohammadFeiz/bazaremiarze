@@ -160,7 +160,7 @@ export type I_ShopProps = {
     description?:string,
     itemType:'Product' | 'Taxon' | 'Bundle'
 } 
-export type I_taxon = {id:string,name:string,min:number,max:number,products?:I_product[]}
+export type I_taxon = {id:string,name:string,min:number,max:number}
 export type I_ShopClass = {
     shopName: string,
     active:boolean,
@@ -173,7 +173,7 @@ export type I_ShopClass = {
     products?: I_product;
     description?: string;
     icon?:string,
-    getShopItems:(taxonId?: string, productId?: string)=>Promise<any[]>,
+    getShopItems:(p?:{taxonId?: string, productId?: string})=>Promise<any[]>,
     renderCard_Regular: (
         p: {product: I_product, renderIn: I_renderIn, index: number,loading?: boolean, type?: 'horizontal' | 'vertical'}
     ) => React.ReactNode,
@@ -183,10 +183,9 @@ export type I_ShopClass = {
             taxon: I_taxon, renderIn: I_renderIn, index?: number, onFetchProducts?: any, errors?: any[], hasErrors?: any[]
         }
     ) => React.ReactNode,
-    getProductById:(productId:string,productCategory:I_product_category)=>Promise<I_product>,
     renderCartItems:(renderIn:I_renderIn)=>Promise<any[]>
     openCategory:(taxonId?:any)=>void,
-    getCartVariants:(p?:{productId?:string,taxonId?:string})=>I_cartVariant[],
+    getCartVariants:(p?:{productId?:string,taxonId?:string})=>Promise<{cartVariants:I_cartVariant[],total:number}>,
     payment:(p:I_shippingOptions)=>Promise<boolean>, 
     renderCartFactor:(button?:boolean)=>Promise<React.ReactNode>,
     getAmounts:I_getAmounts,getAmounts_all:I_getAmounts,getAmounts_Bundle:I_getAmounts,

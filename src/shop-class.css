@@ -1,7 +1,54 @@
 .taxon-card-range{
-    gap:12px;
     font-size:10px;
-    color: #60B4D0;
     background: #eee;
     padding: 3px 6px;
+}
+.taxon-card-header{
+    margin-bottom:6px;
+    font-size:12px;
+    font-weight:bold;
+    color:#666;
+}
+.product-count-button{
+    color: dodgerblue;
+    width: 40px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding:0;
+}
+.product-count-input{
+    text-align: center;
+    width:40px;
+    height:30px;
+    margin:3px;
+    font-size:16px;
+    line-height:30px;
+}
+.product-count-button.disabled{
+    background: #aaa;
+    opacity:0.4;
+}
+.product-delete-button{
+    color: #0094D4;
+    background:none; 
+    width:30px;
+    height:30px;
+}
+.regular-card-variant{
+    background: #f7f7f7;
+    padding:3px;
+}
+.regular-card-variant-error{
+    font-size:10px;
+    color:red;
+    gap:2px;
+}
+.discount-percent{
+    color: #fff;
+    height:16px;
+    padding: 1px 3px;
+    font-size: 12px;
+    border-radius: 4px; 
 }

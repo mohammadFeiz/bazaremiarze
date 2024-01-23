@@ -1702,14 +1702,14 @@ function CartButton(props: I_CartButton) {
 }
 type I_ProductCount = { value: number, min?: number, max?: number, onChange?: Function }
 function ProductCount(props: I_ProductCount) {
-    let { actionClass, rsa }: I_app_state = useContext(appContext);
+    let { actionClass, rsa,cart }: I_app_state = useContext(appContext);
     let [value, setValue] = useState<number>(props.value)
     let [popup, setPopup] = useState<boolean>(false)
     let { onChange, max = Infinity } = props;
     let changeTimeout;
     useEffect(() => {
         setValue(props.value)
-    }, [props.value])
+    }, [props.value,cart])
     function change(value, min = props.min || 0) {
         value = +value;
         if (isNaN(value)) { value = 0 }

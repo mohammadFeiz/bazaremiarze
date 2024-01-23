@@ -251,7 +251,7 @@ export type I_actionClass = {
     fixCartByPricing:(shopId:string)=>void
 }
 export type I_getFactorDetails_result = {
-    MarketingLines:{CampaignDetails:any,ItemCode:string}[],
+    MarketingLines:{CampaignDetails:any,ItemCode:string,ItemQty:number}[],
     DocumentTotal:number,
     marketingdetails:{ DiscountList:any, ClubPoints:any }
 }

@@ -1,0 +1,187 @@
+
+.aio-login{
+    font-size:14px;
+    font-family:IRANSans-Light;
+    direction:rtl;
+    width:100%;
+    min-height:fit-content;
+    min-width: 160px;
+}
+.aio-login-reload{
+    width:100%;
+    height:60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin:24px;
+}
+.aio-login-reload button{
+    font-size:14px;
+    background:dodgerblue;
+    color:#fff;
+    border:none;
+    padding:12px 36px;
+    border-radius:6px;
+}
+.aio-login .aio-form{
+    background: none;
+}
+.aio-login .aio-input-form-body{
+    padding:12px;
+    background: none;
+    overflow:visible;
+}
+.aio-login .aio-input-before{
+    background:#f6f7f9;
+    color:#9ba9c3;
+}
+.aio-login .aio-input-after{
+    background:#f6f7f9;
+    color:#9ba9c3;
+}
+.aio-login-or{
+    font-size:14px;
+    color:#aaa;
+}
+.aio-login-splitter{
+    height:1px;
+    background:#aaa;
+    width:100%;
+}
+.aio-login-title{
+    font-size:18px;
+    color:#445778;
+    font-weight: bold;
+    padding:0 12px;
+    margin-bottom:12px;
+}
+.aio-login-subtitle{
+    font-size:12px;
+    color:#445778;
+    padding:0 12px;
+    margin-bottom:6px;
+    text-align: right;
+}
+.aio-login-text{
+    padding:0 12px;
+    font-size:12px;
+    font-weight:bold;
+    color:darkblue;
+}
+.aio-login-other-method{
+    border: 0;
+    color: rgb(23, 123, 223);
+    background:#f1f6f7;
+    width:100%;
+    height:36px;
+    border-radius:6px;
+    cursor: pointer;
+    font-family: inherit;
+    text-align:right;
+    padding:0 8px;
+    user-select: none;
+    -webkit-user-select: none;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom:12px;
+}
+.aio-login-Gmail{
+    background:#387bdc;
+    color:#fff;
+}
+.aio-login-other-method svg{
+    background:#fff;
+    border-radius:100%;
+    padding:3px;
+}
+.aio-login-form{
+    background:#fff;
+    margin:12px;
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+}
+.aio-login .aio-input{
+    border:1px solid #ced9e0;
+    min-height:36px;
+    outline:none;
+    border-radius:6px; 
+    font-size:inherit;
+}
+.aio-login .aio-input input{
+    font-size:inherit;
+}
+.aio-login .aio-input-form{
+    overflow:visible;
+}
+
+
+.aio-login-submit{
+    height:40px;
+    width:100%;
+    border-radius:6px;
+    border:1px solid #1265db;
+    background:#1265db;
+    color:#fff;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    cursor:pointer;
+    font-family:inherit;
+}
+.aio-login-submit-outline{
+    background:none;
+    color:#1265db;
+}
+.aio-login-button{
+    height:40px;
+    width:100%;
+    border-radius:6px;
+    border:1px solid #1265db;
+    background:#fff;
+    border:none;
+    color:#1265db;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    cursor:pointer;
+}
+.aio-login-submit:disabled{
+    cursor:not-allowed;
+    background:#aaa;
+    border:1px solid #aaa;
+}
+.aio-login .aio-form-row{
+    margin-bottom:12px;
+}
+.aio-login .aio-input.aio-login-otp-code input{
+    font-size: 200%;
+    letter-spacing: 24px;
+    text-align: center;
+    direction:ltr;
+}
+.aio-login-register-button{
+    color:#1265db;
+    background:none;
+    border:none;
+    font-family:inherit;
+    cursor:pointer;
+}
+.aio-login .aio-login-register-tabs{
+    margin-bottom:24px;
+    font-family: inherit;
+    border:none;
+}
+.aio-login-register-tabs .aio-input-tabs-option{
+    flex:1;
+}
+.aio-login-register-tabs .aio-input-tabs-option-value{
+    text-align:center;
+    align-items: center;
+}
+.aio-login-forget{
+    padding:0 12px;
+    font-size:80%;
+    margin-top:12px;
+    margin-bottom:24px;
+}

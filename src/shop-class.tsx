@@ -58,6 +58,20 @@ export default class ShopClass implements I_ShopClass {
         }
         if(this.itemType === 'Taxon'){return this.taxons.find((o)=>o.id === taxonId).name}
     }
+    isProductInCart = (productId:string,taxonId?:string)=>{
+        let {cart} = this.getAppState()
+        if(!cart[this.shopId]){return false}
+        if(taxonId){
+            let cartTab = cart[this.shopId] as I_cartTab_taxon;
+            let cartTaxon = cartTab.taxons[taxonId];
+            if(!cartTaxon){return false}
+            return !!cartTaxon.products[productId]
+        }
+        else {
+            let cartTab = cart[this.shopId] as I_cartTab;
+            return !!cartTab.products[productId]
+        }
+    }
     getShopItems = async (p?:{taxonId?: string, productId?: string}) => {
         let { apis } = this.getAppState();
         if (this.itemType === 'Bundle') {
@@ -171,16 +185,18 @@ export default class ShopClass implements I_ShopClass {
         let { apis } = this.getAppState();
         let items: I_product[], storageKey: string;
         if (product.category.taxonId) {
-            storageKey = `taxonProduct.${this.shopId}.${product.category.taxonId}`
+            storageKey = `taxonProducts.${this.shopId}.${product.category.taxonId}`
             items = this.items[product.category.taxonId];
         }
         else {
-            storageKey = `taxonProduct.${this.shopId}`;
+            storageKey = `taxonProducts.${this.shopId}`;
             items = this.items as I_product[];
         }
         let list = apis.getCache(storageKey);
-        let newList = list.map((o: I_product) => o.id === product.id ? product : o)
-        apis.setCache(storageKey, newList);
+        if(list){
+            let newList = list.map((o: I_product) => o.id === product.id ? product : o)
+            apis.setCache(storageKey, newList);
+        }
         let index: number = items.findIndex((o: I_product) => o.id === product.id)
         items[index] = product;
     }
@@ -230,6 +246,7 @@ export default class ShopClass implements I_ShopClass {
                 if (p && p.taxonId && p.taxonId !== taxonId) {continue }
                 let cartTaxon:I_cartTaxon = cartTab.taxons[taxonId];
                 for(let productId in cartTaxon.products){
+                    if (p && p.productId && p.productId !== productId) {continue }    
                     let cartProduct:I_cartProduct = cartTaxon.products[productId];
                     let products = await this.getShopItems({taxonId,productId}) as I_product[];
                     let product = products[0];    
@@ -247,11 +264,13 @@ export default class ShopClass implements I_ShopClass {
             let cartTab = cart[this.shopId] as I_cartTab;
             for(let productId in cartTab.products){
                 let cartProduct:I_cartProduct = cartTab.products[productId];
+                let {productCategory} = cartProduct;
+                if(p && p.taxonId && p.taxonId !== productCategory.taxonId){continue}
+                if(p && p.productId && p.productId !== productId){continue}
                 let products:I_product[] = await this.getShopItems({taxonId:cartProduct.productCategory.taxonId,productId}) as I_product[];
                 let product = products[0];
                 for(let variantId in cartProduct.variants){
-                    let {count,productCategory} = cartProduct.variants[variantId];
-                    if(p && p.taxonId && p.taxonId !== productCategory.taxonId){continue}
+                    let {count} = cartProduct.variants[variantId];
                     let variant = product.variants.find((o:I_variant)=>o.id === variantId)
                     let {Price} = variant;    
                     res.total += count * Price;
@@ -360,11 +379,8 @@ export default class ShopClass implements I_ShopClass {
         }
         else if (this.itemType === 'Taxon') {
             let cartTab = cart[this.shopId] as I_cartTab_taxon
-            let cartItems = this.dicToArray(cartTab.taxons);
-            for(let i = 0; i < cartItems.length; i++){
-                let {taxonId} = cartItems[i];
-                let taxons = await this.getShopItems();
-                let taxon = taxons.find((o:I_taxon)=>o.id === taxonId)
+            for(let taxonId in cartTab.taxons){
+                let taxon:I_taxon = this.taxons.find((o:I_taxon)=>o.id === taxonId)
                 renders.push(this.renderCard_taxon({ taxon, renderIn }))
             }
         }
@@ -627,13 +643,16 @@ type I_TaxonCard = {
     getProducts: () => Promise<I_product[]>
 }
 function TaxonCard(props: I_TaxonCard) {
-    let { cart }: I_app_state = useContext(appContext);
+    let { cart,Shop }: I_app_state = useContext(appContext);
     let storage = AIOStorage('taxonCardToggle');
     let { taxon, shopId, renderIn, renderCard } = props;
     let [open, setOpen] = useState<boolean>(storage.load({ name: 'toggle' + taxon.id, def: false }))
     let [products, setProducts] = useState<I_product[]>([])
     async function getProducts() {
-        if (open && !products.length) { setProducts(await props.getProducts()) }
+        if (open && !products.length) { 
+            let products = await props.getProducts();
+            setProducts(products) 
+        }
     }
     useEffect(() => { getProducts() }, [open])
     async function onClick(e) { e.stopPropagation(); setOpen(!open); storage.save({ name: 'toggle' + taxon.id, value: !open }) }
@@ -648,7 +667,15 @@ function TaxonCard(props: I_TaxonCard) {
         return { align: 'v', html: `تخفیف گروه کالا ${0.5 * notHasErrors.length} درصد`, className: 'fs-10', style: { color: 'green', background: '#fff' } }
     }
     function header_layout() { return { className:'taxon-card-header',onClick, row: [icon_layout(), name_layout()] } }
-    function products_layout() { return !open ? false : { column: products.map((product: I_product, index: number) => product_layout(product, index)) } }
+    function products_layout() { 
+        if(!open){return false}
+        return { column: products.map((product: I_product, index: number) => {
+            if(renderIn === 'cart' || renderIn === 'shipping'){
+                if(!Shop[shopId].isProductInCart(product.id,taxon.id)){return false} 
+            }
+            return product_layout(product, index)
+        }) } 
+    }
     function product_layout(product: I_product, index: number) { return { html: renderCard(product, index) } }
     function rangeItem_layout(type: 'min' | 'max') {
         return {
@@ -678,7 +705,10 @@ function RegularCard(props: I_RegularCard) {
     let { shopId, renderIn, index, loading, onClick, type = 'horizontal' } = props;
     let [cartVariants,setCartVariants] = useState<I_cartVariant[]>([])
     async function getCartVariants(){
-        let {cartVariants} = await Shop[shopId].getCartVariants();
+        let {product} = props;
+        let {category} = product;
+        let {taxonId} = category;
+        let {cartVariants} = await Shop[shopId].getCartVariants({taxonId,productId:product.id});
         setCartVariants(cartVariants)
     }
     useEffect(()=>{getCartVariants()},[cart])
@@ -695,6 +725,7 @@ function RegularCard(props: I_RegularCard) {
         return { gap: 3, style: { background: '#fff' }, column }
     }
     function variant_layout(cartVariant: I_cartVariant) {
+        console.log(product)
         let { count, variantId, error } = cartVariant;
         return {
             className: 'regular-card-variant',
@@ -725,7 +756,8 @@ function RegularCard(props: I_RegularCard) {
         }
     }
     function variantLabels_layout(variantId: string) {
-        let { optionTypes, variants } = product;
+        try{
+            let { optionTypes, variants } = product;
         let variant = variants.find((o: I_variant) => o.id === variantId)
         let { optionValues } = variant, details = [];
         for (let j = 0; j < optionTypes.length; j++) {
@@ -735,6 +767,20 @@ function RegularCard(props: I_RegularCard) {
             details.push([optionTypeName, optionValueName]);
         }
         return { align: 'v', className: 'theme-medium-font-color fs-10 bold', gap: 6, gepHtml: () => '-', row: details.map(([key, value]) => { return variantLabel_layout(key, value) }) }
+        }
+        catch{
+            debugger
+            let { optionTypes, variants } = product;
+        let variant = variants.find((o: I_variant) => o.id === variantId)
+        let { optionValues } = variant, details = [];
+        for (let j = 0; j < optionTypes.length; j++) {
+            let { id: optionTypeId, name: optionTypeName, items } = optionTypes[j];
+            let optionValueId = optionValues[optionTypeId];
+            let optionValueName = items[optionValueId]
+            details.push([optionTypeName, optionValueName]);
+        }
+        return { align: 'v', className: 'theme-medium-font-color fs-10 bold', gap: 6, gepHtml: () => '-', row: details.map(([key, value]) => { return variantLabel_layout(key, value) }) }
+        }
     }
     function variantLabel_layout(key: string, value: string = '') {
         //return { html: `${key} : ${value}` }
@@ -947,7 +993,9 @@ function RegularPage(props: I_RegularPage) {
     let [srcIndex, setSrcIndex] = useState<number>(0)
     let [cartVariants,setCartVariants] = useState<I_cartVariant[]>([])
     async function getCartVariants(){
-        let {cartVariants} = await Shop[shopId].getCartVariants({ productId: product.id })
+        let {category} = product;
+        let {taxonId} = category;
+        let {cartVariants} = await Shop[shopId].getCartVariants({ taxonId,productId: product.id })
         setCartVariants(cartVariants)
     }
     useEffect(()=>{
@@ -1808,7 +1856,6 @@ export function Cart(props: I_Cart) {
             let items = await Shop[activeTabId].renderCartItems('cart');
             setItems(items);
             setFactor(factor);
-
         }
         else {
             setItems([])

@@ -4,7 +4,7 @@ import UrlToJson from './npm/aio-functions/url-to-json';
 import Pricing from './pricing';
 import ShopClass from './shop-class.tsx';
 import { Icon } from '@mdi/react';
-import { mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList,mdiCodeBraces, mdiExitToApp, mdiCash, mdiSecurity, mdiSkullScan, mdiCart,mdiStore, mdiHome, mdiShopping, mdiAccountBox, mdiDelete } from "@mdi/js";
+import { mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList,mdiCodeBraces, mdiExitToApp, mdiCash, mdiSecurity, mdiSkullScan, mdiCart,mdiStore, mdiHome, mdiShopping, mdiAccountBox, mdiDelete, mdiEye } from "@mdi/js";
 import getSvg from './utils/getSvg';
 import Register from './components/register/register';
 import PriceList from './popups/price-list/price-list';
@@ -237,7 +237,8 @@ export default class ActionClass implements I_actionClass {
                 header: { 
                     title: 'سبد خرید',
                     buttons:[
-                        [<Icon path={mdiDelete} size={1}/>,{onClick:()=>this.setCart({}),className:'align-vh'}]
+                        [<Icon path={mdiDelete} size={1}/>,{onClick:()=>this.setCart({}),className:'align-vh'}],
+                        [<Icon path={mdiEye} size={1}/>,{onClick:()=>console.log(this.getState().cart),className:'align-vh'}]
                     ] 
                 } 
             })
@@ -523,7 +524,7 @@ export default class ActionClass implements I_actionClass {
         cartTaxon.hasError = hasError;
         return cartTaxon
     }
-    fixCartByPricing = (shopId:string)=>{
+    fixCartByPricing = async (shopId:string)=>{
         let { cart,Shop } = this.getState();
         let cartTab:I_cartTab_taxon = cart[shopId] as I_cartTab_taxon;
         for(let taxonId in cartTab.taxons){
@@ -544,18 +545,18 @@ export default class ActionClass implements I_actionClass {
             let factorDetails:I_getFactorDetails_result = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
             let { MarketingLines } = factorDetails;
             for(let i = 0; i < MarketingLines.length; i++){
-                let {CampaignDetails = {},ItemCode} = MarketingLines[i];
-                let productId = productIds_dic[ItemCode]; 
-                let cartVariant = cartTaxon.products[productId].variants[ItemCode];
-                let {Information,BundleRowsInfos} = CampaignDetails;
-                debugger
+                let {ItemCode,ItemQty} = MarketingLines[i];
+                let productId = productIds_dic[ItemCode];
+                let products = await Shop[shopId].getShopItems({taxonId,productId});
+                let product = products[0];
+                this.changeCart({ count:ItemQty, variantId:ItemCode, product,taxonId });
             }
         }
     }
     removeCartItem = (p:I_changeCartProps)=>{
         let {taxonId,variantId,product} = p;
         let {shopId} = product.category;
-        let { cart,msfReport,Shop } = this.getState();
+        let { cart,msfReport } = this.getState();
         let cartTab = cart[shopId];
         if(taxonId){
             let newCartTab = cartTab as I_cartTab_taxon;
@@ -597,11 +598,12 @@ export default class ActionClass implements I_actionClass {
     editCartItem = (p:I_changeCartProps)=>{
         let {taxonId,variantId,count,product} = p; 
         let {shopId} = product.category;
-        let { Shop,cart,msfReport } = this.getState();
+        let { cart,msfReport } = this.getState();
         let cartTab = cart[shopId];
         let reportAdd = false;
         if(taxonId){
-            let newCartTab = JSON.parse(JSON.stringify(cartTab)) as I_cartTab_taxon;
+            let newCartTab = cartTab as I_cartTab_taxon;
+            if(newCartTab){newCartTab = JSON.parse(JSON.stringify(newCartTab))}
             if(!newCartTab){newCartTab = {type:'taxon',taxons:{}}}
             if(!newCartTab.taxons[taxonId]){
                 newCartTab.taxons[taxonId] = {taxonId,products:{},hasError:false}
@@ -611,8 +613,7 @@ export default class ActionClass implements I_actionClass {
             }
             if(!newCartTab.taxons[taxonId].products[product.id].variants[variantId]){
                 reportAdd = true;
-                let variant = product.variants.find((variant)=>variant.id === variantId);
-                newCartTab.taxons[taxonId].products[product.id].variants[variantId] = {count:0,productCategory:product.category,productId:product.id,variantId:variant.id}
+                newCartTab.taxons[taxonId].products[product.id].variants[variantId] = {count:0,productCategory:product.category,productId:product.id,variantId}
             }
             newCartTab.taxons[taxonId].products[product.id].variants[variantId].count = count
             let cartTaxon:I_cartTaxon = newCartTab.taxons[taxonId];

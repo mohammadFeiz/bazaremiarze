@@ -193,7 +193,8 @@ export type I_ShopClass = {
     getFactorItems:(shippingOptions:I_shippingOptions,container:string)=>Promise<I_factorItem[]>
     getPaymentButtonText:(shippingOptions: I_shippingOptions) => string,
     getBundleCartDetails:()=>{marketingLines:I_marketingLine_bundle[],total:number},
-    updateProduct:(product:I_product)=>void
+    updateProduct:(product:I_product)=>void,
+    isProductInCart:(productId:string,taxonId?:string)=>boolean
 }
 export type I_factorItem = {key:string,value:string,className?:string}
 export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>Promise<I_amounts>;

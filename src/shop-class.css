@@ -52,3 +52,10 @@
     font-size: 12px;
     border-radius: 4px; 
 }
+.count-popup{
+    padding:12px;
+    width:300px;
+}
+.count-popup button{
+    height:36px;
+}

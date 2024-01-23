@@ -246,7 +246,8 @@ export type I_actionClass = {
     getGuaranteeItems:()=>void,
     getBazargahOrders:()=>void,
     removeCartTab:(shopId:string)=>void,
-    removeCartBundleTaxon:(taxon:I_bundle_taxon) =>void
+    removeCartBundleTaxon:(taxon:I_bundle_taxon) =>void,
+    fixCartByPricing:(shopId:string)=>void
 }
 export type I_getFactorDetails_result = {
     MarketingLines:{CampaignDetails:any,ItemCode:string}[],

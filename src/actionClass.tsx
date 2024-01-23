@@ -489,6 +489,69 @@ export default class ActionClass implements I_actionClass {
         if(length){return{...obj,[field]:newItems}}
         return {...obj,[field]:undefined};
     }
+    editCartTaxonByPricing = (cartTaxon:I_cartTaxon,shopId:string)=>{
+        let { Shop } = this.getState();
+        let factorDetailsItems = []
+        let productIds_dic:{[variantId:string]:string} = {}
+        for(let productId in cartTaxon.products){
+            let { variants } = cartTaxon.products[productId];
+            for(let variantId in variants){
+                let variant = variants[variantId];
+                let { count } = variant;
+                variant.error = undefined;
+                productIds_dic[variantId] = productId;
+                factorDetailsItems.push({ ItemCode: variantId, ItemQty: count });
+            }
+        }
+        let CampaignId = Shop[shopId].CampaignId;
+        let factorDetails:I_getFactorDetails_result = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
+        let { MarketingLines } = factorDetails;
+        let hasError = false;
+        for(let i = 0; i < MarketingLines.length; i++){
+            let {CampaignDetails = {},ItemCode} = MarketingLines[i];
+            let productId = productIds_dic[ItemCode]; 
+            let cartVariant = cartTaxon.products[productId].variants[ItemCode];
+            let {Information,BundleRowsInfos} = CampaignDetails;
+            let {minValue,maxValue} = BundleRowsInfos;
+            cartVariant.minValue = minValue;
+            cartVariant.maxValue = maxValue;
+            if(Information){
+                hasError = true;
+                cartVariant.error = Information;
+            }
+        }
+        cartTaxon.hasError = hasError;
+        return cartTaxon
+    }
+    fixCartByPricing = (shopId:string)=>{
+        let { cart,Shop } = this.getState();
+        let cartTab:I_cartTab_taxon = cart[shopId] as I_cartTab_taxon;
+        for(let taxonId in cartTab.taxons){
+            let cartTaxon:I_cartTaxon = cartTab.taxons[taxonId]
+            if(!cartTaxon.hasError){continue}
+            let factorDetailsItems = []
+            let productIds_dic:{[variantId:string]:string} = {}
+            for(let productId in cartTaxon.products){
+                let { variants } = cartTaxon.products[productId];
+                for(let variantId in variants){
+                    let variant = variants[variantId];
+                    let { count } = variant;
+                    productIds_dic[variantId] = productId;
+                    factorDetailsItems.push({ ItemCode: variantId, ItemQty: count });
+                }
+            }
+            let CampaignId = Shop[shopId].CampaignId;
+            let factorDetails:I_getFactorDetails_result = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
+            let { MarketingLines } = factorDetails;
+            for(let i = 0; i < MarketingLines.length; i++){
+                let {CampaignDetails = {},ItemCode} = MarketingLines[i];
+                let productId = productIds_dic[ItemCode]; 
+                let cartVariant = cartTaxon.products[productId].variants[ItemCode];
+                let {Information,BundleRowsInfos} = CampaignDetails;
+                debugger
+            }
+        }
+    }
     removeCartItem = (p:I_changeCartProps)=>{
         let {taxonId,variantId,product} = p;
         let {shopId} = product.category;
@@ -499,39 +562,12 @@ export default class ActionClass implements I_actionClass {
             let cartTaxon:I_cartTaxon = newCartTab.taxons[taxonId];
             let cartProduct:I_cartProduct = cartTaxon.products[product.id];
             cartProduct = this.removeItem(cartProduct,variantId,'variants')
-            if(!cartProduct.variants){
-                cartTaxon = this.removeItem(cartTaxon,product.id,'products')
-            }
-            if(!cartTaxon.products){
-                newCartTab = this.removeItem(newCartTab,taxonId,'taxons')
-            }
+            if(!cartProduct.variants){cartTaxon = this.removeItem(cartTaxon,product.id,'products')}
+            if(!cartTaxon.products){newCartTab = this.removeItem(newCartTab,taxonId,'taxons')}
             cartTab = newCartTab;
             if(cartTaxon.products){
-                let factorDetailsItems = []
-                let productIds_Dic:{[variantId:string]:string} = {}
-                for(let productId in cartTaxon.products){
-                    let { variants } = cartTaxon.products[productId];
-                    for(let variantId in variants){
-                        let { count } = variants[variantId];
-                        productIds_Dic[variantId] = productId;
-                        factorDetailsItems.push({ ItemCode: variantId, ItemQty: count })
-                    }
-                }
-                let CampaignId = Shop[shopId].CampaignId;
-                let factorDetails:I_getFactorDetails_result = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
-                let { MarketingLines } = factorDetails;
-                let hasError = false;
-                for(let i = 0; i < MarketingLines.length; i++){
-                    let {CampaignDetails = {},ItemCode} = MarketingLines[i];
-                    let productId = productIds_Dic[ItemCode]; 
-                    let cartVariant = cartTaxon.products[productId].variants[ItemCode];
-                    let {Information,BundleRowsInfos} = CampaignDetails;
-                    let {minValue,maxValue} = BundleRowsInfos;
-                    cartVariant.minValue = minValue;
-                    cartVariant.maxValue = maxValue; 
-                    if(Information){hasError = true; cartVariant.error = Information;}
-                }
-                cartTaxon.hasError = hasError;
+                cartTaxon = this.editCartTaxonByPricing(cartTaxon,shopId)
+                newCartTab.taxons[taxonId] = cartTaxon;
             }
         }
         else {
@@ -565,7 +601,7 @@ export default class ActionClass implements I_actionClass {
         let cartTab = cart[shopId];
         let reportAdd = false;
         if(taxonId){
-            let newCartTab = cartTab as I_cartTab_taxon;
+            let newCartTab = JSON.parse(JSON.stringify(cartTab)) as I_cartTab_taxon;
             if(!newCartTab){newCartTab = {type:'taxon',taxons:{}}}
             if(!newCartTab.taxons[taxonId]){
                 newCartTab.taxons[taxonId] = {taxonId,products:{},hasError:false}
@@ -579,34 +615,9 @@ export default class ActionClass implements I_actionClass {
                 newCartTab.taxons[taxonId].products[product.id].variants[variantId] = {count:0,productCategory:product.category,productId:product.id,variantId:variant.id}
             }
             newCartTab.taxons[taxonId].products[product.id].variants[variantId].count = count
-            let factorDetailsItems = []
-            let productIds_dic:{[variantId:string]:string} = {}
-            for(let productId in newCartTab.taxons[taxonId].products){
-                let { variants } = newCartTab.taxons[taxonId].products[productId];
-                for(let variantId in variants){
-                    let {count} = variants[variantId];
-                    productIds_dic[variantId] = productId;
-                    factorDetailsItems.push({ ItemCode: variantId, ItemQty: count }) 
-                }
-            }
-            let CampaignId = Shop[shopId].CampaignId;
-            let factorDetails = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
-            let { MarketingLines } = factorDetails;
-            let hasError = false;
-            for(let i = 0; i < MarketingLines.length; i++){
-                let {CampaignDetails = {},ItemCode} = MarketingLines[i];
-                let productId = productIds_dic[ItemCode]; 
-                let cartVariant = newCartTab.taxons[taxonId].products[productId].variants[ItemCode];    
-                let {Information,BundleRowsInfos} = CampaignDetails;
-                let {minValue,maxValue} = BundleRowsInfos;
-                cartVariant.minValue = minValue;
-                cartVariant.maxValue = maxValue;            
-                if(Information){
-                    hasError = true;
-                    cartVariant.error = Information
-                }
-            }
-            newCartTab.taxons[taxonId].hasError = hasError;
+            let cartTaxon:I_cartTaxon = newCartTab.taxons[taxonId];
+            cartTaxon = this.editCartTaxonByPricing(cartTaxon,shopId);
+            newCartTab.taxons[taxonId] = cartTaxon;
             cartTab = newCartTab;
         }
         else {

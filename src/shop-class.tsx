@@ -530,28 +530,22 @@ export default class ShopClass implements I_ShopClass {
         if (this.shopId === 'Bundle') { return shippingOptions.SettleType !== 2 ? 'پرداخت' : 'ثبت' }
         else { return 'ارسال برای ویزیتور' }
     }
-    renderCartFactor = async (button = true) => {
+    hasCartError = ()=>{
+        let {cart} = this.getAppState();
+        if(this.itemType !== 'Taxon'){return false}
+        let cartTab = cart[this.shopId] as I_cartTab_taxon;
+        for(let taxonId in cartTab.taxons){
+            let cartTaxon:I_cartTaxon = cartTab.taxons[taxonId];
+            let {hasError} = cartTaxon;
+            if(hasError){return true}   
+        }
+        return false
+    }
+    renderCartFactor = async () => {
+        let {actionClass} = this.getAppState();
         let res = await this.getAmounts(undefined, 'cart');
         let { payment } = res;
-        if (!button) {
-            return (
-                <RVD
-                    layout={{
-                        size: 72, className: "bgFFF p-h-12 theme-box-shadow",
-                        row: [
-                            { flex: 1, align: "v", html: "جمع سبد خرید", className: "theme-medium-font-color fs-12" },
-                            {
-                                row: [
-                                    { align: "v", html: SplitNumber(payment), className: "theme-dark-font-color fs-20 bold" },
-                                    { size: 4 },
-                                    { align: "v", html: " ریال", className: "theme-dark-font-color fs-12" }
-                                ]
-                            }
-                        ]
-                    }}
-                />
-            )
-        }
+        let hasError = this.hasCartError();
         return (
             <RVD
                 layout={{
@@ -577,12 +571,17 @@ export default class ShopClass implements I_ShopClass {
                                 <button
                                     //disabled={!!hasError}
                                     onClick={() => {
-                                        let { rsa } = this.getAppState();
-                                        rsa.removeModal('all');
-                                        this.edameye_farayande_kharid()
+                                        if(hasError){
+                                            actionClass.fixCartByPricing(this.shopId)
+                                        }
+                                        else {
+                                            let { rsa } = this.getAppState();
+                                            rsa.removeModal('all');
+                                            this.edameye_farayande_kharid()
+                                        }
                                     }}
-                                    className="button-2" style={{ height: 36, padding: '0 12px' }}
-                                >ادامه فرایند خرید</button>
+                                    className={hasError?"button-3":"button-2"} style={{ height: 36, padding: '0 12px' }}
+                                >{hasError?'اصلاح سبد خرید':'ادامه فرایند خرید'}</button>
                             ),
                             align: "v"
                         },
@@ -1748,18 +1747,18 @@ function ProductCount(props: I_ProductCount) {
         />
     )
 }
-type I_CountPopup = { value: number, onRemove: any, onChange: any }
+type I_CountPopup = { value: number, onRemove: any, onChange: (newValue:number)=>void }
 export function CountPopup(props: I_CountPopup) {
     const dom = useRef<HTMLInputElement>(null)
     let { onRemove, onChange } = props;
-    let [value, setValue] = useState<any>(props.value)
+    let [value, setValue] = useState<number>(props.value)
     function input_layout() {
         return {
             flex: 1,
             html: (
                 <AIOInput
-                    type='number' value={value} min={0} attrs={{ ref: dom }}
-                    onChange={(e) => setValue(e.target.value)}
+                    type='number' value={value} min={0} attrs={{ ref: dom }} swip={true}
+                    onChange={(value:number) => setValue(value)}
                     onClick={() => $(dom.current).focus().select()}
                     style={{ width: '100%', border: '1px solid lightblue', height: 36, textAlign: 'center', borderRadius: 4 }}
                 />
@@ -1769,12 +1768,12 @@ export function CountPopup(props: I_CountPopup) {
     return (
         <RVD
             layout={{
-                style: { height: '100%', padding: 12 }, onClick: (e) => e.stopPropagation(), gap: 12,
+                className:'count-popup', onClick: (e) => e.stopPropagation(), gap: 12,
                 column: [
                     { gap: 3, row: [input_layout()] },
                     {
                         gap: 12, row: [
-                            { flex: 1, html: (<button className='button-2' style={{ background: 'red', border: 'none' }} onClick={() => onRemove()}>حذف محصول</button>) },
+                            { flex: 1, html: (<button className='button-1' onClick={() => onRemove()}>حذف محصول</button>) },
                             { flex: 1, html: (<button onClick={() => onChange(value)} className='button-2'>تایید</button>) }
                         ]
                     },

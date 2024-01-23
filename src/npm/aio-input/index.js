@@ -587,18 +587,17 @@ class Input extends Component {
     }
     componentDidMount() {
         let { properties, type } = this.context;
-        let {min,max,swip,value} = properties;
+        let {min,max,swip,value,onChange} = properties;
         this.setState({ value, prevValue: value })
         if (type === 'number' && swip) {
             AIOSwip({
-                speedY: 0.2,
+                speedY: 0.2,reverseY:true,minY:min,maxY:max,
                 dom: ()=>$(this.dom.current),
                 start: () => [0,this.state.value || 0],
                 move: ({ y }) => {
-                    let newValue = -y;
-                    if (min !== undefined && newValue < min) { return }
-                    if (max !== undefined && newValue > max) { return }
-                    this.change(newValue)
+                    if (min !== undefined && y < min) { y = min; }
+                    if (max !== undefined && y > max) { y = max }
+                    this.change(y,onChange)
                 }
             })
         }
@@ -3073,7 +3072,7 @@ function MapFooter() {
     if(!Submit && !Details){return null}
     return (<RVD layout={{ className: 'aio-input-map-footer', row: [Details, Submit] }} />)
 }
-function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},speedX = 1,speedY = 1,stepX = 1,stepY = 1,id}){
+function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},speedX = 1,speedY = 1,stepX = 1,stepY = 1,id,reverseY,reverseX,minY,maxY,minX,maxX}){
     let a = {
       timeout:undefined,
       count:0,
@@ -3126,8 +3125,8 @@ function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},speedX = 1,speed
         let client = this.getClient(e);
         let dx = client.x - this.so.client.x;
         let dy = client.y - this.so.client.y;
-        dx = Math.round(dx * speedX)
-        dy = Math.round(dy * speedY)
+        dx = Math.round(dx * speedX) * (reverseX?-1:1)
+        dy = Math.round(dy * speedY) * (reverseY?-1:1)
         dx = Math.floor(dx / stepX) * stepX;
         dy = Math.floor(dy / stepY) * stepY;
         if(dx === this.dx && dy === this.dy){return}
@@ -3139,6 +3138,10 @@ function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},speedX = 1,speed
         if(this.so.x !== undefined && this.so.y !== undefined){
           x = this.so.x + dx;
           y = this.so.y + dy;
+          if(minX !== undefined && x < minX){x = minX}
+          if(maxX !== undefined && x > maxX){x = maxX}
+          if(minY !== undefined && y < minY){y = minY}
+          if(maxY !== undefined && y > maxY){y = maxY} 
         }
         move({dx,dy,dist,x,y,id,mousePosition:{...this.getMousePosition(e)},e});
       },
@@ -3509,7 +3512,7 @@ function getMainProperties(props,getProp,types){
     if(types.hasMultiple){properties = {...properties,multiple: p('multiple')}}
     if(types.hasSearch){properties = {...properties,search: p('search')}}
     if(types.hasKeyboard){properties = {...properties,maxLength: p('maxLength'),filter: p('filter'),justNumber: p('justNumber')}}
-    if(type === 'number'){properties = {...properties,swip:p('swip'),spin:p('spin',true)}}
+    if(type === 'number'){properties = {...properties,swip:p('swip'),spin:p('spin',true),min:p('min'),max:p('max')}}
     else if(type === 'password'){properties = {...properties,visible:p('visible')}}
     else if(type === 'checkbox'){properties = {...properties,checkIcon:p('checkIcon'),checked:!!value}}
     else if(type === 'image'){properties = {...properties,preview:p('preview'),width:p('width'),height:p('height')}}

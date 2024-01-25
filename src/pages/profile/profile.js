@@ -66,13 +66,6 @@ export default class Profile extends Component{
                 },
                 {
                     size:100,className:'of-visible',
-                    egg:{
-                        count:6,
-                        callback:()=>{
-                            apis.request({api:'kharid.setCart',parameter:{},loading:false,description:'ثبت سبد خرید'});
-                            SetState({cart:{}})
-                        }
-                    },
                     html:(
                         <div style={{background:'rgba(255,255,255,0.4)',boxShadow:'rgb(0 0 0 / 25%) 0px 4px 12px 1px',color:'#ccc',width:132,height:132,left:'calc(50% - 66px)',position:'absolute',top:-32,borderRadius:'100%',display:'flex',alignItems:'center',justifyContent:'center'}}>
                             <Icon path={mdiAccountCircle} size={6}/>

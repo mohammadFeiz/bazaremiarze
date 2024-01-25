@@ -66,12 +66,11 @@ export default class Main extends Component {
         //   },
         //   ...
         // }
-        viewProducts:'tile',
         isFetch:false,
-        update:(obj)=>{
+        update:(obj,callback)=>{
           let {vitrin} = this.state;
           let newVitrin = {...vitrin,...obj}
-          this.setState({vitrin:newVitrin})
+          this.setState({vitrin:newVitrin},callback)
         },
         removeSelectedProduct:(productId)=>{
           let { vitrin } = this.state,{ vitrinSelected = {},update } = vitrin;
@@ -160,7 +159,7 @@ export default class Main extends Component {
       bazargahOrders: {wait_to_get: undefined,wait_to_send: undefined},
       spreeCategories:{slider_type:[],icon_type:[],dic:{}},
       SetState: (obj) => this.setState(obj),
-      cart: {},//{variantId:{count,product,variant}}
+      cart: {shops:{}},//{variantId:{count,product,variant}}
       guaranteeItems: [],garanti_products_dic: {},guaranteeExistItems: [],
     };
     let signalR = new SignalR(() => this.state);

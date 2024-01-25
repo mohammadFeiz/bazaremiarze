@@ -524,7 +524,7 @@ class SnackebarItem extends Component{
         <div className={`aio-popup-snakebar-item aio-popup-snakebar-item-${type}`}>
           <div className={`aio-popup-snakebar-item-icon`}>{this.getSvg(type)}</div>
           <div className='aio-popup-snakebar-item-text'>
-            <div>{text}</div>
+            <div style={{textAlign:rtl?'right':'left'}}>{text}</div>
             {!!subtext && <div className='aio-popup-snakebar-item-subtext'>{subtext}</div>}
           </div>
           {

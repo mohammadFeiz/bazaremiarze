@@ -64,13 +64,17 @@ export default class AIOservice{
     let def = {};
     for(let prop in cacheVersions){def[prop] = 0}
     let storedCacheVersions = this.getCache('storedCacheVersions',def);
+    let diffrences = {};
     for(let prop in cacheVersions){
+      if(storedCacheVersions[prop] === undefined){continue}
       if (storedCacheVersions[prop] !== cacheVersions[prop]) {
-        if(prop === 'all'){localStorage.clear()}
-        else{this.removeCache(prop)}
+        diffrences[prop] = false;
+        this.removeCache(prop)
       }
+      else {diffrences[prop] = true;}
     }
-    this.setCache('storedCacheVersions',cacheVersions)
+    this.setCache('storedCacheVersions',cacheVersions);
+    return diffrences;
   }
   removeCache = (name) => this.storage.remove({name});
   setCache = (name,value) => this.storage.save({name,value})

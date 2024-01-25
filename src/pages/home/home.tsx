@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
 import getSvg from '../../utils/getSvg';
 import appContext from '../../app-context';
@@ -12,13 +12,18 @@ import './index.css';
 import { I_app_state } from '../../types';
 
 export default function Home() {
-    let {b1Info,actionClass,backOffice}:I_app_state = useContext(appContext);
+    let {cart,b1Info,actionClass,backOffice}:I_app_state = useContext(appContext);
     let [showCallPopup,setShowCallPopup] = useState<boolean>(false)
+    let [cartLength,setCartLength] = useState<number>(0)
+    useEffect(()=>{getCartLength()},[cart])
+    async function getCartLength(){
+        let cartLength = await actionClass.getCartLength();
+        setCartLength(cartLength)
+    }
     function billboard_layout(){
         return { html: <Billboard renderIn='home'/>,align:'h' }
     }
     function cartAndWallet_layout(){
-        let cartLength = actionClass.getCartLength()
         return {
             className:'of-visible theme-gap-h',
             row: [

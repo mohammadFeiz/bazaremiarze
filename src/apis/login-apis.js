@@ -6,7 +6,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             Logger.add('IsUserSyncedWithB1', result ? 'true' : 'false', 'IsUserSyncedWithB1')
             return { result }
         },
-        async getBackOffice(apis) {
+        async getBackOffice(apis,{Login}) {
             let result;
             try {
                 const response = await Axios.get(`${baseUrl}/BackOffice/GetLastCampaignManagement?type=backoffice`);
@@ -19,7 +19,11 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                     if (typeof str === 'string') { backOffice = JSON.parse(str) }
                     else { window.location.reload() }
                 }
-                apis.handleCacheVersions(backOffice.versions || {});
+                let cacheResult = apis.handleCacheVersions(backOffice.versions || {});
+                //اگر ورژن کش لاگین عوض شده پس کابر رو هدایت کن به صفحه لاگین
+                if(cacheResult.login === false){
+                    Login.logout();
+                }
                 let loginType = new URL(window.location.href).searchParams.get("login");
                 if (loginType) { Axios.get(`${baseUrl}/login?type=${loginType}`); }
                 const isSuperAdmin = (userInfo) => ['09123534314', '+989123534314'].indexOf(userInfo.userName) !== -1;
@@ -34,10 +38,6 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                 result = {isAdmin,isSuperAdmin,...backOffice};
             }
             catch (err) { result = err.message }
-
-
-
-
             return { result }
         },
         async profile({ model, mode }, { Logger }) {

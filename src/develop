@@ -7,13 +7,7 @@ ba bastane bundlepage bayad maghadire sabad eslah shavad
 change getCartProducts in all of project to renderCartItems (because of async may should place this data to state and get by componentDidMount)
 cache productFullDetail? if yes should implement
 login ghabl az load ettelaat az disabled dar miad
-backOffice panel , set Taxon campaign type and dont forget to set itemType:'Taxon'
-backOffice =>
-   shop
-      name => shopName
-      B1Id => CampaignId
-      id => shopId
-    spreeCampaigns => shop[]
+vaghti cache karabra ro pak mikonam bayad hatman reload kone ta bere tooye login amma avalesh mire too 
 
 cacheVersions = {
     taxonProducts:{

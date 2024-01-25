@@ -321,14 +321,14 @@ export default function kharidApis({ baseUrl, helper }) {
     },
     async getCart({ Shop, userInfo }) {
       let cartStorage = AIOStorage('bazaremiarzeapis');
-      let cart = cartStorage.load({ name: 'cart.' + userInfo.cardCode, def: {} });
+      let cart = cartStorage.load({ name: 'cart.' + userInfo.cardCode, def: {shops:{}} });
       let shopIds = Object.keys(Shop);
-      let keys = Object.keys(cart)
-      let newCart = {}
+      let keys = Object.keys(cart.shops)
+      let newCart = {shops:{}}
       for (let i = 0; i < keys.length; i++) {
         let shopId = keys[i];
         if (shopIds.indexOf(shopId) === -1) { continue }
-        newCart[shopId] = cart[shopId]
+        newCart.shops[shopId] = cart.shops[shopId]
       }
       return { result: newCart }
     },

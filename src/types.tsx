@@ -125,7 +125,6 @@ export type I_backOffice_versions = {
     login?: number,
     taxonProducts?: number,
     cart?: number,
-    all?: number
 }
 export type I_backOffice_vitrinCategory = {
     name:string,imageUrl?:any,id:any,open:boolean,
@@ -170,9 +169,10 @@ export type I_ShopClass = {
     CampaignId?:number,
     PriceListNum?: number,
     billboard?:string,
-    products?: I_product;
-    description?: string;
+    products?: I_product,
+    description?: string,
     icon?:string,
+    itemType: 'Product' | 'Bundle' | 'Taxon',
     getShopItems:(p?:{taxonId?: string, productId?: string})=>Promise<any[]>,
     renderCard_Regular: (
         p: {product: I_product, renderIn: I_renderIn, index: number,loading?: boolean, type?: 'horizontal' | 'vertical'}
@@ -185,14 +185,15 @@ export type I_ShopClass = {
     ) => React.ReactNode,
     renderCartItems:(renderIn:I_renderIn)=>Promise<any[]>
     openCategory:(taxonId?:any)=>void,
-    getCartVariants:(p?:{productId?:string,taxonId?:string})=>Promise<{cartVariants:I_cartVariant[],total:number}>,
+    getCartVariants:(p?:{productId?:string,taxonId?:string})=>Promise<{
+        cartVariants:I_cartVariant[],marketingLines:I_marketingLine[],total:number,
+        bundleMarketingLines:I_marketingLine_bundle[],bundleCartVariants:I_cartShop_bundle_variant[]
+    }>,
     payment:(p:I_shippingOptions)=>Promise<boolean>, 
     renderCartFactor:(button?:boolean)=>Promise<React.ReactNode>,
     getAmounts:I_getAmounts,getAmounts_all:I_getAmounts,getAmounts_Bundle:I_getAmounts,
-    getMarketingLines_Bundle:()=>{ItemCode:any,ItemQty:number,Price:number,BasePackCode:any,BasePackQty:number}[]
     getFactorItems:(shippingOptions:I_shippingOptions,container:string)=>Promise<I_factorItem[]>
     getPaymentButtonText:(shippingOptions: I_shippingOptions) => string,
-    getBundleCartDetails:()=>{marketingLines:I_marketingLine_bundle[],total:number},
     updateProduct:(product:I_product)=>void,
     isProductInCart:(productId:string,taxonId?:string)=>boolean
 }
@@ -215,8 +216,8 @@ export type I_actionClass = {
             CampaignId?:number,PriceListNum?:number 
         }
     )=>I_fixPrice_result[],
-    getHeaderIcons:(p:{[key:string]:boolean})=>any[],
-    getFactorDetails:(items:any[],shippingOptions:I_shippingOptions,container?:string)=>I_getFactorDetails_result,
+    getHeaderIcons:(p:{[key:string]:boolean})=>Promise<any[]>,
+    getFactorDetails:(items:I_factorDetailItem[],shippingOptions:I_shippingOptions,container?:string)=>I_getFactorDetails_result,
     openPopup:(key:string,parameter?:any)=>void,
     getCodeDetails:(p:{giftCodeInfo:any,discountCodeInfo:any})=>any,
     getState:()=>I_app_state,
@@ -238,18 +239,22 @@ export type I_actionClass = {
     openLink:(linkTo:string) => void,
     isLocationMissed:()=>boolean,
     handleMissedLocation:()=>void,
-    getCartLength:()=>number,
-    removeItem:(obj:any,id:string,field:string)=>any,
-    removeCartItem:(p:I_changeCartProps)=>I_state_cart,
-    editCartItem:(p:I_changeCartProps)=>I_state_cart,
-    changeCart:(p:I_changeCartProps)=>void,
+    getCartLength:()=>Promise<number>,
+    removeCartItem:(p:I_changeCartProps)=>Promise<I_state_cart>,
+    editCartItem:(p:I_changeCartProps)=>Promise<I_state_cart>,
+    changeCart:(p:I_changeCartProps)=>Promise<void>,
     setCart:(newCart:I_state_cart)=>void,
     getGuaranteeItems:()=>void,
     getBazargahOrders:()=>void,
     removeCartTab:(shopId:string)=>void,
     removeCartBundleTaxon:(taxon:I_bundle_taxon) =>void,
-    fixCartByPricing:(shopId:string)=>void
+    fixCartByPricing:(shopId:string)=>Promise<void>,
+    removeCart:(cart:I_state_cart,ids:string[],fields:string[])=>void,
+    getCartShop:(shopId:string)=>any,
+    setCartShop:(shopId:string,value:any)=>void,
+    editCartTaxonByPricing:(cartTaxon:I_cartTaxon,shopId:string,removable:boolean)=>Promise<void>
 }
+export type I_factorDetailItem = { ItemCode: string, ItemQty: number }
 export type I_getFactorDetails_result = {
     MarketingLines:{CampaignDetails:any,ItemCode:string,ItemQty:number}[],
     DocumentTotal:number,
@@ -259,7 +264,7 @@ export type I_fixPrice_result = {
     ItemCode: string,SalesMeasureUnit: string,NumInSale: number,Price: number,B1Dscnt: number,FinalPrice: number,PymntDscnt: number,CmpgnDscnt: number
     OnHand?: {whsCode?: string,qty?: number,qtyLevel?: number,qtyLevRel?: number} | null,   
 }
-export type I_changeCartProps = {taxonId?:string,variantId:string,product:I_product,count:number}
+export type I_changeCartProps = {shopId:string,taxonId?:string, productId:string, variantId:string,count:number,productCategory:I_product_category}
 export type I_app_state = {
     backOffice:I_state_backOffice,
     apis:I_AIOService_class,
@@ -276,13 +281,16 @@ export type I_app_state = {
     bazargahOrders:{wait_to_get?:[],wait_to_send?:[]},
     actionClass:I_actionClass,
     baseUrl:string,
-    spreeCategories:I_state_spreeCategories
+    spreeCategories:I_state_spreeCategories,
+    vitrin:I_vitrin
 }
 export type I_state_spreeCategories = { icon_type: I_spreeCategory[], slider_type: I_spreeCategory[], dic: {} }
 export type I_state_Shop = {[shopId:string]:I_ShopClass}
 /////cart
-export type I_state_cart = {[shopId:string]:(I_cartTab | I_cartTab_taxon | I_cartTab_bundle)}
-export type I_cartTab = {products:{[productId:string]:I_cartProduct},type:'regular'}
+export type I_state_cart = {shops:{[shopId:string]:I_cartShop}}
+export type I_cartShop = I_cartShop_Product | I_cartShop_taxon | I_cartShop_bundle;
+export type I_cartShop_type = 'Product' | 'Taxon' | 'Bundle'
+export type I_cartShop_Product = {products:{[productId:string]:I_cartProduct},type:'Product'}
 export type I_cartProduct = {productId:string,productCategory:I_product_category,variants:{[variantId:string]:I_cartVariant}}
 export type I_cartVariant = {
     productCategory:I_product_category,count:number,
@@ -293,19 +301,19 @@ export type I_cartVariant = {
     minValue?:number,
     maxValue?:number
 };
-export type I_cartTab_bundle = {
-    taxons:{[taxonId:string]:I_cartTab_bundle_taxon},type:'Bundle'
+export type I_cartShop_bundle = {
+    taxons:{[taxonId:string]:I_cartShop_bundle_taxon},type:'Bundle'
 }
-export type I_cartTab_bundle_taxon = {
-    count:number,products:{[productId:string]:I_cartTab_bundle_product},price:number,taxonId:any
+export type I_cartShop_bundle_taxon = {
+    count:number,products:{[productId:string]:I_cartShop_bundle_product},price:number,taxonId:any
 }
-export type I_cartTab_bundle_product = {
-    variants:{[variantId:string]:I_cartTab_bundle_variant},qty:number,price:number
+export type I_cartShop_bundle_product = {
+    variants:{[variantId:string]:I_cartShop_bundle_variant},qty:number,price:number
 }
-export type I_cartTab_bundle_variant = {
+export type I_cartShop_bundle_variant = {
     count:number,step:number,variantId:any
 }
-export type I_cartTab_taxon = {taxons:{[taxonId:string]:I_cartTaxon},type:'taxon'}
+export type I_cartShop_taxon = {taxons:{[taxonId:string]:I_cartTaxon},type:'Taxon'}
 export type I_cartTaxon = {
     taxonId:string,products:{[productId:string]:I_cartProduct},hasError:boolean
 }
@@ -376,3 +384,54 @@ export type I_discount = { percent?:number, value:number, title:string }
 
 
 export type I_bottomMenu = 'vitrin' | 'bazargah' | 'khane' | 'kharid' | 'profile'
+
+
+export type I_vitrin = {
+    started?:boolean,
+    isFetch:boolean,
+    update:(obj:any,callback?:Function)=>void,
+    removeSelectedProduct:(productId:string | number)=>void,
+    getIsSelected:(productId:string | number,variantId:string | number)=>boolean,
+    add:(productId:string | number,variantId:string | number)=>void,
+    remove:(product:any,variantId:string | number)=>void,
+    updateVitrinSelected:(product:any,variantId:string | number)=>void,
+    fetchData:()=>Promise<void>,
+    vitrinSelected?:{[productId:string | number]:I_vitrinSelected_product}
+}
+export type I_vitrinSelected_product = {
+    product:any,
+    variantIds:(string | number)[]
+}
+export type I_vitrin_product = {
+    id:string | number,
+    image:string,
+    name:string,
+    description:string,
+    price:number,
+    variants:I_vitrin_variant[],
+    optionTypes:I_vitrin_product_optionType[]
+}
+export type I_vitrin_variant = {
+    id:string | number,
+    inStock:number,
+    price:number,
+    keys:(string | number)[],
+    image:string
+
+}
+export type I_vitrin_product_optionType = {
+    id:number | string,name:string,optionValues:I_vitrin_product_optionValue[]
+}
+export type I_vitrin_product_optionValue = {
+    id:string | number,name:string
+}
+export type I_RVD_layout = {
+    row?:I_RVD_child[],
+    column?:I_RVD_child[],
+    align?:'v' | 'h' | 'vh',
+    gap?:number,
+    html?:React.ReactNode
+}
+export type I_RVD_child = {
+
+} | false

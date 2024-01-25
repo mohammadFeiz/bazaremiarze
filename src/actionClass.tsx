@@ -4,7 +4,10 @@ import UrlToJson from './npm/aio-functions/url-to-json';
 import Pricing from './pricing';
 import ShopClass from './shop-class.tsx';
 import { Icon } from '@mdi/react';
-import { mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList,mdiCodeBraces, mdiExitToApp, mdiCash, mdiSecurity, mdiSkullScan, mdiCart,mdiStore, mdiHome, mdiShopping, mdiAccountBox, mdiDelete, mdiEye } from "@mdi/js";
+import { 
+    mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList,mdiCodeBraces, mdiExitToApp, mdiCash, mdiSecurity, mdiSkullScan, 
+    mdiCart,mdiStore, mdiShopping, mdiAccountBox, mdiDelete, mdiEye 
+} from "@mdi/js";
 import getSvg from './utils/getSvg';
 import Register from './components/register/register';
 import PriceList from './popups/price-list/price-list';
@@ -27,8 +30,11 @@ import Buy from "./pages/buy/buy.tsx";
 import Bazargah from "./pages/bazargah/bazargah";
 import Profile from "./pages/profile/profile";
 import Vitrin from './pages/vitrin/vitrin';
-import taxonCampaign from './taxonCampaign';
-import { I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, I_userInfo, I_B1Info, I_state_cart, I_cartTab, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartTab_taxon, I_cartProduct, I_variant, I_actionClass, I_changeCartProps, I_getFactorDetails_result, I_ShopProps, I_cartTab_bundle, I_taxon, I_bundle_product, I_bundle_taxon } from './types';
+import { 
+    I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, 
+    I_userInfo, I_B1Info, I_state_cart, I_cartShop_Product, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartShop_taxon, 
+    I_actionClass, I_changeCartProps, I_getFactorDetails_result, I_ShopProps, I_cartShop_bundle, I_bundle_taxon, I_cartVariant, I_factorDetailItem, I_cartProduct 
+} from './types';
 export default class ActionClass implements I_actionClass {
     getState:()=>I_app_state;
     setState:(p:any)=>void
@@ -65,8 +71,8 @@ export default class ActionClass implements I_actionClass {
     }
     removeCartTab = (shopId:string) => {
         let { cart } = this.getState();
-        let newCart = {}
-        for (let prop in cart) { if (prop !== shopId) { newCart[prop] = cart[prop] } }
+        let newCart:I_state_cart = {shops:{}}
+        for (let prop in cart.shops) { if (prop !== shopId) { newCart.shops[prop] = cart.shops[prop] } }
         this.setState({ cart: newCart })
     }
     getNavItems = () => {
@@ -115,7 +121,7 @@ export default class ActionClass implements I_actionClass {
             if (!active) { continue }
             Shop[shopId] = new ShopClass({getAppState: () => this.getState(),config: {...spreeCampaign}})
         }
-        let cart = await apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});
+        let cart:I_state_cart = await apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});
         return {cart,Shop}
     }
     openPopup = (type:string, parameter?:any) => {
@@ -237,7 +243,7 @@ export default class ActionClass implements I_actionClass {
                 header: { 
                     title: 'سبد خرید',
                     buttons:[
-                        [<Icon path={mdiDelete} size={1}/>,{onClick:()=>this.setCart({}),className:'align-vh'}],
+                        [<Icon path={mdiDelete} size={1}/>,{onClick:()=>this.setCart({shops:{}}),className:'align-vh'}],
                         [<Icon path={mdiEye} size={1}/>,{onClick:()=>console.log(this.getState().cart),className:'align-vh'}]
                     ] 
                 } 
@@ -441,11 +447,11 @@ export default class ActionClass implements I_actionClass {
             try {if(this.isLocationMissed()){this.openPopup('profile','location')}} catch { }
         }, 1000)
     }
-    getHeaderIcons = (obj) => {
+    getHeaderIcons = async (obj) => {
         let { cart } = obj;
         let res = [];
         if (cart) {
-            let length = this.getCartLength();
+            let length = await this.getCartLength();
             res.push(
                 [
                     (
@@ -460,25 +466,26 @@ export default class ActionClass implements I_actionClass {
         }
         return res
     }
-    getCartLength = () => {
-        let { cart } = this.getState();
+    getCartLength = async () => {
+        let { Shop,cart } = this.getState();
         let cartLength = 0;
-        let cartTabs = Object.keys(cart);
-        for (let i = 0; i < cartTabs.length; i++) {
-            let cartTab = cart[cartTabs[i]];
-            if(cartTab.type === 'taxon'){
-                cartLength += Object.keys(cartTab.taxons).length;
-            }
-            else if(cartTab.type === 'Bundle'){
-                cartLength += Object.keys(cartTab.taxons).length;
-            }
-            else{
-                cartLength += Object.keys(cartTab.products).length;
-            }
+        let cartShopIds:string[] = Object.keys(cart.shops);
+        for (let i = 0; i < cartShopIds.length; i++) {
+            let cartShopId = cartShopIds[i];
+            let {cartVariants} = await Shop[cartShopId].getCartVariants()
+            cartLength += cartVariants.length;
         }
         return cartLength
     }
-    removeItem = (obj,id,field)=>{
+    removeCart = (cart,ids,fields)=>{
+        let obj = cart;
+        for(let i = 0; i < ids.length - 1; i++){
+            obj = obj[fields[i]];
+            if(!obj){return}
+            obj = obj[ids[i]]
+        }
+        let field = fields[ids.length - 1];
+        let id = ids[ids.length - 1];
         let newItems = {}
         let length = 0;
         for(let prop in obj[field]){
@@ -487,20 +494,21 @@ export default class ActionClass implements I_actionClass {
                 newItems[prop] = obj[field][prop]
             }
         }
-        if(length){return{...obj,[field]:newItems}}
-        return {...obj,[field]:undefined};
+        if(length){obj[field] = newItems}
+        else if(ids.length < 2){obj[field] = {};}
+        else {this.removeCart(cart,ids.slice(0,ids.length - 1),fields)}
     }
-    editCartTaxonByPricing = (cartTaxon:I_cartTaxon,shopId:string)=>{
-        let { Shop } = this.getState();
-        let factorDetailsItems = []
-        let productIds_dic:{[variantId:string]:string} = {}
+    editCartTaxonByPricing = async(cartTaxon:I_cartTaxon,shopId:string,removable:boolean)=>{
+        let { Shop,rsa,cart } = this.getState();
+        let factorDetailsItems:I_factorDetailItem[] = []
+        let variantsParents:{[variantId:string]:{productId:string,taxonId:string}} = {}
         for(let productId in cartTaxon.products){
-            let { variants } = cartTaxon.products[productId];
+            let { variants }:I_cartProduct = cartTaxon.products[productId];
             for(let variantId in variants){
-                let variant = variants[variantId];
+                let variant:I_cartVariant = variants[variantId];
                 let { count } = variant;
                 variant.error = undefined;
-                productIds_dic[variantId] = productId;
+                variantsParents[variantId] = {productId,taxonId:cartTaxon.taxonId};
                 factorDetailsItems.push({ ItemCode: variantId, ItemQty: count });
             }
         }
@@ -509,138 +517,122 @@ export default class ActionClass implements I_actionClass {
         let { MarketingLines } = factorDetails;
         let hasError = false;
         for(let i = 0; i < MarketingLines.length; i++){
-            let {CampaignDetails = {},ItemCode} = MarketingLines[i];
-            let productId = productIds_dic[ItemCode]; 
-            let cartVariant = cartTaxon.products[productId].variants[ItemCode];
+            let {CampaignDetails = {},ItemCode,ItemQty} = MarketingLines[i];
+            let {productId,taxonId} = variantsParents[ItemCode]; 
+            let products = await Shop[shopId].getShopItems({taxonId,productId})
+            let product = products[0];
+            let cartVariant:I_cartVariant = cartTaxon.products[productId].variants[ItemCode];
             let {Information,BundleRowsInfos} = CampaignDetails;
-            let {minValue,maxValue} = BundleRowsInfos;
-            cartVariant.minValue = minValue;
-            cartVariant.maxValue = maxValue;
-            if(Information){
-                hasError = true;
-                cartVariant.error = Information;
+            let {isUnderValue,isOverValue} = BundleRowsInfos;
+            if(isUnderValue){
+                if(ItemQty === 0){
+                    if(removable){
+                        let newCart = JSON.parse(JSON.stringify(cart));
+                        this.removeCart(newCart,[shopId,cartTaxon.taxonId,productId,ItemCode],['shops','taxons','products','variants'])
+                        this.setCart(newCart)
+                    }
+                    else {
+                        rsa.addSnakebar({text:Information,time:4,type:'warning'});
+                        hasError = true; cartVariant.error = Information;
+                    }
+                }
+                else {cartVariant.count = ItemQty;}
+            }
+            else if(isOverValue){
+                rsa.addSnakebar({text:`در شرایط فعلی این فاکتور حداکثر تعداد قابل انتخاب از محصول ${product.name} ${ItemQty} عدد می باشد`,time:6,type:'warning'});
+                if(ItemQty === 0){
+                    let newCart = JSON.parse(JSON.stringify(cart));
+                    this.removeCart(newCart,[shopId,cartTaxon.taxonId,productId,ItemCode],['shops','taxons','products','variants'])
+                    this.setCart(newCart)
+                }
+                else {
+                    cartVariant.count = ItemQty;
+                }
             }
         }
         cartTaxon.hasError = hasError;
-        return cartTaxon
     }
     fixCartByPricing = async (shopId:string)=>{
-        let { cart,Shop } = this.getState();
-        let cartTab:I_cartTab_taxon = cart[shopId] as I_cartTab_taxon;
-        for(let taxonId in cartTab.taxons){
-            let cartTaxon:I_cartTaxon = cartTab.taxons[taxonId]
-            if(!cartTaxon.hasError){continue}
-            let factorDetailsItems = []
-            let productIds_dic:{[variantId:string]:string} = {}
-            for(let productId in cartTaxon.products){
-                let { variants } = cartTaxon.products[productId];
-                for(let variantId in variants){
-                    let variant = variants[variantId];
-                    let { count } = variant;
-                    productIds_dic[variantId] = productId;
-                    factorDetailsItems.push({ ItemCode: variantId, ItemQty: count });
-                }
-            }
-            let CampaignId = Shop[shopId].CampaignId;
-            let factorDetails:I_getFactorDetails_result = this.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
-            let { MarketingLines } = factorDetails;
-            for(let i = 0; i < MarketingLines.length; i++){
-                let {ItemCode,ItemQty} = MarketingLines[i];
-                let productId = productIds_dic[ItemCode];
-                let products = await Shop[shopId].getShopItems({taxonId,productId});
-                let product = products[0];
-                this.changeCart({ count:ItemQty, variantId:ItemCode, product,taxonId });
-            }
+        if(!this.getCartShop(shopId)){return}
+        let cartShop = this.getCartShop(shopId) as I_cartShop_taxon;
+        for(let taxonId in cartShop.taxons){
+            let cartTaxon:I_cartTaxon = cartShop.taxons[taxonId];
+            await this.editCartTaxonByPricing(cartTaxon,shopId,true)
         }
     }
-    removeCartItem = (p:I_changeCartProps)=>{
-        let {taxonId,variantId,product} = p;
-        let {shopId} = product.category;
-        let { cart,msfReport } = this.getState();
-        let cartTab = cart[shopId];
+    removeCartItem = async (p:I_changeCartProps)=>{
+        let {shopId,taxonId,productId,variantId} = p;
+        let { cart } = this.getState();
+        let newCart:I_state_cart = JSON.parse(JSON.stringify(cart));
         if(taxonId){
-            let newCartTab = cartTab as I_cartTab_taxon;
-            let cartTaxon:I_cartTaxon = newCartTab.taxons[taxonId];
-            let cartProduct:I_cartProduct = cartTaxon.products[product.id];
-            cartProduct = this.removeItem(cartProduct,variantId,'variants')
-            if(!cartProduct.variants){cartTaxon = this.removeItem(cartTaxon,product.id,'products')}
-            if(!cartTaxon.products){newCartTab = this.removeItem(newCartTab,taxonId,'taxons')}
-            cartTab = newCartTab;
-            if(cartTaxon.products){
-                cartTaxon = this.editCartTaxonByPricing(cartTaxon,shopId)
-                newCartTab.taxons[taxonId] = cartTaxon;
+            this.removeCart(newCart,[shopId,taxonId,productId,variantId],['shops','taxons','products','variants'])
+            let cartShop = newCart.shops[shopId] as I_cartShop_taxon;
+            if(cartShop && cartShop.taxons[taxonId]){
+                await this.editCartTaxonByPricing(cartShop.taxons[taxonId],shopId,false)     
             }
         }
         else {
-            let newCartTab = cartTab as I_cartTab;
-            let cartProduct:I_cartProduct = newCartTab.products[product.id]
-            cartProduct = this.removeItem(cartProduct,variantId,'variants');
-            if(!cartProduct.variants){
-                newCartTab = this.removeItem(newCartTab,product.id,'products')  
-            }
-            cartTab = newCartTab
+            this.removeCart(newCart,[shopId,productId,variantId],['shops','products','variants'])
         }
-        msfReport({actionName:'remove from cart',actionId:23,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})    
-        let newCart = {}
-        for(let prop in cart){
-            if(prop === shopId){
-                if(cartTab.type === 'taxon'){
-                    if(cartTab.taxons){newCart[prop] = cartTab}
-                }
-                else if(cartTab.type === 'regular'){
-                    if(cartTab.products){newCart[prop] = cartTab}
-                }
-            }
-            else {newCart[prop] = cart[prop];}
-        }
-        return newCart
+        return newCart as I_state_cart
     }
-    editCartItem = (p:I_changeCartProps)=>{
-        let {taxonId,variantId,count,product} = p; 
-        let {shopId} = product.category;
-        let { cart,msfReport } = this.getState();
-        let cartTab = cart[shopId];
+    reportRemoveCart = async ({shopId,taxonId,productId,variantId})=>{
+        let { msfReport,Shop } = this.getState();
+        let products =  await Shop[shopId].getShopItems({taxonId,productId})
+        let product = products[0];
+        msfReport({actionName:'remove from cart',actionId:23,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
+    }
+    reportAddToCart = async ({shopId,taxonId,productId,variantId})=>{
+        let { msfReport,Shop } = this.getState();
+        let products =  await Shop[shopId].getShopItems({taxonId,productId})
+        let product = products[0];
+        msfReport({actionName:'add to cart',actionId:24,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
+    }
+    editCartItem = async (p:I_changeCartProps)=>{
+        let {shopId,taxonId, productId, variantId,count,productCategory} = p; 
+        let { cart } = this.getState();
+        let cartShop = this.getCartShop(shopId);
         let reportAdd = false;
         if(taxonId){
-            let newCartTab = cartTab as I_cartTab_taxon;
-            if(newCartTab){newCartTab = JSON.parse(JSON.stringify(newCartTab))}
-            if(!newCartTab){newCartTab = {type:'taxon',taxons:{}}}
-            if(!newCartTab.taxons[taxonId]){
-                newCartTab.taxons[taxonId] = {taxonId,products:{},hasError:false}
+            let newCartShop = cartShop as I_cartShop_taxon;
+            if(newCartShop){newCartShop = JSON.parse(JSON.stringify(newCartShop))}
+            if(!newCartShop){newCartShop = {type:'Taxon',taxons:{}}}
+            if(!newCartShop.taxons[taxonId]){
+                newCartShop.taxons[taxonId] = {taxonId,products:{},hasError:false}
             }
-            if(!newCartTab.taxons[taxonId].products[product.id]){
-                newCartTab.taxons[taxonId].products[product.id] = {variants:{},productId:product.id,productCategory:product.category}
+            if(!newCartShop.taxons[taxonId].products[productId]){
+                newCartShop.taxons[taxonId].products[productId] = {variants:{},productId,productCategory}
             }
-            if(!newCartTab.taxons[taxonId].products[product.id].variants[variantId]){
+            if(!newCartShop.taxons[taxonId].products[productId].variants[variantId]){
                 reportAdd = true;
-                newCartTab.taxons[taxonId].products[product.id].variants[variantId] = {count:0,productCategory:product.category,productId:product.id,variantId}
+                newCartShop.taxons[taxonId].products[productId].variants[variantId] = {count:0,productCategory,productId,variantId}
             }
-            newCartTab.taxons[taxonId].products[product.id].variants[variantId].count = count
-            let cartTaxon:I_cartTaxon = newCartTab.taxons[taxonId];
-            cartTaxon = this.editCartTaxonByPricing(cartTaxon,shopId);
-            newCartTab.taxons[taxonId] = cartTaxon;
-            cartTab = newCartTab;
+            newCartShop.taxons[taxonId].products[productId].variants[variantId].count = count
+            let cartTaxon:I_cartTaxon = newCartShop.taxons[taxonId];
+            await this.editCartTaxonByPricing(cartTaxon,shopId,false);
+            newCartShop.taxons[taxonId] = cartTaxon;
+            cartShop = newCartShop;
         }
         else {
-            let newCartTab = cartTab as I_cartTab;
-            if(!newCartTab){newCartTab = {products:{},type:'regular'}}
-            if(!newCartTab.products[product.id]){
-                newCartTab.products[product.id] = {variants:{},productId:product.id,productCategory:product.category}
+            let newCartShop = cartShop as I_cartShop_Product;
+            if(!newCartShop){newCartShop = {products:{},type:'Product'}}
+            if(!newCartShop.products[productId]){
+                newCartShop.products[productId] = {variants:{},productId,productCategory}
             }
-            if(!newCartTab.products[product.id].variants[variantId]){
+            if(!newCartShop.products[productId].variants[variantId]){
                 reportAdd = true
-                newCartTab.products[product.id].variants[variantId] = {count:0,productCategory:product.category,variantId,productId:product.id}
+                newCartShop.products[productId].variants[variantId] = {count:0,productCategory,variantId,productId}
             }
-            newCartTab.products[product.id].variants[variantId].count = count;
-            cartTab = newCartTab;
+            newCartShop.products[productId].variants[variantId].count = count;
+            cartShop = newCartShop;
         }
-        if(reportAdd){msfReport({actionName:'add to cart',actionId:24,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})}
-        return {...cart,[shopId]:cartTab}
+        if(reportAdd){this.reportAddToCart({shopId,taxonId,productId,variantId})}
+        return {...cart,shops:{...cart.shops,[shopId]:cartShop}}
     }
     removeCartBundleTaxon = (taxon:I_bundle_taxon) => {
         let {cart} = this.getState();
         let newCart: I_state_cart = JSON.parse(JSON.stringify(cart));
-        let cartTab: I_cartTab_bundle = newCart.Bundle as I_cartTab_bundle;
+        let cartTab: I_cartShop_bundle = this.getCartShop('Bundle') as I_cartShop_bundle;
         let newTaxons = {},length = 0;
         for(let taxonId in cartTab.taxons){
             if(taxonId !== taxon.id){
@@ -649,28 +641,36 @@ export default class ActionClass implements I_actionClass {
             }
         }
         if(!length){
-            let fixedCart = {};
-            for(let cartId in cart){if(cartId !== 'Bundle'){fixedCart[cartId] = cart[cartId]}}
+            let fixedCart = {shops:{}};
+            for(let cartId in cart.shops){if(cartId !== 'Bundle'){fixedCart.shops[cartId] = cart.shops[cartId]}}
             newCart = fixedCart;
         }
         else{
             cartTab.taxons = newTaxons;
-            newCart.Bundle = cartTab;
+            newCart.shops.Bundle = cartTab;
         }
         this.setCart(newCart)
     }
-    changeCart = (p:I_changeCartProps) => {
-        let { count, variantId, product,taxonId } = p;
+    changeCart = async (p:I_changeCartProps) => {
+        let { shopId,taxonId, productId, variantId,count,productCategory } = p;
         let { apis } = this.getState();
-        let props:I_changeCartProps = { count, variantId, product,taxonId }
-        let newCart = !count?this.removeCartItem(props):this.editCartItem(props);
+        let props:I_changeCartProps = { shopId,taxonId, productId, variantId,count,productCategory }
+        let newCart = !count?await this.removeCartItem(props):await this.editCartItem(props);
         apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
         this.setState({ cart: newCart });
     }
     setCart = (newCart:I_state_cart) => {
         let { apis } = this.getState();
         this.setState({cart:newCart})
-        console.log(newCart)
         apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
+    }
+    getCartShop = (shopId)=>{
+        let { cart } = this.getState();
+        return cart.shops[shopId]
+    }
+    setCartShop = (shopId,value)=>{
+        let { cart } = this.getState();
+        let newCart:I_state_cart = {...cart,shops:{...cart.shops,[shopId]:value}}
+        this.setCart(newCart) 
     }
 }

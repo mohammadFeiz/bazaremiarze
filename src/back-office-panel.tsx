@@ -969,7 +969,6 @@ export default function BackOffice(props: I_BackOffice) {
         "login": 22,
         "taxonProducts": 1,
         "cart": 23,
-        "all": 18
       },
       "accessPhoneNumbers": [
         {

@@ -1,13 +1,58 @@
-.taxon-card-range{
-    font-size:10px;
-    background: #eee;
-    padding: 3px 6px;
+.taxon-card{
+    margin:6px;
+    overflow:hidden;
+    background:#dbe5e7;
 }
 .taxon-card-header{
-    margin-bottom:6px;
     font-size:12px;
     font-weight:bold;
     color:#666;
+    height:36px;
+}
+.taxon-card-footer{
+    position: relative;
+    overflow:visible !important;
+    border-top:2px dotted #b7cbde;
+    
+}
+.taxon-card-footer:before{
+    content:'';
+    position: absolute;
+    left:calc(0% - 16px);
+    background:#f2f2f2;
+    border:2px dotted #b7cbde;
+    top:-15px;
+    width:24px;
+    height:24px;
+    border-radius:100%;
+}
+
+.taxon-card-footer:after{
+    content:'';
+    position: absolute;
+    left:calc(100% - 12px);
+    background:#f2f2f2;
+    border:2px dotted #b7cbde;
+    top:-15px;
+    width:24px;
+    height:24px;
+    border-radius:100%;
+}
+.taxon-card-group-discount{
+    font-size:10px;
+    color: orange;
+    padding:6px 12px;
+    padding-bottom:0;
+}
+.taxon-card-range{
+    font-size:10px;
+    padding: 3px 6px;
+}
+.regular-card{
+    margin-bottom:6px;
+}
+.taxon-card .regular-card{
+    box-shadow: none !important;
 }
 .product-count-button{
     color: dodgerblue;
@@ -49,7 +94,7 @@
     color: #fff;
     height:16px;
     padding: 1px 3px;
-    font-size: 12px;
+    font-size: 10px;
     border-radius: 4px; 
 }
 .count-popup{
@@ -58,4 +103,18 @@
 }
 .count-popup button{
     height:36px;
+}
+.category-view-description{
+    font-family:inherit;
+    padding:0;
+    margin:0;
+    font-size:12px;
+    background:#43596e;
+    color:#fff;
+    text-align: right;
+    padding:12px;
+    box-sizing: border-box;
+    white-space: break-spaces;
+    box-shadow: 0px 3px 8px 0px rgb(0 0 0 / 33%);
+    margin-bottom:12px;
 }

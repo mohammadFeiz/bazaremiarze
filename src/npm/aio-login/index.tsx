@@ -1,4 +1,4 @@
-// import React, { Component, createRef, useState } from 'react';
+// import React, { Component, createRef, useEffect, useState } from 'react';
 // import RVD from 'react-virtual-dom';
 // import AIOStorage from 'aio-storage';
 // import AIOInput,{getFormInputs} from 'aio-input';
@@ -7,20 +7,24 @@
 // import AIOPopup from 'aio-popup';
 // import './index.css';
 // export type I_AL_storageKey = 'token' | 'userInfo' | 'userId';
-// export type I_AL_model = {login:{userId:string,password:string},register:{[field:string]:any},profile?:any}
-// export type I_AL_mode = 'OTPNumber' | 'phoneNumber' | 'OTPCode' | 'auth' | 'register';
+// export type I_AL_model = {login:{userId?:string,password?:string},register:{[field:string]:any},profile?:any,forget?:{userId?:string}}
+// export type I_AL_mode = 'OTPNumber' | 'phoneNumber' | 'OTPCode' | 'auth' | 'register' | 'forgetUserId' | 'forgetPassword' | 'email' | 'userName';
+// export type I_AL_register = {type:'mode' | 'tab' | 'button',text:string,fields:any[],title:string,submitText:string,subtitle?:string | false};
+// export type I_AL_profile = {model:any,onSubmit:(model:any)=>void,fields:any[],title:string,onClose?:Function,submitText:string,subtitle?:string|false}
+// export type I_AL_forget = {mode:'email' | 'phoneNumber'}
 // export type I_AL_props = { 
 //     id:string, 
 //     onSubmit:(model:I_AL_model,mode:I_AL_mode)=>Promise<void>, 
 //     modes:I_AL_mode[], 
+//     mode?:I_AL_mode,
 //     timer:number, 
 //     checkToken:(token:string | false,obj:{userId:string,userInfo?:any})=>Promise<boolean | undefined>, 
-//     register:{type:'mode' | 'tab' | 'button',text:string,fields:any[]}, 
+//     register:I_AL_register, 
 //     userId?:string, 
 //     attrs, 
 //     forget, 
 //     otpLength:number,
-//     renderApp:(obj:{token:string})=>React.ReactNode,
+//     renderApp:(obj:{token:string,userId:string,userInfo:any,logout:()=>void,appState:any})=>React.ReactNode,
 //     renderSplash:()=>React.ReactNode,
 //     splashTime?:number,
 //     renderLogin:(loginForm:React.ReactNode)=>React.ReactNode 
@@ -38,6 +42,8 @@
 //     removeStorage:I_AL_removeStorage;
 //     logout:I_AL_logout;
 //     getActions:I_AL_getActions;
+//     profile?:I_AL_profile,
+//     appState?:any
 // }
 // export default class AIOlogin {
 //     setStorage:I_AL_setStorage;
@@ -100,7 +106,10 @@
 //     let [showReload,setShowReload] = useState<boolean>(false)
 //     let [loading,setLoading] = useState<boolean>(false)
 //     let [showSplash,setShowSplash] = useState<boolean>(false)
-//     let {splashTime = 0,getStorage,removeStorage} = props;
+//     let {
+//         splashTime = 0,getStorage,removeStorage,otpLength, id, timer, modes, userId, register = {}, 
+//         profile, attrs = {}, forget, logout, renderSplash = () => null,renderApp,renderLogin,appState
+//     } = props;
 //     let [mode,setMode] = useState<I_AL_mode>(props.mode || props.modes[0])
 //     if(showSplash){setTimeout(()=>setShowSplash(false),splashTime)}
 //     props.getActions({ setMode})
@@ -133,20 +142,18 @@
 //             else { return err.message || err.Message }
 //         }
 //     }
-//     async componentDidMount() { 
-//         let {profile} = this.props;
+//     function init(){
 //         if(profile){return}
-//         this.checkToken();
+//         checkToken();
 //     }
-//     setLoading(loading){this.setState({loading})}
-//     async onSubmit(model) {
-//         let { onSubmit } = this.props;
+//     useEffect(()=>{init()},[])
+//     async function onSubmit(model) {
 //         let { mode: currentMode } = this.state;
 //         let res;
-//         this.setLoading(true)
-//         try { res = await onSubmit(model, currentMode) }
-//         catch { this.setLoading(false); return; }
-//         this.setLoading(false);
+//         setLoading(true)
+//         try { res = await props.onSubmit(model, currentMode) }
+//         catch { setLoading(false); return; }
+//         setLoading(false);
 //         if (typeof res === 'string') {
 //             let text = {
 //                 "OTPNumber": 'ارسال شماره همراه',
@@ -161,56 +168,51 @@
 //             new AIOPopup().addAlert({ type: 'error', text, subtext })
 //         }
 //     }
-//     async onSubmitProfile(model){
-//         let { profile } = this.props;
+//     async function onSubmitProfile(model){
 //         let res;
-//         this.setLoading(true);
+//         setLoading(true);
 //         try { res = await profile.onSubmit(model) }
-//         catch { this.setLoading(false); return; }
-//         this.setLoading(false);
+//         catch { setLoading(false); return; }
+//         setLoading(false);
 //         if (typeof res === 'string') {new AIOPopup().addAlert({ type: 'error', text:'ویرایش پروفایل با خطا روبرو شد', subtext:res })}
 //     }
-//     setMode(mode) {
-//         this.setState({ mode })
+//     if(profile){
+//         let props = { timer, id, attrs, userId,loading,profile,onSubmitProfile:this.onSubmitProfile.bind(this) }
+//         return <LoginForm {...props}/>
 //     }
-//     render() {
-//         let { otpLength, id, timer, modes, userId, register = {}, profile, attrs = {}, forget, getStorage, logout, renderSplash = () => null,renderApp,renderLogin,appState } = this.props;
-//         let { isTokenChecked, showReload, mode, loading,showSplash } = this.state;
-//         if(profile){
-//             let props = { timer, id, attrs, userId,loading,profile,onSubmitProfile:this.onSubmitProfile.bind(this) }
-//             return <LoginForm {...props}/>
-//         }
-//         if (showReload) { return (<div className='aio-login-reload'><button onClick={() => window.location.reload()}>بارگذاری مجدد</button></div>) }
-//         //اگر هنوز توکن چک نشده ادامه نده
-//         if (!isTokenChecked || showSplash) { 
-//             return renderSplash() 
-//         }
-//         //اگر توکن چک شده و توکن ولید بوده renderApp رو کال کن و ادامه نده
-//         if (mode === 'auth') {
-//             let { token, userId, userInfo } = getStorage();
-//             return renderApp({ token, userId, userInfo, logout,appState }); 
-//         }
-//         // وقتی به اینجا رسیدی یعنی توکن قطعا چک شده و ولید نبوده پس لاگین رو رندر کن
-//         let content = (
-//             <LoginForm {...{ forget, timer, otpLength, id, modes, attrs, userId,register,loading,mode }}
-//                 onSubmit={this.onSubmit.bind(this)}
-//                 onChangeMode={this.setMode.bind(this)}
-//             />
-//         )
-//         if(renderLogin){return renderLogin(content)}
-//         else{return content}
+//     if (showReload) { return (<div className='aio-login-reload'><button onClick={() => window.location.reload()}>بارگذاری مجدد</button></div>) }
+//     //اگر هنوز توکن چک نشده ادامه نده
+//     if (!isTokenChecked || showSplash) { 
+//         return renderSplash() 
 //     }
+//     //اگر توکن چک شده و توکن ولید بوده renderApp رو کال کن و ادامه نده
+//     if (mode === 'auth') {
+//         let token = getStorage('token');
+//         let userId = getStorage('userId');
+//         let userInfo = getStorage('userInfo');
+//         return renderApp({ token, userId, userInfo, logout,appState }); 
+//     }
+//     // وقتی به اینجا رسیدی یعنی توکن قطعا چک شده و ولید نبوده پس لاگین رو رندر کن
+//     let content = (
+//         <LoginForm {...{ forget, timer, otpLength, id, modes, attrs, userId,register,loading,mode }}
+//             onSubmit={onSubmit}
+//             onChangeMode={setMode}
+//         />
+//     )
+//     if(renderLogin){return renderLogin(content)}
+//     else{return content}
 // }
-// class LoginForm extends Component {
-//     constructor(props) {
-//         super(props);
-//         this.storage = AIOStorage(`-AIOLogin-${props.id}`);
-//         let { timer = 30 } = props;
-//         this.state = { timer, recode: false, tab: 'login', model: this.getInitialModel(props.mode),error:!props.userId }
-//     }
-//     getLabels(mode) {
-//         let { model, tab } = this.state;
-//         let { register, profile, forget } = this.props;
+// type I_LoginForm = {
+//     id:string,timer?:number,mode:I_AL_mode,userId:string,register?:I_AL_register,profile?:I_AL_profile,forget?:I_AL_forget,
+//     onChangeMode:(mode:I_AL_mode)=>void,onSubmit:(model:I_AL_model)=>Promise<void>,modes:I_AL_mode[],attrs?:any
+// }
+// function LoginForm(props:I_LoginForm) {
+//     let {timer = 30,register,profile,forget,onChangeMode,onSubmit,modes,attrs} = props;
+//     let [storage] = useState(AIOStorage(`-AIOLogin-${props.id}`))
+//     let [tab,setTab] = useState<'login'|'register'>('login')
+//     let [model,setModel] = useState<I_AL_model>(getInitialModel(props.mode))
+//     let [error,setError] = useState<boolean>(!props.userId)
+//     function getLabels(mode:I_AL_mode) {
 //         if (profile) { 
 //             let {title,onClose,submitText = 'ویرایش اطلاعات کاربری',subtitle = false} = profile;
 //             if(!title && !onClose){return {inputLabel:false,title:false,subtitle:false,submitText,backButton:false}}
@@ -238,32 +240,28 @@
 //         if (mode === 'email') { return { inputLabel: 'ایمیل', title: 'ورود با ایمیل', submitText: 'ورود', subtitle: false } }
 //         if (mode === 'phoneNumber') { return { inputLabel: 'شماره همراه', title: 'ورود با شماره همراه', submitText: 'ورود', subtitle: false } }
 //     }
-//     changeMode(mode) {
-//         let { onChangeMode } = this.props;
+//     function getInitialModel() {
+//         return { forget: {}, register: {}, profile: (profile || {}).model, login: { userId:props.userId } };
+//     }
+//     function changeMode(mode:I_AL_mode) {
 //         onChangeMode(mode);
-//         this.setState({ model: this.getInitialModel(mode) })
+//         setModel(getInitialModel())
 //     }
-//     getInitialModel(mode) {
-//         if (!mode) { mode = this.props.mode }
-//         let { userId, profile = {} } = this.props;
-//         return { forget: {}, register: {}, profile: profile.model, login: { userId } };
-//     }
-//     title_layout({ title, backButton }) {
+//     function title_layout({ title, backButton }) {
 //         if (!title) { return false }
-//         let { modes,profile } = this.props;
 //         return {
 //             className: 'aio-login-title', align: 'v',
 //             row: [
-//                 { show: !!backButton, html: <Icon path={mdiChevronRight} size={1} />, size: 48, align: 'vh', onClick: () => profile?profile.onClose():this.changeMode(modes[0]) },
+//                 { show: !!backButton, html: <Icon path={mdiChevronRight} size={1} />, size: 48, align: 'vh', onClick: () => profile?profile.onClose():changeMode(modes[0]) },
 //                 { html: title }
 //             ]
 //         }
 //     }
-//     subtitle_layout({ subtitle }) {
+//     function subtitle_layout({ subtitle }) {
 //         if (!subtitle) { return false }
 //         return { html: subtitle, className: 'aio-login-subtitle' }
 //     }
-//     getInput_phoneNumber(field, getValue) {
+//     function getInput_phoneNumber(field, getValue) {
 //         return {
 //             field, label: 'شماره همراه',
 //             input: {
@@ -279,14 +277,14 @@
 //             }]]
 //         }
 //     }
-//     getInput_userName(field) {
+//     function getInput_userName(field) {
 //         let { userId } = this.props;
 //         return {
 //             field, label: 'نام کاربری', validations: [['required']], style: { direction: 'ltr' },
 //             input: { type: 'text', disabled: !!userId, before: <Icon path={mdiAccount} size={0.8} /> }
 //         }
 //     }
-//     getInput_email(field, getValue) {
+//     function getInput_email(field, getValue) {
 //         let { userId } = this.props;
 //         return {
 //             field, label: 'ایمیل', style: { direction: 'ltr' },
@@ -302,7 +300,7 @@
 //             }]],
 //         }
 //     }
-//     getInput_otp(field, getValue) {
+//     function getInput_otp(field, getValue) {
 //         let { otpLength } = this.props;
 //         return {
 //             field, label: 'رمز یکبار مصرف',
@@ -315,7 +313,7 @@
 //             }]]
 //         }
 //     }
-//     getInput_password(field, type) {
+//     function getInput_password(field, type) {
 //         let validations;
 //         if (type === 2) {
 //             validations = [['function', () => {
@@ -333,7 +331,7 @@
 //             input: { type: 'password', before: <Icon path={mdiLock} size={0.8} />, style: { direction: 'ltr' }, visible: true }
 //         }
 //     }
-//     getInputs() {
+//     function getInputs() {
 //         let { forget, mode, profile,register } = this.props;
 //         if (profile) { return getFormInputs(profile.fields, 'profile') }
 //         if (mode === 'register') { return getFormInputs(register.fields, 'register') }
@@ -354,7 +352,7 @@
 //             this.getInput_password('value.login.password', 0)
 //         ]
 //     }
-//     form_layout(labels) {
+//     function form_layout(labels) {
 //         let { model } = this.state, { mode,userId } = this.props;
 //         return {
 //             className: 'ofy-auto',
@@ -368,7 +366,7 @@
 //             )
 //         }
 //     }
-//     submit_layout({ submitText, disabled }) {
+//     function submit_layout({ submitText, disabled }) {
 //         let { loading, timer, mode } = this.props;
 //         let layout = {
 //             style: { padding: '0 12px' },
@@ -376,19 +374,19 @@
 //         }
 //         return <RVD layout={layout} />
 //     }
-//     async onSubmit() {
+//     async function onSubmit() {
 //         let { onSubmit, profile,onSubmitProfile } = this.props;
 //         let { model,error } = this.state;
 //         if(error){return}
 //         if (profile) { onSubmitProfile(model) }
 //         else { onSubmit(model); }
 //     }
-//     changeUserId_layout() {
+//     function changeUserId_layout() {
 //         let { mode } = this.props;
 //         if (mode !== 'OTPCode') { return false }
 //         return { onClick: () => this.changeMode('OTPNumber'), className: 'aio-login-text m-b-12', align: 'vh', html: 'تغییر شماره همراه' }
 //     }
-//     recode_layout() {
+//     function recode_layout() {
 //         let { model } = this.state;
 //         let { mode, onChangeMode } = this.props;
 //         if (mode !== 'OTPCode') { return false }
@@ -400,7 +398,7 @@
 //             }
 //         }
 //     }
-//     changeMode_layout() {
+//     function changeMode_layout() {
 //         let { mode, modes, profile } = this.props;
 //         if (mode === 'register' || !!profile || mode === 'forgetUserId' || mode === 'forgetPassword') { return false }
 //         let others = []
@@ -433,14 +431,14 @@
 //             ]
 //         }
 //     }
-//     registerButton_layout() {
+//     function registerButton_layout() {
 //         let { register, mode } = this.props;
 //         if ( mode === 'register') { return false }
 //         if (!register.type !== 'button') { return false }
 //         let {buttonText = 'ثبت نام'} = register
 //         return { align: 'vh', html: (<button onClick={() => this.changeMode('register')} className='aio-login-register-button'>{buttonText}</button>) }
 //     }
-//     registerTab_layout() {
+//     function registerTab_layout() {
 //         let { register, modes, mode,profile } = this.props;
 //         if(!register || register.type !== 'tab' || profile || mode === 'forgetUserId' || mode === 'forgetPassword') { return false }
 //         let {tabText = 'ثبت نام'} = register;
@@ -458,32 +456,30 @@
 //             )
 //         }
 //     }
-//     forget_layout() {
-//         let { forget, mode, profile } = this.props;
+//     function forget_layout() {
 //         if (profile) { return false }
 //         if (!forget) { return false }
-//         if (mode === 'register' || mode === 'OTPCode' || mode === 'OTPNumber' || mode === 'forgetUserId' || mode === 'forgetPassword') { return false }
+//         if (props.mode === 'register' || props.mode === 'OTPCode' || props.mode === 'OTPNumber' || props.mode === 'forgetUserId' || props.mode === 'forgetPassword') { return false }
 //         let { text = [] } = forget
 //         let buttonText = text[0] || 'رمز عبور خود را فراموش کرده اید؟ اینجا کلیک کنید';
-//         return { className: 'aio-login-forget', html: buttonText, onClick: () => this.changeMode('forgetUserId') }
+//         return { className: 'aio-login-forget', html: buttonText, onClick: () => changeMode('forgetUserId') }
 //     }
-//     render() {
-//         let { attrs, mode,profile } = this.props, labels = this.getLabels(mode);
-//         let column;
-//         if(profile){column = [{ column: [this.title_layout(labels), this.subtitle_layout(labels)] },this.form_layout(labels)]}
-//         else {
-//             column = [
-//                 this.registerTab_layout(),
-//                 { column: [this.title_layout(labels), this.subtitle_layout(labels)] },
-//                 this.form_layout(labels),this.forget_layout(),
-//                 { gap: 12, align: 'h', row: [this.recode_layout(), this.changeUserId_layout()] },
-//                 this.changeMode_layout(),this.registerButton_layout()
-//             ]
-//         }
-//         let className = 'aio-login' + (attrs.className ? ' ' + attrs.className : '')
-//         let style = attrs.style;
-//         return (<RVD layout={{className, style,column,attrs:{ onKeyDown: (e) => { if (e.keyCode === 13) { this.onSubmit() } } }}}/>)
+//     let labels = getLabels(mode);
+//     let column;
+//     if(profile){column = [{ column: [title_layout(labels), subtitle_layout(labels)] },form_layout(labels)]}
+//     else {
+//         column = [
+//             registerTab_layout(),
+//             { column: [title_layout(labels), subtitle_layout(labels)] },
+//             form_layout(labels),forget_layout(),
+//             { gap: 12, align: 'h', row: [recode_layout(), changeUserId_layout()] },
+//             changeMode_layout(),registerButton_layout()
+//         ]
 //     }
+//     let className = 'aio-login' + (attrs.className ? ' ' + attrs.className : '')
+//     let style = attrs.style;
+//     return (<RVD layout={{className, style,column,attrs:{ onKeyDown: (e) => { if (e.keyCode === 13) { onSubmit() } } }}}/>)
+    
 // }
 // class SubmitButton extends Component {
 //     state = {time: this.getDelta()}

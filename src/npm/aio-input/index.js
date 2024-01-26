@@ -11,11 +11,12 @@ import $ from 'jquery';
 import AIODate from 'aio-date';
 import RVD from 'react-virtual-dom';
 import AIOPopup from 'aio-popup';
+import AIOStorage from 'aio-storage';
 import './index.css';
 const AICTX = createContext();
 export default class AIOInput extends Component {
     static defaults = { 
-        validate: false, mapApiKeys: {}, popover: {},
+        validate: false, popover: {},
     };
     constructor(props) {
         super(props);
@@ -259,7 +260,6 @@ export default class AIOInput extends Component {
             ...this.props,
             properties:this.properties,
             addToAttrs: this.addToAttrs.bind(this),
-            mapApiKeys: AIOInput.defaults.mapApiKeys,
             isMultiple: this.isMultiple.bind(this),
             types: this.types,
             type: this.types.type,
@@ -2708,8 +2708,8 @@ class List extends Component {
 }
 const MapContext = createContext();
 function Map(props) {
-    let context = useContext(AICTX);
-    let mapApiKeys = context.mapApiKeys;
+    let storage = AIOStorage('aio-input-storage');
+    let mapApiKeys = storage.load({name:'mapApiKeys',def:{map:'',service:''}});
     let { properties } = props;
     let {popup,mapConfig,onChange,disabled,attrs,onChangeAddress,value} = properties;
     let isPopup = false;
@@ -3367,6 +3367,10 @@ export function AIOValidation(props) {
     let validation;
     try { validation = $$.getValidation() } catch { validation = '' }
     return validation;
+}
+export function AIOInputSetStorage(name,value){
+    let storage = AIOStorage('aio-input-storage');
+    storage.save({name,value})
 }
 export function getFormInputs(fields,path){
     function getInput(input){return typeof input === 'string'?getFormInput(input,path):input}

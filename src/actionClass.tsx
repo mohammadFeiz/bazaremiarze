@@ -28,7 +28,7 @@ import Sefareshe_Ersal_Shode_Baraye_Vizitor from './components/kharid/sefareshe-
 import Home from "./pages/home/home.tsx";
 import Buy from "./pages/buy/buy.tsx";
 import Bazargah from "./pages/bazargah/bazargah";
-import Profile from "./pages/profile/profile";
+import Profile from "./pages/profile/profile.tsx";
 import Vitrin from './pages/vitrin/vitrin.tsx';
 import { 
     I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, 

@@ -812,3 +812,18 @@ button{
     background:#00ff0030;
     color:#206e20;
 }
+
+.bm-profile-icon{
+	background:rgba(255,255,255,0.4);
+	box-shadow:rgb(0 0 0 / 25%) 0px 4px 12px 1px;
+	color:#ccc;
+	width:132px;
+	height:132px;
+	left:calc(50% - 66px);
+	position:absolute;
+	top:-32px;
+	border-radius:100%;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+}

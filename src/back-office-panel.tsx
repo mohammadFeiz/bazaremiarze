@@ -2418,6 +2418,9 @@ function FormSetting(props: I_FormSetting) {
             }
           },
           {
+            input:{type: 'textarea',inputAttrs:{style:{height:144}}}, label: 'توضیحات', field: 'value.description',
+          },
+          {
             show: ['Regular', 'Bundle'].indexOf(type) !== -1,
             input: { type: 'text' }, label: 'نام', field: 'value.name',
           },

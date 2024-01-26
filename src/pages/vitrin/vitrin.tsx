@@ -508,7 +508,7 @@ function ProductCard(props:I_ProductCard) {
 }
 type I_ProductPage = {product:I_vitrin_product}
 function ProductPage(props:I_ProductPage){
-    let {vitrin}:I_app_state = useContext(appContext)
+    let {vitrin,apis,rsa,actionClass}:I_app_state = useContext(appContext)
     let {product} = props;
     function image_layout(image) {
         return { className: 'v-product-page-image', size: 144, html: <img src={image} alt='' height='100%' />, align: 'vh' }
@@ -535,7 +535,6 @@ function ProductPage(props:I_ProductPage){
         }
     }
     function openPopup(variant:I_vitrin_variant){
-        let {apis,rsa,actionClass} = this.context;
         actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion onSubmit={(price:number)=>{
             let parameter:v_price_suggestion_payload = {variant,price};
             apis.request({

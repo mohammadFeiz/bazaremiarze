@@ -1296,7 +1296,9 @@ function TableRows() {
     let {rowTemplate,rowAfter = () => null,rowBefore = () => null,rowsTemplate,placeholder = 'there is not any items'} = properties;
     function getContent() {
         let rows = ROWS.pagedRows || [];
-        if (rowsTemplate) { return rowsTemplate(rows) }
+        if (rowsTemplate) { 
+            return rowsTemplate(rows) 
+        }
         if (rows.length) {
             return rows.map((o, i) => {
                 let { id = 'ailr' + Math.round(Math.random() * 10000000) } = o;

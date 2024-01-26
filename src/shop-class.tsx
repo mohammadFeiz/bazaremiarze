@@ -23,19 +23,17 @@ import abisrc from './images/abi.png';
 import narenjisrc from './images/narenji.png';
 import zardsrc from './images/zard.png';
 import appContext from './app-context';
-import { I_ShopClass, I_taxon, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_cartShop_Product, I_cartShop_bundle, I_cartShop_bundle_product, I_cartShop_bundle_taxon, I_cartShop_taxon, I_cartTaxon, I_cartVariant, I_discount, I_product, I_product_optionType, I_shippingOptions, I_renderIn, I_state_cart, I_variant, I_variant_optionValues, I_cartProduct, I_product_category, I_getFactorDetails_result, I_factorItem, I_cartShop_bundle_variant, I_marketingLine_bundle, I_cartShop, I_changeCartProps, I_factorDetailItem } from "./types";
+import { 
+    I_ShopClass, I_taxon, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_cartShop_Product, I_cartShop_bundle, I_cartShop_bundle_product, 
+    I_cartShop_bundle_taxon, I_cartShop_taxon, I_cartTaxon, I_cartVariant, I_discount, I_product, I_product_optionType, I_shippingOptions, I_renderIn, 
+    I_variant, I_variant_optionValues, I_cartProduct, I_getFactorDetails_result, I_factorItem, I_cartShop_bundle_variant, I_marketingLine_bundle, I_cartShop, I_ShopProps 
+} from "./types";
 import { I_getTaxonProducts_p } from "./apis/kharid-apis";
 import noItemSrc from './images/not-found.png';
 import nosrc from './images/no-src.png';
 import './shop-class.css';
 
 export default class ShopClass implements I_ShopClass {
-    constructor({ getAppState, config }) {
-        this.getAppState = getAppState;
-        this.update(config);
-    }
-    update(obj) { for (let prop in obj) { this[prop] = obj[prop]; } }
-    dicToArray = (dic: { [key: string]: any }) => Object.keys(dic).map((key) => dic[key])
     /****type defined**** */
     getAppState: () => I_app_state;
     shopId: string;
@@ -51,6 +49,15 @@ export default class ShopClass implements I_ShopClass {
     icon?: string;
     itemType: 'Product' | 'Bundle' | 'Taxon'
     items: I_bundle_taxon[] | I_product[] | { [taxonId: string]: I_product[] }
+    cart:I_cartShop;
+    constructor(p:{ getAppState:()=>I_app_state, config:I_ShopProps }) {
+        let { getAppState, config } = p;
+        this.getAppState = getAppState;
+        this.update(config);
+        
+    }
+    update(obj) { for (let prop in obj) { this[prop] = obj[prop]; } }
+    dicToArray = (dic: { [key: string]: any }) => Object.keys(dic).map((key) => dic[key])
     getTaxonNameByTaxonId = (taxonId:string)=>{
         if(this.shopId === 'Regular'){
             let {spreeCategories} = this.getAppState();
@@ -2292,182 +2299,179 @@ export function CategorySlider(props: I_CategorySlider) {
 
 
 
-class CartClass{
-    setState:(any)=>void;
-    getState:()=>I_app_state;
-    getCartShop:(shopId:string)=>I_cartShop;
-    setCart:(newCart:I_state_cart)=>void;
-    reportRemoveCart:(p:{shopId:string,taxonId:string,productId:string,variantId:string})=>Promise<void>;
-    reportAddToCart:(p:{shopId:string,taxonId:string,productId:string,variantId:string})=>Promise<void>;
-    changeCart:(p:I_changeCartProps)=>void;
-    removeCart:(cart:I_state_cart,ids:string[],fields:string[])=>void;
-    removeCartItem:(p:I_changeCartProps)=>Promise<I_state_cart>;
-    editCartItem:(p:I_changeCartProps)=>Promise<I_state_cart>;
-    editCartTaxonByPricing:(cartTaxon:I_cartTaxon,shopId:string,removable:boolean)=>Promise<void>;
-    constructor({setState,getState}){
-        this.setState = setState;
-        this.getState = getState;
-        this.getCartShop = (shopId)=>{
-            let { cart } = this.getState();
-            return cart.shops[shopId]
-        }
-        this.setCart = (newCart:I_state_cart) => {
-            let { apis } = this.getState();
-            this.setState({cart:newCart})
-            apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
-        }
-        this.reportRemoveCart = async ({shopId,taxonId,productId,variantId})=>{
-            let { msfReport,Shop } = this.getState();
-            let products =  await Shop[shopId].getShopItems({taxonId,productId})
-            let product = products[0];
-            msfReport({actionName:'remove from cart',actionId:23,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
-        }
-        this.reportAddToCart = async ({shopId,taxonId,productId,variantId})=>{
-            let { msfReport,Shop } = this.getState();
-            let products =  await Shop[shopId].getShopItems({taxonId,productId})
-            let product = products[0];
-            msfReport({actionName:'add to cart',actionId:24,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
-        }
-        this.changeCart = async (p:I_changeCartProps) => {
-            let { shopId,taxonId, productId, variantId,count,productCategory } = p;
-            let { apis } = this.getState();
-            let props:I_changeCartProps = { shopId,taxonId, productId, variantId,count,productCategory }
-            let newCart = !count?await this.removeCartItem(props):await this.editCartItem(props);
-            apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
-            this.setState({ cart: newCart });
-        }
-        this.removeCart = (cart,ids,fields)=>{
-            let obj = cart;
-            for(let i = 0; i < ids.length - 1; i++){
-                obj = obj[fields[i]];
-                if(!obj){return}
-                obj = obj[ids[i]]
-            }
-            let field = fields[ids.length - 1];
-            let id = ids[ids.length - 1];
-            let newItems = {}
-            let length = 0;
-            for(let prop in obj[field]){
-                if(id.toString() !== prop.toString()){
-                    length++;
-                    newItems[prop] = obj[field][prop]
-                }
-            }
-            if(length){obj[field] = newItems}
-            else if(ids.length < 2){obj[field] = {};}
-            else {this.removeCart(cart,ids.slice(0,ids.length - 1),fields)}
-        }
-        this.removeCartItem = async (p:I_changeCartProps)=>{
-            let {shopId,taxonId,productId,variantId} = p;
-            let { cart } = this.getState();
-            let newCart:I_state_cart = JSON.parse(JSON.stringify(cart));
-            if(taxonId){
-                this.removeCart(newCart,[shopId,taxonId,productId,variantId],['shops','taxons','products','variants'])
-                let cartShop = newCart.shops[shopId] as I_cartShop_taxon;
-                if(cartShop && cartShop.taxons[taxonId]){
-                    await this.editCartTaxonByPricing(cartShop.taxons[taxonId],shopId,false)     
-                }
-            }
-            else {
-                this.removeCart(newCart,[shopId,productId,variantId],['shops','products','variants'])
-            }
-            return newCart as I_state_cart
-        }
-        this.editCartItem = async (p:I_changeCartProps)=>{
-            let {shopId,taxonId, productId, variantId,count,productCategory} = p; 
-            let { cart } = this.getState();
-            let cartShop = this.getCartShop(shopId);
-            let reportAdd = false;
-            if(taxonId){
-                let newCartShop = cartShop as I_cartShop_taxon;
-                if(newCartShop){newCartShop = JSON.parse(JSON.stringify(newCartShop))}
-                if(!newCartShop){newCartShop = {type:'Taxon',taxons:{}}}
-                if(!newCartShop.taxons[taxonId]){
-                    newCartShop.taxons[taxonId] = {taxonId,products:{},hasError:false}
-                }
-                if(!newCartShop.taxons[taxonId].products[productId]){
-                    newCartShop.taxons[taxonId].products[productId] = {variants:{},productId,productCategory}
-                }
-                if(!newCartShop.taxons[taxonId].products[productId].variants[variantId]){
-                    reportAdd = true;
-                    newCartShop.taxons[taxonId].products[productId].variants[variantId] = {count:0,productCategory,productId,variantId}
-                }
-                newCartShop.taxons[taxonId].products[productId].variants[variantId].count = count
-                let cartTaxon:I_cartTaxon = newCartShop.taxons[taxonId];
-                await this.editCartTaxonByPricing(cartTaxon,shopId,false);
-                newCartShop.taxons[taxonId] = cartTaxon;
-                cartShop = newCartShop;
-            }
-            else {
-                let newCartShop = cartShop as I_cartShop_Product;
-                if(!newCartShop){newCartShop = {products:{},type:'Product'}}
-                if(!newCartShop.products[productId]){
-                    newCartShop.products[productId] = {variants:{},productId,productCategory}
-                }
-                if(!newCartShop.products[productId].variants[variantId]){
-                    reportAdd = true
-                    newCartShop.products[productId].variants[variantId] = {count:0,productCategory,variantId,productId}
-                }
-                newCartShop.products[productId].variants[variantId].count = count;
-                cartShop = newCartShop;
-            }
-            if(reportAdd){this.reportAddToCart({shopId,taxonId,productId,variantId})}
-            return {...cart,shops:{...cart.shops,[shopId]:cartShop}}
-        }
-        this.editCartTaxonByPricing = async(cartTaxon:I_cartTaxon,shopId:string,removable:boolean)=>{
-            let { Shop,rsa,cart,actionClass } = this.getState();
-            let factorDetailsItems:I_factorDetailItem[] = []
-            let variantsParents:{[variantId:string]:{productId:string,taxonId:string}} = {}
-            for(let productId in cartTaxon.products){
-                let { variants }:I_cartProduct = cartTaxon.products[productId];
-                for(let variantId in variants){
-                    let variant:I_cartVariant = variants[variantId];
-                    let { count } = variant;
-                    variant.error = undefined;
-                    variantsParents[variantId] = {productId,taxonId:cartTaxon.taxonId};
-                    factorDetailsItems.push({ ItemCode: variantId, ItemQty: count });
-                }
-            }
-            let CampaignId = Shop[shopId].CampaignId;
-            let factorDetails:I_getFactorDetails_result = actionClass.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
-            let { MarketingLines } = factorDetails;
-            let hasError = false;
-            for(let i = 0; i < MarketingLines.length; i++){
-                let {CampaignDetails = {},ItemCode,ItemQty} = MarketingLines[i];
-                let {productId,taxonId} = variantsParents[ItemCode]; 
-                let products = await Shop[shopId].getShopItems({taxonId,productId})
-                let product = products[0];
-                let cartVariant:I_cartVariant = cartTaxon.products[productId].variants[ItemCode];
-                let {Information,BundleRowsInfos} = CampaignDetails;
-                let {isUnderValue,isOverValue} = BundleRowsInfos;
-                if(isUnderValue){
-                    if(ItemQty === 0){
-                        if(removable){
-                            let newCart = JSON.parse(JSON.stringify(cart));
-                            this.removeCart(newCart,[shopId,cartTaxon.taxonId,productId,ItemCode],['shops','taxons','products','variants'])
-                            this.setCart(newCart)
-                        }
-                        else {
-                            rsa.addSnakebar({text:Information,time:4,type:'warning'});
-                            hasError = true; cartVariant.error = Information;
-                        }
-                    }
-                    else {cartVariant.count = ItemQty;}
-                }
-                else if(isOverValue){
-                    rsa.addSnakebar({text:`در شرایط فعلی این فاکتور حداکثر تعداد قابل انتخاب از محصول ${product.name} ${ItemQty} عدد می باشد`,time:6,type:'warning'});
-                    if(ItemQty === 0){
-                        let newCart = JSON.parse(JSON.stringify(cart));
-                        this.removeCart(newCart,[shopId,cartTaxon.taxonId,productId,ItemCode],['shops','taxons','products','variants'])
-                        this.setCart(newCart)
-                    }
-                    else {
-                        cartVariant.count = ItemQty;
-                    }
-                }
-            }
-            cartTaxon.hasError = hasError;
-        }
-    }
+// class CartClass{
+//     id:string;
+//     type:'Product' | 'Taxon' | 'Bundle';
+//     getState:()=>I_app_state;
+//     getCartShop:(shopId:string)=>I_cartShop;
+//     reportRemoveCart:(p:{shopId:string,taxonId:string,productId:string,variantId:string})=>Promise<void>;
+//     reportAddToCart:(p:{shopId:string,taxonId:string,productId:string,variantId:string})=>Promise<void>;
+//     changeCart:(p:I_changeCartProps)=>void;
+//     removeCart:(cart:I_state_cart,ids:string[],fields:string[])=>void;
+//     removeCartItem:(p:I_changeCartProps)=>Promise<I_state_cart>;
+//     editCartItem:(p:I_changeCartProps)=>Promise<I_state_cart>;
+//     editCartTaxonByPricing:(cartTaxon:I_cartTaxon,shopId:string,removable:boolean)=>Promise<void>;
+//     constructor(p:{id:string,type:'Product' | 'Taxon' | 'Bundle',getState:()=>I_app_state}){
+//         let {id,type,getState} = p;
+//         this.getState = getState;
+//         this.id = id;
+//         this.type = type;
+//         this.getCartShop = (shopId)=>{
+//             let { cart } = this.getState();
+//             return cart.shops[shopId]
+//         }
+//         this.reportRemoveCart = async ({shopId,taxonId,productId,variantId})=>{
+//             let { msfReport,Shop } = this.getState();
+//             let products =  await Shop[shopId].getShopItems({taxonId,productId})
+//             let product = products[0];
+//             msfReport({actionName:'remove from cart',actionId:23,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
+//         }
+//         this.reportAddToCart = async ({shopId,taxonId,productId,variantId})=>{
+//             let { msfReport,Shop } = this.getState();
+//             let products =  await Shop[shopId].getShopItems({taxonId,productId})
+//             let product = products[0];
+//             msfReport({actionName:'add to cart',actionId:24,targetName:`${product.name}(${variantId})`,targetId:variantId,tagName:'kharid',eventName:'action'})
+//         }
+//         this.changeCart = async (p:I_changeCartProps) => {
+//             let { apis,actionClass } = this.getState();
+//             let { shopId,taxonId, productId, variantId,count,productCategory } = p;
+//             let props:I_changeCartProps = { shopId,taxonId, productId, variantId,count,productCategory }
+//             let newCart = !count?await this.removeCartItem(props):await this.editCartItem(props);
+//             apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
+//             actionClass.setCart(newCart);
+//         }
+//         this.removeCart = (cart,ids,fields)=>{
+//             let obj = cart;
+//             for(let i = 0; i < ids.length - 1; i++){
+//                 obj = obj[fields[i]];
+//                 if(!obj){return}
+//                 obj = obj[ids[i]]
+//             }
+//             let field = fields[ids.length - 1];
+//             let id = ids[ids.length - 1];
+//             let newItems = {}
+//             let length = 0;
+//             for(let prop in obj[field]){
+//                 if(id.toString() !== prop.toString()){
+//                     length++;
+//                     newItems[prop] = obj[field][prop]
+//                 }
+//             }
+//             if(length){obj[field] = newItems}
+//             else if(ids.length < 2){obj[field] = {};}
+//             else {this.removeCart(cart,ids.slice(0,ids.length - 1),fields)}
+//         }
+//         this.removeCartItem = async (p:I_changeCartProps)=>{
+//             let {shopId,taxonId,productId,variantId} = p;
+//             let { cart } = this.getState();
+//             let newCart:I_state_cart = JSON.parse(JSON.stringify(cart));
+//             if(taxonId){
+//                 this.removeCart(newCart,[shopId,taxonId,productId,variantId],['shops','taxons','products','variants'])
+//                 let cartShop = newCart.shops[shopId] as I_cartShop_taxon;
+//                 if(cartShop && cartShop.taxons[taxonId]){
+//                     await this.editCartTaxonByPricing(cartShop.taxons[taxonId],shopId,false)     
+//                 }
+//             }
+//             else {
+//                 this.removeCart(newCart,[shopId,productId,variantId],['shops','products','variants'])
+//             }
+//             return newCart as I_state_cart
+//         }
+//         this.editCartItem = async (p:I_changeCartProps)=>{
+//             let {shopId,taxonId, productId, variantId,count,productCategory} = p; 
+//             let { cart } = this.getState();
+//             let cartShop = this.getCartShop(shopId);
+//             let reportAdd = false;
+//             if(taxonId){
+//                 let newCartShop = cartShop as I_cartShop_taxon;
+//                 if(newCartShop){newCartShop = JSON.parse(JSON.stringify(newCartShop))}
+//                 if(!newCartShop){newCartShop = {type:'Taxon',taxons:{}}}
+//                 if(!newCartShop.taxons[taxonId]){
+//                     newCartShop.taxons[taxonId] = {taxonId,products:{},hasError:false}
+//                 }
+//                 if(!newCartShop.taxons[taxonId].products[productId]){
+//                     newCartShop.taxons[taxonId].products[productId] = {variants:{},productId,productCategory}
+//                 }
+//                 if(!newCartShop.taxons[taxonId].products[productId].variants[variantId]){
+//                     reportAdd = true;
+//                     newCartShop.taxons[taxonId].products[productId].variants[variantId] = {count:0,productCategory,productId,variantId}
+//                 }
+//                 newCartShop.taxons[taxonId].products[productId].variants[variantId].count = count
+//                 let cartTaxon:I_cartTaxon = newCartShop.taxons[taxonId];
+//                 await this.editCartTaxonByPricing(cartTaxon,shopId,false);
+//                 newCartShop.taxons[taxonId] = cartTaxon;
+//                 cartShop = newCartShop;
+//             }
+//             else {
+//                 let newCartShop = cartShop as I_cartShop_Product;
+//                 if(!newCartShop){newCartShop = {products:{},type:'Product'}}
+//                 if(!newCartShop.products[productId]){
+//                     newCartShop.products[productId] = {variants:{},productId,productCategory}
+//                 }
+//                 if(!newCartShop.products[productId].variants[variantId]){
+//                     reportAdd = true
+//                     newCartShop.products[productId].variants[variantId] = {count:0,productCategory,variantId,productId}
+//                 }
+//                 newCartShop.products[productId].variants[variantId].count = count;
+//                 cartShop = newCartShop;
+//             }
+//             if(reportAdd){this.reportAddToCart({shopId,taxonId,productId,variantId})}
+//             return {...cart,shops:{...cart.shops,[shopId]:cartShop}}
+//         }
+//         this.editCartTaxonByPricing = async(cartTaxon:I_cartTaxon,shopId:string,removable:boolean)=>{
+//             let { Shop,rsa,cart,actionClass } = this.getState();
+//             let factorDetailsItems:I_factorDetailItem[] = []
+//             let variantsParents:{[variantId:string]:{productId:string,taxonId:string}} = {}
+//             for(let productId in cartTaxon.products){
+//                 let { variants }:I_cartProduct = cartTaxon.products[productId];
+//                 for(let variantId in variants){
+//                     let variant:I_cartVariant = variants[variantId];
+//                     let { count } = variant;
+//                     variant.error = undefined;
+//                     variantsParents[variantId] = {productId,taxonId:cartTaxon.taxonId};
+//                     factorDetailsItems.push({ ItemCode: variantId, ItemQty: count });
+//                 }
+//             }
+//             let CampaignId = Shop[shopId].CampaignId;
+//             let factorDetails:I_getFactorDetails_result = actionClass.getFactorDetails(factorDetailsItems, {CampaignId}, 'editCartItem');
+//             let { MarketingLines } = factorDetails;
+//             let hasError = false;
+//             for(let i = 0; i < MarketingLines.length; i++){
+//                 let {CampaignDetails = {},ItemCode,ItemQty} = MarketingLines[i];
+//                 let {productId,taxonId} = variantsParents[ItemCode]; 
+//                 let products = await Shop[shopId].getShopItems({taxonId,productId})
+//                 let product = products[0];
+//                 let cartVariant:I_cartVariant = cartTaxon.products[productId].variants[ItemCode];
+//                 let {Information,BundleRowsInfos} = CampaignDetails;
+//                 let {isUnderValue,isOverValue} = BundleRowsInfos;
+//                 if(isUnderValue){
+//                     if(ItemQty === 0){
+//                         if(removable){
+//                             let newCart = JSON.parse(JSON.stringify(cart));
+//                             this.removeCart(newCart,[shopId,cartTaxon.taxonId,productId,ItemCode],['shops','taxons','products','variants'])
+//                             actionClass.setCart(newCart)
+//                         }
+//                         else {
+//                             rsa.addSnakebar({text:Information,time:4,type:'warning'});
+//                             hasError = true; cartVariant.error = Information;
+//                         }
+//                     }
+//                     else {cartVariant.count = ItemQty;}
+//                 }
+//                 else if(isOverValue){
+//                     rsa.addSnakebar({text:`در شرایط فعلی این فاکتور حداکثر تعداد قابل انتخاب از محصول ${product.name} ${ItemQty} عدد می باشد`,time:6,type:'warning'});
+//                     if(ItemQty === 0){
+//                         let newCart = JSON.parse(JSON.stringify(cart));
+//                         this.removeCart(newCart,[shopId,cartTaxon.taxonId,productId,ItemCode],['shops','taxons','products','variants'])
+//                         actionClass.setCart(newCart)
+//                     }
+//                     else {
+//                         cartVariant.count = ItemQty;
+//                     }
+//                 }
+//             }
+//             cartTaxon.hasError = hasError;
+//         }
+//     }
     
-}
+// }

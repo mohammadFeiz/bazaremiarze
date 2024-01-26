@@ -31,9 +31,9 @@ export default class Profile extends Component{
                     icon:getSvg(14,{className:'theme-medium-font-color'}),
                     show:()=>!!this.context.backOffice.activeManager.garanti && !!this.context.b1Info.customer.slpcode,
                     onClick:async ()=>{
-                        let {SetState,apis,actionClass} = this.context;
+                        let {setGuaranteeItems,apis,actionClass} = this.context;
                         let guaranteeItems = await apis.request({api:'guaranti.garantiItems',description:'دریافت لیست کالاهای گارانتی کاربر'});
-                        SetState({guaranteeItems});
+                        setGuaranteeItems(guaranteeItems);
                         actionClass.openPopup('joziate-darkhast-haye-garanti'); 
                     }
                 },
@@ -47,7 +47,7 @@ export default class Profile extends Component{
         return {className:'m-h-12 of-visible',html:<Card type='card4' items={parts}/>}
     }
     getContent(){
-        let {guaranteeItems = [],userInfo,b1Info,actionClass,backOffice,apis,SetState} = this.context;
+        let {guaranteeItems = [],userInfo,b1Info,actionClass,backOffice} = this.context;
         let slpname,slpcode;
         try{
             slpname = b1Info.customer.slpname || 'تعیین نشده';

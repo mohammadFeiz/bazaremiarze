@@ -19,7 +19,7 @@ export default function SignalR(getState) {
     let $$={
         start(){
             connection.on("BazargahOrder", async (order)=> {
-                let {SetState,bazargahOrders,rsa,userInfo,apis} = getState();                
+                let {setBazargahOrders,bazargahOrders,rsa,userInfo,apis} = getState();                
                 let type;
                 if(order.status === 'Pending' || order.status===1){type = 'wait_to_get'}
                 else if(order.status === 'Taken'  || order.status===2){type = 'wait_to_send'}
@@ -40,7 +40,7 @@ export default function SignalR(getState) {
                         bazargahOrders.wait_to_send.push(order) 
                     }
                 }
-                SetState({bazargahOrders})
+                setBazargahOrders(bazargahOrders)
             });
             connection.on("ReloadAllUsers", async (order)=> window.location.reload())
             

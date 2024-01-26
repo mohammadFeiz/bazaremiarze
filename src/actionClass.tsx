@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import RVD from 'react-virtual-dom';
 import UrlToJson from './npm/aio-functions/url-to-json';
 import Pricing from './pricing';
@@ -29,15 +29,14 @@ import Home from "./pages/home/home.tsx";
 import Buy from "./pages/buy/buy.tsx";
 import Bazargah from "./pages/bazargah/bazargah";
 import Profile from "./pages/profile/profile";
-import Vitrin from './pages/vitrin/vitrin';
+import Vitrin from './pages/vitrin/vitrin.tsx';
 import { 
     I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, 
     I_userInfo, I_B1Info, I_state_cart, I_cartShop_Product, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartShop_taxon, 
-    I_actionClass, I_changeCartProps, I_getFactorDetails_result, I_ShopProps, I_cartShop_bundle, I_bundle_taxon, I_cartVariant, I_factorDetailItem, I_cartProduct 
+    I_actionClass, I_changeCartProps, I_getFactorDetails_result, I_ShopProps, I_cartShop_bundle, I_bundle_taxon, I_cartVariant, I_factorDetailItem, I_cartProduct, I_AIOService_class 
 } from './types';
 export default class ActionClass implements I_actionClass {
     getState:()=>I_app_state;
-    setState:(p:any)=>void
     getProps:()=>{
         backOffice:I_state_backOffice,
         userInfo:I_userInfo,
@@ -47,33 +46,30 @@ export default class ActionClass implements I_actionClass {
         Login:I_AIOLogin_class
     };
     pricing:any;
-    constructor({ getState, getProps, setState }) {
+    constructor({ getState, getProps }) {
         this.getState = getState;
         this.getProps = getProps;
-        this.setState = setState;
         let { userInfo } = this.getProps();
         this.pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode, 12 * 60 * 60 * 1000)
         this.pricing.startservice().then((value) => { return value; });
     }
     
-    getGuaranteeItems = async () => {
-        let { apis, Login } = this.getState();
+    getGuaranteeItems = async ({ apis, Login }) => {
         let res = await apis.request({ api: "guaranti.garantiItems", loading: false, description: 'دریافت لیست کالاهای گارانتی کاربر' });
         if (res === false) { Login.logout(); return; }
         let guaranteeExistItems = await apis.request({ api: "guaranti.kalahaye_ghabele_garanti", loading: false, description: 'کالاهای قابل گارانتی', def: [] });
-        this.setState({ guaranteeItems: res, guaranteeExistItems });
+        return {guaranteeExistItems,guaranteeItems: res}
     }
-    getBazargahOrders = async () => {
-        let { bazargahOrders, apis } = this.getState();
+    getBazargahOrders = async (apis:I_AIOService_class) => {
         let wait_to_get = await apis.request({ api: 'bazargah.daryafte_sefareshate_bazargah', parameter: { type: 'wait_to_get' }, loading: false, description: 'دریافت سفارشات در انتظار اخذ بازارگاه' });
         let wait_to_send = await apis.request({ api: 'bazargah.daryafte_sefareshate_bazargah', parameter: { type: 'wait_to_send' }, loading: false, description: 'دریافت سفارشات در انتظار ارسال بازارگاه' });
-        this.setState({ bazargahOrders: { ...bazargahOrders, wait_to_get, wait_to_send } })
+        return {wait_to_get, wait_to_send };
     }
     removeCartTab = (shopId:string) => {
-        let { cart } = this.getState();
+        let { cart,setCart } = this.getState();
         let newCart:I_state_cart = {shops:{}}
         for (let prop in cart.shops) { if (prop !== shopId) { newCart.shops[prop] = cart.shops[prop] } }
-        this.setState({ cart: newCart })
+        setCart(newCart)
     }
     getNavItems = () => {
         let { userInfo } = this.getProps();
@@ -106,11 +102,10 @@ export default class ActionClass implements I_actionClass {
             { text: 'خروج از حساب کاربری', icon: () => icon(mdiExitToApp), attrs: { className: 'colorFDB913' }, onClick: () => logout() }
         ]
     }
-    getShopState = async () => {
-        let { apis,backOffice, userInfo } = this.getState();
+    getShopState = async ({ apis,backOffice, userInfo }) => {
         let { Bundle, Regular, spreeCampaigns = [] } = backOffice;
         let Shop:I_state_Shop = {}
-        Shop.Regular = new ShopClass({getAppState: () => this.getState(),config: {...Regular,itemtype:'Product'}})
+        Shop.Regular = new ShopClass({getAppState: () => this.getState(),config: {...Regular,itemType:'Product'}})
         if (Bundle.active) {
             let shopProps:I_ShopProps = { ...Bundle, shopId: 'Bundle',itemType:'Bundle' }
             Shop.Bundle = new ShopClass({getAppState: () => this.getState(),config: shopProps})
@@ -330,8 +325,8 @@ export default class ActionClass implements I_actionClass {
                 row:[
                   {flex:1},
                   {size:36,align:'vh',html:<Icon path={mdiCodeBraces} size={1}/>,onClick:()=>{
-                    let {developerMode} = this.getState();
-                    this.setState({developerMode:!developerMode})
+                    let {developerMode,setDeveloperMode} = this.getState();
+                    setDeveloperMode(!developerMode)
                   }}
                 ]
               }}
@@ -653,15 +648,15 @@ export default class ActionClass implements I_actionClass {
     }
     changeCart = async (p:I_changeCartProps) => {
         let { shopId,taxonId, productId, variantId,count,productCategory } = p;
-        let { apis } = this.getState();
+        let { apis,setCart } = this.getState();
         let props:I_changeCartProps = { shopId,taxonId, productId, variantId,count,productCategory }
         let newCart = !count?await this.removeCartItem(props):await this.editCartItem(props);
         apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
-        this.setState({ cart: newCart });
+        setCart(newCart);
     }
     setCart = (newCart:I_state_cart) => {
-        let { apis } = this.getState();
-        this.setState({cart:newCart})
+        let { apis,setCart } = this.getState();
+        setCart(newCart)
         apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
     }
     getCartShop = (shopId)=>{

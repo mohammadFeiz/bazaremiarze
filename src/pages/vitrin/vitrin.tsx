@@ -14,7 +14,8 @@ import vitlan1 from './../../images/vitrin-landing-1.png';
 import vitlan2 from './../../images/vitrin-landing-2.png';
 import SplitNumber from '../../npm/aio-functions/split-number';
 import TreeCategories from '../../npm/aio-functions/tree-category/index';
-import { vitrinMock } from "../../apis/vitrin-apis";
+import notfounrsrc from './../../images/not-found.png';
+import { v_kolle_mahsoolat_payload, v_setStarted_payload, vitrinMock } from "../../apis/vitrin-apis";
 import { I_app_state, I_vitrin_product, I_vitrin_variant,I_RVD_layout, I_RVD_child } from "../../types";
 type I_path = {id:string,show:boolean,name:string,childs?:I_path[]}
 export default function Vitrin() {
@@ -22,8 +23,9 @@ export default function Vitrin() {
     let [splash,setSplash] = useState<boolean>(true)
     useEffect(()=>{setTimeout(()=>setSplash(false),2500)},[])
     function start() {
+        let parameter:v_setStarted_payload = true;
         apis.request({
-            api: 'vitrin.v_setStarted', parameter: true, description: 'شروع ویترین',
+            api: 'vitrin.v_setStarted', parameter, description: 'شروع ویترین',
             onSuccess: () => vitrin.update({ started: true }, () => {
                 actionClass.openPopup('vitrin-search', {render:()=><Search isFirstTime={true} />})
             })
@@ -110,14 +112,18 @@ function Search(props:I_Search) {
     function getInitialPaging(){
         return {
             number: 1, size: 20, sizes: [10, 20, 40, 100], serverSide: true, length: 0,
-            onChange: (obj) => setPaging({ ...paging, ...obj })
+            onChange: (obj) => {
+                let newPaging:I_paging = { ...paging, ...obj }
+                paging = newPaging;
+                updateProducts();
+            }
         }
     }
     async function updateProducts() {
         setProducts(undefined)
+        let parameter:v_kolle_mahsoolat_payload = { pageSize: paging.size, pageNumber: paging.number, searchValue, taxon: taxon || '10673'}
         let { products, total } = await apis.request({
-            api: 'vitrin.v_kolle_mahsoolat', description: 'دریافت لیست محصولات قابل انتخاب ویترین', loading: false,def:[],
-            parameter: { pageSize: paging.size, pageNumber: paging.number, searchValue, taxon: taxon || '10673' }
+            api: 'vitrin.v_kolle_mahsoolat', description: 'دریافت لیست محصولات قابل انتخاب ویترین', loading: false,def:[],parameter
         })
         setProducts(products);
         setPaging({ ...paging, length: total });
@@ -125,16 +131,16 @@ function Search(props:I_Search) {
     }
     useEffect(()=>{
         setCategories(backOffice.vitrinCategories);
-    },[])
-    useEffect(()=>{
         updateProducts()
-    },[categories,paging,searchValue])
+    },[])
     function changeSearch(value) {
         if (value.length > 3) {
             msfReport({ actionName: 'vitrin search', actionId: 56, targetName: value, tagName: 'vitrin', eventName: 'action' })
         }
-        setSearchValue(value);
-        setPaging({...paging,number:1});
+        searchValue = value;
+        let newPaging:I_paging = {...paging,number:1}
+        paging = newPaging;
+        updateProducts()
     }
     function header_layout() {
         return !isFirstTime ? false : { html: <Box type='description' /> }
@@ -195,12 +201,16 @@ function Search(props:I_Search) {
         return res.join(' / ')
     }
     function changeCategory(pathes:I_path[]) {
-        let taxon = pathes[pathes.length - 1].id;
+        let lastPath:I_path = pathes[pathes.length - 1];
+        let newTaxon = lastPath.id;
         msfReport({ actionName: 'vitrin filter by category', actionId: 57, targetName: pathes.map((o:I_path)=>o.name).join('/'), targetId: taxon, tagName: 'vitrin', eventName: 'action' })
-        setTaxon(taxon);
+        taxon = newTaxon;
+        total = false;
+        categoryPath = pathes;
+        let newPaging:I_paging = { ...paging, number: 1 }
+        paging = newPaging;
         setCategoryPath(pathes);
-        setTotal(false);
-        setPaging({ ...paging, number: 1 })
+        updateProducts();
     }
     function openCategories() {
         let render = () => {
@@ -218,7 +228,7 @@ function Search(props:I_Search) {
                     html: <AIOInput
                         type='button'
                         style={{ width: 'fit-content', minHeight: 30, padding: '0 12px', textAlign: 'right' }}
-                        className='button-2'
+                        className='button-2 fs-10 bold'
                         text={getCategoryTitle()}
                         before={<Icon path={mdiMenu} size={1} />}
                         onClick={() => openCategories()}
@@ -229,7 +239,7 @@ function Search(props:I_Search) {
         }
     }
     function products_layout(products, paging) {
-        let props = { type: 'table', value: products, paging, rowsTemplate: () => <Products products={products} /> }
+        let props = { type: 'table', value: products, paging, rowsTemplate: () => <Products products={products} count={paging.size}/> }
         return { html: <AIOInput {...props} /> }
     }
     function suggestion_layout(isFirstTime:boolean) {
@@ -386,23 +396,33 @@ function Suggestion() {
         />
     )
 }
-function getMockProducts() {
-    let { result } = vitrinMock().v_getProducts()
+function getMockProducts(count) {
+    let { result } = vitrinMock().v_getProducts(count)
     return result.products
 }
 function getMockVitrinSelected() {
     return vitrinMock().v_mockVitrinSelected()
 }
-type I_Products = {products?:I_vitrin_product[]}
+type I_Products = {products?:I_vitrin_product[],count:number}
 function Products(props:I_Products) {
-    let {products} = props;
+    let {products,count} = props;
     let Products;
-    if (!products) { Products = getMockProducts() }
+    if (!products) { Products = getMockProducts(count) }
     else { Products = products }
     let list = Products.map((o) => {
         return { html: <ProductCard product={o} loading={!products} /> }
     })
-    let layout = { className: 'ofy-auto', column: list }
+    let layout;
+    if(!list.length){
+        layout = { 
+            align:'vh',
+            column:[
+                {html:<img src={notfounrsrc as string} height='100px' alt=''/>,align:'vh'},
+                {html:'محصولی یافت نشد',align:'h',size:36}
+            ] 
+        }
+    }
+    else {layout = { className: 'ofy-auto', column: list }}
     return (<RVD layout={layout} />)
 }
 function SelectedProducts() {

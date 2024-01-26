@@ -1,5 +1,5 @@
 import React, { Component, useState } from 'react';
-import Main from './pages/main/main';
+import Main from './pages/main/main.tsx';
 import PageError from './components/page-error';
 import Landing from './components/landing';
 import AIOLogin from './npm/aio-login/aio-login';

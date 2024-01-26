@@ -3,6 +3,10 @@ import nosrc from './../images/no-src.png';
 import vitrin_category_src from './../images/vitrin-category.png';
 import vitrin_brand_src from './../images/vitrin-brand.png';
 import AIOStorage from 'aio-storage';
+import { I_app_state, I_vitrin_product } from "../types";
+export type v_updateMyVitrin_payload = { isSelected:boolean, product:I_vitrin_product, variantId:string|number }
+export type v_kolle_mahsoolat_payload = { pageSize?:number, pageNumber?:number, searchValue?:string, taxon:string | number }
+export type v_setStarted_payload = boolean
 export default function vitrinApis({ baseUrl, helper }) {
     return {
         async v_getStarted() {
@@ -12,26 +16,27 @@ export default function vitrinApis({ baseUrl, helper }) {
             }
             return { result: res.data.message }
         },
-        async v_setStarted(state) {
+        async v_setStarted(state:v_setStarted_payload) {
             var res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrinMangement`, { IsVitrinStarted: state });
             if (res.data.isSuccess === true) {
                 return { result: res.data.data }
             }
             return { result: res.data.message }
         },
-        async v_updateMyVitrin({ isSelected, product, variantId },{ userInfo }) {
+        async v_updateMyVitrin(p:v_updateMyVitrin_payload,appState:I_app_state) {
+            let { isSelected, product, variantId } = p;
+            let {userInfo} = appState;
             let {cardCode} = userInfo;
             //type state = 'add' | 'remove'
             //type product = <product>
             //type variantId = number
             //return vitrinMock().v_updateMyVitrin({ isSelected, product, variantId })
             let res = await Axios.post(`${baseUrl}/vitrin/UpdateVitrin`, { ProductId: product.id, state: !isSelected, variantId, Price: product.price,cardCode });
-            if (res.data.isSuccess === true) {
-                return { result: true }
-            }
-            else { return res.data.message }
+            if (res.data.isSuccess === true) {return { result: true }}
+            else { return {result:res.data.message} }
         },
-        async v_kolle_mahsoolat({ pageSize, pageNumber, searchValue, filter = [], taxon = 10673 }, { apis }) {
+        async v_kolle_mahsoolat(p:v_kolle_mahsoolat_payload) {
+            let { pageSize, pageNumber, searchValue, taxon } = p;
             //return vitrinMock().v_getProducts()
             let body = {
                 Taxons: [taxon],
@@ -46,7 +51,8 @@ export default function vitrinApis({ baseUrl, helper }) {
             }
             return { response, result }
         },
-        async v_selected(parameter,{ userInfo }) {
+        async v_selected(parameter,appState:I_app_state) {
+            let { userInfo } = appState;
             let res = await Axios.get(`${baseUrl}/vitrin/VitrinProductsByCardCode?cardCode=${userInfo.cardCode}`);
             return { result: res.data.data }
         },
@@ -119,7 +125,7 @@ export function vitrinMock() {
                 }
             }
         },
-        v_getProducts() {
+        v_getProducts(count:number) {
             let response = {
                 "data": {
                     "data": {
@@ -144,24 +150,6 @@ export function vitrinMock() {
                                 "optionTypes": [
                                     { "id": 82067, "name": "طول سیم", "optionValues": [{ "id": 54345, "name": "5 متری" }, { "id": 65453, "name": "10 متری" }] },
                                     { "id": 34867, "name": "برند", "optionValues": [{ "id": 43234, "name": "بروکس" }, { "id": 63453, "name": "ممد کابل ساز" }] }
-                                ]
-                            },
-                            {
-                                "id": '64525345', "name": "لامپ حبابی 10 وات", "description": "توضیحات","price": 2900000,
-                                "variants": [
-                                    {
-                                        "id": "53453534", "inStock": 100000, "price": 2900000, "keys": [6546, 544433],
-                                        "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg"
-                                    },
-                                    {
-                                        "id": "5645645744", "inStock": 100000, "price": 2900000, "keys": [5346453, 765456],
-                                        "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg"
-                                    }
-                                ],
-                                "image": "/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbE9pIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c45cb96cd08e92202b726ca89c77b896669a08b/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2REdkeVlYWnBkSGxKSWd0alpXNTBaWElHT3daVU9ndHlaWE5wZW1WSklnMDJNREI0TmpBd1BnWTdCbFE2QzJWNGRHVnVkRUFJT2c5aVlXTnJaM0p2ZFc1a1NTSUpjMmh2ZHdZN0JsUTZESEYxWVd4cGRIbHBWUT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--c832c7a891b75267d6f73832476cf5be3d82c592/ZNOMPX6753_a.jpg",
-                                "optionTypes": [
-                                    { "id": 82067, "name": "رنگ نور", "optionValues": [{ "id": 6546, "name": "آفتابی" }, { "id": 5346453, "name": "مهتابی" }] },
-                                    { "id": 34867, "name": "برند", "optionValues": [{ "id": 544433, "name": "بروکس" }, { "id": 765456, "name": "ممد لامپ ساز" }] }
                                 ]
                             }
                         ]
@@ -208,9 +196,11 @@ export function vitrinMock() {
                 },
                 "request": {}
             }
+            let product = response.data.data.result;
+            let products = new Array(count).fill(0).map(()=>product)
             let result = {
-                products: response.data.data.result,
-                total: response.data.data.totalRecords
+                products,
+                total: count
             }
             return { response, result }
         },

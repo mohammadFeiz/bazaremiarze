@@ -15,7 +15,7 @@ import vitlan2 from './../../images/vitrin-landing-2.png';
 import SplitNumber from '../../npm/aio-functions/split-number';
 import TreeCategories from '../../npm/aio-functions/tree-category/index';
 import notfounrsrc from './../../images/not-found.png';
-import { v_kolle_mahsoolat_payload, v_setStarted_payload, vitrinMock } from "../../apis/vitrin-apis";
+import { v_kolle_mahsoolat_payload, v_price_suggestion_payload, v_setStarted_payload, vitrinMock } from "../../apis/vitrin-apis";
 import { I_app_state, I_vitrin_product, I_vitrin_variant,I_RVD_layout, I_RVD_child } from "../../types";
 type I_path = {id:string,show:boolean,name:string,childs?:I_path[]}
 export default function Vitrin() {
@@ -536,12 +536,10 @@ function ProductPage(props:I_ProductPage){
     }
     function openPopup(variant:I_vitrin_variant){
         let {apis,rsa,actionClass} = this.context;
-        actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion onSubmit={(price)=>{
+        actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion onSubmit={(price:number)=>{
+            let parameter:v_price_suggestion_payload = {variant,price};
             apis.request({
-                api:'vitrin.v_price_suggestion',
-                description:'پیشنهاد قیمت ویترین',
-                parameter:{variant,price},
-                message:{success:true},
+                api:'vitrin.v_price_suggestion',description:'پیشنهاد قیمت ویترین',parameter,message:{success:true},
                 onSuccess:()=>rsa.removeModal()
             })
         }}/>})

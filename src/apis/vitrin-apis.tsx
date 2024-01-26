@@ -3,10 +3,11 @@ import nosrc from './../images/no-src.png';
 import vitrin_category_src from './../images/vitrin-category.png';
 import vitrin_brand_src from './../images/vitrin-brand.png';
 import AIOStorage from 'aio-storage';
-import { I_app_state, I_vitrin_product } from "../types";
+import { I_app_state, I_vitrin_product, I_vitrin_variant } from "../types";
 export type v_updateMyVitrin_payload = { isSelected:boolean, product:I_vitrin_product, variantId:string|number }
 export type v_kolle_mahsoolat_payload = { pageSize?:number, pageNumber?:number, searchValue?:string, taxon:string | number }
 export type v_setStarted_payload = boolean
+export type v_price_suggestion_payload = {variant:I_vitrin_variant,price:number}
 export default function vitrinApis({ baseUrl, helper }) {
     return {
         async v_getStarted() {
@@ -55,6 +56,14 @@ export default function vitrinApis({ baseUrl, helper }) {
             let { userInfo } = appState;
             let res = await Axios.get(`${baseUrl}/vitrin/VitrinProductsByCardCode?cardCode=${userInfo.cardCode}`);
             return { result: res.data.data }
+        },
+        async v_price_suggestion(p:v_price_suggestion_payload,{userInfo}){
+            let {variant,price} = p;
+            let response = await Axios.post(`${baseUrl}/vitrinProductPrice/createByVendor`,{Price:price,B1Code:variant.id,UserId:userInfo.id});
+            let result;
+            if (response.data.isSuccess === true) { result = true }
+            else { result = response.data.message }
+            return { result }
         },
         async v_miarze_brands() {
             return { mock: true }

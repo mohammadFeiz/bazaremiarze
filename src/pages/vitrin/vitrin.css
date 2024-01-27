@@ -188,3 +188,23 @@ body {
   .v-product-card-variant-option-value{
     font-weight: bold;
   }
+
+  .vitrin-brand-filter{
+    background:#fff;
+    border-top:1px solid #ddd;
+    padding:6px;
+    gap:4px;
+    overflow-x:auto !important;
+    width:100%;
+  }
+  .vitrin-brand-filter .vitrin-brand-button{
+    border:none;
+    background:#f2f2f2;
+    font-size:10px;
+    padding:3px 6px;
+  }
+
+  .vitrin-brand-filter .vitrin-brand-button.active{
+    background:#2BBA8F;
+    color:#fff;
+  }

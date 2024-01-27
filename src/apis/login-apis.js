@@ -1,6 +1,10 @@
 export default function loginApis({ baseUrl, helper, Axios, setToken }) {
+    async function stall(stallTime = 3000) {
+        await new Promise(resolve => setTimeout(resolve, stallTime));
+    }
     return {
-        async checkIsRegistered({phoneNumber,Logger}) {
+        async checkIsRegistered({phoneNumber,Logger,mockValue}) {
+            if(mockValue !== undefined){return {result:mockValue}}
             let response = await Axios.get(`${baseUrl}/Users/IsUserSyncedWithB1?userName=${phoneNumber}`);
             let result = response.data.data;
             Logger.add('IsUserSyncedWithB1', result ? 'true' : 'false', 'IsUserSyncedWithB1')
@@ -69,6 +73,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             return { response, result }
         },
         async loginByOTPCode({ id, otpCode }) {
+            let stallRes = await stall(5000)    
             const response = await Axios.get(`${baseUrl}/Users/SecondStep?userId=${id}&code=${otpCode}`);
             let result = response.data.isSuccess ? response.data.data : response.data.message;
             return { response, result }

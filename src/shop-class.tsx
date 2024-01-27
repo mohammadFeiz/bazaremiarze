@@ -641,11 +641,13 @@ function TaxonCard(props: I_TaxonCard) {
     function name_layout() { return { html: taxon.name, flex: 1, align: 'v' } }
     function icon_layout() { return { size: 36, align: 'vh', html: <Icon path={open ? mdiChevronDown : mdiChevronLeft} size={.8} /> } }
     function groupDiscount_layout() {
+        if(renderIn !== 'cart' && renderIn !== 'shipping'){return false}
         let cartTab = actionClass.getCartShop(shopId) as I_cartShop_taxon;
         if (!cartTab) { return false }
         let taxonIds = Object.keys(cartTab.taxons);
         let notHasErrors = taxonIds.filter((taxonId) => !cartTab.taxons[taxonId].hasError)
-        if (!notHasErrors.length) { return false }
+        let cartTaxon:I_cartTaxon = cartTab.taxons[taxon.id]
+        if(cartTaxon && cartTaxon.hasError){return false}
         return {
             align: 'v', className: 'taxon-card-group-discount',
             row:[
@@ -751,8 +753,7 @@ function RegularCard(props: I_RegularCard) {
         }
     }
     function variantLabels_layout(variantId: string) {
-        try{
-            let { optionTypes, variants } = product;
+        let { optionTypes, variants } = product;
         let variant = variants.find((o: I_variant) => o.id === variantId)
         let { optionValues } = variant, details = [];
         for (let j = 0; j < optionTypes.length; j++) {
@@ -762,20 +763,6 @@ function RegularCard(props: I_RegularCard) {
             details.push([optionTypeName, optionValueName]);
         }
         return { align: 'v', className: 'theme-medium-font-color fs-10 bold', gap: 6, gepHtml: () => '-', row: details.map(([key, value]) => { return variantLabel_layout(key, value) }) }
-        }
-        catch{
-            debugger
-            let { optionTypes, variants } = product;
-        let variant = variants.find((o: I_variant) => o.id === variantId)
-        let { optionValues } = variant, details = [];
-        for (let j = 0; j < optionTypes.length; j++) {
-            let { id: optionTypeId, name: optionTypeName, items } = optionTypes[j];
-            let optionValueId = optionValues[optionTypeId];
-            let optionValueName = items[optionValueId]
-            details.push([optionTypeName, optionValueName]);
-        }
-        return { align: 'v', className: 'theme-medium-font-color fs-10 bold', gap: 6, gepHtml: () => '-', row: details.map(([key, value]) => { return variantLabel_layout(key, value) }) }
-        }
     }
     function variantLabel_layout(key: string, value: string = '') {
         //return { html: `${key} : ${value}` }
@@ -1112,7 +1099,7 @@ function RegularPage(props: I_RegularPage) {
                 },
                 { size: 12 },
                 { size: 36, html: product.name, className: "fs-14 theme-dark-font-color bold p-h-12" },
-                { size: 36, html: "کد کالا : " + (product.id || ""), className: "fs-12 theme-medium-font-color p-h-12" },
+                { size: 36, html: "کد کالا : " + (product.productSku || ""), className: "fs-12 theme-medium-font-color p-h-12" },
             ]
         };
     }
@@ -2253,6 +2240,7 @@ export function CategorySlider(props: I_CategorySlider) {
         if (!products) {
             let fakeProduct = {
                 id: '1231',
+                productSku:'234234',
                 name: 'محصول تستی',
                 images: [nosrc],
                 inStock: true,

@@ -7,14 +7,22 @@ export type I_AIOLogin_mode = (
 export type I_AIOLogin_model = {
   login:{userId:string,password:string},
   register:{[field:string]:any},
-  profile?:any
+  profile?:any,
+  userInfo:any,
+  token:string | false
 }
 export type I_AIOLogin_onSubmit = (model:I_AIOLogin_model,mode:I_AIOLogin_mode)=>Promise<void>
 export type I_AIOLogin_checkToken = (token:string | false)=>Promise<boolean | undefined>
 export type I_AIOLogin_renderApp = (obj:{token:string})=>React.ReactNode
 export type I_AIOLogin_renderLogin = (loginForm:React.ReactNode)=>React.ReactNode
 export type I_AIOLogin_renderSplash = ()=>React.ReactNode
-export type I_AIOLogin_register = {type:'mode' | 'tab' | 'button',text:string,fields:any[]}
+export type I_AIOLogin_register = {
+    registerType:'auto' | 'tab' | 'button',
+    registerText?:(location:'tab button' | 'register button' | 'modal header' | 'form title' | 'submit button')=>string,
+    registerFields:any[],
+    checkIsRegistered?:(p:{token:string,userId:string,userInfo:any})=>Promise<boolean>,
+    onSubmitRegister:(model:I_AIOLogin_model)=>Promise<boolean>
+}
 export type I_AIOLogin_props = {
   id: string, modes: I_AIOLogin_mode[], timer: number, otpLength: number, 
   userId?:string,
@@ -29,6 +37,10 @@ export type I_AIOLogin_props = {
 export type I_AIOLogin_class = {
     setStorage:(key:string,value:any)=>void,
     getStorage:(key:string)=>any,
+    setToken:(token:string)=>void,
+    getToken:()=>string,
+    getUserInfo:()=>any,
+    setUserInfo:(userInfo:any)=>void,
     setMode:(mode:I_AIOLogin_mode)=>void,
     render:(p?:I_AIOLogin_class_render_parameter)=>React.ReactNode,
     logout:()=>void
@@ -343,7 +355,7 @@ export interface I_Report_parameter extends I_report {
     apis: I_AIOService_class; phoneNumber: string; userId: string;
 }  
 export type I_msfReport = (obj: I_report, p?: { userId?: string, phoneNumber?: string }) => void
-export type I_updateProfile = (loginModel: I_AIOLogin_model, mode: 'register' | 'profile' | 'location', callback?: Function)=>void
+export type I_updateProfile = (loginModel: I_AIOLogin_model, mode: 'register' | 'profile' | 'location', callback?: Function)=>Promise<I_userInfo | false>
 
 
 export type I_product = {
@@ -356,6 +368,7 @@ export type I_product = {
     CmpgnDscnt:number,
     PymntDscnt:number,
     FinalPrice:number, 
+    productSku:string | number,
     Price:number,
     hasFullDetail:boolean,
     category:I_product_category, //اطلاعات دسته بندی محصول

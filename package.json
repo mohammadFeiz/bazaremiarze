@@ -17,6 +17,7 @@
     "aio-service": "^6.2.0",
     "aio-storage": "^4.0.1",
     "aio-swip": "^2.0.0",
+    "aio-utils": "^2.0.0",
     "axios": "^1.2.1",
     "jquery": "^3.6.3",
     "react": "^18.2.0",

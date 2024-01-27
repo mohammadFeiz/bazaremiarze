@@ -13,6 +13,7 @@ import image_src from './../../images/vitrin-landing.png';
 import vitlan1 from './../../images/vitrin-landing-1.png';
 import vitlan2 from './../../images/vitrin-landing-2.png';
 import SplitNumber from '../../npm/aio-functions/split-number';
+import {IsTouch} from 'aio-utils';
 import TreeCategories from '../../npm/aio-functions/tree-category/index';
 import notfounrsrc from './../../images/not-found.png';
 import { v_kolle_mahsoolat_payload, v_price_suggestion_payload, v_setStarted_payload, vitrinMock } from "../../apis/vitrin-apis";
@@ -107,6 +108,7 @@ function Search(props:I_Search) {
     let [brands,setBrands] = useState<string[]>([
         'بروکس', 'پارس شهاب', 'سایروکس', 'خزرشید', 'کملیون', 'مازی نور'
     ])
+    let [brand,setBrand] = useState({})
     let [selectedBrands,setSelectedBrands] = useState<string[]>([])
     let [paging,setPaging] = useState<I_paging>(getInitialPaging())
     function getInitialPaging(){
@@ -122,6 +124,10 @@ function Search(props:I_Search) {
     async function updateProducts() {
         setProducts(undefined)
         let parameter:v_kolle_mahsoolat_payload = { pageSize: paging.size, pageNumber: paging.number, searchValue, taxon: taxon || '10673'}
+        let activeBrands = brands.filter((o)=>brand[o])
+        if(activeBrands.length){
+            parameter.optionTypeFilters = [{optionTypeName:'برند',optionValueNames:activeBrands}]
+        }
         let { products, total } = await apis.request({
             api: 'vitrin.v_kolle_mahsoolat', description: 'دریافت لیست محصولات قابل انتخاب ویترین', loading: false,def:[],parameter
         })
@@ -145,23 +151,29 @@ function Search(props:I_Search) {
     function header_layout() {
         return !isFirstTime ? false : { html: <Box type='description' /> }
     }
-    // function brands_layout(){
-    //     let options = brands.map((brand)=>{
-    //         return {
-    //             text:brand,
-    //             value:brand,
-
-    //         }
-    //     })
-    //     return {
-    //         html:(
-    //             <AIOInput
-    //                 type='select'
-    //                 options={options}
-    //             />
-    //         )
-    //     }
-    // }
+    function changeBrand(value){
+        brand = {...brand,[value]:!brand[value]}
+        setBrand(brand)
+        updateProducts()
+    }
+    function brands_layout(){
+        let className = 'vitrin-brand-filter';
+        if(IsTouch()){className += ' hide-scroll'}
+        return {
+            align:'v',className,
+            row:brands.map((o:string)=>{
+                let active = brand[o];
+                return (
+                    {
+                        align:'vh',
+                        html:(
+                            <button onClick={()=>changeBrand(o)} className={'vitrin-brand-button' + (active?' active':'')}>{o}</button>
+                        )
+                    }
+                )
+            })
+        }
+    }
     function body_layout() {
         return {
             flex: 1,
@@ -171,7 +183,7 @@ function Search(props:I_Search) {
                     column: [
                         search_layout(),
                         categories_layout(),
-                        //brands_layout(),
+                        brands_layout(),
                         products_layout(products, paging),
                         suggestion_layout(isFirstTime)
                     ]
@@ -228,7 +240,7 @@ function Search(props:I_Search) {
                     html: <AIOInput
                         type='button'
                         style={{ width: 'fit-content', minHeight: 30, padding: '0 12px', textAlign: 'right' }}
-                        className='button-2 fs-10 bold'
+                        className='fs-10 bold h-24 p-0'
                         text={getCategoryTitle()}
                         before={<Icon path={mdiMenu} size={1} />}
                         onClick={() => openCategories()}

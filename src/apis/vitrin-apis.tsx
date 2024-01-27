@@ -5,7 +5,10 @@ import vitrin_brand_src from './../images/vitrin-brand.png';
 import AIOStorage from 'aio-storage';
 import { I_app_state, I_vitrin_product, I_vitrin_variant } from "../types";
 export type v_updateMyVitrin_payload = { isSelected:boolean, product:I_vitrin_product, variantId:string|number }
-export type v_kolle_mahsoolat_payload = { pageSize?:number, pageNumber?:number, searchValue?:string, taxon:string | number }
+export type v_kolle_mahsoolat_payload = { 
+    pageSize?:number, pageNumber?:number, searchValue?:string, taxon:string | number ,
+    optionTypeFilters?:{optionTypeName:string,optionValueNames:string[]}[]
+}
 export type v_setStarted_payload = boolean
 export type v_price_suggestion_payload = {variant:I_vitrin_variant,price:number}
 export default function vitrinApis({ baseUrl, helper }) {
@@ -37,13 +40,14 @@ export default function vitrinApis({ baseUrl, helper }) {
             else { return {result:res.data.message} }
         },
         async v_kolle_mahsoolat(p:v_kolle_mahsoolat_payload) {
-            let { pageSize, pageNumber, searchValue, taxon } = p;
+            let { pageSize, pageNumber, searchValue, taxon,optionTypeFilters } = p;
             //return vitrinMock().v_getProducts()
             let body = {
                 Taxons: [taxon],
                 PageSize: pageSize,
                 PageNumber: pageNumber,
-                Term: searchValue
+                Term: searchValue,
+                optionTypeFilters
             }
             let response = await Axios.post(`${baseUrl}/spree/GetProducts`, body);
             let result = {

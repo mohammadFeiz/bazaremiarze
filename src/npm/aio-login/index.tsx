@@ -6,17 +6,22 @@ import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
 import AIOPopup from 'aio-popup';
 import './index.css';
-export type I_AL_storageKey = 'token' | 'userInfo' | 'userId';
+export type I_AL_storageKey = 'token' | 'userInfo' | 'userId' | 'isRegistered';
 export type I_AL_model = {
     login:{userId?:string,password?:string},
     register:{[field:string]:any},
     profile?:any,
-    forget?:{userId?:string,newPassword?:string,reNewPassword?:string,password?:string}}
+    forget?:{userId?:string,newPassword?:string,reNewPassword?:string,password?:string},
+    userInfo:any,
+    token:string | false
+}
 export type I_AL_mode = 'OTPNumber' | 'phoneNumber' | 'OTPCode' | 'auth' | 'register' | 'forgetUserId' | 'forgetPassword' | 'email' | 'userName';
 export type I_AL_register = {
-    type:'mode' | 'tab' | 'button',
-    text:string,fields:any[],title:string,submitText:string,subtitle?:string | false,
-    buttonText?:string,tabText?:string
+    registerType:'auto' | 'tab' | 'button',
+    registerText?:(location:'tab button' | 'register button' | 'modal header' | 'form title' | 'submit button')=>string,
+    registerFields:any[],
+    checkIsRegistered?:(p:{token:string,userId:string,userInfo:any})=>Promise<boolean>,
+    onSubmitRegister:(model:I_AL_model)=>Promise<boolean>
 };
 export type I_AL_profile = {model:any,onSubmit:(model:any)=>void,fields:any[],title:string,onClose?:Function,submitText:string,subtitle?:string|false}
 export type I_AL_forget = {mode:'email' | 'phoneNumber',text?:React.ReactNode}
@@ -24,7 +29,7 @@ export type I_AL_props = {
     id:string, 
     onSubmit:(model:I_AL_model,mode:I_AL_mode)=>Promise<void>, 
     checkToken:(token:string | false,obj:{userId:string,userInfo?:any})=>Promise<boolean | undefined>, 
-    renderApp:(obj:{token:string,userId:string,userInfo:any,logout:()=>void,appState:any})=>React.ReactNode,
+    renderApp:(obj:{token:string,userId:string,userInfo:any,logout:()=>void,appState:any,isRegistered?:boolean})=>React.ReactNode,
     modes:I_AL_mode[], 
     otpLength:number,
     renderLogin?:(loginForm:React.ReactNode)=>React.ReactNode 
@@ -61,8 +66,16 @@ export default class AIOlogin {
     setMode:I_AL_setMode;
     render:I_AL_render;
     getActions:I_AL_getActions;
+    setUserInfo:(userInfo:any)=>void;
+    getUserInfo:()=>any;
+    getToken:()=>string;
+    setToken:(token:string)=>void;
     constructor(props:I_AL_props) {
         let storage = AIOStorage(`-AIOLogin-${props.id}`);
+        this.getToken = ()=>storage.load({ name: 'token' })
+        this.setToken = (token:string)=>storage.save({ name: 'token', value:token })
+        this.setUserInfo = (userInfo:any)=>storage.save({ name: 'userInfo', value:userInfo })
+        this.getUserInfo = ()=>storage.load({ name: 'userInfo' })
         this.setStorage = (key, value) => storage.save({ name: key, value });
         this.getStorage = (key:I_AL_storageKey) => {
             let token = storage.load({ name: 'token', def: false });
@@ -109,13 +122,13 @@ export default class AIOlogin {
     }
 }
 function AIOLOGIN(props:I_AIOLOGIN) {
-    let [isTokenChecked,setIsTokenChecked] = useState<boolean>(false)
-    let [showReload,setShowReload] = useState<boolean>(false)
-    let [loading,setLoading] = useState<boolean>(false)
     let {
         getStorage,removeStorage,otpLength, id, timer, modes, userId, register,setStorage, 
         profile, attrs = {}, forget, logout,renderApp,appState,splash
     } = props;
+    let [isTokenChecked,setIsTokenChecked] = useState<boolean>(false)
+    let [showReload,setShowReload] = useState<boolean>(false)
+    let [loading,setLoading] = useState<boolean>(false)
     let [showSplash,setShowSplash] = useState<boolean>(!!splash) 
     let [mode,setMode] = useState<I_AL_mode>(props.modes[0])
     if(splash && showSplash){setTimeout(()=>setShowSplash(false),splash.time)}
@@ -141,9 +154,7 @@ function AIOLOGIN(props:I_AIOLOGIN) {
     function renderSplash(){return splash?splash.render():null}
     function renderReload(){return <div className='aio-login-reload'><button onClick={() => window.location.reload()}>بارگذاری مجدد</button></div>}
     useEffect(()=>{init()},[])
-    async function getCheckTokenResult():Promise<boolean | string>{
-        let token = getStorage('token'),userId = getStorage('userId'),userInfo = getStorage('userInfo');
-        if(typeof token !== 'string'){return false}
+    async function getCheckTokenResult(token,userId,userInfo):Promise<boolean | string>{
         let error:string;
         if(!props.checkToken){error = `aio-login error => checkToken props should be a function !!! but is ${typeof props.checkToken}` }
         else{
@@ -151,45 +162,84 @@ function AIOLOGIN(props:I_AIOLOGIN) {
                 let result = await props.checkToken(token, { userId, userInfo }); 
                 if(typeof result === 'string'){error = result}
                 else if(typeof result === 'boolean'){return result}
-                else{
-                    error = (`
-aio-login error => checkToken should returns boolean or string. but returns ${typeof result}. 
-false means token is invalid. true means token is valid. string means an error accured,
-                    `)}
             }
             catch (err) { error = getError(err) }
         }
         if(error){new AIOPopup().addAlert({ type: 'error', text: 'بررسی توکن با خطا روبرو شد', subtext: error })}
     }
     async function checkToken() {
-        let result = await getCheckTokenResult()
-        if (result === true) { setMode('auth') }
+        let token = getStorage('token'),userId = getStorage('userId'),userInfo = getStorage('userInfo');
+        let result = await getCheckTokenResult(token,userId,userInfo)
+        if (result === true) {await setAuthenticated()}
         else if (result === false) { removeStorage('token') }
         else {setShowReload(true)}
         setIsTokenChecked(true)
     }
-    async function onSubmit(model) {
-        let currentMode = mode;
-        let res;
-        setLoading(true)
-        try { res = await props.onSubmit(model, currentMode) }
-        catch { setLoading(false); return; }
-        setLoading(false);
-        if (typeof res === 'string') {
-            let text = {
-                "OTPNumber": 'ارسال شماره همراه',
-                "OTPCode": 'ارسال کد یکبار مصرف',
-                "userName": 'ارسال نام کاربری و رمز عبور',
-                "phoneNumber": 'ارسال شماره همراه و رمز عبور',
-                "email": 'ارسال آدرس ایمیل و رمز عبور',
-                "register": 'عملیات ثبت نام',
-            }[currentMode]
-            text = `${text} با خطا روبرو شد`
-            let subtext = res;
-            new AIOPopup().addAlert({ type: 'error', text, subtext })
-        }
-        else {setStorage('userId',model.login.userId)}
+    function alertMissedToken(){
+        new AIOPopup().addAlert({ 
+            type: 'error', 
+            text: 'aio-login error => it seems you forgot set token by instance.setToken(string))',
+            subtext:'because register.onSubmitRegister returned true (true means call instance.rendeeApp())'
+        });
+        setShowReload(true)
     }
+    async function onSubmit(model:I_AL_model) {
+        try { 
+            setLoading(true)
+            await props.onSubmit(model, mode)
+            //اگر ارسال شماره برای دریافت رمز یکبار مصرف موفقیت آمیز است برو به صفحه ورود کد یکبار مصرف
+            if(mode === 'OTPNumber'){setMode('OTPCode')}
+            //اگر بررسی رمز عبور موفقیت آمیز است برو برای تصمیم گیری ورود به اپ یا ورود به ثبت نام
+            else {await setAuthenticated(model.login.userId)}
+        }
+        catch {}
+    }
+    async function onRegister(model:I_AL_model){
+        try{
+            let res = await register.onSubmitRegister(model)
+            //اگر درخواست ورود به اپ داده شده
+            if(res === true){
+                //اگر توکن ست شده وارد اپ شو
+                if(getStorage('token')){setMode('auth')}
+                //اگر توکن ست نشده به کاربر آلرت فراموشی ست کردن توکن بده
+                else {alertMissedToken()}
+            }
+            //اگر درخواستی مبنی بر ورود به اپ داده نشده برو به صفحه لاگین
+            else if(res === false){window.location.reload()}
+            else {setLoading(false)}
+        }
+        catch(err){
+            new AIOPopup().addAlert({type: 'error',text: 'registeration error',subtext:getError(err)});
+            setLoading(false);
+        }
+    }
+    async function isRegistered(){
+        if(userId){setStorage('userId',userId)}
+        let token = getStorage('token');
+        let isRegistered;
+        if(register && register.checkIsRegistered){
+            let userId = getStorage('userId');
+            let userInfo = getStorage('userInfo');
+            try{isRegistered = await register.checkIsRegistered({token,userId,userInfo})}
+            catch(err){
+                new AIOPopup().addAlert({type: 'error',text: 'registeration error',subtext:getError(err),onClose:()=>window.location.reload()});
+                setLoading(false);
+            }
+        }
+        setStorage('isRegistered',isRegistered);
+        return isRegistered
+    }
+    async function setAuthenticated(userId?:string){
+        //اگر با کش وارد نشده ایم یوزر آی در را در کش ثبت کن
+        if(userId){setStorage('userId',userId)}
+        let token = getStorage('token');
+        let registered = await isRegistered();
+        if(registered === false && register.registerType === 'auto'){setLoading(false); setMode('register')}
+        else{
+            if (token){setMode('auth')}
+            else {alertMissedToken()}
+        }
+    } 
     async function onSubmitProfile(profileModel){
         let res;
         setLoading(true);
@@ -199,13 +249,13 @@ false means token is invalid. true means token is valid. string means an error a
         if (typeof res === 'string') {new AIOPopup().addAlert({ type: 'error', text:'ویرایش پروفایل با خطا روبرو شد', subtext:res })}
     }
     function renderLogin(){
-        let p:I_LoginForm = {forget, timer, otpLength, id, modes, attrs, userId,register,loading,mode,onSubmit,setMode}
+        let p:I_LoginForm = {forget, timer, otpLength, id, modes, attrs, userId,register,loading,mode,onSubmit,setMode,getStorage,logout,onRegister}
         let content = <LoginForm {...p}/>;
         if(props.renderLogin){return props.renderLogin(content)}
         else{return content}
     }
     if(profile){
-        let props:I_LoginForm = { timer, id, attrs, userId,loading,profile,onSubmitProfile }
+        let props:I_LoginForm = { timer, id, attrs, userId,loading,profile,onSubmitProfile,getStorage,logout,onRegister }
         return <LoginForm {...props}/>
     }
     if (showReload) { return renderReload() }
@@ -216,23 +266,25 @@ false means token is invalid. true means token is valid. string means an error a
         let token = getStorage('token');
         let userId = getStorage('userId');
         let userInfo = getStorage('userInfo');
+        let isRegistered = getStorage('isRegistered');
         if(typeof token === 'string' && typeof userId === 'string'){
-            return renderApp({ token, userId, userInfo, logout,appState }); 
+            return renderApp({ token, userId, userInfo, logout,appState,isRegistered }); 
         }
         else {removeStorage('token');}
     }
     // وقتی به اینجا رسیدی یعنی توکن قطعا چک شده و ولید نبوده پس لاگین رو رندر کن
-    renderLogin()
+    return renderLogin()
 }
 
 
 type I_LoginForm = {
     id:string,timer?:number,mode?:I_AL_mode,userId?:string,register?:I_AL_register,profile?:I_AL_profile,forget?:I_AL_forget,
-    setMode?:(mode:I_AL_mode)=>void,onSubmit?:(model:I_AL_model)=>Promise<void>,modes?:I_AL_mode[],attrs?:any,
-    onSubmitProfile?:(profileModel:any)=>void,otpLength?:number,loading:boolean
+    setMode?:(mode:I_AL_mode)=>void,onSubmit?:(model:I_AL_model)=>Promise<void>,modes?:I_AL_mode[],attrs?:any,logout:()=>void
+    onSubmitProfile?:(profileModel:any)=>void,otpLength?:number,loading:boolean,getStorage:I_AL_getStorage,onRegister:(model:I_AL_model)=>void
 }
 function LoginForm(props:I_LoginForm) {
-    let {timer = 30,register,profile,forget,setMode,onSubmit,modes,attrs,onSubmitProfile,otpLength,mode,loading} = props;
+    let {timer = 30,register,profile,forget,setMode,onSubmit,modes,attrs,onSubmitProfile,otpLength,mode,loading,getStorage,logout,onRegister} = props;
+    let {registerType = 'auto',registerText = ()=>'Register',registerFields} = register;
     let [tab,setTab] = useState<'login'|'register'>('login')
     let [model,setModel] = useState<I_AL_model>(getInitialModel())
     let [error,setError] = useState<boolean>(!props.userId)
@@ -248,8 +300,7 @@ function LoginForm(props:I_LoginForm) {
         }
         if (mode === 'OTPCode') { return { inputLabel: 'کد پیامک شده', title: false, submitText: 'ورود', subtitle: `کد پیامک شده به شماره ی ${model.login.userId} را وارد کنید` } }
         if (mode === 'register') { 
-            let {title,submitText = 'ثبت نام',subtitle = false} = register;
-            return { inputLabel: false, title, submitText, subtitle, backButton: tab !== 'register' } 
+            return { inputLabel: false, title:registerText('form title'), submitText:registerText('submit button'), subtitle:false, backButton: tab !== 'register' } 
         }
         if (mode === 'forgetUserId') {
             let subtitle = `${forget.mode === 'phoneNumber' ? 'شماره همراه' : 'ایمیل'} خود را وارد کنید . کد باز یابی رمز عبور برای شما ارسال خواهد شد`
@@ -265,7 +316,14 @@ function LoginForm(props:I_LoginForm) {
         if (mode === 'phoneNumber') { return { inputLabel: 'شماره همراه', title: 'ورود با شماره همراه', submitText: 'ورود', subtitle: false } }
     }
     function getInitialModel() {
-        return { forget: {}, register: {}, profile: (profile || {}).model, login: { userId:props.userId } };
+        return { 
+            forget: {}, 
+            register: {}, 
+            profile: (profile || {}).model, 
+            login: { userId:props.userId },
+            token:getStorage('token'),
+            userInfo:getStorage('userInfo') 
+        };
     }
     function changeMode(mode:I_AL_mode) {
         setMode(mode);
@@ -277,7 +335,14 @@ function LoginForm(props:I_LoginForm) {
         return {
             className: 'aio-login-title', align: 'v',
             row: [
-                { show: !!backButton, html: <Icon path={mdiChevronRight} size={1} />, size: 48, align: 'vh', onClick: () => profile?profile.onClose():changeMode(modes[0]) },
+                { 
+                    show: !!backButton, html: <Icon path={mdiChevronRight} size={1} />, size: 48, align: 'vh', 
+                    onClick: () => {
+                        if(profile){profile.onClose()}
+                        else if(mode === 'register'){logout()}
+                        else {changeMode(modes[0])}
+                    } 
+                },
                 { html: title }
             ]
         }
@@ -353,7 +418,7 @@ function LoginForm(props:I_LoginForm) {
     }
     function getInputs() {
         if (profile) { return getFormInputs(profile.fields, 'profile') }
-        if (mode === 'register') { return getFormInputs(register.fields, 'register') }
+        if (mode === 'register') { return getFormInputs(registerFields, 'register') }
         if (mode === 'forgetUserId') {
             if(forget.mode === 'email'){
                 return getInput_email(`value.forget.userId`, () => model.forget.userId)    
@@ -382,25 +447,30 @@ function LoginForm(props:I_LoginForm) {
             className: 'ofy-auto',
             html: (
                 <AIOInput
-                    type='form' key={mode} lang='fa' value={model} rtl={true} initialDisabled={!props.userId}
-                    onChange={(model,errors) => {setModel(model); setError(!!errors.length)}}
+                    type='form' key={mode} lang='fa' value={{...model}} rtl={true} initialDisabled={!props.userId}
+                    onChange={(model,errors) => {
+                        setModel(model); 
+                        setError(!!errors.length)
+                    }}
                     inputs={{ props: { gap: 12 }, column: getInputs() }}
                     footer={({ disabled }) => submit_layout({ submitText: labels.submitText, disabled })}
                 />
             )
         }
     }
-    function submit_layout({ submitText, disabled }) {
+    function submit_layout(p:{ submitText:string, disabled:boolean }) {
+        let { submitText, disabled } = p;
         let layout = {
             style: { padding: '0 12px' },
-            html: (<SubmitButton mode={mode} timer={timer} text={submitText} loading={loading} disabled={() => !!disabled} onClick={() => submit()} />)
+            html: (<SubmitButton mode={mode} timer={timer} text={submitText} loading={loading} disabled={disabled} onClick={() => submit()} />)
         }
         return <RVD layout={layout} />
     }
     async function submit() {
         if(error){return}
-        if (profile) { onSubmitProfile(model) }
-        else { onSubmit(model); }
+        if (profile) { await onSubmitProfile(model) }
+        else if(mode === 'register'){await onRegister(model)}
+        else { await onSubmit(model); }
     }
     function changeUserId_layout() {
         if (mode !== 'OTPCode') { return false }
@@ -451,19 +521,17 @@ function LoginForm(props:I_LoginForm) {
     }
     function registerButton_layout() {
         if ( mode === 'register') { return false }
-        if (register.type !== 'button') { return false }
-        let {buttonText = 'ثبت نام'} = register
-        return { align: 'vh', html: (<button onClick={() => changeMode('register')} className='aio-login-register-button'>{buttonText}</button>) }
+        if (registerType !== 'button') { return false }
+        return { align: 'vh', html: (<button onClick={() => changeMode('register')} className='aio-login-register-button'>{registerText('register button')}</button>) }
     }
     function registerTab_layout() {
-        if(!register || register.type !== 'tab' || profile || mode === 'forgetUserId' || mode === 'forgetPassword') { return false }
-        let {tabText = 'ثبت نام'} = register;
+        if(!register || registerType !== 'tab' || profile || mode === 'forgetUserId' || mode === 'forgetPassword') { return false }
         return {
             html: (
                 <AIOInput
                     className='aio-login-register-tabs'
                     type='tabs' value={mode === 'register' ? 'register' : 'login'}
-                    options={[{ text: 'ورود', value: 'login' }, { text: tabText, value: 'register' }]}
+                    options={[{ text: 'ورود', value: 'login' }, { text: registerText('tab button'), value: 'register' }]}
                     onChange={(tab) => {
                         if (tab === 'login') { changeMode(modes[0]) }
                         else if (tab === 'register') { changeMode('register') }
@@ -497,7 +565,7 @@ function LoginForm(props:I_LoginForm) {
     return (<RVD layout={{className, style,column,attrs:{ onKeyDown: (e) => { if (e.keyCode === 13) { submit() } } }}}/>)
     
 }
-type I_SubmitButton = {disabled:()=>boolean, loading:boolean, text:string, outline?:boolean,mode:I_AL_mode,onClick:()=>void,timer:number}
+type I_SubmitButton = {disabled:boolean, loading:boolean, text:string, outline?:boolean,mode:I_AL_mode,onClick:()=>void,timer:number}
 function SubmitButton(props:I_SubmitButton) {
     let {disabled, loading, text, outline,mode,onClick,timer} = props;
     let [time,setTime] = useState(getDelta());
@@ -526,7 +594,6 @@ function SubmitButton(props:I_SubmitButton) {
         if (delta < 0) { delta = 0 }
         return delta
     }
-    let isDisabled = disabled();
     let loadingText = 'در حال ارسال';
     if (time > 0) {
         setTimeout(() => setTime(time - 1), 1000);
@@ -535,11 +602,11 @@ function SubmitButton(props:I_SubmitButton) {
         setTimeout(() => setTime(0), 0);
     }
     if (time) { 
-        isDisabled = true; 
+        disabled = true; 
         if(!loading){text = `لطفا ${time} ثانیه صبر کنید` }
     }
     return (
-        <button className={'aio-login-submit' + (outline ? ' aio-login-submit-outline' : '')} disabled={isDisabled} onClick={() => click()}>
+        <button className={'aio-login-submit' + (outline ? ' aio-login-submit-outline' : '')} disabled={disabled} onClick={() => click()}>
             {!loading && text}
             {!!loading && <Icon path={mdiLoading} size={1} spin={0.2} style={{ margin: '0 6px' }} />}
             {!!loading && loadingText}

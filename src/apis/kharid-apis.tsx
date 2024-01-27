@@ -294,6 +294,7 @@ export default function kharidApis({ baseUrl, helper }) {
     getFakeProduct(){
       let product:I_product = {
         id:'1231',
+        productSku:'4324',
         name:'محصول تستی',
         images:[nosrc],
         inStock:true,
@@ -417,7 +418,7 @@ type I_spreeProduct_relationships = {
   product_properties:{data:{id:any}[]}
 }
 type I_spreeProduct_attributes = {
-  name:string
+  name:string,sku:string|number
 }
 type I_spreeIncluded = {
   optionTypes:any,
@@ -590,6 +591,7 @@ class Spree implements I_Spree{
     let {b1Info,actionClass,Shop} = this.appState;
     let {CampaignId,PriceListNum} = Shop[category.shopId];
     let { relationships,attributes,id } = spreeProduct,name = attributes.name;
+    let productSku = attributes.sku;
     const sku = spreeIncluded.variants[relationships.default_variant.data.id].attributes.sku;
     if (!sku) {return false}
     let images = relationships.images.data.map(({id})=>`https://spree.burux.com${spreeIncluded.images[id.toString()].attributes.styles[9].url}`)
@@ -601,7 +603,7 @@ class Spree implements I_Spree{
     let {OnHand,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
     if(!OnHand || OnHand === null){OnHand = {qtyLevel:0}}  
     let {qtyLevel = 0} = OnHand;
-    let product:I_product = {category,images,name,id,inStock:!!qtyLevel,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price,hasFullDetail:false}
+    let product:I_product = {productSku,category,images,name,id,inStock:!!qtyLevel,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price,hasFullDetail:false}
     return product;
   }
 }

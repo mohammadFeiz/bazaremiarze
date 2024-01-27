@@ -48,7 +48,7 @@ export default class Bazargah extends Component{
         })
     }
     wait_to_get_layout(){
-        let {setBazargahOrders,backOffice,bazargahOrders} = this.context;
+        let {SetState,backOffice,bazargahOrders} = this.context;
         let {activeTabId} = this.state;
         if(activeTabId !== 0 || !backOffice.activeManager.bazargah){return false}
         let {wait_to_get} = bazargahOrders;
@@ -72,7 +72,7 @@ export default class Bazargah extends Component{
                         <BazargahCard key={o.orderId} {...order} 
                             onExpired={()=>{
                                 bazargahOrders.wait_to_get = bazargahOrders.wait_to_get.filter((oo)=>o.orderId !== oo.orderId)
-                                setBazargahOrders(bazargahOrders)
+                                SetState({bazargahOrders})
                             }}
                             onShowDetails={()=>this.openDetails(o)}
                         />
@@ -82,7 +82,7 @@ export default class Bazargah extends Component{
         }
     }
     wait_to_send_layout(){
-        let {setBazargahOrders,bazargahOrders,backOffice} = this.context;
+        let {SetState,bazargahOrders,backOffice} = this.context;
         if(!backOffice.activeManager.bazargah){return false}
         let {activeTabId} = this.state;
         if(activeTabId !== 1){return false}
@@ -100,7 +100,7 @@ export default class Bazargah extends Component{
                             onSend={()=>this.openDetails(o)} 
                             onExpired={()=>{
                                 bazargahOrders.wait_to_send = bazargahOrders.wait_to_send.filter((oo)=>o.orderId !== oo.orderId)
-                                setBazargahOrders(bazargahOrders)
+                                SetState({bazargahOrders})
                             }}
                         />
                     )
@@ -129,7 +129,7 @@ export default class Bazargah extends Component{
         }
     }
     renderInHome(){
-        let {bazargahOrders,setBazargahOrders,rsa,backOffice} = this.context;
+        let {bazargahOrders,SetState,rsa,backOffice} = this.context;
         if(!backOffice.activeManager.bazargah || !bazargahOrders.wait_to_get){return false}
         return (
             <RVD
@@ -170,7 +170,7 @@ export default class Bazargah extends Component{
                                                 {...o} items={false} address={false} 
                                                 onExpired={()=>{
                                                     bazargahOrders.wait_to_get = bazargahOrders.wait_to_get.filter((oo)=>o.orderId !== oo.orderId)
-                                                    setBazargahOrders(bazargahOrders)
+                                                    SetState({bazargahOrders})
                                                 }}
                                                 onShowDetails={()=>this.openDetails(o)}
                                             />
@@ -801,7 +801,7 @@ class JoziateSefaresheBazargah extends Component{
                             className='button-2 m-h-12' disabled={disabled} style={{height:36}}
                             onClick={async ()=>{
                                 if(disabled){return}
-                                let {apis,setBazargahOrders} = this.context;
+                                let {apis,SetState} = this.context;
                                 let {order} = this.props;
                                 let {orderId} = order;
                                 apis.request({
@@ -813,7 +813,7 @@ class JoziateSefaresheBazargah extends Component{
                                         let {bazargahOrders} = this.context;
                                         bazargahOrders.wait_to_send = bazargahOrders.wait_to_send.filter((o)=>o.orderId !== orderId);
                                         rsa.removeModal('all')
-                                        setBazargahOrders(bazargahOrders)
+                                        SetState({bazargahOrders})
                                     }
                                 })
                             }}

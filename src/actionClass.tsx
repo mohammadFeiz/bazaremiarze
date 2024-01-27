@@ -43,27 +43,32 @@ export default class ActionClass implements I_actionClass {
         b1Info:I_B1Info,
         Logger:any,
         updateProfile:I_updateProfile,
-        Login:I_AIOLogin_class
+        Login:I_AIOLogin_class,
+        apis:I_AIOService_class
     };
+    SetState:(obj:any)=>void
     pricing:any;
-    constructor({ getState, getProps }) {
+    constructor({ getState, getProps,SetState }) {
         this.getState = getState;
         this.getProps = getProps;
+        this.SetState = SetState;
         let { userInfo } = this.getProps();
         this.pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode, 12 * 60 * 60 * 1000)
         this.pricing.startservice().then((value) => { return value; });
     }
     
-    getGuaranteeItems = async ({ apis, Login }) => {
+    getGuaranteeItems = async () => {
+        let { apis, Login } = this.getProps();
         let res = await apis.request({ api: "guaranti.garantiItems", loading: false, description: 'دریافت لیست کالاهای گارانتی کاربر' });
         if (res === false) { Login.logout(); return; }
         let guaranteeExistItems = await apis.request({ api: "guaranti.kalahaye_ghabele_garanti", loading: false, description: 'کالاهای قابل گارانتی', def: [] });
-        return {guaranteeExistItems,guaranteeItems: res}
+        this.SetState({guaranteeExistItems,guaranteeItems: res})
     }
-    getBazargahOrders = async (apis:I_AIOService_class) => {
+    getBazargahOrders = async () => {
+        let {apis} = this.getProps();
         let wait_to_get = await apis.request({ api: 'bazargah.daryafte_sefareshate_bazargah', parameter: { type: 'wait_to_get' }, loading: false, description: 'دریافت سفارشات در انتظار اخذ بازارگاه' });
         let wait_to_send = await apis.request({ api: 'bazargah.daryafte_sefareshate_bazargah', parameter: { type: 'wait_to_send' }, loading: false, description: 'دریافت سفارشات در انتظار ارسال بازارگاه' });
-        return {wait_to_get, wait_to_send };
+        this.SetState({bazargahOrders:{wait_to_get, wait_to_send}})
     }
     removeCartTab = (shopId:string) => {
         let { cart,setCart } = this.getState();
@@ -102,7 +107,9 @@ export default class ActionClass implements I_actionClass {
             { text: 'خروج از حساب کاربری', icon: () => icon(mdiExitToApp), attrs: { className: 'colorFDB913' }, onClick: () => logout() }
         ]
     }
-    getShopState = async ({ apis,backOffice, userInfo }) => {
+    getShopState = async () => {
+        let { apis,backOffice, userInfo } = this.getProps();
+        let {setCart} = this.getState();
         let { Bundle, Regular, spreeCampaigns = [] } = backOffice;
         let Shop:I_state_Shop = {}
         Shop.Regular = new ShopClass({getAppState: () => this.getState(),config: {...Regular,itemType:'Product'}})
@@ -117,10 +124,11 @@ export default class ActionClass implements I_actionClass {
             Shop[shopId] = new ShopClass({getAppState: () => this.getState(),config: {...spreeCampaign}})
         }
         let cart:I_state_cart = await apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});
-        return {cart,Shop}
+        setCart(cart);
+        this.SetState({Shop})
     }
     openPopup = (type:string, parameter?:any) => {
-        let { rsa, backOffice, Logger,msfReport } = this.getState();
+        let { rsa, backOffice, Logger,msfReport,setCart } = this.getState();
         let { userInfo } = this.getProps();
         let { addModal, removeModal, setNavId } = rsa;
         if (type === 'vitrin-search') {
@@ -242,7 +250,7 @@ export default class ActionClass implements I_actionClass {
                 header: { 
                     title: 'سبد خرید',
                     buttons:[
-                        [<Icon path={mdiDelete} size={1}/>,{onClick:()=>this.setCart({shops:{}}),className:'align-vh'}],
+                        [<Icon path={mdiDelete} size={1}/>,{onClick:()=>setCart({shops:{}}),className:'align-vh'}],
                         [<Icon path={mdiEye} size={1}/>,{onClick:()=>console.log(this.getState().cart),className:'align-vh'}]
                     ] 
                 } 
@@ -329,8 +337,8 @@ export default class ActionClass implements I_actionClass {
                 row:[
                   {flex:1},
                   {size:36,align:'vh',html:<Icon path={mdiCodeBraces} size={1}/>,onClick:()=>{
-                    let {developerMode,setDeveloperMode} = this.getState();
-                    setDeveloperMode(!developerMode)
+                    let {developerMode} = this.getState();
+                    this.SetState({developerMode:!developerMode})
                   }}
                 ]
               }}
@@ -363,7 +371,8 @@ export default class ActionClass implements I_actionClass {
         let jsonUrl = UrlToJson(wrl)
         return jsonUrl.tab || 'khane'
     }
-    getSpreeCategories = (backOffice:I_state_backOffice) => {
+    getSpreeCategories = () => {
+        let {backOffice} = this.getProps();
         let { spreeCategories = [] } = backOffice;
         let categories:I_state_spreeCategories = { icon_type: [], slider_type: [], dic: {} }
         for (let i = 0; i < spreeCategories.length; i++) {
@@ -372,7 +381,7 @@ export default class ActionClass implements I_actionClass {
             categories[`${showType}_type`].push(sc);
             categories.dic[id] = sc;
         }
-        return categories;
+        this.SetState({spreeCategories:categories})
     }
     getSettleType = (PayDueDate:number) =>{
         if(PayDueDate === undefined){return}
@@ -498,7 +507,7 @@ export default class ActionClass implements I_actionClass {
         else {this.removeCart(cart,ids.slice(0,ids.length - 1),fields)}
     }
     editCartTaxonByPricing = async(cartTaxon:I_cartTaxon,shopId:string,removable:boolean)=>{
-        let { Shop,rsa,cart } = this.getState();
+        let { Shop,rsa,cart,setCart } = this.getState();
         let factorDetailsItems:I_factorDetailItem[] = []
         let variantsParents:{[variantId:string]:{productId:string,taxonId:string}} = {}
         for(let productId in cartTaxon.products){
@@ -526,9 +535,9 @@ export default class ActionClass implements I_actionClass {
             if(isUnderValue){
                 if(ItemQty === 0){
                     if(removable){
-                        let newCart = JSON.parse(JSON.stringify(cart));
+                        let newCart:I_state_cart = JSON.parse(JSON.stringify(cart));
                         this.removeCart(newCart,[shopId,cartTaxon.taxonId,productId,ItemCode],['shops','taxons','products','variants'])
-                        this.setCart(newCart)
+                        setCart(newCart)
                     }
                     else {
                         rsa.addSnakebar({text:Information,time:4,type:'warning'});
@@ -540,9 +549,9 @@ export default class ActionClass implements I_actionClass {
             else if(isOverValue){
                 rsa.addSnakebar({text:`در شرایط فعلی این فاکتور حداکثر تعداد قابل انتخاب از محصول ${product.name} ${ItemQty} عدد می باشد`,time:6,type:'warning'});
                 if(ItemQty === 0){
-                    let newCart = JSON.parse(JSON.stringify(cart));
+                    let newCart:I_state_cart = JSON.parse(JSON.stringify(cart));
                     this.removeCart(newCart,[shopId,cartTaxon.taxonId,productId,ItemCode],['shops','taxons','products','variants'])
-                    this.setCart(newCart)
+                    setCart(newCart)
                 }
                 else {
                     cartVariant.count = ItemQty;
@@ -629,7 +638,7 @@ export default class ActionClass implements I_actionClass {
         return {...cart,shops:{...cart.shops,[shopId]:cartShop}}
     }
     removeCartBundleTaxon = (taxon:I_bundle_taxon) => {
-        let {cart} = this.getState();
+        let {cart,setCart} = this.getState();
         let newCart: I_state_cart = JSON.parse(JSON.stringify(cart));
         let cartTab: I_cartShop_bundle = this.getCartShop('Bundle') as I_cartShop_bundle;
         let newTaxons = {},length = 0;
@@ -648,28 +657,23 @@ export default class ActionClass implements I_actionClass {
             cartTab.taxons = newTaxons;
             newCart.shops.Bundle = cartTab;
         }
-        this.setCart(newCart)
+        setCart(newCart)
     }
     changeCart = async (p:I_changeCartProps) => {
         let { shopId,taxonId, productId, variantId,count,productCategory } = p;
         let { apis,setCart } = this.getState();
         let props:I_changeCartProps = { shopId,taxonId, productId, variantId,count,productCategory }
-        let newCart = !count?await this.removeCartItem(props):await this.editCartItem(props);
+        let newCart:I_state_cart = !count?await this.removeCartItem(props):await this.editCartItem(props);
         apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
         setCart(newCart);
-    }
-    setCart = (newCart:I_state_cart) => {
-        let { apis,setCart } = this.getState();
-        setCart(newCart)
-        apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
     }
     getCartShop = (shopId)=>{
         let { cart } = this.getState();
         return cart.shops[shopId]
     }
     setCartShop = (shopId,value)=>{
-        let { cart } = this.getState();
+        let { cart,setCart } = this.getState();
         let newCart:I_state_cart = {...cart,shops:{...cart.shops,[shopId]:value}}
-        this.setCart(newCart) 
+        setCart(newCart) 
     }
 }

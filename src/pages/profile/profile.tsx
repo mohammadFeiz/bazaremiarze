@@ -13,7 +13,7 @@ import Wallet from '../../popups/wallet/wallet';
 import './profile.css';
 import { I_app_state } from '../../types';
 export default function Profile(){
-    let {guaranteeItems = [],userInfo,b1Info,actionClass,backOffice,setGuaranteeItems,apis,logout}:I_app_state = useContext(appContext);
+    let {guaranteeItems = [],userInfo,b1Info,actionClass,backOffice,SetState,apis,logout}:I_app_state = useContext(appContext);
     let [showWallet,setShowWallet] = useState<boolean>(false)
     let [parts] = useState<any>([
         {after:getSvg('chevronLeft'),text:'پیگیری سفارش خرید',icon:getSvg(13,{className:'theme-medium-font-color'}),onClick:()=>{
@@ -27,7 +27,7 @@ export default function Profile(){
             show:()=>!!backOffice.activeManager.garanti && !!b1Info.customer.slpcode,
             onClick:async ()=>{
                 let guaranteeItems = await apis.request({api:'guaranti.garantiItems',description:'دریافت لیست کالاهای گارانتی کاربر'});
-                setGuaranteeItems(guaranteeItems);
+                SetState({guaranteeItems});
                 actionClass.openPopup('joziate-darkhast-haye-garanti'); 
             }
         },

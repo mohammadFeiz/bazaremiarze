@@ -53,7 +53,7 @@ export default function App() {
     else if (mode === 'register') { onSubmit_register(model) }
   }
   const checkToken: I_AIOLogin_checkToken = async (token) => {
-    let backOffice = await apis.request({ api: 'login.getBackOffice', parameter: apis, description: 'دریافت تنظیمات اولیه', loading: false })
+    let backOffice = await apis.request({ api: 'login.getBackOffice', parameter: {apis,Login}, description: 'دریافت تنظیمات اولیه', loading: false })
     if (typeof backOffice === 'object') {
       setBackOffice(backOffice)
       if (!token) { return false }
@@ -128,7 +128,7 @@ export default function App() {
     let token = accessToken.access_token;
     let b1Info:I_B1Info = await getB1Info(userInfo);
     if (!b1Info) { return }
-    let registered = await apis.request({ api: 'login.checkIsRegistered', parameter: userId, loading: false, description: 'دریافت اطلاعات ثبت نام' });
+    let registered = await apis.request({ api: 'login.checkIsRegistered', parameter: {phoneNumber:userId,Logger}, loading: false, description: 'دریافت اطلاعات ثبت نام' });
     if (registered) {
       Login.setStorage('userInfo', userInfo);
       Login.setStorage('userId', userId);
@@ -164,7 +164,7 @@ export default function App() {
     let oldUserInfo = (userInfo || {}) as I_userInfo;
     let newUserInfo: I_userInfo = { ...oldUserInfo, ...model}
     let res = await apis.request({
-      api: 'login.profile', parameter: { model: newUserInfo, mode }, description, loading: false,
+      api: 'login.profile', parameter: { model: newUserInfo, mode,Logger }, description, loading: false,
       onCatch: (error) => {
         let { response, message, Message } = error;
         if (response && response.data) {

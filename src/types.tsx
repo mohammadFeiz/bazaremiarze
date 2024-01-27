@@ -210,7 +210,7 @@ export type I_actionClass = {
         text:string,icon:()=>React.ReactNode,onClick:()=>void
     }[],
     getSideFooter:()=>React.ReactNode,
-    getShopState:(p:{apis:I_AIOService_class,backOffice:I_state_backOffice,userInfo:I_userInfo})=>Promise<{Shop:I_state_Shop,cart:I_state_cart}>,
+    getShopState:()=>Promise<void>,
     fixPrice:(
         p:{ 
             items:{itemCode:string,ItemCode:string,itemQty:number,ItemQty:number}[], 
@@ -234,7 +234,7 @@ export type I_actionClass = {
     getAppTitle:(nav:any)=>React.ReactNode,
     manageUrl:()=>void,
     getInitialNavId:()=>I_bottomMenu,
-    getSpreeCategories:(backOffice:I_state_backOffice) =>I_state_spreeCategories
+    getSpreeCategories:() =>void,
     getSettleType:(PayDueDate:number) => number|undefined,
     openLink:(linkTo:string) => void,
     isLocationMissed:()=>boolean,
@@ -243,9 +243,8 @@ export type I_actionClass = {
     removeCartItem:(p:I_changeCartProps)=>Promise<I_state_cart>,
     editCartItem:(p:I_changeCartProps)=>Promise<I_state_cart>,
     changeCart:(p:I_changeCartProps)=>Promise<void>,
-    setCart:(newCart:I_state_cart)=>void,
-    getGuaranteeItems:(p:{apis:I_AIOService_class,Login:I_AIOLogin_class})=>Promise<{guaranteeExistItems:any,guaranteeItems:any}>,
-    getBazargahOrders:(apis:I_AIOService_class)=>Promise<any>,
+    getGuaranteeItems:()=>Promise<void>,
+    getBazargahOrders:()=>Promise<void>,
     removeCartTab:(shopId:string)=>void,
     removeCartBundleTaxon:(taxon:I_bundle_taxon) =>void,
     fixCartByPricing:(shopId:string)=>Promise<void>,
@@ -266,6 +265,7 @@ export type I_fixPrice_result = {
 }
 export type I_changeCartProps = {shopId:string,taxonId?:string, productId:string, variantId:string,count:number,productCategory:I_product_category}
 export type I_app_state = {
+    mounted:boolean,
     backOffice:I_state_backOffice,
     apis:I_AIOService_class,
     Login:I_AIOLogin_class,
@@ -287,11 +287,8 @@ export type I_app_state = {
     guaranteeItems:any[],
     garanti_products_dic:any,
     guaranteeExistItems:any,
-    setGuaranteeExistItems:any,
-    setGuaranteeItems:any,
-    setBazargahOrders:any,
+    SetState:(obj:any,callback?:any)=>void,
     setCart:(newcart:I_state_cart)=>void,
-    setDeveloperMode:(state:boolean)=>void
 }
 export type I_state_spreeCategories = { icon_type: I_spreeCategory[], slider_type: I_spreeCategory[], dic: {} }
 export type I_state_Shop = {[shopId:string]:I_ShopClass}
@@ -397,10 +394,9 @@ export type I_bottomMenu = 'vitrin' | 'bazargah' | 'khane' | 'kharid' | 'profile
 
 export type I_vitrin = {
     started?:boolean,
-    isFetch:boolean,
     update:(obj:any,callback?:Function)=>void,
     removeSelectedProduct:(productId:string | number)=>void,
-    getIsSelected:(productId:string | number,variantId:string | number)=>boolean,
+    getIsSelected:(productId:string | number,variantId?:string | number)=>boolean,
     add:(product:I_vitrin_product,variantId:string | number)=>void,
     remove:(product:any,variantId:string | number)=>void,
     updateVitrinSelected:(product:any,variantId:string | number)=>void,

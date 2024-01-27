@@ -22,13 +22,13 @@ export default class SabteGarantiJadidBaJoziat extends Component {
         };
     }
     async onSubmit() {
-        let { apis, actionClass,setGuaranteeItems,rsa } = this.context;
+        let { apis, actionClass,SetState,rsa } = this.context;
         let { items } = this.state;
         let res = await apis.request({ api: "guaranti.sabte_kalahaye_garanti", parameter: items,description:'ثبت کالاهای گارانتی' });
         if (res) {
             let guaranteeItems = await apis.request({ api: "guaranti.garantiItems",description:'دریافت لیست کالاهای گارانتی کاربر' });
             rsa.removeModal('all');
-            setGuaranteeItems(guaranteeItems)
+            SetState({guaranteeItems})
             actionClass.openPopup('payame-sabte-garanti',{
                 text: "درخواست گارانتی شما با موفقیت ثبت شد",
                 subtext: "درخواست گارانتی شما تا 72 ساعت آینده بررسی خواهد شد"

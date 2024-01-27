@@ -1,12 +1,12 @@
 export default function loginApis({ baseUrl, helper, Axios, setToken }) {
     return {
-        async checkIsRegistered(phoneNumber, { Logger }) {
+        async checkIsRegistered({phoneNumber,Logger}) {
             let response = await Axios.get(`${baseUrl}/Users/IsUserSyncedWithB1?userName=${phoneNumber}`);
             let result = response.data.data;
             Logger.add('IsUserSyncedWithB1', result ? 'true' : 'false', 'IsUserSyncedWithB1')
             return { result }
         },
-        async getBackOffice(apis,{Login}) {
+        async getBackOffice({apis,Login}) {
             let result;
             try {
                 const response = await Axios.get(`${baseUrl}/BackOffice/GetLastCampaignManagement?type=backoffice`);
@@ -21,7 +21,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                 }
                 let cacheResult = apis.handleCacheVersions(backOffice.versions || {});
                 //اگر ورژن کش لاگین عوض شده پس کابر رو هدایت کن به صفحه لاگین
-                if(cacheResult.login === false){
+                if(cacheResult.login === true){
                     Login.logout();
                 }
                 let loginType = new URL(window.location.href).searchParams.get("login");
@@ -40,7 +40,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             catch (err) { result = err.message }
             return { result }
         },
-        async profile({ model, mode }, { Logger }) {
+        async profile({ model, mode,Logger }) {
             let url = {
                 'register': `${baseUrl}/Users/NewUser`,
                 'profile': `${baseUrl}/Users/UpdateUser`,

@@ -10,184 +10,207 @@ import Logo1 from './../../images/bmloading.png';
 import appContext from "../../app-context.js";
 import SignalR from '../../singalR/signalR.js';
 import "./index.css";
-import { I_AIOLogin_class, I_AIOService_class, I_B1Info, I_ShopClass, I_actionClass, I_app_state, I_msfReport, I_state_backOffice, I_updateProfile, I_userInfo, I_vitrin, I_vitrin_product } from "../../types.tsx";
+import { I_AIOLogin_class, I_AIOService_class, I_B1Info, I_ShopClass, I_actionClass, I_app_state, I_msfReport, I_state_Shop, I_state_backOffice, I_state_cart, I_state_spreeCategories, I_updateProfile, I_userInfo, I_vitrin, I_vitrin_product } from "../../types.tsx";
 import { v_updateMyVitrin_payload } from "../../apis/vitrin-apis.tsx";
 type I_Main = {
   baseUrl:string,Logger:any,updateProfile:I_updateProfile,Login:I_AIOLogin_class,apis:I_AIOService_class,userInfo:I_userInfo,b1Info:I_B1Info,
   backOffice:I_state_backOffice,msfReport:I_msfReport
 }
-export default function Main(props:I_Main) {
-  let { baseUrl,Logger,updateProfile,userInfo,b1Info,Login,apis,backOffice,msfReport } = props;
-  apis.setProperty('getState',()=>{return getContext()});
-  let [mounted,setMounted] = useState<boolean>(false)
-  let [actionClass] = useState<I_actionClass>(new ActionClass({
-    getState:()=>getContext(),getProps:()=>props
-  }))
-  let [rsa] = useState<any>(new RSA({
-    rtl:true,maxWidth:770,id:'bazarmiarzersa',
-    title:(nav)=>actionClass.getAppTitle(nav),
-    nav:{
-      items:actionClass.getNavItems,
-      id:actionClass.getInitialNavId(),
-      header:()=><div className='w-100 m-v-16'><img src={Logo5 as string} alt='' width={200} /></div>
-    },
-    side:{
-      items:actionClass.getSideItems,
-      header:() => <div style={{margin:'24px 0'}} className='align-vh w-100'><img src={Logo1 as string} alt='' height={24}/></div>,
-      footer:actionClass.getSideFooter
-    },
-    headerContent:({ navId }) => <Header type='page' navId={navId} />,
-    body:({ render,id,text }) => {
-      if(!mounted){return null}
-      if(id !== AIOStorage('bm' + userInfo.cardCode).load({name:'lastNavId'})){
-        msfReport({actionName:'tab',actionId:7,targetName:text,targetId:id,tagName:'other',eventName:'page view'})  
-      }
-      AIOStorage('bm' + userInfo.cardCode).save({name:'lastNavId',value:id})  
-      return render()
-    },
-  }))
-  let [vitrin,setVitrin] = useState<I_vitrin>({
-    isFetch:false,
-    update:(obj,callback = ()=>{})=>{
-      let newVitrin = {...vitrin,...obj}
-      setVitrin(newVitrin);
-      setTimeout(callback(),0)
-    },
-    removeSelectedProduct:(productId)=>{
-      let { vitrinSelected = {},update } = vitrin;
-      let newVitrinSelected = {}
-      for(let prop in vitrinSelected){
-        if(prop !== productId.toString()){
-          newVitrinSelected[prop] = vitrinSelected[prop]
+
+export type I_Main_state = {
+  mounted:boolean,
+  rsa:any,
+  actionClass:I_actionClass,
+  vitrin:I_vitrin,
+  developerMode:boolean,
+  Shop:I_state_Shop,
+  cart:I_state_cart,
+  spreeCategories:I_state_spreeCategories,
+  garanti_products_dic:any,
+  guaranteeItems:any[],
+  guaranteeExistItems:any,
+  bazargahOrders:{wait_to_get?:[],wait_to_send?:[]}
+}
+export default class Main extends Component <I_Main,I_Main_state>{
+  constructor(props){
+    super(props);
+    props.apis.setProperty('getState',()=>{return this.getContext()});
+    let actionClass = new ActionClass({
+      getState:this.getContext.bind(this),getProps:()=>this.props,SetState:this.SetState.bind(this)
+    })
+    let rsa = new RSA({
+      rtl:true,maxWidth:770,id:'bazarmiarzersa',
+      title:(nav)=>actionClass.getAppTitle(nav),
+      nav:{
+        items:actionClass.getNavItems,
+        id:actionClass.getInitialNavId(),
+        header:()=><div className='w-100 m-v-16'><img src={Logo5 as string} alt='' width={200} /></div>
+      },
+      side:{
+        items:actionClass.getSideItems,
+        header:() => <div style={{margin:'24px 0'}} className='align-vh w-100'><img src={Logo1 as string} alt='' height={24}/></div>,
+        footer:actionClass.getSideFooter
+      },
+      headerContent:({ navId }) => <Header type='page' navId={navId} />,
+      body:({ render,id,text }) => {
+        let {userInfo,msfReport} = this.props;
+        if(id !== AIOStorage('bm' + userInfo.cardCode).load({name:'lastNavId'})){
+          msfReport({actionName:'tab',actionId:7,targetName:text,targetId:id,tagName:'other',eventName:'page view'})  
         }
-      }
-      update({vitrinSelected:newVitrinSelected})
-    },
-    getIsSelected:(productId,variantId)=>{
-      let { vitrinSelected = {} } = vitrin;
-      if(!vitrinSelected[productId.toString()]){return false}
-      if(!variantId){return true}
-      return !!vitrinSelected[productId.toString()].variantIds.find((o)=>o === variantId)
-    },
-    add:(product:I_vitrin_product,variantId:string | number)=>{
-      let { vitrinSelected,getIsSelected,update } = vitrin;
-      if(getIsSelected(product.id,variantId)){return}
-      let pstrid = product.id.toString();
-      let newVitrinSelected = {};
-      if(getIsSelected(product.id)){
-        let newVariantIds = [...vitrinSelected[pstrid].variantIds,variantId]
-        newVitrinSelected = {...vitrinSelected,[pstrid]:{...vitrinSelected[pstrid],variantIds:newVariantIds}}
-      }
-      else {
-        newVitrinSelected = {...vitrinSelected,[pstrid]:{product,variantIds:[variantId]}}
-      }
-      update({vitrinSelected:newVitrinSelected})
-    },
-    remove:(product,variantId)=>{
-      let { vitrinSelected,getIsSelected,update } = vitrin;
-      if(!getIsSelected(product.id,variantId)){return}
-      let pstrid = product.id.toString();
-      let newVitrinSelected = {};
-      let newVariantIds = vitrinSelected[pstrid].variantIds.filter((vi)=>vi !== variantId)
-      for(let pid in vitrinSelected){
-        if(pid !== pstrid){
-          newVitrinSelected[pid] = vitrinSelected[pid]
-        }
-        else if(newVariantIds.length){
-          newVitrinSelected[pid] = {...vitrinSelected[pid],variantIds:newVariantIds}
-        }
-      }
-      update({vitrinSelected:newVitrinSelected})
-    },
-    updateVitrinSelected:(product,variantId)=>{
-      let { add,remove,getIsSelected } = vitrin;
-      let isSelected = getIsSelected(product.id,variantId)
-      let parameter:v_updateMyVitrin_payload = { isSelected, product,variantId }
-      apis.request({
-          api: 'vitrin.v_updateMyVitrin',parameter,
-          onCatch: (error) => {
-              try {
-                  let { message, Message } = error.response.data;
-                  return message || Message
-              }
-              catch {return 'خطای 1133'}
-          },
-          onSuccess: () => {
-              if (getIsSelected(product.id,variantId)) { remove(product,variantId)}
-              else {add(product,variantId)}
-          }
-      })
-    },
-    fetchData:async ()=>{
-      let started = await apis.request({api: 'vitrin.v_getStarted',loading:false,description: 'دریافت وضعیت ویترین'})
-      vitrin.started = started;
-      apis.request({
-        api: 'vitrin.v_selected',description: 'دریافت محصولات انتخاب شده ی ویترین',loading:false,
-        parameter:userInfo.cardCode,def:[],
-        onSuccess:async (list)=>{
-          let vitrinSelected = {};
-          for(let i = 0; i < list.length; i++){
-            let {product,productId,variantId,vartiantId} = list[i];
-            vitrinSelected[productId] = vitrinSelected[productId] || {product,variantIds:[]}
-            vitrinSelected[productId].variantIds.push(vartiantId || variantId)
-          }
-          vitrin.update({vitrinSelected})
-        }
-      });
+        AIOStorage('bm' + userInfo.cardCode).save({name:'lastNavId',value:id})  
+        return render()
+      },
+    });
+    let vitrin = this.getInitialVitrin()
+    this.state = {
+      mounted:false,rsa,
+      actionClass,vitrin,
+      developerMode:false,
+      Shop:{},cart:{shops:{}},
+      spreeCategories:{slider_type:[],icon_type:[],dic:{}},
+      garanti_products_dic:{},guaranteeExistItems:[],guaranteeItems:[],
+      bazargahOrders:{wait_to_get: undefined,wait_to_send: undefined}
     }
-  })
-  let [Shop,setShop] = useState<{[shopId:string]:I_ShopClass}>({})
-  let [developerMode,setDeveloperMode] = useState<boolean>(false);
-  function logout(){
+  }
+  getInitialVitrin(){
+    return {
+      update:(obj,callback = ()=>{})=>{
+        let {vitrin} = this.state;
+        let newVitrin:I_vitrin = {...vitrin,...obj}
+        this.SetState({vitrin:newVitrin});
+        setTimeout(()=>callback(),0)
+      },
+      removeSelectedProduct:(productId)=>{
+        let {vitrin} = this.state;
+        let { vitrinSelected = {},update } = vitrin;
+        let newVitrinSelected = {}
+        for(let prop in vitrinSelected){
+          if(prop !== productId.toString()){
+            newVitrinSelected[prop] = vitrinSelected[prop]
+          }
+        }
+        update({vitrinSelected:newVitrinSelected})
+      },
+      getIsSelected:(productId:string | number,variantId?:string | number)=>{
+        let {vitrin} = this.state;
+        let { vitrinSelected = {} } = vitrin;
+        if(!vitrinSelected[productId.toString()]){return false}
+        if(!variantId){return true}
+        return !!vitrinSelected[productId.toString()].variantIds.find((o)=>o === variantId)
+      },
+      add:(product:I_vitrin_product,variantId:string | number)=>{
+        let {vitrin} = this.state;
+        let { vitrinSelected,getIsSelected,update } = vitrin;
+        if(getIsSelected(product.id,variantId)){return}
+        let pstrid = product.id.toString();
+        let newVitrinSelected = {};
+        if(getIsSelected(product.id)){
+          let newVariantIds = [...vitrinSelected[pstrid].variantIds,variantId]
+          newVitrinSelected = {...vitrinSelected,[pstrid]:{...vitrinSelected[pstrid],variantIds:newVariantIds}}
+        }
+        else {
+          newVitrinSelected = {...vitrinSelected,[pstrid]:{product,variantIds:[variantId]}}
+        }
+        update({vitrinSelected:newVitrinSelected})
+      },
+      remove:(product,variantId)=>{
+        let {vitrin} = this.state;
+        let { vitrinSelected,getIsSelected,update } = vitrin;
+        if(!getIsSelected(product.id,variantId)){return}
+        let pstrid = product.id.toString();
+        let newVitrinSelected = {};
+        let newVariantIds = vitrinSelected[pstrid].variantIds.filter((vi)=>vi !== variantId)
+        for(let pid in vitrinSelected){
+          if(pid !== pstrid){
+            newVitrinSelected[pid] = vitrinSelected[pid]
+          }
+          else if(newVariantIds.length){
+            newVitrinSelected[pid] = {...vitrinSelected[pid],variantIds:newVariantIds}
+          }
+        }
+        update({vitrinSelected:newVitrinSelected})
+      },
+      updateVitrinSelected:(product,variantId)=>{
+        let {vitrin} = this.state,{apis} = this.props;
+        let { add,remove,getIsSelected } = vitrin;
+        let isSelected = getIsSelected(product.id,variantId)
+        let parameter:v_updateMyVitrin_payload = { isSelected, product,variantId }
+        apis.request({
+            api: 'vitrin.v_updateMyVitrin',parameter,
+            onCatch: (error) => {
+                try {
+                    let { message, Message } = error.response.data;
+                    return message || Message
+                }
+                catch {return 'خطای 1133'}
+            },
+            onSuccess: () => {
+                if (getIsSelected(product.id,variantId)) { remove(product,variantId)}
+                else {add(product,variantId)}
+            }
+        })
+      },
+      fetchData:async ()=>{
+        let {vitrin} = this.state,{apis,userInfo} = this.props;
+        let started = await apis.request({api: 'vitrin.v_getStarted',loading:false,description: 'دریافت وضعیت ویترین'})
+        vitrin.started = started;
+        apis.request({
+          api: 'vitrin.v_selected',description: 'دریافت محصولات انتخاب شده ی ویترین',loading:false,
+          parameter:userInfo.cardCode,def:[],
+          onSuccess:async (list)=>{
+            let vitrinSelected = {};
+            for(let i = 0; i < list.length; i++){
+              let {product,productId,variantId,vartiantId} = list[i];
+              vitrinSelected[productId] = vitrinSelected[productId] || {product,variantIds:[]}
+              vitrinSelected[productId].variantIds.push(vartiantId || variantId)
+            }
+            vitrin.update({vitrinSelected})
+          }
+        });
+      }
+    }
+  }
+  async componentDidMount(){
+    let {actionClass,vitrin} = this.state,{backOffice,b1Info} = this.props;
+    actionClass.manageUrl();
+    let signalR = new SignalR(()=>this.getContext())
+    signalR.start();
+    vitrin.fetchData();
+    actionClass.getSpreeCategories();
+    if (backOffice.activeManager.garanti && b1Info.customer.slpcode) { actionClass.getGuaranteeItems(); }
+    if (backOffice.activeManager.bazargah) { actionClass.getBazargahOrders(); }
+    actionClass.handleMissedLocation()
+    await actionClass.getShopState()
+    this.SetState({mounted:true})  
+  }
+  logout(){
+    let {msfReport,Login} = this.props;
     msfReport({actionName:'logout',actionId:875,tagName:'user authentication',eventName:'action'});
     Login.logout();
   }
-  let [bazargahOrders,setBazargahOrders] = useState<any>({wait_to_get: undefined,wait_to_send: undefined});
-  async function getBazargahOrders(){
-    let {wait_to_get, wait_to_send } = await actionClass.getBazargahOrders(apis);
-    setBazargahOrders({wait_to_get, wait_to_send})
+  SetState(obj:any,callback?:any){this.setState(obj,callback)}
+  setCart(newCart:I_state_cart){
+    let {apis} = this.props;
+    this.SetState({cart:newCart})
+    apis.request({ api: 'kharid.setCart', parameter: newCart, loading: false, description: 'ثبت سبد خرید' })
   }
-  let [spreeCategories,setSpreeCategories] = useState({slider_type:[],icon_type:[],dic:{}})
-  function getSpreeCategories(){
-    let spreeCategories = actionClass.getSpreeCategories(backOffice);
-    setSpreeCategories(spreeCategories)
-  }
-  let [guaranteeItems,setGuaranteeItems] = useState([]);
-  let [garanti_products_dic,set_garanti_products_dic] = useState<any>({})
-  let [guaranteeExistItems,setGuaranteeExistItems] = useState<any>([])
-  async function getGuaranteeItems(){
-    let {guaranteeExistItems,guaranteeItems} = await actionClass.getGuaranteeItems({Login,apis})
-    setGuaranteeExistItems(guaranteeExistItems);
-    setGuaranteeItems(guaranteeItems)
-  }
-  let [cart,setCart] = useState({shops:{}})
-  
-  function getContext() {
+  getContext(){
+    let {baseUrl,Logger,updateProfile,Login,apis,userInfo,b1Info,backOffice,msfReport} = this.props;
+    let {developerMode,actionClass,rsa,cart} = this.state;
     let context:I_app_state = {
-      baseUrl,developerMode,actionClass,Logger,updateProfile,Login,apis,rsa,userInfo,b1Info,backOffice,msfReport,
-      logout,vitrin,Shop,bazargahOrders,spreeCategories,guaranteeItems,garanti_products_dic,guaranteeExistItems,
-      cart,setCart,setGuaranteeExistItems,setGuaranteeItems,setBazargahOrders,setDeveloperMode
+      ...this.state,
+      baseUrl,Logger,updateProfile,Login,apis,userInfo,b1Info,backOffice,msfReport,
+      developerMode,actionClass,rsa,
+      cart,
+      logout:this.logout.bind(this),
+      SetState:this.SetState.bind(this),
+      setCart:this.setCart.bind(this)
     }
     return context;
   }
-  let [signalR] = useState(new SignalR(()=>getContext()))
-  async function getShopState(){
-    let {cart,Shop} = await actionClass.getShopState({ apis,backOffice, userInfo })
-    setShop(Shop); setCart(cart);
+  render(){
+    let {mounted,rsa} = this.state;
+    if(!mounted){return null}
+    return (<appContext.Provider value={this.getContext()}>{rsa.render()}</appContext.Provider>);
   }
-  async function getInitialState(){
-    actionClass.manageUrl();
-    signalR.start();
-    vitrin.fetchData();
-    getSpreeCategories();
-    if (backOffice.activeManager.garanti && b1Info.customer.slpcode) { getGuaranteeItems(); }
-    if (backOffice.activeManager.bazargah) { getBazargahOrders(); }
-    actionClass.handleMissedLocation()
-    await getShopState()
-    mounted = true;
-    setMounted(true)
-  }
-  useEffect(()=>{getInitialState()},[])
-  return (<appContext.Provider value={getContext()}>{rsa.render()}</appContext.Provider>);
-  
 }

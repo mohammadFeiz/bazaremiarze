@@ -24,7 +24,7 @@ export default class JoziateDarkhastHayeGaranti extends Component{
         }
     }
     sort(sortValue){
-        let {guaranteeItems,setGuaranteeItems} = this.context;
+        let {guaranteeItems,SetState} = this.context;
         let res;
         if(sortValue === '0'){
             res = this.Sort(guaranteeItems,[
@@ -75,7 +75,7 @@ export default class JoziateDarkhastHayeGaranti extends Component{
             ])
         }
         this.setState({sortValue})
-        setGuaranteeItems(res)
+        SetState({guaranteeItems:res})
     }
     Sort(model,sorts){
         return model.sort((a,b)=>{

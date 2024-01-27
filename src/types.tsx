@@ -11,29 +11,6 @@ export type I_AIOLogin_model = {
   userInfo:any,
   token:string | false
 }
-export type I_AIOLogin_onSubmit = (model:I_AIOLogin_model,mode:I_AIOLogin_mode)=>Promise<void>
-export type I_AIOLogin_checkToken = (token:string | false)=>Promise<boolean | undefined>
-export type I_AIOLogin_renderApp = (obj:{token:string})=>React.ReactNode
-export type I_AIOLogin_renderLogin = (loginForm:React.ReactNode)=>React.ReactNode
-export type I_AIOLogin_renderSplash = ()=>React.ReactNode
-export type I_AIOLogin_register = {
-    registerType:'auto' | 'tab' | 'button',
-    registerText?:(location:'tab button' | 'register button' | 'modal header' | 'form title' | 'submit button')=>string,
-    registerFields:any[],
-    checkIsRegistered?:(p:{token:string,userId:string,userInfo:any})=>Promise<boolean>,
-    onSubmitRegister:(model:I_AIOLogin_model)=>Promise<boolean>
-}
-export type I_AIOLogin_props = {
-  id: string, modes: I_AIOLogin_mode[], timer: number, otpLength: number, 
-  userId?:string,
-  onSubmit: I_AIOLogin_onSubmit, 
-  checkToken: I_AIOLogin_checkToken,
-  splashTime?:number,
-  register?:I_AIOLogin_register,
-  renderApp:I_AIOLogin_renderApp,
-  renderLogin?:I_AIOLogin_renderLogin,
-  renderSplash?:I_AIOLogin_renderSplash
-}
 export type I_AIOLogin_class = {
     setStorage:(key:string,value:any)=>void,
     getStorage:(key:string)=>any,

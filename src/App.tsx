@@ -9,7 +9,8 @@ import getApiFunctions from './apis/apis.ts';
 import './App.css';
 import './theme.css';
 import Splash from './components/spalsh/splash';
-import { I_AIOLogin_checkToken, I_AIOLogin_class, I_AIOLogin_mode, I_AIOLogin_model, I_AIOLogin_onSubmit, I_AIOLogin_props, I_AIOLogin_renderApp, I_AIOLogin_renderLogin, I_AIOLogin_renderSplash, I_AIOService_class, I_AIOService_onCatch, I_B1Info, I_Report_parameter, I_msfReport, I_state_backOffice, I_backOffice_accessPhoneNumber, I_updateProfile, I_userInfo } from './types';
+import { I_AIOLogin_class, I_AIOLogin_mode, I_AIOLogin_model, I_AIOService_class, I_AIOService_onCatch, I_B1Info, I_Report_parameter, I_msfReport, I_state_backOffice, I_backOffice_accessPhoneNumber, I_updateProfile, I_userInfo } from './types';
+import { I_AL_props } from './npm/aio-login/index.tsx';
 type I_getBaseUrl = () => string
 const getBaseUrl: I_getBaseUrl = function () {
   //return "https://apimy.burux.com/api/v1";
@@ -46,12 +47,12 @@ export default function App() {
   let [userInfo, setUserInfo] = useState<I_userInfo | undefined>()
   let [b1Info, setB1Info] = useState<I_B1Info | undefined>()
   let [apis] = useState<I_AIOService_class>(new AIOService({ getApiFunctions,getState:()=>{return {Logger}}, baseUrl, id: 'bazaremiarzeapis' }))
-  const onSubmit: I_AIOLogin_onSubmit = async (model: I_AIOLogin_model, mode: I_AIOLogin_mode) => {
+  const onSubmit = async (model: I_AIOLogin_model, mode: I_AIOLogin_mode) => {
     if (mode === 'OTPNumber') { await onSubmit_OTPNumber(model) }
     else if (mode === 'OTPCode') { await handleLoginResponse(model, mode) }
     else if (mode === 'phoneNumber') { await handleLoginResponse(model, mode) }
   }
-  const checkToken: I_AIOLogin_checkToken = async (token) => {
+  const checkToken = async (token) => {
     let backOffice = await apis.request({ api: 'login.getBackOffice', parameter: {apis,Login}, description: 'دریافت تنظیمات اولیه', loading: false })
     if (typeof backOffice === 'object') {
       setBackOffice(backOffice)
@@ -75,11 +76,12 @@ export default function App() {
     apis.setToken(token);
     return <Main {...appState} />
   }
-  const renderLogin: I_AIOLogin_renderLogin = (loginForm) => <Splash content={() => loginForm} />
-  const renderSplash: I_AIOLogin_renderSplash = () => <Splash loading={true} />
-  let AIOLoginProps: I_AIOLogin_props = {
-    id: 'bazarmiarezelogin', modes: ['OTPNumber', 'phoneNumber'], timer: 5, otpLength: 4, userId:urlUserId, splashTime: 2500, 
-    onSubmit,checkToken,renderApp, renderLogin, renderSplash,
+  const renderLogin = (loginForm) => <Splash content={() => loginForm} />
+  const renderSplash = () => <Splash loading={true} />
+  let AIOLoginProps:I_AL_props = {
+    id: 'bazarmiarezelogin', modes: ['OTPNumber', 'phoneNumber'], timer: 5, otpLength: 4, userId:urlUserId, 
+    splash:{time:2500,render:renderSplash},
+    onSubmit,checkToken,renderApp, renderLogin,
     register: {
       registerType: 'auto',
       registerText:(place)=> {

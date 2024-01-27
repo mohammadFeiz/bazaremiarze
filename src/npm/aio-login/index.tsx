@@ -39,7 +39,6 @@ export type I_AL_props = {
     attrs?:any, 
     forget?:I_AL_forget, 
     splash?:{render:()=>any,time:number}
-    
 }
 type I_AL_setStorage = (key:I_AL_storageKey,value:any)=>void;
 type I_AL_getStorage = (key:I_AL_storageKey)=>any;

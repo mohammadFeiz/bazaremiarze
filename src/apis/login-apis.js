@@ -106,6 +106,8 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                 ballance: -ballance,
                 visitorMobile
             }
+            if(typeof result.latitude !== 'number'){result.latitude = undefined}
+            if(typeof result.longitude !== 'number'){result.longitude = undefined}
             if(result.lastName === null){result.lasName = ''}
             Logger.add('userInfo',{...result,itemPrices:'prevent show manually'},'userInfo')
             return { result }

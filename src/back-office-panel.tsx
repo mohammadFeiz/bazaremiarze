@@ -33,6 +33,7 @@ export default function BackOffice(props: I_BackOffice) {
   let [tabs, setTabs] = useState(getTabs(props.model))
   let [tab, setTab] = useState<I_BackOffice_tabName>('appsetting')
   function fixInitialModel(model: I_state_backOffice) {
+    return model
     let bo:I_state_backOffice = {
       "activeManager": {
         "garanti": false,
@@ -2151,10 +2152,11 @@ function SpreeCampaigns() {
   async function getAddItem(id) {
     let list = await apis.request({ api: 'kharid.getCampaigns', description: trans(2), def: [], parameter: id })
     if (list[0]) {
-      let { name, src, CampaignId, PriceListNum } = list[0];
+      let { shopName, src, CampaignId, PriceListNum,taxons } = list[0];
+      
       let addItem:I_ShopProps = { 
-        shopId: id, shopName: name, billboard: src, CampaignId, PriceListNum, icon: '',itemType:'Product' ,
-        active:false,PayDueDate:0,PaymentTime:0,DeliveryType:0,PayDueDates:[],PaymentTimes:[],DeliveryTypes:[]
+        shopId: id, shopName, billboard: src, CampaignId, PriceListNum, icon: '',itemType:'Product' ,
+        active:false,PayDueDate:0,PaymentTime:0,DeliveryType:0,PayDueDates:[],PaymentTimes:[],DeliveryTypes:[],taxons
       }
       return addItem;
     }
@@ -2448,8 +2450,7 @@ function FormSetting(props: I_FormSetting) {
                 input: { type: 'multiselect', options: PayDueDate_options, text: 'پرداخت های چکی' }, field: 'value.PayDueDates',
               },
               {
-                input: { type: 'select', options: getSelectedPayDueDates(), popover: { fitHorizontal: true } },
-                label: 'پیشفرض نوع پرداخت چکی', field: 'value.PayDueDate'
+                input: { type: 'select', options: getSelectedPayDueDates(), popover: { fitHorizontal: true } },label: 'پیشفرض نوع پرداخت چکی', field: 'value.PayDueDate'
               },
               {
                 input: { type: 'multiselect', text: 'نحوه های ارسال', options: DeliveryType_options }, field: 'value.DeliveryTypes'
@@ -2458,7 +2459,7 @@ function FormSetting(props: I_FormSetting) {
                 input: { type: 'select', options: DeliveryType_options, popover: { fitHorizontal: true } }, label: 'پیشفرض نحوه ارسال', field: 'value.DeliveryType',
               },
               {
-                input: { type: 'multiselect', options: PaymentTime_options, text: 'زمان های پرداخت' },
+                input: { type: 'multiselect', options: PaymentTime_options, text: 'زمان های پرداخت' },field: 'value.PaymentTimes',
               },
               {
                 input: { type: 'select', options: PaymentTime_options, popover: { fitHorizontal: true } }, label: 'پیشفرض زمان پرداخت', field: 'value.PaymentTime',
@@ -2470,7 +2471,7 @@ function FormSetting(props: I_FormSetting) {
             field:'value.taxons',
             input:{
               type:'table',style:{fontSize:10},
-              onAdd:true,
+              onAdd:{name:'',id:'',min:0,max:0},
               onRemove:true,
               header:'لیست تکزون های کمپین',
               columns:[
@@ -2485,7 +2486,7 @@ function FormSetting(props: I_FormSetting) {
 
         ]
       }}
-      onChange={(obj) => onChange(obj)}
+      onChange={(obj) => {debugger;onChange(obj)}}
     />
   )
 }

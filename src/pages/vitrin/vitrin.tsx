@@ -6,7 +6,7 @@ import appContext from "../../app-context";
 import Loading from './loading';
 import Icon from "@mdi/react";
 import vbsrc from './../../images/vitrin-bazargah.png';
-import { mdiCamera, mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu } from "@mdi/js";
+import { mdiCamera, mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu, mdiChevronLeft } from "@mdi/js";
 import './vitrin.css';
 import imgph from './../../images/imgph.png';
 import image_src from './../../images/vitrin-landing.png';
@@ -193,7 +193,7 @@ function Search(props:I_Search) {
         }
     }
     function search_layout() {
-        let className = 'vitrin-search-box', placeholder = "جستجو در محصولات", before = <Icon path={mdiMagnify} size={1} />
+        let className = 'vitrin-search-box gap-4', placeholder = "جستجو در محصولات", before = <Icon path={mdiMagnify} size={1} />
         let props = { type: 'text', className, placeholder, before, onChange: (value) => { console.log(value); changeSearch(value) }, delay: 1200 }
         return { html: <AIOInput {...props} /> }
     }
@@ -234,15 +234,16 @@ function Search(props:I_Search) {
     function categories_layout() {
         if (!categories.length) { return false }
         return {
-            className: 'p-6 bg-32',
+            className: 'p-8 bg-32',
             column: [
                 {
                     html: <AIOInput
                         type='button'
-                        style={{ width: 'fit-content', minHeight: 30, padding: '0 12px', textAlign: 'right' }}
-                        className='fs-10 bold h-24 p-0'
+                        style={{ width: 'fit-content', minHeight: 30, padding: '0 12px', textAlign: 'right',color:'#3B55A5' }}
+                        className='fs-14 bold h-24 p-0 w-100'
                         text={getCategoryTitle()}
                         before={<Icon path={mdiMenu} size={1} />}
+                        after={<Icon path={mdiChevronLeft} size={1} />}
                         onClick={() => openCategories()}
                     />
                 },
@@ -251,7 +252,7 @@ function Search(props:I_Search) {
         }
     }
     function products_layout(products, paging) {
-        let props = { type: 'table', value: products, paging, rowsTemplate: () => <Products products={products} count={paging.size}/> }
+        let props = { type: 'table',style:{border:'none'}, value: products, paging, rowsTemplate: () => <Products products={products} count={paging.size}/> }
         return { html: <AIOInput {...props} /> }
     }
     function suggestion_layout(isFirstTime:boolean) {
@@ -499,6 +500,7 @@ function ProductCard(props:I_ProductCard) {
                 className: 'v-product-card',
                 column: [
                     {
+                        gap:6,
                         row: [
                             {flex: 1,column: [name_layout(name),{ flex: 1 },price_layout(price)]},
                             image_layout(image)
@@ -601,7 +603,7 @@ function VariantLabels(props:I_VariantLabels) {
             })
         }
         if(type === 'horizontal'){row = [{html:bullet()},...row]}
-        return {gap:6,className: 'v-product-card-options',[type === 'horizontal'?'row':'column']:row,align:'v'}
+        return {gap:8,className: 'v-product-card-options',[type === 'horizontal'?'row':'column']:row,align:'v'}
     }
     function keyValue_layout(key,index,variant):I_RVD_child{
         let { name: optionTypeName, optionValues } = optionTypes[index];

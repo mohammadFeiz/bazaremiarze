@@ -641,7 +641,6 @@ function TaxonCard(props: I_TaxonCard) {
     function name_layout() { return { html: taxon.name, flex: 1, align: 'v' } }
     function icon_layout() { return { size: 36, align: 'vh', html: <Icon path={open ? mdiChevronDown : mdiChevronLeft} size={.8} /> } }
     function groupDiscount_layout() {
-        if(renderIn !== 'cart' && renderIn !== 'shipping'){return false}
         let cartTab = actionClass.getCartShop(shopId) as I_cartShop_taxon;
         if (!cartTab) { return false }
         let taxonIds = Object.keys(cartTab.taxons);
@@ -651,8 +650,8 @@ function TaxonCard(props: I_TaxonCard) {
         return {
             align: 'v', className: 'taxon-card-group-discount',
             row:[
-                { flex:1,html: `تخفیف گروه کالا`},
-                {html:`${0.5 * notHasErrors.length} %`,className:'discount-percent',style:{background:'orange'}}
+                {html:`${0.5 * notHasErrors.length} %`,className:'discount-percent',style:{background:'orange'},size:36,align:'vh'},
+                { html: `تخفیف گروه کالا`}
             ]
         }
         return 
@@ -1019,11 +1018,10 @@ function RegularPage(props: I_RegularPage) {
         let {cartVariants} = await Shop[shopId].getCartVariants({ taxonId,productId: product.id })
         setCartVariants(cartVariants)
     }
-    useEffect(()=>{
-        getCartVariants()
-    },[cart])
+    useEffect(()=>{getCartVariants()},[cart])
     let { optionTypes, variants } = product;
     useEffect(() => {
+        debugger
         let { existOptionValueNames, variantOptions } = getVariants()
         setExistOptionValueNames(existOptionValueNames)
         setVariantOptions(variantOptions)
@@ -1054,7 +1052,7 @@ function RegularPage(props: I_RegularPage) {
     function isVariantMatchBySelected(variant: I_variant, newSelectedDic: I_variant_optionValues) {
         let { optionValues } = variant;
         for (let optionTypeId in newSelectedDic) {
-            if (optionValues[optionTypeId] !== selectedDic[optionTypeId]) { return false }
+            if (optionValues[optionTypeId] !== newSelectedDic[optionTypeId]) { return false }
         }
         return true;
     }
@@ -1099,7 +1097,7 @@ function RegularPage(props: I_RegularPage) {
                 },
                 { size: 12 },
                 { size: 36, html: product.name, className: "fs-14 theme-dark-font-color bold p-h-12" },
-                { size: 36, html: "کد کالا : " + (product.productSku || ""), className: "fs-12 theme-medium-font-color p-h-12" },
+                { show:!!selectedVariant,size: 36, html: ()=>"کد کالا : " + selectedVariant.id, className: "fs-12 theme-medium-font-color p-h-12" },
             ]
         };
     }

@@ -93,10 +93,10 @@ body{
 	border-radius:0;
 }
 .aio-popup-header{
-	box-shadow: 0 0 6px 0 rgba(0,0,0,0.2);
 	z-index:10;
 	border-bottom:none;
-	font-size:16px;
+	font-size:14px !important;
+	color:#605E5C;
 }
 .aio-popup-header svg{
 	border-radius: 100%;

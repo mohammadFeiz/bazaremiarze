@@ -5,7 +5,7 @@ import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
 import { I_B1Info, I_ShopProps, I_actionClass, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_itemPrice, I_product, I_product_category, I_product_detail, I_product_optionType, I_state_cart, I_variant, I_variant_optionValues } from "../types";
 type I_chekcCode_return = any;
-type I_getCampaigns_return = { shopName: string, id: string, CampaignId: number, PriceListNum: number };
+type I_getCampaigns_return = { shopName: string, id: string, CampaignId: number, PriceListNum: number,taxons?:{name:string,id:any,min:number,max:number}[] };
 type I_getCategories_return = { name: string, id: string }[]
 type I_ni = (p: any, appState?: I_app_state) => any
 export type I_getTaxonProducts_p = { category:I_product_category,pageSize?:number,pageNumber?:number,ids?:string,searchValue?:string }
@@ -13,7 +13,7 @@ type I_apiFunctions = {
   checkCode: (p: { code: string }) => Promise<{ result: I_chekcCode_return }>,
   tarikhche_sefareshate_kharid: I_ni,
   mahsoolate_sefareshe_kharid: I_ni,
-  getCampaigns: (ids: string[]) => Promise<{ result: I_getCampaigns_return[] }>,
+  getCampaigns: (ids: string[],isTaxon?:string) => Promise<{ result: I_getCampaigns_return[] }>,
   getTaxonProducts:(p:I_getTaxonProducts_p, appState: I_app_state)=>Promise<{result:I_product[]}>
   preOrders: I_ni,
   search: I_ni,
@@ -224,14 +224,34 @@ export default function kharidApis({ baseUrl, helper }) {
       }
       return { result: { ...order, details } }
     },
-    async getCampaigns(ids) {
+    async getCampaigns(ids,isTaxon) {
       if (!ids) { return { result: [] } }
       if (!ids.length) { return { result: [] } }
       let res = await Axios.get(`${baseUrl}/Spree/GetAllCampaigns?ids=${ids.toString()}`);
       let dataResult = res.data.data.data;
       let includedResult = res.data.data.included;
-      let campaigns:I_getCampaigns_return[] = dataResult.map((o) => {
+      
+      let campaigns:I_getCampaigns_return[] = dataResult.map((o,i) => {
         let src = nosrc;
+        let taxons = []
+          try{
+            taxons = includedResult.map(({attributes,id})=>{
+              let {name,description}:{name:string,description:string} = attributes;
+              let min = 0,max = 0;
+              try{
+                let arr = description.split(' ');
+                let nums = arr.filter((o)=>!isNaN(+o)).map((o)=>+o * 1000000);
+                let num1 = nums[0]
+                let num2 = nums[1];
+                min = Math.min(num1,num2);
+                max = Math.max(num1,num2);
+              }
+              catch{}
+              return {id,name,min,max}
+            });
+          }
+          catch{}
+
         const imgData = o.relationships.image.data;
         if (imgData !== undefined && imgData != null) {
           const taxonImage = includedResult.find(x => x.type === "taxon_image" && x.id === imgData.id)
@@ -242,7 +262,7 @@ export default function kharidApis({ baseUrl, helper }) {
         let obj;
         try { obj = JSON.parse(o.attributes.meta_description) }
         catch { obj = {}; }
-        let result:I_getCampaigns_return = { shopName: o.attributes.name, id: o.id, CampaignId: obj.CampaignId, PriceListNum: obj.PriceListNum };
+        let result:I_getCampaigns_return = { taxons,shopName: o.attributes.name, id: o.id, CampaignId: obj.CampaignId, PriceListNum: obj.PriceListNum };
         return result;
       });
 
@@ -321,7 +341,8 @@ export default function kharidApis({ baseUrl, helper }) {
       return { result:products }
     },
     async getCart({ Shop, userInfo }) {
-      let cartStorage = AIOStorage('bazaremiarzeapis');
+      try{
+        let cartStorage = AIOStorage('bazaremiarzeapis');
       let cart = cartStorage.load({ name: 'cart.' + userInfo.cardCode, def: {shops:{}} });
       let shopIds = Object.keys(Shop);
       let keys = Object.keys(cart.shops)
@@ -332,6 +353,21 @@ export default function kharidApis({ baseUrl, helper }) {
         newCart.shops[shopId] = cart.shops[shopId]
       }
       return { result: newCart }
+      }
+      catch{
+        debugger
+        let cartStorage = AIOStorage('bazaremiarzeapis');
+      let cart = cartStorage.load({ name: 'cart.' + userInfo.cardCode, def: {shops:{}} });
+      let shopIds = Object.keys(Shop);
+      let keys = Object.keys(cart.shops)
+      let newCart = {shops:{}}
+      for (let i = 0; i < keys.length; i++) {
+        let shopId = keys[i];
+        if (shopIds.indexOf(shopId) === -1) { continue }
+        newCart.shops[shopId] = cart.shops[shopId]
+      }
+      return { result: newCart }
+      }
     },
     setCart(cart, { userInfo }) {
       let cartStorage = AIOStorage('bazaremiarzeapis');

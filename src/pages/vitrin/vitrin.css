@@ -14,6 +14,10 @@
     text-align:right;
     border-bottom:3px solid #eff1ee;
 }
+.vitrin-search-box svg{
+  color:#A19F9D;
+}
+
 .vitrin-serach-popup-header{
     box-shadow: 0 0 12px 1px rgba(0,0,0,0.3) !important;
 }
@@ -99,20 +103,23 @@ body {
     border-bottom:1px solid #ddd;
   }
   .v-product-card-name{
-    font-size:12px;
-    font-weight: bold;
+    font-size:14px;
+    text-align:right;
+    color:#404944;
   }
   .v-product-card-price{
-    font-size:12px;
+    font-size:16px;
     gap:1px;
     font-weight: bold;
-    color:#000;
+    color:#2E312F;
+    padding:0 6px;
   }
   .v-product-card-no-price{
     color:red;
   }
   .v-product-card-unit{
-    font-size:80%;
+    font-size:60%;
+    color:#A19F9D;
     opacity:0.8;
     font-weight: normal;
   }
@@ -120,14 +127,15 @@ body {
 
   }
   .v-product-card-image img{
-    max-height:72px;
+    max-height:80px;
   }
   .v-product-card-add-button{
     color:#3B55A5;
     background:none;
-    border:1px solid;
+    border:1px solid #E1E3E0;
+    padding: 6px 16px;
     border-radius:4px;
-    font-size:12px;
+    font-size:14px;
     font-weight:bold;
     min-width:94px;
 
@@ -153,13 +161,16 @@ body {
   .v-product-card-price-problem{
     font-size:12px;
     background:none;
+    color:#707974;
     border:none;
+    text-decoration: underline;
   }
   .v-product-card-variants{
-    padding:6px;
+    padding:6px 12px;
     border:1px dashed #aaa;
     margin-top:12px;
     border-radius:12px;
+    gap:4px;
   }
   .v-product-card-options{
     font-size:10px;
@@ -167,12 +178,11 @@ body {
   }
   .v-product-card-variants-label{
     color:#2BBA8F;
-    font-size:12px;
-    font-weight: bold;
+    font-size:14px;
   }
   .v-product-card-options-bullet{
-    width:8px;
-    height:8px;
+    width:6px;
+    height:6px;
     background:#aaa;
     border-radius:100%;
   }
@@ -191,20 +201,22 @@ body {
 
   .vitrin-brand-filter{
     background:#fff;
-    border-top:1px solid #ddd;
-    padding:6px;
-    gap:4px;
+    border-top:2px solid #eee;
+    padding:8px;
+    gap:6px;
     overflow-x:auto !important;
     width:100%;
   }
   .vitrin-brand-filter .vitrin-brand-button{
     border:none;
     background:#f2f2f2;
-    font-size:10px;
-    padding:3px 6px;
+    font-size:12px;
+    padding:4px 12px;
+    border-radius:24px;
   }
 
   .vitrin-brand-filter .vitrin-brand-button.active{
-    background:#2BBA8F;
-    color:#fff;
+    background:#EAF8F4;
+    color:#2BBA8F;
+    font-weight: bold;
   }

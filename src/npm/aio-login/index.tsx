@@ -184,10 +184,10 @@ function AIOLOGIN(props:I_AIOLOGIN) {
     }
     async function onSubmit(model:I_AL_model) {
         try { 
-            setLoading(true)
+            setLoading(true);
             await props.onSubmit(model, mode)
             //اگر ارسال شماره برای دریافت رمز یکبار مصرف موفقیت آمیز است برو به صفحه ورود کد یکبار مصرف
-            if(mode === 'OTPNumber'){setMode('OTPCode')}
+            if(mode === 'OTPNumber'){setMode('OTPCode'); setLoading(false);}
             //اگر بررسی رمز عبور موفقیت آمیز است برو برای تصمیم گیری ورود به اپ یا ورود به ثبت نام
             else {await setAuthenticated(model.login.userId)}
         }

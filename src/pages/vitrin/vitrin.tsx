@@ -105,11 +105,7 @@ function Search(props:I_Search) {
     let [searchValue,setSearchValue] = useState<string>('');
     let [products,setProducts] = useState<I_vitrin_product[]>()
     let [total,setTotal] = useState<false | number>(false)
-    let [brands,setBrands] = useState<string[]>([
-        'بروکس', 'پارس شهاب', 'سایروکس', 'خزرشید', 'کملیون', 'مازی نور'
-    ])
     let [brand,setBrand] = useState({})
-    let [selectedBrands,setSelectedBrands] = useState<string[]>([])
     let [paging,setPaging] = useState<I_paging>(getInitialPaging())
     function getInitialPaging(){
         return {
@@ -124,7 +120,7 @@ function Search(props:I_Search) {
     async function updateProducts() {
         setProducts(undefined)
         let parameter:v_kolle_mahsoolat_payload = { pageSize: paging.size, pageNumber: paging.number, searchValue, taxon: taxon || '10673'}
-        let activeBrands = brands.filter((o)=>brand[o])
+        let activeBrands = backOffice.vitrinBrands.filter((o)=>brand[o])
         if(activeBrands.length){
             parameter.optionTypeFilters = [{optionTypeName:'برند',optionValueNames:activeBrands}]
         }
@@ -161,7 +157,7 @@ function Search(props:I_Search) {
         if(IsTouch()){className += ' hide-scroll'}
         return {
             align:'v',className,
-            row:brands.map((o:string)=>{
+            row:backOffice.vitrinBrands.map((o:string)=>{
                 let active = brand[o];
                 return (
                     {

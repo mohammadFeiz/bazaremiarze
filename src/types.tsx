@@ -1,33 +1,5 @@
 import actionClass from './actionClass';
-/////aio-login
-export type I_AIOLogin_mode = (
-    'OTPNumber' | 'phoneNumber' | 'OTPCode' | 'auth' |
-    'register'
-)
-export type I_AIOLogin_model = {
-  login:{userId:string,password:string},
-  register:{[field:string]:any},
-  profile?:any,
-  userInfo:any,
-  token:string | false
-}
-export type I_AIOLogin_class = {
-    setStorage:(key:string,value:any)=>void,
-    getStorage:(key:string)=>any,
-    setToken:(token:string)=>void,
-    getToken:()=>string,
-    getUserInfo:()=>any,
-    setUserInfo:(userInfo:any)=>void,
-    setMode:(mode:I_AIOLogin_mode)=>void,
-    render:(p?:I_AIOLogin_class_render_parameter)=>React.ReactNode,
-    logout:()=>void
-}
-export type I_AIOLogin_class_render_parameter = {
-    profile?:{model:any,onSubmit:(model:any)=>void,fields:any[]},
-    appState?:any
-}
-
-/////aio-login
+import { I_AIOLogin,I_AL_model } from './npm/aio-login/index.tsx';
 /////aio-service
 export type I_AIOService_request = (obj:{
     api:string,parameter?:any,loading?:boolean,onCatch?:I_AIOService_onCatch,
@@ -109,7 +81,8 @@ export type I_state_backOffice = {
         forsate_akhze_sefareshe_bazargah: number
     },
     versions: I_backOffice_versions,
-    vitrinCategories,
+    vitrinCategories:any[],
+    vitrinBrands:string[]
 }
 export type I_backOffice_versions = {
     login?: number,
@@ -125,7 +98,15 @@ export type I_PaydueDate_option = {
     cashPercent:number,days:number,discountPercent:number,id?:string,text:string,value:any,_id:string}
 export type I_PaymentTime_option = {text:string,value:any,id?:string}
 export type I_DeliveryType_option = {text:string,value:any,id?:string}
-export type I_backOffice_accessPhoneNumber = {phoneNumber:string,access:{[field:string]:boolean},name:string};
+export type I_backOffice_access = {
+    appsetting:boolean,spreeManagement:boolean,contentManagement:boolean,priceList:boolean,vitrinSuggestions:boolean,vitrinBrands:boolean,vitrinCategories:boolean
+}
+export type I_backOffice_accessKey = 'appsetting'|'spreeManagement'|'contentManagement'|'priceList'|'vitrinSuggestions'|'vitrinBrands'|'vitrinCategories'
+export type I_backOffice_accessPhoneNumber = {
+    phoneNumber:string,
+    access:I_backOffice_access,
+    name:string
+};
 //////backOffice
 export type I_shippingOptions = {
     PaymentTime?:number, PayDueDate?:number, DeliveryType?:number,SettleType?:number, giftCodeInfo?:any, discountCodeInfo?:any,CampaignId?:number,address?:string
@@ -217,7 +198,7 @@ export type I_actionClass = {
         b1Info:I_B1Info,
         Logger:any,
         updateProfile:I_updateProfile,
-        Login:I_AIOLogin_class
+        Login:I_AIOLogin
     },
     pricing:any,
     getAppTitle:(nav:any)=>React.ReactNode,
@@ -257,7 +238,7 @@ export type I_app_state = {
     mounted:boolean,
     backOffice:I_state_backOffice,
     apis:I_AIOService_class,
-    Login:I_AIOLogin_class,
+    Login:I_AIOLogin,
     userInfo:I_userInfo,
     b1Info:I_B1Info,
     Logger:any,
@@ -332,7 +313,7 @@ export interface I_Report_parameter extends I_report {
     apis: I_AIOService_class; phoneNumber: string; userId: string;
 }  
 export type I_msfReport = (obj: I_report, p?: { userId?: string, phoneNumber?: string }) => void
-export type I_updateProfile = (loginModel: I_AIOLogin_model, mode: 'register' | 'profile' | 'location', callback?: Function)=>Promise<I_userInfo | false>
+export type I_updateProfile = (loginModel: I_AL_model, mode: 'register' | 'profile' | 'location', callback?: Function)=>Promise<I_userInfo | false>
 
 
 export type I_product = {

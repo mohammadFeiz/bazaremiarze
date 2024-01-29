@@ -30,9 +30,10 @@ import Buy from "./pages/buy/buy.tsx";
 import Bazargah from "./pages/bazargah/bazargah";
 import Profile from "./pages/profile/profile.tsx";
 import Vitrin from './pages/vitrin/vitrin.tsx';
+import { I_AIOLogin } from './npm/aio-login/index.tsx';
 import { 
     I_marketingLine, I_shippingOptions, I_state_spreeCategories, I_spreeCategory, I_state_Shop, I_app_state, I_state_backOffice, 
-    I_userInfo, I_B1Info, I_state_cart, I_cartShop_Product, I_cartTaxon, I_updateProfile, I_AIOLogin_class, I_cartShop_taxon, 
+    I_userInfo, I_B1Info, I_state_cart, I_cartShop_Product, I_cartTaxon, I_updateProfile, I_cartShop_taxon, 
     I_actionClass, I_changeCartProps, I_getFactorDetails_result, I_ShopProps, I_cartShop_bundle, I_bundle_taxon, I_cartVariant, I_factorDetailItem, I_cartProduct, I_AIOService_class 
 } from './types';
 export default class ActionClass implements I_actionClass {
@@ -43,7 +44,7 @@ export default class ActionClass implements I_actionClass {
         b1Info:I_B1Info,
         Logger:any,
         updateProfile:I_updateProfile,
-        Login:I_AIOLogin_class,
+        Login:I_AIOLogin,
         apis:I_AIOService_class
     };
     SetState:(obj:any)=>void

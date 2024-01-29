@@ -101,7 +101,7 @@
     padding:12px;
     border-radius:12px;
 }
-.aio-login .aio-input{
+.aio-login .aio-input-form .aio-input{
     border:1px solid #ced9e0;
     min-height:36px;
     outline:none;

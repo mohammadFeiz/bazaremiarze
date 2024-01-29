@@ -10,10 +10,11 @@ import Logo1 from './../../images/bmloading.png';
 import appContext from "../../app-context.js";
 import SignalR from '../../singalR/signalR.js';
 import "./index.css";
-import { I_AIOLogin_class, I_AIOService_class, I_B1Info, I_ShopClass, I_actionClass, I_app_state, I_msfReport, I_state_Shop, I_state_backOffice, I_state_cart, I_state_spreeCategories, I_updateProfile, I_userInfo, I_vitrin, I_vitrin_product } from "../../types.tsx";
+import { I_AIOService_class, I_B1Info, I_ShopClass, I_actionClass, I_app_state, I_msfReport, I_state_Shop, I_state_backOffice, I_state_cart, I_state_spreeCategories, I_updateProfile, I_userInfo, I_vitrin, I_vitrin_product } from "../../types.tsx";
 import { v_updateMyVitrin_payload } from "../../apis/vitrin-apis.tsx";
+import {I_AIOLogin} from './../../npm/aio-login/index.tsx';
 type I_Main = {
-  baseUrl:string,Logger:any,updateProfile:I_updateProfile,Login:I_AIOLogin_class,apis:I_AIOService_class,userInfo:I_userInfo,b1Info:I_B1Info,
+  baseUrl:string,Logger:any,updateProfile:I_updateProfile,Login:I_AIOLogin,apis:I_AIOService_class,userInfo:I_userInfo,b1Info:I_B1Info,
   backOffice:I_state_backOffice,msfReport:I_msfReport
 }
 

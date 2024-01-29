@@ -34,12 +34,12 @@
 .back-office-secondary-tabs{
     background:var(--bo-color-1) !important;
     color:var(--bo-color-5) !important;
-    padding:6px !important;
+    padding:8px 6px !important;
     font-size:12px;
 }
 .back-office-secondary-tabs .aio-input-tabs-option{
     margin:0 1px;
-    padding:0 6px;
+    padding:3px 6px;
     color:#fff;
     background:var(--bo-color-2);
     border-radius:4px;
@@ -69,12 +69,27 @@
 .back-office-collapse-open{
     border-radius:6px 6px 0 0;
 }
+.back-office-popup-header{
+    background:var(--bo-color-1) !important;
+    color:#fff !important;
+    border-bottom:none !important;
+}
+.back-office-popup-body{
+    background: var(--bo-color-1) !important;    
+}
 .back-office-form-setting{
     background:rgba(0,0,0,0.1);
     border-radius:0 0 6px 6px;
     border-top:none;
     color:#fff;
     padding:0 !important;
+}
+.back-office-form{
+    color:#fff;
+}
+.back-office-form .aio-input{   
+    background:rgba(0,0,0,0.2);
+    border:none !important;
 }
 .back-office-panel .aio-form-label{
     color:var(--bo-color-4);
@@ -120,6 +135,7 @@
 }
 .back-office .aio-input-table-header{
     background:var(--bo-color-1);
+    border-bottom:1px solid var(--bo-color-2);
     height:36px !important;
 }
 .back-office .aio-input-table-toolbar{
@@ -228,7 +244,9 @@
 .back-office-form-setting .aio-input-form-body{
     padding:6px !important;
 }
-
+.back-office-form-setting .aio-input{
+    background:var()
+}
 .back-office-app-setting-item{
     margin:12px;
     padding:12px;
@@ -274,6 +292,12 @@
     padding:0 6px;
     border-radius:4px;
     font-size:12px;
+    gap:6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border:none;
+    color:#fff;
 }
 
 
@@ -385,4 +409,35 @@
 }
 .back-office .aio-input-form .aio-input-table textarea{
     font-size: 10px;
+}
+.back-office-prompt .aio-popup-header{
+    background:var(--bo-color-2) !important;
+    color:#fff;
+    border-bottom:1px solid var(--bo-color-1);
+}
+.back-office-prompt .aio-popup-body{
+    background:var(--bo-color-3) !important;
+    color:#fff;
+    padding:6px;
+}
+.back-office-prompt .aio-popup-footer{
+    background:var(--bo-color-3) !important;
+    border-top:1px solid var(--bo-color-1);
+    color:#fff;
+    justify-content: center;
+}
+.back-office-prompt textarea{
+    background:rgba(0,0,0,0.2);
+    padding:12px;
+    box-sizing: border-box;
+    outline:none;
+    border:none;
+    color:#fff;
+    
+}
+.back-office-prompt .aio-popup-footer-button{
+    background:var(--bo-color-3)
+}
+.back-office-prompt .aio-popup-footer-button.active{
+    background:var(--bo-color-4)
 }

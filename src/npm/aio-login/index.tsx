@@ -6,7 +6,14 @@ import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
 import AIOPopup from 'aio-popup';
 import './index.css';
-export type I_AL_storageKey = 'token' | 'userInfo' | 'userId' | 'isRegistered';
+export type I_AIOLogin = {
+    setToken:(token:string)=>void,getToken:()=>string,
+    setUserInfo:(userInfo:any)=>void,getUserInfo:()=>any,
+    setMode:(mode:I_AL_mode)=>void,
+    render:(p?:I_AL_render_parameter)=>React.ReactNode,
+    logout:()=>void
+}
+type I_AL_storageKey = 'token' | 'userInfo' | 'userId' | 'isRegistered';
 export type I_AL_model = {
     login:{userId?:string,password?:string},
     register:{[field:string]:any},
@@ -16,15 +23,15 @@ export type I_AL_model = {
     token:string | false
 }
 export type I_AL_mode = 'OTPNumber' | 'phoneNumber' | 'OTPCode' | 'auth' | 'register' | 'forgetUserId' | 'forgetPassword' | 'email' | 'userName';
-export type I_AL_register = {
+type I_AL_register = {
     registerType:'auto' | 'tab' | 'button',
     registerText?:(location:'tab button' | 'register button' | 'modal header' | 'form title' | 'submit button')=>string,
     registerFields:any[],
     checkIsRegistered?:(p:{token:string,userId:string,userInfo:any})=>Promise<boolean>,
     onSubmitRegister:(model:I_AL_model)=>Promise<boolean>
 };
-export type I_AL_profile = {model:any,onSubmit:(model:any)=>void,fields:any[],title:string,onClose?:Function,submitText:string,subtitle?:string|false}
-export type I_AL_forget = {mode:'email' | 'phoneNumber',text?:React.ReactNode}
+type I_AL_profile = {model:any,onSubmit:(model:any)=>void,fields:any[],title?:string,onClose?:Function,submitText?:string,subtitle?:string|false}
+type I_AL_forget = {mode:'email' | 'phoneNumber',text?:React.ReactNode}
 export type I_AL_props = { 
     id:string, 
     onSubmit:(model:I_AL_model,mode:I_AL_mode)=>Promise<void>, 
@@ -46,9 +53,11 @@ type I_AL_removeStorage = (key:I_AL_storageKey)=>void;
 type I_AL_logout = ()=>void;
 type I_AL_setMode = (mode:I_AL_mode)=>void;
 type I_AL_render = (p?:I_AL_render_parameter)=>React.ReactNode;
-type I_AL_render_parameter = {profile?:I_AL_profile,appState?:any,attrs?:any}
+type I_AL_render_parameter = {
+    profile?:I_AL_profile,appState?:any,attrs?:any
+}
 type I_AL_getActions = (p:{setMode:(mode:I_AL_mode)=>void})=>void;
-interface I_AIOLOGIN extends I_AL_props {
+interface I_AL_AIOLOGIN extends I_AL_props {
     setStorage:I_AL_setStorage;
     getStorage:I_AL_getStorage;
     removeStorage:I_AL_removeStorage;
@@ -57,6 +66,7 @@ interface I_AIOLOGIN extends I_AL_props {
     profile?:I_AL_profile,
     appState?:any
 }
+
 export default class AIOlogin {
     setStorage:I_AL_setStorage;
     getStorage:I_AL_getStorage;
@@ -107,7 +117,7 @@ export default class AIOlogin {
                 }
             }
             this.getActions = (p:{setMode:(mode:I_AL_mode)=>void})=>{if(!this.setMode){this.setMode = p.setMode}};
-            let PROPS:I_AIOLOGIN = {
+            let PROPS:I_AL_AIOLOGIN = {
                 ...props,
                 getActions:this.getActions.bind(this),
                 getStorage:this.getStorage.bind(this),
@@ -120,7 +130,7 @@ export default class AIOlogin {
         }
     }
 }
-function AIOLOGIN(props:I_AIOLOGIN) {
+function AIOLOGIN(props:I_AL_AIOLOGIN) {
     let {
         getStorage,removeStorage,otpLength, id, timer, modes, userId, register,setStorage, 
         profile, attrs = {}, forget, logout,renderApp,appState,splash
@@ -283,7 +293,7 @@ type I_LoginForm = {
 }
 function LoginForm(props:I_LoginForm) {
     let {timer = 30,register,profile,forget,setMode,onSubmit,modes,attrs,onSubmitProfile,otpLength,mode,loading,getStorage,logout,onRegister} = props;
-    let {registerType = 'auto',registerText = ()=>'Register',registerFields} = register;
+    let {registerType = 'auto',registerText = ()=>'Register',registerFields} = register || {};
     let [tab,setTab] = useState<'login'|'register'>('login')
     let [model,setModel] = useState<I_AL_model>(getInitialModel())
     let [error,setError] = useState<boolean>(!props.userId)

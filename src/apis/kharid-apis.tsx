@@ -394,10 +394,7 @@ export default function kharidApis({ baseUrl, helper }) {
       }
     },
     async bundleData() {return { result: staticBundleData }},
-    async daryafte_ettelaate_bundle(parameter, { apis }) {
-      let allData = await apis.request({
-        api: 'kharid.bundleData', description: 'دریافت دیتای باندل', def: []
-      })
+    async daryafte_ettelaate_bundle(allData, { apis }) {
       allData = allData[0].taxons[0].taxons[0].taxons;
       let taxons = []
       for(let i = 0; i < allData.length; i++){

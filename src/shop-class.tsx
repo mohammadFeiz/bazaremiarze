@@ -80,13 +80,12 @@ export default class ShopClass implements I_ShopClass {
         }
     }
     getShopItems = async (p?:{taxonId?: string, productId?: string}) => {
-        let { apis } = this.getAppState();
+        let { apis,backOffice } = this.getAppState();
         if (this.itemType === 'Bundle') {
+            debugger
             if (!this.items) {
-                let bundleItems: I_bundle_taxon[] = await apis.request({
-                    api: 'kharid.daryafte_ettelaate_bundle', description: 'دریافت لیست باندل', def: [],
-                })
-                this.items = bundleItems;
+                let {bundleData} = backOffice
+                this.items = bundleData;
             }
             return this.items
         }

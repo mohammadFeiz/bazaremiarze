@@ -73,7 +73,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             return { response, result }
         },
         async loginByOTPCode({ id, otpCode }) {
-            let stallRes = await stall(5000)    
+            //let stallRes = await stall(5000)    
             const response = await Axios.get(`${baseUrl}/Users/SecondStep?userId=${id}&code=${otpCode}`);
             let result = response.data.isSuccess ? response.data.data : response.data.message;
             return { response, result }

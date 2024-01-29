@@ -82,7 +82,8 @@ export type I_state_backOffice = {
     },
     versions: I_backOffice_versions,
     vitrinCategories:any[],
-    vitrinBrands:string[]
+    vitrinBrands:string[],
+    bundleData:I_bundle_taxon[]
 }
 export type I_backOffice_versions = {
     login?: number,

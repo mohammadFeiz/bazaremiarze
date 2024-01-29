@@ -248,10 +248,8 @@
     background:var()
 }
 .back-office-app-setting-item{
-    margin:12px;
-    padding:12px;
     border-radius:4px;
-    background:rgba(0,0,0,0.1);
+    
 }
 .back-office-price-list-toolbar{
     padding:12px;
@@ -440,4 +438,25 @@
 }
 .back-office-prompt .aio-popup-footer-button.active{
     background:var(--bo-color-4)
+}
+
+.back-office-after{
+    background: orange;
+    color: #fff;
+    height:30px;
+    width:30px;
+    border-radius:4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.aio-input-acardion-header{
+    background:var(--bo-color-2);
+}
+
+
+
+.back-office .aio-input-tree-row{
+    background:rgba(0,0,0,0.2);
+    border:1px solid var(--bo-color-2)
 }

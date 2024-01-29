@@ -3,9 +3,10 @@ import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeftBold, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiImage, mdiPhone, mdiAccount, mdiArchive, mdiTag, mdiListBox } from '@mdi/js';
 import appContext from "./app-context";
-import AIOInput from './npm/aio-input/aio-input';
+import AIOInput,{Acardion,Tree} from './npm/aio-input/aio-input';
 import AIOStorage from 'aio-storage';
 import AIOPopup from './npm/aio-popup/aio-popup';
+import AIODoc from './npm/aio-documentation/aio-documentation.js';
 import './back-office-panel.css';
 import { I_AIOService_class, I_ShopProps, I_app_state, I_backOffice_access, I_backOffice_accessKey, I_backOffice_accessPhoneNumber, I_backOffice_content, I_backOffice_versions, I_backOffice_vitrinCategory, I_spreeCategory, I_state_backOffice } from "./types";
 const BackOfficeContext = createContext({} as I_BackOfficeContext);
@@ -1306,7 +1307,8 @@ export default function BackOffice(props: I_BackOffice) {
       'spreeManagement': 'اسپری',
       'contentManagement': 'محتوی',
       'priceList': 'لیست قیمت',
-      'vitrin': 'ویترین'
+      'vitrin': 'ویترین',
+      'test': 'تست'
     }
     let res = tabs.map((tab: I_BackOffice_tabName) => {
       return { text: dic[tab], value: tab, show: hasAccess(tab, model) }
@@ -1390,6 +1392,7 @@ export default function BackOffice(props: I_BackOffice) {
       model, currentVersions, apis, tabs,rsa,phoneNumber,accessKeys,
       setModel: (key, value) => {
         let newModel: I_state_backOffice = { ...model, [key]: value }
+        console.log(newModel)
         setModel(newModel)
       },
       removeImage,
@@ -1420,136 +1423,6 @@ function RegularSetting() {
     return { flex: 1, className: 'ofy-auto', html: <FormSetting {...props} /> }
   }
   return (<RVD layout={{ flex: 1, className: 'back-office-panel', column: [{ size: 12 }, form_layout()] }} />)
-}
-type I_backOffice_access_item = {text:string,value:I_backOffice_accessKey};
-function AccessManagement() {
-  let { accessKeys, model, setModel,rsa }: I_BackOfficeContext = useContext(BackOfficeContext);
-  let trans = {
-    'appsetting': 'تنظیمات',
-    'spreeManagement': 'اسپری',
-    'contentManagement': 'محتوی',
-    'priceList': 'لیست قیمت',
-    'vitrinSuggestions': 'پیشنهادات ویترین',
-    'vitrinBrands':'برند های ویترین',
-    'vitrinCategories':'دسته بندی های ویترین'
-  }
-  let items:I_backOffice_access_item[] = accessKeys.map((o)=>{return {text:trans[o],value:o}})
-  function header_layout() {
-    return {
-      className: 'p-h-12 fs-12', gap: 6,
-      row: [
-        { html: <button className='back-office-add-button-2' onClick={() => openAddModal()}>افزودن دسترسی</button> }
-      ]
-    }
-  }
-  function openAddModal(){
-    rsa.addModal({
-      position:'center',
-      attrs:{style:{maxWidth:320}},
-      backdrop:{attrs:{style:{backdropFilter:'blur(3px)',background:'rgba(0,0,0,0.6)'}}},
-      header:{title:'افزودن دسترسی',attrs:{className:'back-office-popup-header'}},
-      state:{model:{}},
-      body:{
-        attrs:{className:'back-office-popup-body'},
-        render:({state,setState})=>{
-          return (
-            <AIOInput
-              type='form' value={{...state.model}} lang='fa'
-              className='back-office-form'
-              onChange={(model)=>setState({model})}
-              onSubmit={()=>add(state.model)}
-              submitText='ثبت دسترسی'
-              inputs={{
-                column:[
-                  {input:{type:'text'},field:'value.name',label:'نام شخص',validations:[['required']]},
-                  {input:{type:'text',justNumber:true,maxLength:11},validations:[['required']],field:'value.phoneNumber',label:'شماره همراه شخص'},
-                  {
-                    input:{
-                      type:'radio',multiple:true,
-                      options:accessKeys,
-                      optionText:(option)=>trans[option],
-                      optionValue:'option'
-                    },
-                    field:'value.accesses',
-                    label:'دسترسی ها'
-                  }
-                ]
-              }}
-            />
-          )
-        }
-      }
-    })
-  }
-  function add({name,phoneNumber,accesses}) {
-    rsa.removeModal();
-    let { accessPhoneNumbers = [] } = model;
-    let access = {} as I_backOffice_access;
-    for(let i = 0; i < accessKeys.length; i++){
-      let accessKey = accessKeys[i];
-      let active = accesses.indexOf(accessKey) !== -1;
-      access[accessKey] = active;
-    }
-    let addModel: I_backOffice_accessPhoneNumber = {name, phoneNumber,access}
-    setModel('accessPhoneNumbers', accessPhoneNumbers.concat(addModel));
-  }
-  function cards_layout() {
-    let { accessPhoneNumbers = [] } = model;
-    return {
-      column: accessPhoneNumbers.map((o: I_backOffice_accessPhoneNumber, i) => card_layout(o, i))
-    }
-  }
-  function card_layout(o: I_backOffice_accessPhoneNumber, index: number) {
-    let { phoneNumber, access, name } = o
-    let isSuperAdmin = phoneNumber === '09123534314' || phoneNumber === '+989123534314'
-    return {
-      className: 'back-office-access-card',
-      column: [
-        {
-          className: 'back-office-access-card-header', gap: 3, align: 'v',
-          row: [
-            { html: phoneNumber },
-            {
-              flex: 1, html: (
-                <input
-                  placeholder="نام را وارد کنید"
-                  type='text' value={name} onChange={(e) => changeName(index, e.target.value)} style={{ width: '100%', padding: '0 6px', color: '#fff', border: 'none', background: 'none', outline: 'none' }} />
-              )
-            },
-            { show: !isSuperAdmin, html: () => <Icon path={mdiClose} size={.8} />, align: 'vh', size: 36, onClick: () => remove(phoneNumber) }
-          ]
-        },
-        { className: 'back-office-access-card-body', grid: items.map((o: I_backOffice_access_item) => row_layout(o, access, phoneNumber)), gridCols: 2 }
-      ]
-    }
-  }
-  function changeName(index: number, name: string) {
-    let { accessPhoneNumbers = [] } = model;
-    setModel('accessPhoneNumbers', accessPhoneNumbers.map((o, i) => {
-      if (index === i) { return { ...o, name } }
-      return o
-    }));
-  }
-  function change(field, value, phoneNumber) {
-    let { accessPhoneNumbers = [] } = model;
-    setModel('accessPhoneNumbers', accessPhoneNumbers.map((o: I_backOffice_accessPhoneNumber) => o.phoneNumber === phoneNumber ? { phoneNumber, access: { ...o.access, [field]: value } } : o))
-  }
-  function remove(phoneNumber: string) {
-    let { accessPhoneNumbers = [] } = model;
-    setModel('accessPhoneNumbers', accessPhoneNumbers.filter((o: I_backOffice_accessPhoneNumber) => o.phoneNumber !== phoneNumber))
-  }
-  function row_layout(item: I_backOffice_access_item, access, phoneNumber) {
-    let active = !!access[item.value];
-    return {
-      className: 'back-office-access-card-row', flex: 1,
-      onClick: () => change(item.value, !active, phoneNumber),
-      row: [
-        { html: item.text, flex: 1, align: 'v' },
-        { size: 36, align: 'vh', html: <Icon path={active ? mdiCheckboxMarkedOutline : mdiCheckboxBlankOutline} size={1} /> }
-      ]
-    }
-  }
-  return (<RVD layout={{ flex: 1, className: 'back-office-panel ofy-auto', column: [{ size: 12 }, header_layout(), cards_layout()] }} />)
 }
 function Vitrin(){
   let { model,phoneNumber }: I_BackOfficeContext = useContext(BackOfficeContext)
@@ -1699,126 +1572,6 @@ function VitrinSuggestions() {
       />
       {popup.render()}
     </>
-  )
-}
-function VitrinCategories() {
-  let { model, setModel, removeImage }: I_BackOfficeContext = useContext(BackOfficeContext)
-  let [list, setList] = useState<I_backOffice_vitrinCategory[]>([])
-  function change() {
-    setModel('vitrinCategories', list)
-  }
-  useEffect(() => {
-    let { vitrinCategories = [] } = model;
-    setList(vitrinCategories);
-  }, [])
-  function getColumn() {
-    return getColumn_req(list, 0, undefined);
-  }
-  function getColumn_req(model, level, parent) {
-    return model.map((o, i) => {
-      let { childs = [] } = o;
-      return {
-        style: { paddingRight: level * 12 },
-        column: [
-          row_layout(o, parent, i, !childs.length),
-          { show: !!childs.length && o.open !== false, column: getColumn_req(childs, level + 1, o) }
-        ]
-      }
-    })
-  }
-  function add(o?: I_backOffice_vitrinCategory) {
-    let id = window.prompt('آی دی دسته بندی را وارد کنید');
-    if (typeof id === 'string') {
-      let obj = { name: '', id: +id, open: true, childs: [] }
-      if (o) { o.childs.push(obj); }
-      else { list.push(obj) }
-      setList(list);
-      change()
-    }
-  }
-  async function remove(o: I_backOffice_vitrinCategory, parent?: I_backOffice_vitrinCategory, index?: number) {
-    let res = await removeImage('categoryimage-' + o.id);
-    if (res === true) {
-      if (!parent) { list = list.filter((o, i) => index !== i) }
-      else { parent.childs = parent.childs.filter((o, i) => i !== index); }
-      setList(list)
-      change()
-    }
-  }
-  function row_layout(o: I_backOffice_vitrinCategory, parent?: I_backOffice_vitrinCategory, index?: number, isLeaf?: boolean) {
-    let toggle = o.childs.length ? <Icon path={o.open === false ? mdiChevronLeft : mdiChevronDown} size={1} /> : ''
-    let options = () => (
-      <AIOInput
-        type='select' caret={false} style={{ background: 'none' }}
-        options={[
-          { text: 'افزودن زیر شاخه', value: 'add', before: <Icon path={mdiPlusThick} size={1} /> },
-          { text: 'حذف شاخه', value: 'remove', disabled: !isLeaf, before: <Icon path={mdiDelete} size={1} /> },
-        ]}
-        text={<Icon path={mdiDotsHorizontal} size={1} />}
-        onChange={(v: 'add' | 'remove') => v === 'add' ? add(o) : remove(o, parent, index)}
-      />
-    )
-    return {
-      style: { border: '1px solid #343e5d' }, className: 'h-72 br-6 m-b-6',
-      row: [
-        { size: 32, align: 'vh', html: toggle, onClick: () => { o.open = o.open === undefined ? false : !o.open; change() } },
-        {
-          size: 72, align: 'vh', html: (
-            <Image
-              id={'categoryimage-' + o.id}
-              style={{ border: '1px solid #343e5d', background: 'none', width: 72, height: 72 }}
-              url={o.imageUrl}
-              onChange={(url) => {
-                o.imageUrl = url;
-                change()
-              }}
-              placeholder={<Icon path={mdiImage} size={2} />}
-            />
-          )
-        },
-        { size: 6 },
-        {
-          flex: 1,
-          column: [
-            {
-              flex: 1,
-              row: [
-                { flex: 1, align: 'v', html: `آی دی دسته بندی: ${o.id}`, className: 't-a-right fs-12' },
-                { size: 32, align: 'vh', html: options() }
-              ]
-            },
-            {
-              flex: 1, align: 'vh', html: (
-                <AIOInput
-                  type='text' className='h-100' style={{ background: 'rgba(0,0,0,0.2)', textAlign: 'right' }}
-                  value={o.name}
-                  onChange={(value) => { o.name = value; change() }}
-                />
-              )
-            },
-          ]
-        }
-      ]
-    }
-  }
-  return (
-    <RVD
-      layout={{
-        style: { color: '#fff' },
-        column: [
-          {
-            size: 48, align: 'v',
-            html: (
-              <button
-                onClick={() => add()} className='align-v p-h-12 br-6'
-                style={{ gap: 4, background: 'dodgerblue', color: '#fff', border: 'none' }}
-              ><Icon path={mdiPlusThick} size={.8} />افزودن دسته بندی</button>
-            )
-          },
-          { flex: 1, className: 'ofy-auto', column: getColumn() }
-        ]
-      }}
-    />
   )
 }
 type I_brand_table_row = {name:string}
@@ -2183,7 +1936,7 @@ function SpreeManagement() {
       return { text: text_dic[tabValue], value: tabValue, show: true }
     })
   )
-  let [tab, setTab] = useState<I_SpreeManagement_tab>('Regular')
+  let [tab, setTab] = useState<I_SpreeManagement_tab>('setting')
   useEffect(() => {
     let visibleTabs = tabs.filter(({ show }) => show)
     if (!visibleTabs.length) { return }
@@ -2231,157 +1984,6 @@ function ContentManagement() {
     return { flex: 1, className: 'ofy-auto', html }
   }
   return (<RVD layout={{ column: [tabs_layout(), body_layout()] }} />)
-}
-function AppSetting() {
-  let { model, currentVersions = {}, setModel, update }: I_BackOfficeContext = useContext(BackOfficeContext);
-  let [openId, setOpenId] = useState<string | false>(false)
-  function splitter_layout(text, id, icon) {
-    return {
-      size: 36, align: 'v', className: 'back-office-splitter',
-      onClick: () => setOpenId(openId === id ? false : id),
-      row: [
-        {
-          size: 30, align: 'vh',
-          html: <Icon path={openId !== id ? mdiChevronLeft : mdiChevronDown} size={.8} />
-        },
-        { html: text, align: 'v' },
-        { flex: 1 },
-        { html: <Icon path={icon} size={0.8} />, style: { background: 'orange', color: '#fff', padding: 3, borderRadius: 4 } }
-
-      ]
-    }
-  }
-  function version_layout(id) {
-    if (id !== openId) { return false }
-    let { versions = {} } = model;
-    let cls = 'back-office-cachebutton'
-    return {
-      className: 'back-office-app-setting-item', gap: 6,
-      column: Object.keys(versions).map((o) => {
-        let currentVersion = currentVersions[o] || 0;
-        let version = versions[o] || 0;
-        return {
-          childsProps: { align: 'v' }, className: 'fs-12',
-          row: [
-            { html: o, align: 'v', size: 120 },
-            { size: 6 },
-            {
-              show: currentVersion !== version,
-              className: 'p-h-6 br-6 align-vh', style: { color: 'dodgerblue', width: 68 },
-              gap: 3,
-              row: [
-                { html: currentVersion, align: 'v' },
-                { html: <Icon path={mdiArrowLeftBold} size={.7} />, align: 'vh' },
-                { html: version, align: 'v' },
-              ]
-            },
-            {
-              show: currentVersion === version,
-              className: 'p-h-6 br-6 align-vh', style: { color: 'dodgerblue', width: 68 }, gap: 3, row: [{ html: currentVersion, align: 'v' }]
-            },
-            { flex: 1 },
-            { show: currentVersion === version, html: <button className={cls} onClick={() => setModel('versions', { ...versions, [o]: version + 1 })}>حذف cache</button> },
-            { show: currentVersion !== version, html: <button className={cls + ' active'} onClick={() => setModel('versions', { ...versions, [o]: currentVersions[o] })}>حذف شد cache</button> }
-          ]
-        }
-      })
-    }
-  }
-  function activeManager_layout(id) {
-    if (id !== openId) { return false }
-    let { activeManager } = model;
-    let options = {
-      "garanti": 'گارانتی',
-      "bazargah": 'بازارگاه',
-      "wallet": 'کیف پول',
-      "vitrin": 'ویترین',
-      "priceList": 'لیست قیمت'
-    }
-    activeManager = { ...activeManager }
-    return {
-      className: 'back-office-app-setting-item',
-      html: (
-        <AIOInput
-          type='form' lang='fa'
-          style={{ flex: 'none', width: '100%', height: 'fit-content', background: 'none' }}
-          bodyAttrs={{ style: { padding: 0 } }}
-          theme={{ rowStyle: { marginBottom: 0 }, bodyStyle: { padding: 0 }, inputStyle: { border: 'none' } }}
-          onChange={(obj) => setModel('activeManager', obj)}
-          value={activeManager}
-          inputs={{
-            column: Object.keys(options).map((o) => {
-              return { input: { type: 'checkbox', text: options[o] }, field: `value.${o}` }
-            })
-          }}
-        />
-      )
-    }
-  }
-  function bazargah_layout(id) {
-    if (id !== openId) { return false }
-    let { bazargah = {} } = model;
-    return {
-      className: 'back-office-app-setting-item',
-      html: (
-        <AIOInput
-          type='form' lang='fa'
-          rtl={true}
-          style={{ flex: 'none', width: '100%', height: 'fit-content', background: 'none' }}
-          theme={{ bodyStyle: { padding: 0 } }}
-          value={bazargah}
-          inputs={{
-            column: [
-              { input: { type: 'number', after: 'دقیقه' }, field: 'value.forsate_akhze_sefareshe_bazargah', label: 'فرصت اخذ سفارش بازارگاه' },
-              { input: { type: 'number', after: 'دقیقه' }, field: 'value.forsate_ersale_sefareshe_bazargah', label: 'فرصت ارسال سفارش بازارگاه' }
-            ]
-          }}
-          onChange={(obj) => setModel('bazargah', obj)}
-        />
-      )
-    }
-  }
-  function download() {
-    let storage = AIOStorage('bmbof');
-    storage.download({ file: model, name: 'bazar-miarze-back-office-setting' })
-  }
-  function upload(file) {
-    let storage = AIOStorage('bmbof');
-    storage.read({ file: file, callback: (backOffice) => update(backOffice) })
-  }
-  function file_layout(id) {
-    if (id !== openId) { return false }
-    return {
-      className: 'p-12', gap: 12,
-      row: [
-        { html: <AIOInput type='file' text='آپلود' className='back-office-button' onChange={(file) => upload(file)} /> },
-        { html: <AIOInput type='button' className='back-office-button' onClick={() => download()} text='دانلود' /> }
-      ]
-    }
-  }
-  function accessManagement_layout(id) {
-    if (id !== openId) { return false }
-    return { html: <AccessManagement /> }
-  }
-  return (
-    <RVD
-      layout={{
-        className: 'ofy-auto back-office-panel', style: { margin: 0 }, gap: 3,
-        column: [
-          { size: 12 },
-          splitter_layout('مدیریت cache کاربران', 'version', mdiAccountSync),
-          version_layout('version'),
-          splitter_layout('فعالسازی بخش های اپ', 'activeManager', mdiEye),
-          activeManager_layout('activeManager'),
-          splitter_layout('بازارگاه', 'bazargah', mdiCellphoneMarker),
-          bazargah_layout('bazargah'),
-          splitter_layout('مدیریت دسترسی', 'accessManagement', mdiAccountSync),
-          accessManagement_layout('accessManagement'),
-          splitter_layout('مدیریت فایل تنظیمات', 'filemanager', mdiContentSave),
-          file_layout('filemanager')
-        ]
-      }}
-    />
-  )
 }
 type I_Image = { onRemove?: Function, id: any, onChange: (url: string) => void, url?: string, placeholder?: any, style?: any }
 function Image(props: I_Image) {
@@ -2755,10 +2357,12 @@ function FormSetting(props: I_FormSetting) {
   )
 }
 
-type I_ShippingOptions_tab = 'PayDueDate_options' | 'PaymentTime_options' | 'DeliveryType_options';
+type I_ShippingOptions_tab = 'PayDueDate_options' | 'PaymentTime_options' | 'DeliveryType_options' | 'bundleData';
 function ShippingOptions() {
-  let { model, setModel }: I_BackOfficeContext = useContext(BackOfficeContext);
-  let [activeTabId, setActiveTabId] = useState<I_ShippingOptions_tab>('PayDueDate_options')
+  let { model, setModel,apis }: I_BackOfficeContext = useContext(BackOfficeContext);
+  let [activeTabId, setActiveTabId] = useState<I_ShippingOptions_tab>('bundleData')
+  let [orgBundleData,setOrgBundleData] = useState('');
+  let [bundleData,setBundleData] = useState(model.bundleData);
   function getPayDueDateText({ cashPercent = 0, days = 0 }) {
     let res = []
     if (cashPercent) { res.push(`${cashPercent}% نقد`) }
@@ -2774,6 +2378,7 @@ function ShippingOptions() {
             { text: 'PayDueDate', value: 'PayDueDate_options' },
             { text: 'PaymentTime', value: 'PaymentTime_options' },
             { text: 'DeliveryType', value: 'DeliveryType_options' },
+            { text: 'Bundle Data', value: 'bundleData' },
           ]}
           onChange={(activeTabId: I_ShippingOptions_tab) => setActiveTabId(activeTabId)}
         />
@@ -2795,6 +2400,60 @@ function ShippingOptions() {
         { title: 'نام', value: 'row.text', input: { type: 'text' } },
         { title: 'v', value: 'row.value', width: 50, justify: true, input: { type: 'number' } },
       ]
+    }
+  }
+  function content_layout(){
+    if(activeTabId === 'bundleData'){return bundleData_layout()}
+    else {return table_layout()}
+  }
+  async function fixBundleData(orgBundleData){
+    if(!orgBundleData){return false}
+    let data;
+    try{data = JSON.parse(orgBundleData)}
+    catch{}
+    let res = await apis.request({api:'kharid.daryafte_ettelaate_bundle',parameter:data,message:{success:true},description:'تبدیل دیتای باندل'})
+    if(res){
+      setBundleData(res);
+      setModel('bundleData',res)
+      return true
+    }
+  }
+  function bundleData_layout(){
+    return {
+      flex: 1,
+      column:[
+        {
+          gap:12,
+          row:[
+            {html:<button onClick={()=>{
+            setOrgBundleData('')
+            }}>پاک کردن</button>}
+          ]
+        },
+        {html:'دیتای اصلی',style:{color:'#fff'},className:'p-6'},
+        {
+          size:60,
+          html: (
+            <AIOInput
+              type='textarea'
+              style={{width:'100%',height:'100%',direction:'ltr'}}
+              value={!orgBundleData?'':JSON.stringify(orgBundleData,null,4)}
+              onChange={async (value)=>{
+                let res = await fixBundleData(value);
+                if(res){setOrgBundleData(value);}
+                else {setOrgBundleData('')}
+              }}
+              disabled={!!orgBundleData}
+            />
+          )
+        },
+        {html:'دیتای اصلاح شده',style:{color:'#fff'},className:'p-6'},
+        {
+          flex:1,
+          html: AIODoc().Code(!bundleData?'':JSON.stringify(bundleData,null,4))
+        },
+      ]
+      
     }
   }
   function table_layout() {
@@ -2828,7 +2487,296 @@ function ShippingOptions() {
       )
     }
   }
-  return (<RVD layout={{ flex: 1, className: 'ofy-auto', column: [tabs_layout(), table_layout()] }} />)
+  return (<RVD layout={{ flex: 1, className: 'ofy-auto', column: [tabs_layout(), content_layout()] }} />)
 }
-
-
+function AppSetting() {
+  function getAfter(icon){return (<div className='back-office-after'><Icon path={icon} size={0.8} /></div>)}
+  let items = [
+    {id:'version',after:getAfter(mdiAccountSync),name:'مدیریت cache کاربران',content:()=><Versions/>,contentAttrs:{className:'p-12'}},
+    {id:'activeManager',after:getAfter(mdiEye),name:'فعالسازی بخش های اپ',content:()=><ActiveManager/>},
+    {id:'bazargah',after:getAfter(mdiCellphoneMarker),name:'بازارگاه',content:()=><Bazargah/>},
+    {id:'accessManagement',after:getAfter(mdiAccountSync),name:'مدیریت دسترسی',content:()=><AccessManagement/>},
+    {id:'filemanager',after:getAfter(mdiContentSave),name:'مدیریت فایل تنظیمات',content:()=><FileManager/>}
+  ]
+  return (<RVD layout={{className: 'ofy-auto back-office-panel', style: { margin: 0 },html:<Acardion items={items} singleOpen={true}/>}}/>)
+}
+function Versions() {
+  let { model, currentVersions = {}, setModel }: I_BackOfficeContext = useContext(BackOfficeContext);
+  let { versions = {} } = model;
+  let cls = 'back-office-cachebutton'
+  return (
+    <RVD
+      layout={{
+        className: 'back-office-app-setting-item', gap: 6,
+        column: Object.keys(versions).map((o) => {
+          let currentVersion = currentVersions[o] || 0;
+          let version = versions[o] || 0;
+          return {
+            childsProps: { align: 'v' }, className: 'fs-12',
+            row: [
+              { html: o, align: 'v', size: 120 },
+              { size: 6 },
+              {
+                show: currentVersion !== version,
+                className: 'p-h-6 br-6 align-vh', style: { color: 'dodgerblue', width: 68 },
+                gap: 3,
+                row: [
+                  { html: currentVersion, align: 'v' },
+                  { html: <Icon path={mdiArrowLeftBold} size={.7} />, align: 'vh' },
+                  { html: version, align: 'v' },
+                ]
+              },
+              {
+                show: currentVersion === version,
+                className: 'p-h-6 br-6 align-vh', style: { color: 'dodgerblue', width: 68 }, gap: 3, row: [{ html: currentVersion, align: 'v' }]
+              },
+              { flex: 1 },
+              { show: currentVersion === version, html: <button className={cls} onClick={() => setModel('versions', { ...versions, [o]: version + 1 })}>حذف cache</button> },
+              { show: currentVersion !== version, html: <button className={cls + ' active'} onClick={() => setModel('versions', { ...versions, [o]: currentVersions[o] })}>حذف شد cache</button> }
+            ]
+          }
+        })
+      }}
+    />
+  )
+}
+function ActiveManager() {
+  let { model, setModel }: I_BackOfficeContext = useContext(BackOfficeContext);
+  let { activeManager } = model;
+  let options = {
+    "garanti": 'گارانتی',
+    "bazargah": 'بازارگاه',
+    "wallet": 'کیف پول',
+    "vitrin": 'ویترین',
+    "priceList": 'لیست قیمت'
+  }
+  activeManager = { ...activeManager }
+  return (
+    <RVD
+      layout={{
+        className: 'back-office-app-setting-item',
+        html: (
+          <AIOInput
+            type='form' lang='fa'
+            style={{ flex: 'none', width: '100%', height: 'fit-content', background: 'none' }}
+            bodyAttrs={{ style: { padding: 0 } }}
+            theme={{ rowStyle: { marginBottom: 0 }, bodyStyle: { padding: 0 }, inputStyle: { border: 'none' } }}
+            onChange={(obj) => setModel('activeManager', obj)}
+            value={activeManager}
+            inputs={{
+              column: Object.keys(options).map((o) => {
+                return { input: { type: 'checkbox', text: options[o] }, field: `value.${o}` }
+              })
+            }}
+          />
+        )
+      }}
+    />
+  )
+}
+function Bazargah() {
+  let { model, setModel }: I_BackOfficeContext = useContext(BackOfficeContext);
+  let { bazargah = {} } = model;
+  return (
+    <RVD
+      layout={{
+        className: 'back-office-app-setting-item',
+        html: (
+          <AIOInput
+            type='form' lang='fa'
+            rtl={true}
+            style={{ flex: 'none', width: '100%', height: 'fit-content', background: 'none' }}
+            theme={{ bodyStyle: { padding: 0 } }}
+            value={bazargah}
+            inputs={{
+              column: [
+                { input: { type: 'number', after: 'دقیقه' }, field: 'value.forsate_akhze_sefareshe_bazargah', label: 'فرصت اخذ سفارش بازارگاه' },
+                { input: { type: 'number', after: 'دقیقه' }, field: 'value.forsate_ersale_sefareshe_bazargah', label: 'فرصت ارسال سفارش بازارگاه' }
+              ]
+            }}
+            onChange={(obj) => setModel('bazargah', obj)}
+          />
+        )
+      }}
+    />
+  )
+}
+type I_backOffice_access_item = {text:string,value:I_backOffice_accessKey};
+function AccessManagement() {
+  let { accessKeys, model, setModel,rsa }: I_BackOfficeContext = useContext(BackOfficeContext);
+  let trans = {
+    'appsetting': 'تنظیمات',
+    'spreeManagement': 'اسپری',
+    'contentManagement': 'محتوی',
+    'priceList': 'لیست قیمت',
+    'vitrinSuggestions': 'پیشنهادات ویترین',
+    'vitrinBrands':'برند های ویترین',
+    'vitrinCategories':'دسته بندی های ویترین'
+  }
+  let items:I_backOffice_access_item[] = accessKeys.map((o)=>{return {text:trans[o],value:o}})
+  function header_layout() {
+    return {
+      className: 'p-h-12 fs-12', gap: 6,
+      row: [
+        { html: <button className='back-office-add-button-2' onClick={() => openAddModal()}>افزودن دسترسی</button> }
+      ]
+    }
+  }
+  function openAddModal(){
+    rsa.addModal({
+      position:'center',
+      attrs:{style:{maxWidth:320}},
+      backdrop:{attrs:{style:{backdropFilter:'blur(3px)',background:'rgba(0,0,0,0.6)'}}},
+      header:{title:'افزودن دسترسی',attrs:{className:'back-office-popup-header'}},
+      state:{model:{}},
+      body:{
+        attrs:{className:'back-office-popup-body'},
+        render:({state,setState})=>{
+          return (
+            <AIOInput
+              type='form' value={{...state.model}} lang='fa'
+              className='back-office-form'
+              onChange={(model)=>setState({model})}
+              onSubmit={()=>add(state.model)}
+              submitText='ثبت دسترسی'
+              inputs={{
+                column:[
+                  {input:{type:'text'},field:'value.name',label:'نام شخص',validations:[['required']]},
+                  {input:{type:'text',justNumber:true,maxLength:11},validations:[['required']],field:'value.phoneNumber',label:'شماره همراه شخص'},
+                  {
+                    input:{
+                      type:'radio',multiple:true,
+                      options:accessKeys,
+                      optionText:(option)=>trans[option],
+                      optionValue:'option'
+                    },
+                    field:'value.accesses',
+                    label:'دسترسی ها'
+                  }
+                ]
+              }}
+            />
+          )
+        }
+      }
+    })
+  }
+  function add({name,phoneNumber,accesses}) {
+    rsa.removeModal();
+    let { accessPhoneNumbers = [] } = model;
+    let access = {} as I_backOffice_access;
+    for(let i = 0; i < accessKeys.length; i++){
+      let accessKey = accessKeys[i];
+      let active = accesses.indexOf(accessKey) !== -1;
+      access[accessKey] = active;
+    }
+    let addModel: I_backOffice_accessPhoneNumber = {name, phoneNumber,access}
+    setModel('accessPhoneNumbers', accessPhoneNumbers.concat(addModel));
+  }
+  function cards_layout() {
+    let { accessPhoneNumbers = [] } = model;
+    return {
+      column: accessPhoneNumbers.map((o: I_backOffice_accessPhoneNumber, i) => card_layout(o, i))
+    }
+  }
+  function card_layout(o: I_backOffice_accessPhoneNumber, index: number) {
+    let { phoneNumber, access, name } = o
+    let isSuperAdmin = phoneNumber === '09123534314' || phoneNumber === '+989123534314'
+    return {
+      className: 'back-office-access-card',
+      column: [
+        {
+          className: 'back-office-access-card-header', gap: 3, align: 'v',
+          row: [
+            { html: phoneNumber },
+            {
+              flex: 1, html: (
+                <input
+                  placeholder="نام را وارد کنید"
+                  type='text' value={name} onChange={(e) => changeName(index, e.target.value)} style={{ width: '100%', padding: '0 6px', color: '#fff', border: 'none', background: 'none', outline: 'none' }} />
+              )
+            },
+            { show: !isSuperAdmin, html: () => <Icon path={mdiClose} size={.8} />, align: 'vh', size: 36, onClick: () => remove(phoneNumber) }
+          ]
+        },
+        { className: 'back-office-access-card-body', grid: items.map((o: I_backOffice_access_item) => row_layout(o, access, phoneNumber)), gridCols: 2 }
+      ]
+    }
+  }
+  function changeName(index: number, name: string) {
+    let { accessPhoneNumbers = [] } = model;
+    setModel('accessPhoneNumbers', accessPhoneNumbers.map((o, i) => {
+      if (index === i) { return { ...o, name } }
+      return o
+    }));
+  }
+  function change(field, value, phoneNumber) {
+    let { accessPhoneNumbers = [] } = model;
+    setModel('accessPhoneNumbers', accessPhoneNumbers.map((o: I_backOffice_accessPhoneNumber) => o.phoneNumber === phoneNumber ? { phoneNumber, access: { ...o.access, [field]: value } } : o))
+  }
+  function remove(phoneNumber: string) {
+    let { accessPhoneNumbers = [] } = model;
+    setModel('accessPhoneNumbers', accessPhoneNumbers.filter((o: I_backOffice_accessPhoneNumber) => o.phoneNumber !== phoneNumber))
+  }
+  function row_layout(item: I_backOffice_access_item, access, phoneNumber) {
+    let active = !!access[item.value];
+    return {
+      className: 'back-office-access-card-row', flex: 1,
+      onClick: () => change(item.value, !active, phoneNumber),
+      row: [
+        { html: item.text, flex: 1, align: 'v' },
+        { size: 36, align: 'vh', html: <Icon path={active ? mdiCheckboxMarkedOutline : mdiCheckboxBlankOutline} size={1} /> }
+      ]
+    }
+  }
+  return (<RVD layout={{ flex: 1, column: [{ size: 12 }, header_layout(), cards_layout()] }} />)
+}
+function FileManager() {
+  let { model, update }: I_BackOfficeContext = useContext(BackOfficeContext);
+  function download() {
+    let storage = AIOStorage('bmbof');
+    storage.download({ file: model, name: 'bazar-miarze-back-office-setting' })
+  }
+  function upload(file) {
+    let storage = AIOStorage('bmbof');
+    storage.read({ file: file, callback: (backOffice) => update(backOffice) })
+  }
+  return (
+    <RVD
+      layout={{
+        className: 'p-12', gap: 12,
+        row: [
+          { html: <AIOInput type='file' text='آپلود' className='back-office-button' onChange={(file) => upload(file)} /> },
+          { html: <AIOInput type='button' className='back-office-button' onClick={() => download()} text='دانلود' /> }
+        ]
+      }}
+    />
+  )
+}
+function VitrinCategories() {
+  let { model, setModel }: I_BackOfficeContext = useContext(BackOfficeContext)
+  function getOptionIcon(value){
+    if(value === 'add'){return <Icon path={mdiPlusThick} size={1} />}
+    if(value === 'remove'){return <Icon path={mdiDelete} size={1} />}
+  }
+  return (
+    <Tree
+      getOptionBefore={(value)=>getOptionIcon(value)}
+      getOprions={(row)=>[]}
+      getText={(row)=>`آی دی دسته بندی: ${row.id}`}
+      getSubtext={(row)=>row.name}
+      onAdd={(parent)=>{
+        let id = window.prompt('آی دی دسته بندی را وارد کنید');
+        if (typeof id === 'string') {
+          let name = window.prompt('نام دسته بندی را وارد کنید');
+          if (typeof name === 'string') {
+            return { name, id: +id, childs: [] }    
+          }  
+        }
+      }}
+      data={model.vitrinCategories || []}
+      onRemove={(row,parent)=>true}
+      onChange={(data)=>setModel('vitrinCategories', data)}
+    />
+  )
+}

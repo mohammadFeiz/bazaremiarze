@@ -7,7 +7,7 @@ import Billboard from "../../components/billboard/billboard";
 import { I_app_state, I_product, I_spreeCategory } from "../../types";
 type I_slider = {getProducts:()=>Promise<I_product[]>,name:string,id:any}
 export default function Buy() {
-  let {Shop,spreeCategories,backOffice}:I_app_state = useContext(appContext);
+  let {Shop,spreeCategories,backOffice,b1Info}:I_app_state = useContext(appContext);
   let [sliders,setSliders] = useState<I_slider[]>([])
   async function getSliders(){
     let {slider_type = []} = spreeCategories;
@@ -59,12 +59,23 @@ export default function Buy() {
       })
     }
   }
+  function disabled_layout(){
+    if(b1Info.customer.purchaseState && b1Info.customer.purchaseState.inBlackList){
+      return {
+        className:'buy-black-list',html:'مشتری گرامی با توجه به وضعیت حساب شما هم اکنون امکان استفاده از سرویس خرید اپلیکیشن را ندارید'
+      }
+    }
+    else {
+      return false
+    }
+  }
   return (
     <RVD 
       layout={{
         flex: 1,className: "page-bg w-100",style:{overflow:'hidden'},
         column: [
-          {className: "ofy-auto",gap:24,flex:1,column:[billboard_layout(),categories_layout(),sliders_layout()]}
+          {className: "ofy-auto",gap:24,flex:1,column:[billboard_layout(),categories_layout(),sliders_layout()]},
+          disabled_layout()
         ]
       }}
     />

@@ -2154,6 +2154,13 @@ function Shipping(props: I_Shipping) {
         if (!data) { return false }
         let value = data[key].value;
         let options = data[key].options;
+        if(key === 'PaymentTime' && b1Info.customer.purchaseState && b1Info.customer.purchaseState.onlyByOrder){
+            options = [{value: 1, text: 'واریز قبل ارسال'}]
+        }
+        if(key === 'PayDueDate' && b1Info.customer.purchaseState && b1Info.customer.purchaseState.onlyByCash){
+            options = options.filter((o)=>o.value === 1)
+        }
+        
         if (!cond || value === undefined) { return false }
         return {
             className: 'box p-12 m-h-12',

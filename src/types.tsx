@@ -43,7 +43,7 @@ export type I_userInfo = {
 export type I_B1Info = {
     itemPrices:I_itemPrice[],//notice
     salePeople:{mobile:string},
-    customer:{ballance:number,groupName:string,slpcode:string,slpname:string,groupCode:string}
+    customer:{ballance:number,groupName:string,slpcode:string,slpname:string,groupCode:string,purchaseState:{onlyByCash:boolean,onlyByOrder:boolean,inBlackList:boolean}}
 }
 export type I_itemPrice = {itemCode: any,mainSku?: any,canSell: boolean,qtyRelation:number}
 export type I_register = {

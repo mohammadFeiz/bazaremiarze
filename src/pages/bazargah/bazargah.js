@@ -25,6 +25,7 @@ export default class Bazargah extends Component{
         setTimeout(()=>this.setState({splash:false}),2500)
     }
     openDetails(o){
+        debugger
         let {rsa} = this.context;
         rsa.addModal({
             position:'fullscreen',
@@ -501,7 +502,7 @@ class JoziateSefaresheBazargah extends Component{
             })
         }
     }
-    item_layout({src,name,detail,isFirst,isLast,isCheckable,id}){
+    item_layout({src,name,detail,isFirst,isLast,isCheckable,id,count,price}){
         let {sendStatus} = this.state;
         let borderRadius,onClick;
         if(isFirst && isLast){borderRadius = 8} 
@@ -531,7 +532,15 @@ class JoziateSefaresheBazargah extends Component{
                             column:[
                                 {flex:1},
                                 {html:name,className:'theme-medium-font-color fs-12 bold'},
-                                {html:detail,className:'theme-medium-font-color fs-12'},
+                                {row:detail,className:'theme-medium-font-color fs-12',align:'v',gap:3},
+                                {
+                                    align:'v',gap:3,
+                                    row:[
+                                        {html:'تعداد:',className:'bold fs-10'},{html:count},{html:'عدد',className:'theme-light-font-color fs-10'},
+                                        {size:3},
+                                        {html:'جمع:',className:'bold fs-10'},{html:SplitNumber(price)},{html:'ریال',className:'theme-light-font-color fs-10'}
+                                    ]
+                                },
                                 {flex:1}
                             ]
                         },
@@ -970,15 +979,29 @@ class BazargahCard extends Component{
         return {
             align:'v',
             row:[
-                {flex:1,html:<button className='button-2' style={{height:32,margin:'0 12px'}} onClick={onClick}>{text}</button>}
+                {
+                    flex:1,
+                    html:(
+                        <button 
+                            className='button-2' 
+                            style={{height:32,margin:'0 12px'}} 
+                            onClick={(e)=>{
+                                e.stopPropagation(); 
+                                debugger
+                                onClick()
+                            }}
+                        >{text}</button>
+                    )
+                }
             ]
         }
     }
     code_layout(orderNumber){
         return {
-            gap:4,
+            gap:4,align:'v',className:'theme-dark-font-color fs-10 p-h-12',
             row:[
-                {html:orderNumber,align:'v',className:'bold theme-dark-font-color fs-14'},
+                {html:'سفارش با کد'},
+                {html:orderNumber,className:'bold fs-14'},
             ]
         }
     }
@@ -1042,7 +1065,7 @@ class BazargahCard extends Component{
             })
         }
     }
-    item_layout({src,name,detail}){
+    item_layout({src,name,detail,price,count}){
         return (
             <RVD
                 layout={{
@@ -1051,10 +1074,19 @@ class BazargahCard extends Component{
                         {size:60,html:<img src={src} width='100%' alt=''/>,className:'padding-3'},
                         {size:12},
                         {
+                            className:'theme-medium-font-color fs-12',
                             column:[
                                 {flex:1},
-                                {html:name,className:'theme-medium-font-color fs-12 bold'},
-                                {html:detail,className:'theme-medium-font-color fs-12'},
+                                {html:name.slice(0,48),className:'bold'},
+                                {row:detail,align:'v',gap:3},
+                                {
+                                    align:'v',gap:3,
+                                    row:[
+                                        {html:'تعداد:',className:'bold fs-10'},{html:count},{html:'عدد',className:'theme-light-font-color fs-10'},
+                                        {size:3},
+                                        {html:'جمع:',className:'bold fs-10'},{html:SplitNumber(price)},{html:'ریال',className:'theme-light-font-color fs-10'}
+                                    ]
+                                },
                                 {flex:1}
                             ]
                         },

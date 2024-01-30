@@ -13,7 +13,7 @@ import {  I_AIOService_class, I_AIOService_onCatch, I_B1Info, I_Report_parameter
 import { I_AL_props,I_AIOLogin, I_AL_model } from './npm/aio-login/index.tsx';
 type I_getBaseUrl = () => string
 const getBaseUrl: I_getBaseUrl = function () {
-  //return "https://apimy.burux.com/api/v1";
+  return "https://apimy.burux.com/api/v1";
   let url = window.location.href;
   if (url.indexOf('bazar') !== -1) { return "https://apimy.burux.com/api/v1"; }
   else if (url.indexOf('bbeta') !== -1) { return "https://retailerapp.bbeta.ir/api/v1"; }
@@ -77,6 +77,7 @@ export default function App() {
           }, { userId:model.login.userId });
           return;
         }
+        userInfo = fixUserInfo(userInfo)
         let { accessToken } = userInfo;
         let token = accessToken.access_token;
         let b1Info:I_B1Info = await getB1Info(userInfo);
@@ -96,6 +97,7 @@ export default function App() {
         let isTokenValid = await apis.request({ api: 'login.checkToken',description:'دریافت اطلاعات ورود', parameter: token, loading: false, onCatch: () => 'خطای 10037.این کد خطا را به پشتیبانی اعلام کنید' })
         if (isTokenValid === false) { return false }
         let userInfo = Login.getUserInfo()
+        userInfo = fixUserInfo(userInfo)
         if (typeof userInfo !== 'object' || !userInfo.cardCode || typeof userInfo.cardCode !== 'string') {
           return false;
         }
@@ -139,7 +141,18 @@ export default function App() {
     }
   }
   let [Login] = useState<I_AIOLogin>(new AIOLogin(AIOLoginProps))
-  
+  function fixUserInfo(userInfo:I_userInfo){
+    if(typeof userInfo !== 'object'){return userInfo}
+    if(typeof userInfo.latitude === 'string'){
+      if(isNaN(+userInfo.latitude)){userInfo.latitude = undefined}
+      else{userInfo.latitude = +userInfo.latitude}
+    }
+    if(typeof userInfo.longitude === 'string'){
+      if(isNaN(+userInfo.longitude)){userInfo.longitude = undefined}
+      else{userInfo.longitude = +userInfo.longitude}
+    }
+    return userInfo
+  }
   const onSubmit_onCatch: I_AIOService_onCatch = (error) => {
     let result: string | undefined;
     try { result = error.response.data.Message }

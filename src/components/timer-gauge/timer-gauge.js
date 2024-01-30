@@ -1,4 +1,5 @@
 import React,{Component} from 'react';
+import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import Gauge from './../../npm/aio-gauge/aio-gauge';
 export default class TimerGauge extends Component{
     constructor(props){
@@ -36,16 +37,40 @@ export default class TimerGauge extends Component{
         let hours = Math.floor(remainingTime / 60);
         let minutes = Math.floor(remainingTime - (hours * 60)) 
         return (
-            <Gauge
-                style={{width:100,height:100}} rotate={180} direction='clockwise'
-                start={0} radius={32} angle={360} end={totalTime} thickness={4}
-                text={[
-                    {value:`${hours}:${minutes}`,top:0,fontSize:16,color:timeColor,fontFamily:'IranSans_light'}
-                ]}
-                ranges={[
-                    {value:remainingTime,color:timeColor},
-                    {value:totalTime,color:'#ddd'}
-                ]}
+            <RVD
+                layout={{
+                    column:[
+                        {size:12},
+                        {
+                            align:'vh',
+                            html:(
+                                <Gauge
+                                    style={{width:48,height:48}} rotate={180} direction='clockwise'
+                                    start={0} radius={20} angle={360} end={totalTime} thickness={3}
+                                    ranges={[
+                                        {value:remainingTime,color:timeColor},
+                                        {value:totalTime,color:'#ddd'}
+                                    ]}
+                                />
+                            )
+                        },
+                        {
+                            className:'fs-10',style:{color:'#000'},align:'vh',
+                            column:[
+                                {html:`زمان باقیمانده`},
+                                {
+                                    align:'v',gap:3,
+                                    row:[
+                                        {html:hours,className:'bold fs-12',style:{color:timeColor}},
+                                        {html:'ساعت و',style:{opacity:0.7}},
+                                        {html:minutes,className:'bold fs-12',style:{color:timeColor}},
+                                        {html:'دقیقه',style:{opacity:0.7}},
+                                    ]
+                                },
+                            ]
+                        }
+                    ]
+                }}
             />
         )
     }

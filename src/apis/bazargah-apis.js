@@ -41,7 +41,32 @@ export default function bazargahApis({baseUrl,helper}) {
                 distance = +order.distance.toFixed(2);
                 orderItems = order.orderItems.map(i => {
                     let src = i.imagesUrl !== null && i.imagesUrl !== undefined ? i.imagesUrl.split(",")[0] : bulbSrc;
-                    return { name: i.productName, detail: `${i.options} - تعداد:${i.quantity}`, src: src, id: i.id, price: i.finalPrice * i.quantity };
+                    let detail = [];
+                    try{
+                        let startIndex = i.options.indexOf('#');
+                        let endIndex = i.options.indexOf('$');
+                        let res = i.options.slice(startIndex,endIndex);
+                        if(res[0] === '#' && res.length === 7){
+                            let before = i.options.slice(0,startIndex);
+                            let after = i.options.slice(endIndex + 1,i.options.length)
+                            let color = res;
+                            detail = [
+                                {html:before},
+                                {html:<div className='w-12 h-12 br-3' style={{background:color}}></div>,align:'vh'},
+                                {html:after},
+                                
+                            ]
+                             
+                        }
+                        else {
+                            detail = [{html:i.options}]
+                        }
+
+                    }
+                    catch{detail = [{html:i.options}]}
+                    let count = i.quantity;
+                    let price = i.vendorFinalPrice * count;
+                    return { name: i.productName, detail, src, id: i.id,price,count };
                 })
             }
             catch {

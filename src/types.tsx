@@ -60,6 +60,33 @@ export type I_register = {
     userCity: string
 }
 //////backOffice
+//////rsa
+type I_rsa_addModal = {
+    position?:'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom',
+    id?:string,
+    attrs?:any,
+    header?:false | {
+        title:string,subtitle?:string,attrs?:any,backButton?:boolean,
+        buttons?:[text:React.ReactNode,attrs?:any][]
+    },
+    body:{render:(p:{state:any,setState:(p:any)=>void})=>React.ReactNode,attrs?:any}
+}
+type I_rsa_addSnakebar = {
+    type:'info' | 'warning' | 'error' | 'success',
+    text:string,
+    subtext?:string,
+    time?:number,
+    rtl?:boolean,
+    action?:{text:string,onClick:()=>void},
+    onClose?:false | (()=>void)
+}
+type I_rsa = {
+    setNavId:(navId:string)=>void,
+    addModal:(p:I_rsa_addModal)=>void,
+    removeModal:(id?:string)=>void,
+    addSnakebar:(p:I_rsa_addSnakebar)=>void
+}
+//////rsa
 export type I_state_backOffice = {
     colors:any,
     accessPhoneNumbers:I_backOffice_accessPhoneNumber[]
@@ -244,7 +271,7 @@ export type I_app_state = {
     b1Info:I_B1Info,
     Logger:any,
     Shop:I_state_Shop,
-    rsa:any,
+    rsa:I_rsa,
     logout:()=>void,
     developerMode:boolean,
     cart:I_state_cart,

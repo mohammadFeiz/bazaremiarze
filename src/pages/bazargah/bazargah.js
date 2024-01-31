@@ -538,7 +538,7 @@ class JoziateSefaresheBazargah extends Component{
                                     row:[
                                         {html:'تعداد:',className:'bold fs-10'},{html:count},{html:'عدد',className:'theme-light-font-color fs-10'},
                                         {size:3},
-                                        {html:'جمع:',className:'bold fs-10'},{html:SplitNumber(price)},{html:'ریال',className:'theme-light-font-color fs-10'}
+                                        {html:'قیمت واحد:',className:'bold fs-10'},{html:SplitNumber(price)},{html:'ریال',className:'theme-light-font-color fs-10'}
                                     ]
                                 },
                                 {flex:1}
@@ -1084,7 +1084,7 @@ class BazargahCard extends Component{
                                     row:[
                                         {html:'تعداد:',className:'bold fs-10'},{html:count},{html:'عدد',className:'theme-light-font-color fs-10'},
                                         {size:3},
-                                        {html:'جمع:',className:'bold fs-10'},{html:SplitNumber(price)},{html:'ریال',className:'theme-light-font-color fs-10'}
+                                        {html:'قیمت واحد:',className:'bold fs-10'},{html:SplitNumber(price)},{html:'ریال',className:'theme-light-font-color fs-10'}
                                     ]
                                 },
                                 {flex:1}

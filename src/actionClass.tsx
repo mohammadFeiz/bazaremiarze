@@ -93,13 +93,13 @@ export default class ActionClass implements I_actionClass {
     }
     getSideItems = () => {
         let { userInfo,b1Info, backOffice, Logger } = this.getProps();
-        let { logout } = this.getState();
+        let { logout,rsa } = this.getState();
         let { slpcode } = b1Info.customer;
         let isAdmin = backOffice.isAdmin(userInfo);
         let { activeManager } = backOffice;
         let icon = (path:any):React.ReactNode => <Icon path={path} size={0.8} />
         return [
-            { text: 'بازارگاه', icon: () => icon(mdiCellphoneMarker), onClick: () => this.getState().rsa.setNavId('bazargah') },
+            { text: 'بازارگاه', icon: () => icon(mdiCellphoneMarker), onClick: () => rsa.setNavId('bazargah') },
             { text: 'پیگیری سفارش خرید', icon: () => icon(mdiClipboardList), onClick: () => this.openPopup('peygiriye-sefareshe-kharid') },
             { text: 'درخواست گارانتی', icon: () => icon(mdiShieldCheck), onClick: () => this.openPopup('sabteGarantiJadid'), show: () => !!activeManager.garanti && slpcode },
             { text: 'لیست قیمت', icon: () => icon(mdiCash), onClick: () => this.openPopup('priceList'), show: () => !!activeManager.priceList },
@@ -131,11 +131,11 @@ export default class ActionClass implements I_actionClass {
     openPopup = (type:string, parameter?:any) => {
         let { rsa, backOffice, Logger,msfReport,setCart } = this.getState();
         let { userInfo } = this.getProps();
-        let { addModal, removeModal, setNavId } = rsa;
+        let { removeModal, setNavId } = rsa;
         if (type === 'vitrin-search') {
             msfReport({actionName:'open vitrin search',actionId:18,tagName:'vitrin',eventName:'page view'})
             let {render} = parameter;
-            addModal({
+            rsa.addModal({
                 id: type,
                 header: { title: 'افزودن محصول به ویترین من', attrs: { className: 'vitrin-search-popup-header' } },
                 body: { render }
@@ -144,7 +144,7 @@ export default class ActionClass implements I_actionClass {
         if (type === 'vitrin-product-page') {
             let {render,product} = parameter;
             msfReport({actionName:'open vitrin product page',targetName:product.name,targetId:product.id,actionId:1548,tagName:'vitrin',eventName:'page view'})
-            addModal({
+            rsa.addModal({
                 id: type,
                 header: { title: 'افزودن نوع کالا به ویترین من', attrs: { className: '' } },
                 body: { render }
@@ -153,11 +153,11 @@ export default class ActionClass implements I_actionClass {
         else if(type === 'vitrin-categories'){
             let {render} = parameter;
             msfReport({actionName:'open vitrin categories',actionId:19,tagName:'vitrin',eventName:'page view'})
-            addModal({body: {render},id: 'categories',header: { title: 'دسته بندی محصولات' }})
+            rsa.addModal({body: {render},id: 'categories',header: { title: 'دسته بندی محصولات' }})
         }
         else if(type === 'vitrin-price-suggestion'){
             let {render} = parameter;
-            addModal({body: {render},id: type,header: { title: 'گزارش اشکال قیمت' }})
+            rsa.addModal({body: {render},id: type,header: { title: 'گزارش اشکال قیمت' }})
         }
         else if (type === 'profile') {
             let { Login,updateProfile} = this.getProps();
@@ -184,69 +184,69 @@ export default class ActionClass implements I_actionClass {
                 fields = ['*location','*address',['*state','*city']]
             }
             let onSubmit = async (model) => await updateProfile(model,mode,()=>removeModal(type));
-            addModal({position: 'fullscreen', id: type,header,body: {attrs:{className:'profile-container'},render: () => {
+            rsa.addModal({position: 'fullscreen', id: type,header,body: {attrs:{className:'profile-container'},render: () => {
                 return <Register renderLogin={()=>Login.render({profile:{model,onSubmit,fields}})} mode={mode}/>
             }}})
         }
         else if (type === 'logs') {
-            addModal({ position: 'fullscreen', id: type, body: { render: () => Logger.render() }, header: { title: 'رفتار سیستم' } })
+            rsa.addModal({ position: 'fullscreen', id: type, body: { render: () => Logger.render() }, header: { title: 'رفتار سیستم' } })
         }
         else if (type === 'priceList') {
             msfReport({actionName:'open price list',actionId:21,tagName:'other',eventName:'page view'})
-            addModal({ position: 'fullscreen', id: type, body: { render: () => <PriceList /> }, header: { title: 'لیست قیمت تولیدکنندگان', backbutton: true } })
+            rsa.addModal({ position: 'fullscreen', id: type, body: { render: () => <PriceList /> }, header: { title: 'لیست قیمت تولیدکنندگان', backButton: true } })
         }
         else if (type === 'admin-panel') {
             msfReport({actionName:'open admin panel',actionId:22,tagName:'other',eventName:'page view'})
-            addModal({ position: 'fullscreen', id: type, body: { render: () => <BackOffice model={backOffice} phoneNumber={userInfo.userName} /> } })
+            rsa.addModal({ position: 'fullscreen', id: type, body: { render: () => <BackOffice model={backOffice} phoneNumber={userInfo.userName} /> } })
         }
         else if (type === 'count-popup') {
             msfReport({actionName:'open product count popup',actionId:23,tagName:'kharid',eventName:'page view'})
-            addModal({
+            rsa.addModal({
                 position: 'center', id: type, attrs: { style: { height: 'fit-content' } },
-                body: { render: () => <CountPopup {...parameter} /> }, header: { title: 'تعداد را وارد کنید', closeType: 'close button' }
+                body: { render: () => <CountPopup {...parameter} /> }, header: { title: 'تعداد را وارد کنید' }
             })
         }
         else if (type === 'password') {
             msfReport({actionName:'open password popup',actionId:24,tagName:'profile',eventName:'page view'})
-            addModal({ id: type, position: 'fullscreen', body: { render: () => <PasswordPopup /> }, header: { title: 'مشاهده و ویرایش رمز عبور' } })
+            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <PasswordPopup /> }, header: { title: 'مشاهده و ویرایش رمز عبور' } })
         }
         else if (type === 'peygiriye-sefareshe-kharid') {
             msfReport({actionName:'open order follow up popup',actionId:25,tagName:'kharid',eventName:'page view'})
-            addModal({ id: type, position: 'fullscreen', body: { render: () => <OrdersHistory activeTab={parameter} /> }, header: { title: 'جزيیات سفارش خرید' } })
+            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <OrdersHistory activeTab={parameter} /> }, header: { title: 'جزيیات سفارش خرید' } })
         }
         if (type === 'joziate-sefareshe-kharid') {
-            addModal({ id: type, position: 'fullscreen', body: { render: () => <OrderPopup order={parameter} /> }, header: { title: 'پیگیری سفارش خرید' } })
+            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <OrderPopup order={parameter} /> }, header: { title: 'پیگیری سفارش خرید' } })
         }
         else if (type === 'sabteGarantiJadid') {
-            addModal({ id: type, position: 'fullscreen', body: { render: () => <SabteGarantiJadid /> }, header: { title: 'درخواست مرجوع کالای سوخته' } })
+            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <SabteGarantiJadid /> }, header: { title: 'درخواست مرجوع کالای سوخته' } })
         }
         else if (type === 'joziate-darkhast-haye-garanti') {
-            addModal({ id: type, position: 'fullscreen', body: { render: () => <JoziateDarkhastHayeGaranti /> }, header: { title: 'جزییات درخواست های گارانتی' } })
+            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <JoziateDarkhastHayeGaranti /> }, header: { title: 'جزییات درخواست های گارانتی' } })
         }
         else if (type === 'payame-sabte-garanti') {
             let { text, subtext } = parameter;
-            addModal({ id: type, position: 'center', body: { render: () => <PayameSabteGaranti text={text} subtext={subtext} onClose={() => removeModal()} /> } })
+            rsa.addModal({ id: type, position: 'center', body: { render: () => <PayameSabteGaranti text={text} subtext={subtext} onClose={() => removeModal()} /> } })
         }
         else if (type === 'sabte-garanti-jadid-ba-joziat') {
-            addModal({ id: type, position: 'fullscreen', body: { render: () => <SabteGarantiJadidBaJoziat /> }, header: { title: 'ثبت در خواست گارانتی جدید با جزییات' } })
+            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <SabteGarantiJadidBaJoziat /> }, header: { title: 'ثبت در خواست گارانتی جدید با جزییات' } })
         }
         else if (type === 'search') {
             msfReport({actionName:'open search popup',actionId:26,tagName:'kharid',eventName:'page view'})
             
-            addModal({
+            rsa.addModal({
                 id: type, position: 'fullscreen', body: { render: () => <Search /> }, header: { title: 'جستجو در محصولات' },
                 //header: () => <Header type='popup' popupId='search' />
             })
         }
         else if (type === 'wallet') {
-            addModal({ id: type, position: 'fullscreen', body: { render: () => <Wallet onClose={() => removeModal()} /> } })
+            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <Wallet onClose={() => removeModal()} /> } })
         }
         else if (type === 'tanzimate-kife-pool') {
-            addModal({ id: type, position: 'fullscreen', body: { render: () => <TanzimateKifePool cards={parameter.cards} onChange={parameter.onChange} /> }, header: { title: 'تنظیمات کیف پول' } })
+            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <TanzimateKifePool cards={parameter.cards} onChange={parameter.onChange} /> }, header: { title: 'تنظیمات کیف پول' } })
         }
         else if (type === 'cart') {
             msfReport({actionName:'open cart',actionId:27,tagName:'kharid',eventName:'page view'})
-            addModal({ 
+            rsa.addModal({ 
                 id: type, position: 'fullscreen', body: { render: () => <Cart shopId={parameter} /> }, 
                 header: { 
                     title: 'سبد خرید',
@@ -258,7 +258,7 @@ export default class ActionClass implements I_actionClass {
             })
         }
         else if (type === 'sefareshe-ersal-shode-baraye-vizitor') {
-            addModal({
+            rsa.addModal({
                 id: type,
                 body: {
                     render: () => (

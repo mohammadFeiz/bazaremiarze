@@ -65,7 +65,7 @@ export default function bazargahApis({baseUrl,helper}) {
                     }
                     catch{detail = [{html:i.options}]}
                     let count = i.quantity;
-                    let price = i.vendorFinalPrice * count;
+                    let price = i.unitPrice;
                     return { name: i.productName, detail, src, id: i.id,price,count };
                 })
             }

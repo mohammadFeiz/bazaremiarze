@@ -168,6 +168,12 @@ export default function bazargahApis({baseUrl,helper}) {
             });
             let result = res.data.isSuccess?true:(res.data.message || res.data.Message || 'خطا');
             return { result }
+        },
+        async bg_submit_code(fullCode){
+            return {result:true}
+        },
+        async bg_submit_delivered(){
+            return {result:true}
         }
     }
 }

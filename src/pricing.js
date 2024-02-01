@@ -1,12 +1,12 @@
-﻿///***Version 1.1.29 ****///
-//Edited: 2024-01-06
+﻿///***Version 1.1.36 ****///
+//Edited: 2024-01-31
 
 "use strict";
 
 export default class Pricing {
     "use strict";
     //dbrequest = {};
-    updateInterval = 100 * 60 * 1000; // 100min
+    updateInterval = 5 * 60 * 60 * 1000; // 100min
     ndbrequest = {};
     //updateTimer = setTimeout(this.refresh, this.updateInterval);
     pricingData = {
@@ -14,7 +14,7 @@ export default class Pricing {
     };
     db = {};
 
-    constructor(fetchURL, applicator, interval = 100 * 60 * 1000) {
+    constructor(fetchURL, applicator, interval = 300 * 60 * 1000) {
 
         this.fetchUrl = fetchURL;
 
@@ -1097,13 +1097,29 @@ export default class Pricing {
         }
         let results = {};
         results = MD;
-        let itemofraws = results.MarketingLines.filter((x) => x?.CampaignDetails ?? false);
-        for (let item of itemofraws) {
-            if (item?.CampaignDetails ?? false) { item.CampaignDetails.Status = -2; }
+        if (!results.CampaignDetails) results.CampaignDetails = { Status: 0, CampainId: MD.marketingdetails.Campaign };
+        //let itemofraws = results.MarketingLines.filter((x) => x?.CampaignDetails ?? false);
+        for (let item of results.MarketingLines) {
+            if (item?.CampaignDetails ?? false) {
+                item.CampaignDetails.Status = -32766;
+            }
+            else {
+                item.CampaignDetails = { Status: -32766 };
+            }
         };
-        let shortrules = [];
+        let ActiveCam = {};
+        for (let itemrules of campaignRules) {
+            if (itemrules.campaignId == (MD.marketingdetails.Campaign)) {
+                ActiveCam = itemrules;
+                break;
+            }
+        }
 
+        if (!ActiveCam || !ActiveCam.camType) {
+            return results;
+        }
         // ساخت لیست قواعد مربوط به مشتری یا گروه مشتری
+        let shortrules = [];
         for (let itemrules of campaignRules) {
             if ((itemrules.campaignId == (MD.marketingdetails.Campaign))
                 && (itemrules.camType == "B")
@@ -1111,11 +1127,18 @@ export default class Pricing {
                 && (!itemrules.camCardGroupCode || (itemrules.camCardGroupCode.indexOf("," + MD.CardGroupCode + ",")) > -1)
                 && (!itemrules.camValidFrom || MD.DocTime >= itemrules.camValidFrom)
                 && (!itemrules.camValidTo || MD.DocTime <= itemrules.camValidTo)
-                //&& (!itemrules.camSettleType || (itemrules.camSettleType == MD.marketingdetails.SettleType || itemrules.camSettleType == 2))
+                && (!itemrules.camSettleType || (itemrules.camSettleType.indexOf("," + MD.marketingdetails.SettleType + ",")) > -1)
+                && (!itemrules.camPayDue || (itemrules.camPayDue.indexOf("," + MD.marketingdetails.PayDueDate + ",")) > -1)
+                && (!itemrules.camPayTime || (itemrules.camPayTime.indexOf("," + MD.marketingdetails.PaymentTime + ",")) > -1)
                 && (!itemrules.camSalesChannel || (itemrules.camSalesChannel == MD.marketingdetails.SaleChannel || itemrules.camSalesChannel == 1))
             ) {
                 shortrules.push(itemrules);
             }
+        }
+        if (!MD.CampaignDetails) {
+            MD.CampaignDetails = {
+                BundleRowsInfos: []
+            };
         }
         let bri = [];
         let PrssdLine = [];
@@ -1124,6 +1147,7 @@ export default class Pricing {
             let isReq = false;
             let linenum = 0;
             let maxline = 0;
+
             for (let item of shortrules) {
                 if (item.lineisRequired) isReq = true;
                 br.isReq = item.lineisRequired;
@@ -1146,17 +1170,18 @@ export default class Pricing {
                 br.minQty = item.lineMinReqQty;
                 br.maxQty = item.lineMaxReqQty;
                 br.taxonId = item.taxonId;
+                br.camID = MD.marketingdetails.Campaign;
+                br.status = 0;
+
 
                 linenum = 0;
                 for (let line of results.MarketingLines) {
-                    if (!line || (line.ItemQty??0)<=0) {
+                    if (!line || (line.ItemQty ?? 0) <= 0) {
                         linenum++;
                         continue;
                     }
-                    if (!(line?.CampaignDetails ?? false)) line.CampaignDetails = {
-                        Status: -2,
-                        Information: ""
-                    };
+                    line.CampaignDetails.CampainId = ActiveCam.campaignId;
+
                     let temp = "," + item.lineItemCode + ",";
                     if (temp.indexOf("," + line.ItemCode + ",") > -1 && !PrssdLine.indexOf(linenum) > -1) {
                         br.isExist = true;
@@ -1169,25 +1194,31 @@ export default class Pricing {
                             isNoMaxCondition = false;
                             if (br.qty == item.lineMaxReqQty || br.isFull) {
                                 line.SecondQty = 0;
-                                line.CampaignDetails.Status = 0;
-                                line.CampaignDetails.Information += "مقدار تقاضا شده این خط بیشتر از مقدار مجاز (" + item.lineMaxReqQty + ") است. این خط حذف میشود.";
+                                line.CampaignDetails.Status = -32640;
+                                line.CampaignDetails.Information = "مقدار تقاضا شده این خط بیشتر از مقدار مجاز (" + (item.lineMaxReqQty ?? 0) + ") است. این خط حذف میشود.";
                                 line.CampaignDetails.RequestedQty = line.ItemQty;
                                 line.CampaignDetails.RequestedValue = line.LineTotal;
+                                br.maxQtyCanOrder = 0;
                                 br.isFull = true;
-                                br.status = 0;
+                                br.status |= 8;
+                                results.CampaignDetails.Status |= 8;
                                 if (!KeepOthers ?? false) this.ZerolineMarketing(line);
                             }
                             else if ((br.qty + line.ItemQty > item.lineMaxReqQty) && !br.isFull) {
                                 line.CampaignDetails.Status = 2;
-                                line.CampaignDetails.Information += "مقدار تقاضا شده این خط بیشتر از مقدار مجاز(" + item.lineMaxReqQty + ") است. حداکثر مقدار مجاز در نظر گرفته می شود.";
+                                line.CampaignDetails.Information = "مقدار تقاضا شده این خط بیشتر از مقدار مجاز(" + (item.lineMaxReqQty ?? 0) + ") است. حداکثر مقدار مجاز در نظر گرفته می شود.";
                                 line.CampaignDetails.RequestedQty = line.ItemQty;
                                 line.SecondQty = line.SecondQty * (item.lineMaxReqQty - br.qty) / line.ItemQty;
                                 line.ItemQty = item.lineMaxReqQty - br.qty;
+                                br.maxQtyCanOrder = line.ItemQty;
                                 br.isFull = true;
+                                results.CampaignDetails.Status |= 4;
+                                br.status |= 4;
                                 br.qty = item.lineMaxReqQty;
                             }
                             else {
                                 line.CampaignDetails.Status = 1;
+                                br.maxQtyCanOrder = item.lineMaxReqQty - br.qty + line.ItemQty;
                                 br.qty += line.ItemQty;
                             }
 
@@ -1199,27 +1230,34 @@ export default class Pricing {
                         if (item.lineMaxReqValue != null) {
                             isNoMaxCondition = false;
                             if (br.value == item.lineMaxReqValue || br.isOverValue) {
-                                line.CampaignDetails.Status = 0;
-                                line.CampaignDetails.Information += "مبلغ تقاضا شده این خط بیشتر از مبلغ مجاز (" + item.lineMaxReqValue + ") است. این خط حذف میشود.";
+                                line.CampaignDetails.Status = -32752;
+                                line.CampaignDetails.Information = "مبلغ تقاضا شده این خط بیشتر از مبلغ مجاز (" + (item.lineMaxReqValue ?? 0) + ") است. این خط حذف میشود.";
                                 line.CampaignDetails.RequestedQty = line.ItemQty;
                                 line.CampaignDetails.RequestedValue = line.LineTotal;
+                                results.CampaignDetails.Status |= 8;
                                 br.isOverValue = true;
-                                br.status = 0;
+                                br.maxQtyCanOrder = 0;
+                                br.status |= 8;
                                 if (!KeepOthers ?? false) this.ZerolineMarketing(line);
                             }
                             else if ((br.value + line.LineTotal > item.lineMaxReqValue) && !br.isOverValue) {
                                 line.CampaignDetails.Status = 2;
-                                line.CampaignDetails.Information += "مبلغ تقاضا شده این خط بیشتر از مبلغ مجاز(" + item.lineMaxReqValue + ") است. حداکثر مبلغ مجاز در نظر گرفته می شود.";
+                                line.CampaignDetails.Information = "مبلغ تقاضا شده این خط بیشتر از مبلغ مجاز(" + (item.lineMaxReqValue ?? 0) + ") است. حداکثر مبلغ مجاز در نظر گرفته می شود.";
                                 line.CampaignDetails.RequestedQty = line.ItemQty;
                                 line.CampaignDetails.RequestedValue = line.LineTotal;
+                                results.CampaignDetails.Status |= 4;
                                 let newQty = Math.floor((item.lineMaxReqValue - br.value) / line.LineTotal * line.ItemQty);
                                 br.isOverValue = true;
                                 br.value += newQty / line.ItemQty * line.LineTotal;
                                 line.SecondQty = line.SecondQty * newQty / line.ItemQty;
                                 line.ItemQty = newQty;
+                                br.maxQtyCanOrder = line.ItemQty;
+                                br.Status |= 4;
                             }
                             else {
                                 line.CampaignDetails.Status = 1;
+                                let MaxQty = Math.floor((item.lineMaxReqValue - br.value) / (line?.LineTotal ?? 1) * (line?.ItemQty ?? 1));
+                                br.maxQtyCanOrder = MaxQty + line.ItemQty;
                                 br.value += line.LineTotal;
                             }
 
@@ -1230,6 +1268,7 @@ export default class Pricing {
                             line.CampaignDetails.Status = 1;
                             br.qty += line.ItemQty;
                             br.value += line.LineTotal;
+                            br.maxQtyCanOrder = -1;
                         }
                         line.CampaignDetails.BundleRowsInfos = br;
                     }
@@ -1244,14 +1283,14 @@ export default class Pricing {
                         br.isExist = false;
                         br.isUnderQty = true;
                         for (let itemb1 of br.lines) {
-                            if (!results.MarketingLines[itemb1].CampaignDetails) {
-                                results.MarketingLines[itemb1].CampaignDetails = {};
+                            results.MarketingLines[itemb1].CampaignDetails.Status = -32512;
+                            if (!results.MarketingLines[itemb1].CampaignDetails.Information) {
+                                results.MarketingLines[itemb1].CampaignDetails.Information = "";
                             }
-                            results.MarketingLines[itemb1].CampaignDetails.Status = 0;
-                            results.MarketingLines[itemb1].CampaignDetails.Information += "مقدار تقاضا شده این خط کمتر از مقدار مجاز (" + item.lineMinReqQty + ") است. این خط حذف می شود.";
+                            results.MarketingLines[itemb1].CampaignDetails.Information += "مقدار تقاضا شده این خط کمتر از مقدار مجاز (" + (item.lineMinReqQty ?? 0) + ") است. این خط حذف می شود.";
                             results.MarketingLines[itemb1].CampaignDetails.RequestedQty = results.MarketingLines[itemb1].ItemQty;
-                            // results.MarketingLines[itemb1].ItemQty = 0;
-                            //debugger;
+                            results.CampaignDetails.Status |= 8;
+                            br.Status |= -32512;
                             if (!KeepOthers ?? false) this.ZerolineMarketing(results.MarketingLines[itemb1]);
                             results.MarketingLines[itemb1].CampaignDetails.BundleRowsInfos = br;
                         }
@@ -1269,13 +1308,15 @@ export default class Pricing {
                         br.isExist = false;
                         br.isUnderValue = true;
                         for (let itemb1 of br.lines) {
-                            if (!results.MarketingLines[itemb1].CampaignDetails) {
-                                results.MarketingLines[itemb1].CampaignDetails = {};
+                            results.MarketingLines[itemb1].CampaignDetails.Status = -32736;
+                            if (!results.MarketingLines[itemb1].CampaignDetails.Information) {
+                                results.MarketingLines[itemb1].CampaignDetails.Information = "";
                             }
-                            results.MarketingLines[itemb1].CampaignDetails.Status = 0;
-                            results.MarketingLines[itemb1].CampaignDetails.Information += "مبلغ تقاضا شده این خط کمتر از مبلغ مجاز (" + item.lineMinReqValue ?? 0 + ") است. این خط حذف می شود.";
+                            results.MarketingLines[itemb1].CampaignDetails.Information += "مبلغ تقاضا شده این خط کمتر از مبلغ مجاز (" + (item.lineMinReqValue ?? 0) + ") است. این خط حذف می شود.";
                             results.MarketingLines[itemb1].CampaignDetails.RequestedQty = results.MarketingLines[itemb1].ItemQty;
                             results.MarketingLines[itemb1].CampaignDetails.RequestedValue = results.MarketingLines[itemb1].LineTotal;
+                            results.CampaignDetails.Status |= 8;
+                            br.Status |= -32736;
                             if (!KeepOthers ?? false) this.ZerolineMarketing(results.MarketingLines[itemb1]);
                             results.MarketingLines[itemb1].CampaignDetails.BundleRowsInfos = br;
                         }
@@ -1285,9 +1326,6 @@ export default class Pricing {
                 /// هیچ قاعده حداقلی وجود ندارد
                 if (isNoMinCondtition) {
                     for (let itemb1 of br.lines) {
-                        if (!results.MarketingLines[itemb1].CampaignDetails) {
-                            results.MarketingLines[itemb1].CampaignDetails = {};
-                        }
                         results.MarketingLines[itemb1].CampaignDetails.Status = 1;
                     }
                 }
@@ -1321,11 +1359,13 @@ export default class Pricing {
                 for (linenum = 0; linenum < maxline; linenum++) {
                     let lineMD = MD.MarketingLines[linenum];
                     if (br.lines.indexOf(linenum) > -1)
-                        if (lineMD.CampaignDetails.Status == 1 || lineMD.CampaignDetails.Status == 2
-                            || (KeepOthers ?? false)) {
+                        if ((lineMD.CampaignDetails?.Status ?? -1) > 0 || (KeepOthers ?? false)) {
                             if ((item.lineBasePrice ?? 0) > 0 && (lineMD.Price ?? 0) == 0) {
                                 lineMD.Price = item.lineBasePrice ?? 0;
                             } else if (!lineMD.Price) {
+                                if (!lineMD.CampaignDetails.Information) {
+                                    lineMD.CampaignDetails.Information = "";
+                                }
                                 lineMD.CampaignDetails.Information += "اطلاعات قیمت کالا موجود نمی باشد.";
                                 lineMD.CampaignDetails.Status = -1;
                                 continue;
@@ -1334,8 +1374,15 @@ export default class Pricing {
                             // اصلاح شود
                             let newPrice = this.CalcColumns(item.lineDisRelationId, lineMD.Price, item.camCanHaveB1Dis ? lineMD.DiscountPercent : (item.lineBaseDis ?? 0)
                                 , item.lineBaseDis ?? 0, br.disQty, br.disVol ?? 0, 0, item.lineFixedValue ?? 0, Math.min(item.lineMaxDisPrcnt ?? 80, item.camMaxDisPrcnt ?? 80));
+                            lineMD.CampaignDetails.ExDiscount = lineMD.DiscountPercent;
+                            lineMD.CampaignDetails.CamDiscount = 100 - (10000 * newPrice / lineMD.Price / (100 - lineMD.DiscountPercent));
+                            lineMD.CampaignDetails.ExtraDiscount = 100 - (10000 * newPrice / lineMD.Price / (100 - lineMD.DiscountPercent));
                             lineMD.DiscountPercent = Math.round(Math.max(0.0, 100.0 - newPrice / lineMD.Price * 100), 2);
-                            if (item.lineFixedValue != null) lineMD.CampaignDetails.Information += "مبلغ " + item.lineFixedValue + " ریال از مبلغ قلم کالا کسر شد.";
+                            if (item.lineFixedValue != null) {
+                                if (!lineMD.CampaignDetails.Information) {
+                                    lineMD.CampaignDetails.Information = "";
+                                } lineMD.CampaignDetails.Information += "مبلغ " + item.lineFixedValue + " ریال از مبلغ قلم کالا کسر شد.";
+                            }
                             results.MarketingLines[linenum] = this.FilllineMarketing(lineMD);
                         }
                         else {
@@ -1345,7 +1392,7 @@ export default class Pricing {
                 }
                 bri.push(br);
             }
-            //debugger;
+
             // پردازش قواعد تخفیف کل فاکتور
             // قاعده وجود کالاهای لازم
             if (isReq) {
@@ -1361,51 +1408,125 @@ export default class Pricing {
                 if (sumreq < sumnoreq) {
                     results.MarketingLines = MD.marketingLines;
                     for (let line of results.MarketingLines) {
-                        if (line.CampaignDetails == null) { line.CampaignDetails = {}; }
-                        line.CampaignDetails.Status = -1;
-                        line.CampaignDetails.Information = "شرط اقلام کمپین برآورده نشده است.";
+                        line.CampaignDetails.Status = -32256;
+                        if (!line.CampaignDetails.Information) {
+                            line.CampaignDetails.Information = "";
+                        }
+                        line.CampaignDetails.Information += "شرط اقلام ضروری کمپین برآورده نشده است.";
                     };
                     results.marketingdetails.DocumentDiscountPercent = 0;
                     results.marketingdetails.DocumentDiscount = 0;
-                    if (!results.CampaignDetails) results.CampaignDetails = {};
+                    results.CampaignDetails.Status |= -32256;
+                    if (!results.CampaignDetails.Information) {
+                        results.CampaignDetails.Information = "";
+                    }
+                    results.CampaignDetails.Information += "شرط اقلام ضروری کمپین برآورده نشده است.";
                     results.CampaignDetails.BundleRowsInfos = bri;
                     return results;
                 }
             }
-            //debugger;
+
             // قاعده تعداد خطوط فاکتور
             let rownum = bri.filter(x => x.isExist).length;
-            if (rownum > shortrules[0].camMaxRow || rownum < shortrules[0].camMinRow) {
+            if (rownum > ActiveCam.camMaxRow || rownum < ActiveCam.camMinRow) {
                 results.MarketingLines = MD.MarketingLines;
                 for (let line of results.MarketingLines) {
                     if (!line) {
                         continue;
                     }
-                    if (!line.CampaignDetails) {
-                        line.CampaignDetails = {};
+                    line.CampaignDetails.Status = -32760;
+                    if (!line.CampaignDetails.Information) {
+                        line.CampaignDetails.Information = "";
                     }
-                    line.CampaignDetails.Status = -1;
-                    line.CampaignDetails.Information = "شرط تعداد خطوط فاکتور کمپین برآورده نشده است.";
+                    line.CampaignDetails.Information += "شرط تعداد خطوط فاکتور کمپین برآورده نشده است.";
+                    line.CampaignDetails.RequestedQty = line.ItemQty;
+                    line.CampaignDetails.RequestedValue = line.LineTotal;
+                    if (!line.CampaignDetails.BundleRowsInfos)
+                        line.CampaignDetails.BundleRowsInfos = {};
+                    line.CampaignDetails.BundleRowsInfos.isOrdUnderReqLine = true;
+                    if (!KeepOthers ?? false) this.ZerolineMarketing(line);
                 };
+                results.CampaignDetails.Status |= -32760;
+                results.CampaignDetails.BundleRowsInfos = bri;
                 results.marketingdetails.DocumentDiscountPercent = 0;
                 results.marketingdetails.DocumentDiscount = 0;
-                if (!results.CampaignDetails) results.CampaignDetails = {};
-                results.CampaignDetails.BundleRowsInfos = bri;
                 return results;
             }
-            let RowDis = rownum * shortrules[0].camRowDisPrcnt;
-            if (shortrules[0].camMaxRowDisPrcnt) {
-                RowDis = Math.min(shortrules[0].camMaxRowDisPrcnt ?? 0, rownum * (shortrules[0].camRowDisPrcnt ?? 0));
+            let RowDis = rownum * (ActiveCam.camRowDisPrcnt ?? 0);
+            if (ActiveCam.camMaxRowDisPrcnt) {
+                RowDis = Math.min(ActiveCam.camMaxRowDisPrcnt ?? 0, rownum * (ActiveCam.camRowDisPrcnt ?? 0));
             }
 
             // قاعده مبلغ فاکتور
+            let DocSum = 0;
+            let isUnderValCond = false;
+            let isOverValCond = false;
             let VolDis = 0;
+            for (linenum = 0; linenum < results.MarketingLines.length; linenum++) {
+                DocSum += (results.MarketingLines[linenum]?.ItemQty ?? 0) * (results.MarketingLines[linenum]?.PriceAfterVat ?? 0);
+            }
+
+            if (ActiveCam.camMinValue && DocSum < (ActiveCam.camMinValue ?? 0)) {
+                isUnderValCond = true;
+            }
+            if (ActiveCam.camMaxValue && DocSum > (ActiveCam.camMaxValue ?? 0)) {
+                isOverValCond = true;
+            }
+            if (isUnderValCond || isOverValCond) {
+                results.MarketingLines = MD.MarketingLines;
+                for (let line of results.MarketingLines) {
+                    if (!line) {
+                        continue;
+                    }
+                    if (isUnderValCond) {
+                        line.CampaignDetails.Status |= -32736;
+                        if (!line.CampaignDetails.Information) {
+                            line.CampaignDetails.Information = "";
+                        }
+                        line.CampaignDetails.Information += " مبلغ سفارش" + DocSum + " کمتر از حداقل مبلغ کمپین" + ActiveCam.camMinValue + "میباشد.";
+                    }
+                    else {
+                        line.CampaignDetails.Status |= -32752;
+                        if (!line.CampaignDetails.Information) {
+                            line.CampaignDetails.Information = "";
+                        }
+                        line.CampaignDetails.Information += " مبلغ سفارش" + DocSum + " بیشتر از حداقل مبلغ کمپین" + ActiveCam.camMaxValue + "میباشد.";
+                    }
+                    line.CampaignDetails.RequestedQty = line.ItemQty;
+                    line.CampaignDetails.RequestedValue = line.LineTotal;
+                    if (!line.CampaignDetails.BundleRowsInfos)
+                        line.CampaignDetails.BundleRowsInfos = {};
+                    line.CampaignDetails.BundleRowsInfos.isOrdUnderValue = isUnderValCond;
+                    line.CampaignDetails.BundleRowsInfos.isOrdOverValue = isOverValCond;
+                    if (!KeepOthers ?? false) this.ZerolineMarketing(line);
+
+                };
+                if (isUnderValCond) {
+                    results.CampaignDetails.Status |= -32736;
+                }
+                else {
+                    results.CampaignDetails.Status |= -32752;
+                }
+                results.CampaignDetails.BundleRowsInfos = bri;
+                results.marketingdetails.DocumentDiscountPercent = 0;
+                results.marketingdetails.DocumentDiscount = 0;
+                return results;
+            }
+
+            if (ActiveCam.camValueDisPrcnt) {
+                VolDis = ActiveCam.camValueDisPrcnt ?? 0;
+                if ((ActiveCam.camValueStep ?? 0) > 0) {
+                    let ValStep = Math.floor((DocSum) / (ActiveCam.camValueStep));
+                    VolDis = (ActiveCam.camValueDisPrcnt ?? 0) * ValStep;
+                    VolDis = Math.min(VolDis, (ActiveCam.camMaxValueDisPrcnt ?? 100));
+                }
+            }
 
             // محاسبه تخفیف اقلام
             // تخفیفات برای همه اقلام براساس یک فرمول محاسبه می گردد.
-            let Rule = shortrules[0].camDisRelationId;
-            let Fixdis = shortrules[0].camBaseDiscount ? shortrules[0].camBaseDiscount : 0;
-            let MaxDis = shortrules[0].camMaxDisPrcnt ? shortrules[0].camMaxDisPrcnt : 100;
+            let Rule = ActiveCam.camDisRelationId;
+            let Fixdis = ActiveCam.camBaseDiscount ? ActiveCam.camBaseDiscount : 0;
+            let MaxDis = ActiveCam.camMaxDisPrcnt ? ActiveCam.camMaxDisPrcnt : 100;
             let DocDis = this.CalcColumns(Rule, 0, 0, Fixdis, 0, VolDis, RowDis, 0, MaxDis);
 
             // محاسبه تغییرات پورسانت
@@ -1419,9 +1540,11 @@ export default class Pricing {
             if (CommissionEffect == 101) {
                 CommissionEffect = 0;
             }
+
             //محاسبه جمع فاکتور و اعمال تخفیف اقلامی
-            //debugger;
+            let isPassAnyLine = false;
             let sum = 0;
+            let BeforeCamSum = 0;
             linenum = 0;
             maxline = results.MarketingLines.length;
             for (linenum = 0; linenum < maxline; linenum++) {
@@ -1429,22 +1552,27 @@ export default class Pricing {
                 if (!lineMD) {
                     continue;
                 }
-                if (lineMD.CampaignDetails == null) {
-                    lineMD.CampaignDetails = { Status: -2 };
-                }
-                if (lineMD.CampaignDetails.Status == 1
-                    || lineMD.CampaignDetails.Status == 2) {
+                if ((lineMD.CampaignDetails?.Status ?? -1) > 0) {
                     // اعمال تخفیف تعداد اقلام بر روی هر خط فاکتور
-                    lineMD.CampaignDetails.CamDiscount = DocDis;
                     lineMD.CampaignDetails.ExDiscount = lineMD.DiscountPercent;
+                    lineMD.CampaignDetails.ExPriceAfterVat = lineMD.PriceAfterVat;
+                    lineMD.CampaignDetails.CamDiscount = 100 - (100 - DocDis) * (100 - (lineMD.CampaignDetails?.CamDiscount ?? -1)) / 100;
                     lineMD.DiscountPercent = 100 - (100 - lineMD.DiscountPercent) * (100 - DocDis) / 100;
                     lineMD = this.FilllineMarketing(lineMD);
                     sum += lineMD.LineTotal ?? 0;
+                    BeforeCamSum += (lineMD.Price ?? 0) * (lineMD.ItemQty ?? 0) * (100 - (lineMD.CampaignDetails?.ExDiscount ?? 0)) / 100;
+                    isPassAnyLine = true;
                 }
-                else if (lineMD.CampaignDetails.Status == -2) {
+                else {
                     lineMD.CampaignDetails.RequestedQty = lineMD.ItemQty;
                     if (!KeepOthers) this.ZerolineMarketing(lineMD);
-                    lineMD.CampaignDetails.Information += "این قلم کالا مشمول کمپین نمی باشد.";
+                    if (lineMD.CampaignDetails.Status == -32766) {
+                        if (!lineMD.CampaignDetails.Information) {
+                            lineMD.CampaignDetails.Information = "";
+                        }
+                        lineMD.CampaignDetails.Information += "این قلم کالا مشمول کمپین نمی باشد.";
+                    }
+                    results.CampaignDetails.Status |= 8;
                 }
 
                 // محاسبه تغییرات پورسانت
@@ -1455,6 +1583,16 @@ export default class Pricing {
                 }
             }
 
+            /// آیا خطی از سفارش قابل قبول بوده است
+            if (!isPassAnyLine && !(KeepOthers ?? false)) {
+                return this.ResetDocDiscount(MD);
+            }
+
+            let MaxCamDis = Math.round(10000 - 10000 * sum / BeforeCamSum) / 100;
+            results.CampaignDetails.ExtraDiscount = MaxCamDis;
+            results.CampaignDetails.CamDiscount = MaxCamDis;
+
+            //// بررسی نحوه پرداخت
             results = this.CalculatePaymentDiscount(results);
 
             if (!results.marketingdetails.TotalCommission
@@ -1466,12 +1604,36 @@ export default class Pricing {
 
             results.marketingdetails.DocumentDiscount = results.marketingdetails.DocumentDiscountPercent * sum / 100;
             results.DocumentTotal = sum - results.marketingdetails.DocumentDiscount;
-            if (!results.CampaignDetails) results.CampaignDetails = {};
             results.CampaignDetails.BundleRowsInfos = bri;
             return results;
         }
+        if (ActiveCam.camShouldPassCam == 'Y' && !(KeepOthers ?? false)) {
+            return this.ResetDocDiscount(MD);
+        }
 
         return results;
+    }
+    ResetDocDiscount(Doc) {
+        if ((Doc.MarketingLines?.length ?? -1) > 0) {
+            for (let item of Doc.MarketingLines) {
+                this.ZerolineMarketing(item);
+                if (!item.CampaignDetails) item.CampaignDetails = {};
+                if (!item.CampaignDetails.Status) item.CampaignDetails.Status = -32704;
+                item.CampaignDetails.Status |= -32704;
+                if (!item.CampaignDetails.Information) item.CampaignDetails.Information = "";
+                item.CampaignDetails.Information += "سفارش مشمول قواعد کمپین نمی باشد.";
+  }
+        }
+        if (!Doc.CampaignDetails) Doc.CampaignDetails = {};
+        if (!Doc.CampaignDetails.Status) Doc.CampaignDetails.Status = -32704;
+        Doc.CampaignDetails.Status |= -32704;
+        if (!Doc.CampaignDetails.Information) Doc.CampaignDetails.Information = "";
+        Doc.CampaignDetails.Information += "سفارش مشمول قواعد کمپین نمی باشد.";
+
+        if (!Doc.marketingdetails) {
+            Doc.marketingdetails.DocumentDiscount = Doc.marketingdetails.DocumentDiscountPercent = 0;
+        }
+        return Doc;
     }
 
     CalculateClubPoint(MD) {
@@ -1564,353 +1726,6 @@ export default class Pricing {
         let CashPoint = 2 * Math.floor(((MD?.DocumentTotal ?? 0) * CashRate / 100 / 10000000));
         MD.marketingdetails.ClubPoints.PurchasePoint = CashPoint;
         result += CashPoint;
-
-        /// امتیاز بسته های عادی همایش
-        let clubPoints =
-            [
-
-                {
-                    PackCode: "2370",
-                    PackName: " طرح 7 وات ",
-                    ItemCode1: ["2372", "2370"],
-                    Point1: 1,
-                    Levels: [300, 500, 1000, 3000]
-                },
-
-                {
-                    PackCode: "5320",
-                    PackName: "طرح 10 وات ",
-                    ItemCode1: [
-                        "5322", "5320"
-                    ],
-                    Point1: 1,
-                    Levels: [
-                        300, 500, 1000, 3000
-                    ]
-                },
-
-                {
-                    PackCode: "5340",
-                    PackName: "طرح 12 وات ",
-                    ItemCode1: [
-                        "5342", "5340"
-                    ],
-                    Point1: 1,
-                    Levels: [
-                        300, 500, 1000, 3000],
-
-                },
-
-                {
-                    PackCode: "5330",
-                    PackName: "طرح 15 وات ",
-                    ItemCode1: [
-                        "5332", "5330"
-                    ],
-                    Point1: 1,
-                    Levels: [
-                        150, 250, 500, 1500
-                    ],
-                },
-
-                {
-                    PackCode: "BIG5350",
-                    PackName: "طرح 20 وات ",
-                    ItemCode1: [
-                        "BIG5352", "BIG5350"
-                    ],
-                    Point1: 1,
-                    Levels: [
-                        150, 250, 500, 1500
-                    ],
-                },
-
-                {
-                    PackCode: "BIG5390",
-                    PackName: "طرح 25 وات ",
-                    ItemCode1: [
-                        "BIG5392", "BIG5390"
-                    ], Point1: 1,
-                    Levels: [
-                        150, 250, 500, 1500
-                    ],
-                },
-
-                {
-                    PackCode: "1220",
-                    PackName: "طرح اشکی 6 وات ",
-                    ItemCode1: [
-                        "1222", "1220"
-                    ], Point1: 1,
-                    Levels: [
-                        300, 500, 1000, 3000
-                    ],
-                },
-
-                {
-                    PackCode: "1370",
-                    PackName: "طرح شمعی 7 وات ",
-                    ItemCode1: [
-                        "1372", "1370"
-                    ], Point1: 1,
-                    Levels: [
-                        300, 500, 1000, 3000
-                    ],
-                },
-
-                {
-                    PackCode: "3580",
-                    PackName: "طرح لاینر 40 وات ",
-                    ItemCode1: [
-                        "3582", "3580", "3581"
-                    ], Point1: 1,
-                    Levels: [
-                        75, 125, 250, 750
-                    ],
-                },
-
-                {
-                    PackCode: "8200",
-                    PackName: "طرح چراغ سقفی سنسور دار",
-                    ItemCode1: [
-                        "8200"
-                    ], Point1: 1,
-                    Levels: [
-                        30, 50, 100, 300
-                    ],
-                },
-
-                {
-                    PackCode: "3060",
-                    PackName: "طرح هالوژن بدون سوکت ",
-                    ItemCode1: [
-                        "3062", "3060"
-                    ], Point1: 1,
-                    Levels: [
-                        300, 500, 1000, 3000
-                    ],
-                },
-
-                {
-                    PackCode: "7550",
-                    PackName: "طرح پنل 8 وات ",
-                    ItemCode1: [
-                        "7552", "7550", "7551"
-                    ], Point1: 1,
-                    Levels: [
-                        120, 200, 400, 1200
-                    ],
-                },
-
-                {
-                    PackCode: "7560",
-                    PackName: "طرح پنل 15 وات ",
-                    ItemCode1: [
-                        "7562", "7560", "7561"
-                    ], Point1: 1,
-                    Levels: [
-                        60, 100, 200, 600
-                    ],
-                },
-
-                {
-                    PackCode: "7570",
-                    PackName: "طرح پنل 18 وات ",
-                    ItemCode1: [
-                        "7572", "7570", "7571"
-                    ], Point1: 1,
-                    Levels: [
-                        60, 100, 200, 600
-                    ],
-                },
-
-                {
-                    PackCode: "7730",
-                    PackName: "طرح پنل 32 وات روکار ",
-                    ItemCode1: [
-                        "7732", "7730", "7731"
-                    ], Point1: 1,
-                    Levels: [
-                        36, 60, 120, 360
-                    ],
-                },
-
-                {
-                    PackCode: "5943",
-                    PackName: "طرح لامپ رنگی 9 وات ",
-                    ItemCode1: [
-                        "5943", "5945", "5947", "5946", "5944"
-                    ], Point1: 1,
-                    Levels: [
-                        300, 500, 1000, 3000
-                    ],
-                },
-
-                {
-                    PackCode: "2820",
-                    PackName: "طرح انعکاسی 6 وات ",
-                    ItemCode1: [
-                        "2822", "2820"
-                    ], Point1: 1,
-                    Levels: [
-                        300, 500, 1000, 3000
-                    ],
-                },
-
-                {
-                    PackCode: "2830",
-                    PackName: "طرح انعکاسی 7 وات",
-                    ItemCode1: [
-                        "2832", "2830"
-                    ], Point1: 1,
-                    Levels: [
-                        300, 500, 1000, 3000
-                    ],
-                },
-
-                {
-                    PackCode: "9415",
-                    PackName: "طرح چسب 123  ",
-                    ItemCode1: [
-                        "9415"
-                    ], Point1: 1,
-                    Levels: [
-                        75, 125, 250, 750
-                    ],
-                },
-
-                {
-                    PackCode: "BIG9450",
-                    PackName: "طرح چسب سیلیکونی  ",
-                    ItemCode1: [
-                        "BIG9450"
-                    ], Point1: 1,
-                    Levels: [
-                        84, 140, 280, 840
-                    ],
-                },
-
-                {
-                    PackCode: "7345",
-                    PackName: "مدل سپهر تمام مس قرقره 600 متری",
-                    ItemCode1: [
-                        "7345"
-                    ], Point1: 1,
-                    Levels: [
-                        1, 3, 5
-                    ],
-                },
-
-                {
-                    PackCode: "7344",
-                    PackName: "مدل سما تمام مس قرقره 600 متری ",
-                    ItemCode1: [
-                        "7344"
-                    ], Point1: 1,
-                    Levels: [
-                        1, 3, 5,
-                    ],
-                },
-
-                {
-                    PackCode: "BIG7838",
-                    PackName: "طرح کلید مینیاتوری ",
-                    ItemCode1: [
-                        "BIG7838", "BIG7872", "BIG7873", "BIG7874", "BIG7875", "BIG7837", "BIG7839", "BIG7840", "BIG7841", "BIG7842", "BIG7843", "BIG7844", "BIG7845", "BIG7846"
-                    ], Point1: 1,
-                    Levels: [
-                        120, 360, 600,
-                    ],
-                    ItemCode2: [
-                        "BIG7838", "BIG7872", "BIG7873", "BIG7874", "BIG7875", "BIG7837", "BIG7839", "BIG7840", "BIG7841", "BIG7842", "BIG7843", "BIG7844", "BIG7845", "BIG7846"
-                    ],
-                    Point2: 2,
-                    ItemCode3: [
-                        "BIG7849", "BIG7850", "BIG7851", "BIG7852", "BIG7853", "BIG7854", "BIG7855", "BIG7856"
-                    ], Point3: 3,
-                    ItemCode4: [
-                        "BIG7857", "BIG7858", "BIG7859", "BIG7860", "BIG7861", "BIG7862", "BIG7863", "BIG7864"
-                    ],
-                    Point4: 4,
-                }
-            ];
-
-        if (MD.MarketingLines == null || MD.MarketingLines.length == 0) {
-            return result;
-        }
-        for (let item of clubPoints) {
-            item.TotalQty = 0;
-        }
-        for (let line of MD.MarketingLines) {
-            if (line == null || (line?.ItemCode == null) || (line?.ItemQty ?? 0) == 0) {
-                continue;
-            }
-            for (let item of clubPoints) {
-                if (item.ItemCode1.includes(line?.ItemCode)) {
-                    item.TotalQty += (line?.ItemQty ?? 0) * item.Point1;
-                    break;
-                }
-                if (item.ItemCode2 != null && item.ItemCode2.includes(line?.ItemCode)) {
-                    item.TotalQty += (line?.ItemQty ?? 0) * item.Point2;
-                    break;
-                }
-                if (item.ItemCode3 != null && item.ItemCode3.includes(line?.ItemCode)) {
-                    item.TotalQty += (line?.ItemQty ?? 0) * item.Point3;
-                    break;
-                }
-                if (item.ItemCode4 != null && item.ItemCode4.includes(line?.ItemCode)) {
-                    item.TotalQty += (line?.ItemQty ?? 0) * item.Point4;
-                    break;
-                }
-            }
-        }
-
-        if (MD.marketingdetails.Campaign == 46) {
-            let productPoint = 0;
-            let countLevel = 0;
-            let i = 0;
-            for (let item of clubPoints) {
-                countLevel = item.Levels.length;
-                for (i = countLevel - 1; i >= 0; i--) {
-                    if (item.TotalQty >= item.Levels[i]) {
-                        break;
-                    }
-                }
-                switch (i) {
-                    case 0:
-                        productPoint += 5;
-                        break;
-                    case 1:
-                        productPoint += 10;
-                        break;
-                    case 2:
-                        productPoint += 25;
-                        break;
-                    case 3:
-                        productPoint += 80;
-                        break;
-                    case -1:
-                    default:
-                        break;
-                }
-            }
-            MD.marketingdetails.ClubPoints.CampaignPoint = productPoint;
-            result += productPoint;
-        }
-        else if (MD.marketingdetails.Campaign == 49) {
-            if (MD.DocumentTotal ?? 0 > 300000001) {
-                MD.marketingdetails.ClubPoints.CampaignPoint = 50;
-            } else if (MD.DocumentTotal ?? 0 > 200000001) {
-                MD.marketingdetails.ClubPoints.CampaignPoint = 40;
-            }
-            else if (MD.DocumentTotal ?? 0 > 100000001) {
-                MD.marketingdetails.ClubPoints.CampaignPoint = 25;
-            }
-            else if (MD.DocumentTotal ?? 0 > 70000000) {
-                MD.marketingdetails.ClubPoints.CampaignPoint = 10;
-            }
-            result += MD.marketingdetails?.ClubPoints?.CampaignPoint ?? 0;
-        }
 
         return result;
 

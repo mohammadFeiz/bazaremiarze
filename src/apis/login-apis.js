@@ -70,12 +70,14 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
         async loginByPhoneNumber({ phoneNumber, password }) {
             const response = await Axios.get(`${baseUrl}/Users/Login?phoneNumber=${phoneNumber}&password=${password}`);
             let result = response.data.isSuccess ? response.data.data : response.data.message;
+            if(result === null){result = 'دریافت اطلاعات کاربری با خطا روبرو شد'}
             return { response, result }
         },
         async loginByOTPCode({ id, otpCode }) {
             //let stallRes = await stall(5000)    
             const response = await Axios.get(`${baseUrl}/Users/SecondStep?userId=${id}&code=${otpCode}`);
             let result = response.data.isSuccess ? response.data.data : response.data.message;
+            if(result === null){result = 'دریافت اطلاعات کاربری با خطا روبرو شد'}
             return { response, result }
         },
         async getB1Info({userInfo,Logger}) {

@@ -1,0 +1,46 @@
+.bg-body{
+    padding:12px;
+}
+.bg-order-card{
+    padding:12px;
+    background:#fff;
+    border-radius:12px;
+}
+.bg-button-1{
+    border:1px solid #C5C7C4;
+    color:#3B55A5;
+    height:36px;
+    background:none;
+    font-size:14px;
+    font-weight:bold;
+    border-radius:4px;
+    padding: 0 36px;
+
+}
+.bg-item-card{
+    padding:12px;
+    background:#fff;
+    border-bottom:1px solid #eee;
+}
+.bg-order-page{
+    background:#fff;
+}
+.bazargah-pre-code{
+    font-size:24px;
+    font-weight:bold;
+}
+.bazargah-pass-code{
+    border-radius:6px !important;
+}
+.bazargah-pass-code-arrow-up{
+    margin-bottom:3px;
+    border-bottom:6px solid #eee;
+    border-left:6px solid transparent;
+    border-right:6px solid transparent;
+}
+.bazargah-pass-code-arrow-down{
+    margin-top:3px;
+    border-top:6px solid #eee;
+    border-left:6px solid transparent;
+    border-right:6px solid transparent;
+}

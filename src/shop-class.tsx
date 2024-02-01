@@ -82,7 +82,6 @@ export default class ShopClass implements I_ShopClass {
     getShopItems = async (p?:{taxonId?: string, productId?: string}) => {
         let { apis,backOffice } = this.getAppState();
         if (this.itemType === 'Bundle') {
-            debugger
             if (!this.items) {
                 let {bundleData} = backOffice
                 this.items = bundleData;
@@ -1020,7 +1019,6 @@ function RegularPage(props: I_RegularPage) {
     useEffect(()=>{getCartVariants()},[cart])
     let { optionTypes, variants } = product;
     useEffect(() => {
-        debugger
         let { existOptionValueNames, variantOptions } = getVariants()
         setExistOptionValueNames(existOptionValueNames)
         setVariantOptions(variantOptions)

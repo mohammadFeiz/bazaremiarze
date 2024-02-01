@@ -343,30 +343,20 @@ export default function kharidApis({ baseUrl, helper }) {
     async getCart({ Shop, userInfo }) {
       try{
         let cartStorage = AIOStorage('bazaremiarzeapis');
-      let cart = cartStorage.load({ name: 'cart.' + userInfo.cardCode, def: {shops:{}} });
-      let shopIds = Object.keys(Shop);
-      let keys = Object.keys(cart.shops)
-      let newCart = {shops:{}}
-      for (let i = 0; i < keys.length; i++) {
-        let shopId = keys[i];
-        if (shopIds.indexOf(shopId) === -1) { continue }
-        newCart.shops[shopId] = cart.shops[shopId]
+        let cart = cartStorage.load({ name: 'cart.' + userInfo.cardCode, def: {shops:{}} });
+        let shopIds = Object.keys(Shop);
+        let keys = Object.keys(cart.shops)
+        let newCart = {shops:{}}
+        for (let i = 0; i < keys.length; i++) {
+          let shopId = keys[i];
+          if (shopIds.indexOf(shopId) === -1) { continue }
+          newCart.shops[shopId] = cart.shops[shopId]
+        }
+        return { result: newCart }
       }
-      return { result: newCart }
-      }
-      catch{
-        debugger
-        let cartStorage = AIOStorage('bazaremiarzeapis');
-      let cart = cartStorage.load({ name: 'cart.' + userInfo.cardCode, def: {shops:{}} });
-      let shopIds = Object.keys(Shop);
-      let keys = Object.keys(cart.shops)
-      let newCart = {shops:{}}
-      for (let i = 0; i < keys.length; i++) {
-        let shopId = keys[i];
-        if (shopIds.indexOf(shopId) === -1) { continue }
-        newCart.shops[shopId] = cart.shops[shopId]
-      }
-      return { result: newCart }
+      catch(err){
+        console.error('getCart error',err)
+        return {result:{shops:{}}}
       }
     },
     setCart(cart, { userInfo }) {

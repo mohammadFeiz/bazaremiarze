@@ -8,11 +8,11 @@ import lampsrc from './../../images/lamp.png';
 import bgvsrc from './../../images/bgv.png';
 import { I_app_state } from '../../types.js';
 import {Icon} from '@mdi/react';
-import { mdiInformation } from '@mdi/js';
+import { mdiAlert, mdiAlertOutline, mdiInformation } from '@mdi/js';
 import './bg.css'
 
 type I_bazargah_order = {
-    status:('canTake'|'takenByOther'|'shouldSend' | 'sending' | 'sent'),
+    status:I_bg_status,
     submitDate:number,
     deliverDate?:number,
     code:string,
@@ -23,6 +23,7 @@ type I_bazargah_order = {
     preCode?:number,
     info:{name:string,lat:number,lng:number,address:string,city:string,province:string,postal:number,phone:string}
 }
+type I_bg_status = 'canTake'|'takenByOther'|'shouldSend' | 'sending' | 'sent'
 type I_bazargah_order_item = {
     count:number,
     price:number,
@@ -86,8 +87,9 @@ export default function Bazargah(){
     })
     function tabs_layout(){
         return {
+            className:'of-visible m-b-6',
             html:(
-                <AIOInput value={tab} className='bazargah-tabs' type='tabs' options={tabs} optionText='option' optionValue='option' onChange={(tab:I_tab)=>setTab(tab)}/>
+                <AIOInput value={tab} className='bazargah-tabs theme-box-shadow' type='tabs' options={tabs} optionText='option' optionValue='option' onChange={(tab:I_tab)=>setTab(tab)}/>
             )
         }
     }
@@ -99,18 +101,23 @@ export default function Bazargah(){
     function orderPage_layout(){
         return {html:<BazargahOrderPage order={order}/>}
     }
+    function deliveryPopup_layout(){
+        return {html:<DeliveryPopup onSubmit={()=>{}} onCansel={()=>{}}/>}
+    }
     return (
         <RVD
             layout={{
-                className:'page-bg ofy-auto',style:{width:'100%'},
+                className:'page-bg',style:{width:'100%',height:'100%'},
                 column:[
                     tabs_layout(),
                     {
-                        className:'bg-body',
+                        flex:1,className:'bg-body ofy-auto p-t-0',
                         column:[
                             orderCard_layout(),
                             {size:12},
-                            orderPage_layout()
+                            orderPage_layout(),
+                            {size:12},
+                            deliveryPopup_layout()
                         ]
                     }
                 ]
@@ -249,7 +256,8 @@ type I_BazargahOrderPage = {
 }
 function BazargahOrderPage(props:I_BazargahOrderPage){
     let {order} = props;
-    let {isInVitrin,status,items,distanceKM,price,code,preCode} = order;
+    let {isInVitrin,status,items,distanceKM,price} = order;
+    function changeStatus(from:I_bg_status,to:I_bg_status){}
     function sendDetails_layout(){
         if(status !== 'sending' && status !== 'sent'){return false}
         return {
@@ -297,14 +305,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
             ]
         }
     }
-    function button_layout(){
-        return {
-            className:'p-12',
-            html:(
-                <button className='button-2'>قبول سفارش</button>
-            )
-        }
-    }
+    function button_layout(){return {className:'p-12',html:(<button onClick={()=>changeStatus('canTake','shouldSend')} className='button-2'>قبول سفارش</button>)}}
     function hint_layout(){
         return {
             column:[
@@ -325,7 +326,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
                 column:[
                     showVitrin?{html:<BGVitrinText/>}:false,
                     !isMine?{html:<BGPage_PublicStatus order={order}/>}:false,
-                    isMine?{html:<BGPage_PrivateStatus order={order}/>}:false,
+                    isMine?{html:<BGPage_PrivateStatus order={order} changeStatus={changeStatus}/>}:false,
                     sendDetails_layout(),
                     isMine?{html:<BGPage_Location order={order}/>}:false,
                     isMine && status !== 'shouldSend'?{html:<BGPage_SendInfo order={order}/>}:false,
@@ -363,14 +364,13 @@ function BGPage_PublicStatus(props:I_BGPage_PublicStatus){
     function code_layout(){return {html:code,align:'v',className:'fs-14 theme-dark-font-color'}}
     return <RVD layout={{column:[box_layout(),footer_layout()]}}/>
 }
-type I_BGPage_PrivateStatus = {order:I_bazargah_order}
+type I_BGPage_PrivateStatus = {order:I_bazargah_order,changeStatus:(from:I_bg_status,to:I_bg_status)=>void}
 function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
-    let {backOffice}:I_app_state = useContext(appContext);
+    let {backOffice,actionClass,rsa}:I_app_state = useContext(appContext);
     let total = backOffice.bazargah.forsate_ersale_sefareshe_bazargah;    
-    let {order} = props,{code,price,status} = order;
+    let {order,changeStatus} = props,{code,price,status} = order;
     let index = {'shouldSend':0,'sending':1,'sent':2}[status]
     let text = {'shouldSend':'سفارش را برای خریدار ارسال کنید','sending':'مرسوله در مسیر تحویل است','sent':'مرسوله به مشتری تحویل شد'}[status];
-    function sendingToSent(){}
     function details_layout(){
         let rows = [
             {key:'شماره سفارش',value:code},
@@ -398,10 +398,21 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
             column.push({html:<BazargahExpiredDate order={order} total={total}/>})
         }
         if(['shouldSend'].indexOf(status) !== -1){
-            column.push({html:<BGDeliveryType/>})
+            column.push({html:<BGDeliveryType onSubmit={()=>changeStatus('shouldSend','sending')}/>})
         }
         if(['sending'].indexOf(status) !== -1){
-            column.push({html:<BGPassCode order={order} onSubmit={()=>sendingToSent()}/>})
+            column.push({
+                html:(
+                    <BGPassCode 
+                        order={order} 
+                        onSubmit={()=>{
+                            actionClass.openPopup('bazargah-sent',{
+                                render:()=><DeliveryPopup onSubmit={()=>changeStatus('sending','sent')} onCansel={()=>rsa.removeModal()}/>
+                            })
+                        }}
+                    />
+                )
+            })
         }
         return {className:'theme-card-bg theme-box-shadow theme-border-radius p-12 m-12',gap:8,column}
     }
@@ -409,13 +420,13 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     function text_layout(){return {html:text,className:'fs-14 bold'}}
     return (<RVD layout={{column:[details_layout(),card_layout()]}}/>)
 }
-type I_BGDeliveryType = {}
+type I_BGDeliveryType = {onSubmit:()=>void}
 type I_deliveryType = 'post' | 'carier'
 
 function BGDeliveryType(props:I_BGDeliveryType){
     let [deliveryType,setDeliveryType] = useState<I_deliveryType>();
     let [trakingCode,setTrakingCode] = useState<string>('')
-    
+    let {onSubmit} = props;
     let options:I_deliveryType[] = ['post','carier']
     let trans = {'post':'پست','carier':'پیک شخصی / سرویس های دیگر'}
     function label_layout(text:string){return {html:text,className:'fs-14 bold'}}
@@ -446,7 +457,7 @@ function BGDeliveryType(props:I_BGDeliveryType){
                             />
                         )
                     },
-                    {html:(<button disabled={!deliveryType || !trakingCode} className='button-2'>ارسال</button>)}
+                    {html:(<button disabled={!deliveryType || !trakingCode} className='button-2' onClick={()=>onSubmit()}>ارسال</button>)}
                 ]
             }}
         />
@@ -679,6 +690,33 @@ function BGLabel(props:I_BGLabel){
                     {html:<div style={{width:4,height:16,background:'#3B55A5'}}></div>},
                     {html:text,className:'fs-16 bold'},
                     {show:!!subtext,html:()=>`( ${subtext} )`,className:'fs-12'}
+                ]
+            }}
+        />
+    )
+}
+type I_DeliveryPopup = {onSubmit:()=>void,onCansel:()=>void}
+function DeliveryPopup(props:I_DeliveryPopup){
+    let {onSubmit,onCansel} = props;
+    return (
+        <RVD
+            layout={{
+                gap:6,className:'fs-14',
+                column:[
+                    {html:<Icon path={mdiAlertOutline} size={3}/>,align:'vh',style:{color:'orange'}},
+                    {html:'لطفا مطمئن شوید مرسوله به دست مشتری رسیده باشد.',className:'bold',align:'vh'},
+                    {html:'برای سفارش های زیر ۱ میلیون میتوانید بدون کد تحویل سفارش را تحویل دهید'},
+                    {size:6},
+                    {
+                        html:(
+                            <button onClick={()=>onSubmit()} className='button-2'>بازگشت</button>
+                        )
+                    },
+                    {
+                        html:(
+                            <button onClick={()=>onCansel()} className='button-1'>مرسوله به خریدار تحویل شده است</button>
+                        )
+                    }
                 ]
             }}
         />

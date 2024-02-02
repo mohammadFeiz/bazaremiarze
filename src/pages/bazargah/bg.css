@@ -44,3 +44,20 @@
     border-left:6px solid transparent;
     border-right:6px solid transparent;
 }
+.bazargah-tabs{
+    font-size:14px;
+}
+.bazargah-tabs .aio-input-tabs-option{
+    flex:1;
+    color:#000;
+    font-weight:bold;
+}
+.bazargah-tabs .aio-input-tabs-option.active{
+    color:#2BBA8F;
+}
+.bazargah-tabs .aio-input-tabs-option.active:after{
+    background:#2BBA8F;
+}
+.bazargah-tabs .aio-input-tabs-option-value{
+    justify-content:center;
+}

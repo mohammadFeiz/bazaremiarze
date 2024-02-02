@@ -271,6 +271,14 @@ export default class ActionClass implements I_actionClass {
                 }
             })
         }
+        else if(type === 'bazargah-order-page'){
+            let {render} = parameter;
+            rsa.addModal({position:'fullscreen',body: {render},id: type,header: { title: 'جزییات سفارش' }})
+        }
+        else if(type === 'bazargah-sent'){
+            let {render} = parameter;
+            rsa.addModal({position:'center',body: {render},id: type,header: { title: 'تایید نهایی تحویل سفارش' }})
+        }
     }
     getCodeDetails = ({ giftCodeInfo, discountCodeInfo }) => {
         function getPromo(id) {

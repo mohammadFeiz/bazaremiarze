@@ -10,7 +10,7 @@ import Logo1 from './../../images/bmloading.png';
 import appContext from "../../app-context.js";
 import SignalR from '../../singalR/signalR.js';
 import "./index.css";
-import { I_AIOService_class, I_B1Info, I_ShopClass, I_actionClass, I_app_state, I_msfReport, I_state_Shop, I_state_backOffice, I_state_cart, I_state_spreeCategories, I_updateProfile, I_userInfo, I_vitrin, I_vitrin_product } from "../../types.tsx";
+import { I_AIOService_class, I_B1Info, I_ShopClass, I_actionClass, I_app_state, I_msfReport, I_rsa_navItem, I_rsa_props, I_state_Shop, I_state_backOffice, I_state_cart, I_state_spreeCategories, I_updateProfile, I_userInfo, I_vitrin, I_vitrin_product } from "../../types.tsx";
 import { v_updateMyVitrin_payload } from "../../apis/vitrin-apis.tsx";
 import {I_AIOLogin} from './../../npm/aio-login/index.tsx';
 type I_Main = {
@@ -39,7 +39,7 @@ export default class Main extends Component <I_Main,I_Main_state>{
     let actionClass = new ActionClass({
       getState:this.getContext.bind(this),getProps:()=>this.props,SetState:this.SetState.bind(this)
     })
-    let rsa = new RSA({
+    let rsaProps:I_rsa_props = {
       rtl:true,maxWidth:770,id:'bazarmiarzersa',
       title:(nav)=>actionClass.getAppTitle(nav),
       nav:{
@@ -52,16 +52,18 @@ export default class Main extends Component <I_Main,I_Main_state>{
         header:() => <div style={{margin:'24px 0'}} className='align-vh w-100'><img src={Logo1 as string} alt='' height={24}/></div>,
         footer:actionClass.getSideFooter
       },
-      headerContent:({ navId }) => <Header type='page' navId={navId} />,
-      body:({ render,id,text }) => {
+      headerContent:() => <Header type='page' navId={this.state.rsa.getNavId()} />,
+      body:(p:I_rsa_navItem) => {
+        let { render,id,text } = p;
         let {userInfo,msfReport} = this.props;
         if(id !== AIOStorage('bm' + userInfo.cardCode).load({name:'lastNavId'})){
-          msfReport({actionName:'tab',actionId:7,targetName:text,targetId:id,tagName:'other',eventName:'page view'})  
+          msfReport({actionName:'tab',actionId:7,targetName:typeof text === 'string'?text:text(),targetId:id,tagName:'other',eventName:'page view'})  
         }
         AIOStorage('bm' + userInfo.cardCode).save({name:'lastNavId',value:id})  
         return render()
       },
-    });
+    }
+    let rsa = new RSA(rsaProps);
     let vitrin = this.getInitialVitrin()
     this.state = {
       mounted:false,rsa,

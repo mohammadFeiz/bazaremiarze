@@ -101,7 +101,7 @@ export default class ActionClass implements I_actionClass {
         return [
             { text: 'بازارگاه', icon: () => icon(mdiCellphoneMarker), onClick: () => rsa.setNavId('bazargah') },
             { text: 'پیگیری سفارش خرید', icon: () => icon(mdiClipboardList), onClick: () => this.openPopup('peygiriye-sefareshe-kharid') },
-            { text: 'درخواست گارانتی', icon: () => icon(mdiShieldCheck), onClick: () => this.openPopup('sabteGarantiJadid'), show: () => !!activeManager.garanti && slpcode },
+            { text: 'درخواست گارانتی', icon: () => icon(mdiShieldCheck), onClick: () => this.openPopup('sabteGarantiJadid'), show: () => !!activeManager.garanti && !!slpcode },
             { text: 'لیست قیمت', icon: () => icon(mdiCash), onClick: () => this.openPopup('priceList'), show: () => !!activeManager.priceList },
             { text: 'پنل ادمین', icon: () => icon(mdiSecurity), onClick: () => this.openPopup('admin-panel'), show: () => !!isAdmin },
             { text: 'رفتار سیستم', icon: () => icon(mdiSkullScan), onClick: () => Logger.openPopup(), show: () => !!this.getState().developerMode },
@@ -354,12 +354,12 @@ export default class ActionClass implements I_actionClass {
             />
           )
     }
-    getAppTitle = (nav) => {
-        if (nav.id === 'khane') {
-            return <>{getSvg('mybrxlogo', { className: 'rvd-hide-sm rvd-hide-md rvd-hide-lg' })}<div className='rvd-hide-xs'>{nav.text}</div></>
+    getAppTitle = (navItem) => {
+        if (navItem.id === 'khane') {
+            return <>{getSvg('mybrxlogo', { className: 'rvd-hide-sm rvd-hide-md rvd-hide-lg' })}<div className='rvd-hide-xs'>{navItem.text}</div></>
         }
-        else if (nav.id === 'profile') { return 'پروفایل' }
-        else { return nav.text }
+        else if (navItem.id === 'profile') { return 'پروفایل' }
+        else { return navItem.text }
     }
     manageUrl = () => {
         let wrl = window.location.href;

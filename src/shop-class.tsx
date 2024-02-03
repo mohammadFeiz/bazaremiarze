@@ -205,13 +205,17 @@ export default class ShopClass implements I_ShopClass {
         let index: number = items.findIndex((o: I_product) => o.id === product.id)
         items[index] = product;
     }
-    openProductPage = async (product: I_product) => {
-        let { apis, rsa, actionClass, msfReport } = this.getAppState();
+    updateProductByFullDetail = async (product:I_product) => {
+        let { apis } = this.getAppState();
         if (!product.hasFullDetail) {
             product = await apis.request({ api: 'kharid.getProductFullDetail', parameter: product })
             product.hasFullDetail = true;
             this.updateProduct(product)
         }
+    }
+    openProductPage = async (product: I_product) => {
+        let { rsa, actionClass, msfReport } = this.getAppState();
+        await this.updateProductByFullDetail(product);
         msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
         rsa.addModal({
             position: 'fullscreen', id: 'product',
@@ -260,7 +264,9 @@ export default class ShopClass implements I_ShopClass {
                     if (p && p.productId && p.productId !== productId) {continue }    
                     let cartProduct:I_cartProduct = cartTaxon.products[productId];
                     let products = await this.getShopItems({taxonId,productId}) as I_product[];
-                    let product = products[0];    
+                    let product = products[0];
+                        if(!product.hasFullDetail){debugger}
+                    await this.updateProductByFullDetail(product);
                     for(let variantId in cartProduct.variants){
                         let {count} = cartProduct.variants[variantId];
                         let variant = product.variants.find((o:I_variant)=>o.id === variantId)
@@ -281,6 +287,8 @@ export default class ShopClass implements I_ShopClass {
                 if(p && p.productId && p.productId !== productId){continue}
                 let products:I_product[] = await this.getShopItems({taxonId:cartProduct.productCategory.taxonId,productId}) as I_product[];
                 let product = products[0];
+                if(!product.hasFullDetail){debugger}
+                await this.updateProductByFullDetail(product);
                 for(let variantId in cartProduct.variants){
                     let {count} = cartProduct.variants[variantId];
                     let variant = product.variants.find((o:I_variant)=>o.id === variantId)
@@ -399,6 +407,7 @@ export default class ShopClass implements I_ShopClass {
                 let { productId, productCategory } = cartProducts[i];
                 let products = await this.getShopItems({productId, taxonId:productCategory.taxonId});
                 let product = products[0];
+                await this.updateProductByFullDetail(product);
                 renders.push(this.renderCard_Regular({ product, renderIn, index:i }))
             }
         }
@@ -1860,21 +1869,20 @@ export function Cart(props: I_Cart) {
     let [items, setItems] = useState<any[]>([])
     let tabs = Object.keys(cart.shops);
     useEffect(() => {
-        update(true)
+        let id;
+        if (props.shopId) { id = props.shopId }
+        else { id = tabs[0] || false }
+        update(id)
     }, [])
     useEffect(() => {
-        update(false)
+        update()
     }, [cart])
-    async function update(initial) {
-        if (initial) {
-            if (props.shopId) { activeTabId = props.shopId }
-            else { activeTabId = tabs[0] || false }
-        }
-        if (activeTabId !== false && !cart.shops[activeTabId]) { activeTabId = false }
-        setActiveTabId(activeTabId);
-        if (activeTabId) {
-            let factor = await Shop[activeTabId].renderCartFactor();
-            let items = await Shop[activeTabId].renderCartItems('cart');
+    async function update(id = activeTabId) {
+        if (id !== false && !cart.shops[id]) { id = false }
+        setActiveTabId(id);
+        if (id) {
+            let factor = await Shop[id].renderCartFactor();
+            let items = await Shop[id].renderCartItems('cart');
             setItems(items);
             setFactor(factor);
         }
@@ -1903,7 +1911,7 @@ export function Cart(props: I_Cart) {
                     optionAfter={(option) => getBadge(option)}
                     optionText={(option) => Shop[option].shopName}
                     optionValue='option'
-                    onChange={(activeTabId: string) => setActiveTabId(activeTabId)}
+                    onChange={(id: string) => update(id)}
                 />
             )
         }

@@ -36,7 +36,7 @@ export default function Bazargah(){
     let [tab,setTab] = useState<I_tab>('اطراف من')
     let tabs:I_tab[] = ['اطراف من','سفارشات من'];
     let [order] = useState<I_bazargah_order>({
-        status:'shouldSend',
+        status:'sending',
         submitDate:new Date().getTime() - (9 * 60 * 60 * 1000) - (22 * 60 * 1000),
         code:'R534534534',
         price:1230000,

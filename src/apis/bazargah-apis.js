@@ -169,12 +169,22 @@ export default function bazargahApis({baseUrl,helper}) {
             let result = res.data.isSuccess?true:(res.data.message || res.data.Message || 'خطا');
             return { result }
         },
-        async bg_submit_code(fullCode){
-            return {result:true}
+        async bg_aroundMe(){
+
         },
-        async bg_submit_delivered(){
-            return {result:true}
-        }
+        async bg_myOrders(){
+
+        },
+        async bg_to_shouldSend({order,status}){
+
+        },
+        async bg_to_sending({order,status,parameter},appState){
+            let {trakingCode,deliveryType} = parameter
+        },
+        async bg_to_sent({order,status,parameter}){
+            let {passCode} = parameter;
+
+        } 
     }
 }
 

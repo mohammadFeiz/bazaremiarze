@@ -210,12 +210,13 @@ export default class ShopClass implements I_ShopClass {
         if (!product.hasFullDetail) {
             product = await apis.request({ api: 'kharid.getProductFullDetail', parameter: product })
             product.hasFullDetail = true;
-            this.updateProduct(product)
+            this.updateProduct(product);
         }
+        return product;
     }
     openProductPage = async (product: I_product) => {
         let { rsa, actionClass, msfReport } = this.getAppState();
-        await this.updateProductByFullDetail(product);
+        product = await this.updateProductByFullDetail(product);
         msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
         rsa.addModal({
             position: 'fullscreen', id: 'product',
@@ -265,8 +266,8 @@ export default class ShopClass implements I_ShopClass {
                     let cartProduct:I_cartProduct = cartTaxon.products[productId];
                     let products = await this.getShopItems({taxonId,productId}) as I_product[];
                     let product = products[0];
-                        if(!product.hasFullDetail){debugger}
-                    await this.updateProductByFullDetail(product);
+                    if(!product.hasFullDetail){debugger}
+                    product = await this.updateProductByFullDetail(product);
                     for(let variantId in cartProduct.variants){
                         let {count} = cartProduct.variants[variantId];
                         let variant = product.variants.find((o:I_variant)=>o.id === variantId)
@@ -288,7 +289,7 @@ export default class ShopClass implements I_ShopClass {
                 let products:I_product[] = await this.getShopItems({taxonId:cartProduct.productCategory.taxonId,productId}) as I_product[];
                 let product = products[0];
                 if(!product.hasFullDetail){debugger}
-                await this.updateProductByFullDetail(product);
+                product = await this.updateProductByFullDetail(product);
                 for(let variantId in cartProduct.variants){
                     let {count} = cartProduct.variants[variantId];
                     let variant = product.variants.find((o:I_variant)=>o.id === variantId)
@@ -407,7 +408,7 @@ export default class ShopClass implements I_ShopClass {
                 let { productId, productCategory } = cartProducts[i];
                 let products = await this.getShopItems({productId, taxonId:productCategory.taxonId});
                 let product = products[0];
-                await this.updateProductByFullDetail(product);
+                product = await this.updateProductByFullDetail(product);
                 renders.push(this.renderCard_Regular({ product, renderIn, index:i }))
             }
         }
@@ -653,9 +654,10 @@ function TaxonCard(props: I_TaxonCard) {
         let taxonIds = Object.keys(cartTab.taxons);
         let notHasErrors = taxonIds.filter((taxonId) => !cartTab.taxons[taxonId].hasError)
         let cartTaxon:I_cartTaxon = cartTab.taxons[taxon.id]
-        if(cartTaxon && cartTaxon.hasError){return false}
+        if(!cartTaxon){return false}
+        else {if(cartTaxon.hasError){return false}}
         return {
-            align: 'v', className: 'taxon-card-group-discount',
+            align: 'v', className: 'taxon-card-group-discount',gap:6,
             row:[
                 {html:`${0.5 * notHasErrors.length} %`,className:'discount-percent',style:{background:'orange'},size:36,align:'vh'},
                 { html: `تخفیف گروه کالا`}
@@ -1879,6 +1881,8 @@ export function Cart(props: I_Cart) {
     }, [cart])
     async function update(id = activeTabId) {
         if (id !== false && !cart.shops[id]) { id = false }
+        let keys = Object.keys(cart.shops);
+        if(id === false && keys.length){id = keys[0]}
         setActiveTabId(id);
         if (id) {
             let factor = await Shop[id].renderCartFactor();
@@ -1905,7 +1909,7 @@ export function Cart(props: I_Cart) {
             html: (
                 <AIOInput
                     type='tabs'
-                    options={tabs}
+                    options={[...tabs]}
                     style={{ marginBottom: 12, fontSize: 12 }}
                     value={activeTabId}
                     optionAfter={(option) => getBadge(option)}

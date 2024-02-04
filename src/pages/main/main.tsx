@@ -30,6 +30,7 @@ export type I_Main_state = {
   garanti_products_dic:any,
   guaranteeItems:any[],
   guaranteeExistItems:any,
+  newBazargah:boolean,
   bazargahOrders:{wait_to_get?:[],wait_to_send?:[]}
 }
 export default class Main extends Component <I_Main,I_Main_state>{
@@ -67,6 +68,7 @@ export default class Main extends Component <I_Main,I_Main_state>{
     let vitrin = this.getInitialVitrin()
     this.state = {
       mounted:false,rsa,
+      newBazargah:false,
       actionClass,vitrin,
       developerMode:false,
       Shop:{},cart:{shops:{}},

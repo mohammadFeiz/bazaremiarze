@@ -28,6 +28,7 @@ import Sefareshe_Ersal_Shode_Baraye_Vizitor from './components/kharid/sefareshe-
 import Home from "./pages/home/home.tsx";
 import Buy from "./pages/buy/buy.tsx";
 import Bazargah from "./pages/bazargah/bazargah";
+import BazargahNew from "./pages/bazargah/bg.tsx";
 import Profile from "./pages/profile/profile.tsx";
 import Vitrin from './pages/vitrin/vitrin.tsx';
 import { I_AIOLogin } from './npm/aio-login/index.tsx';
@@ -79,13 +80,14 @@ export default class ActionClass implements I_actionClass {
     }
     getNavItems = () => {
         let { userInfo } = this.getProps();
+        let {newBazargah} = this.getState();
         let icon = (path) => <Icon path={path} size={.9} />
         let firstName = userInfo.firstName;
         let lastName = userInfo.lastName;
         lastName = typeof lastName !== 'string'?'':lastName;
         return [
             { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin",render:()=><Vitrin/> },
-            { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=><Bazargah/> },
+            { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=>newBazargah?<BazargahNew/>:<Bazargah/> },
             { text: "خانه", icon: () => getSvg('home'), id: "khane",render:()=><Home/> },
             { text: "خرید", icon: () => icon(mdiShopping), id: "kharid",render:()=><Buy/> },
             { text: () => `${firstName} ${lastName}`, marquee: true, icon: () => icon(mdiAccountBox), id: "profile",render:()=><Profile/> },
@@ -251,8 +253,14 @@ export default class ActionClass implements I_actionClass {
                 header: { 
                     title: 'سبد خرید',
                     buttons:[
-                        [<Icon path={mdiDelete} size={1}/>,{onClick:()=>setCart({shops:{}}),className:'align-vh'}],
-                        [<Icon path={mdiEye} size={1}/>,{onClick:()=>console.log(this.getState().cart),className:'align-vh'}]
+                        [<Icon path={mdiDelete} size={0.7}/>,{onClick:()=>{
+                            rsa.addConfirm({
+                                title:'حذف کلیه اقلام سبد خرید',
+                                text:'آیا از حذف کلیه موارد اطمینان دارید',
+                                onSubmit:async ()=>{await setCart({shops:{}}); return true}
+                            })
+                        },className:'align-vh theme-medium-font-color'}],
+                        [<Icon path={mdiEye} size={0.7}/>,{onClick:()=>console.log(this.getState().cart),className:'align-vh theme-medium-font-color'}]
                     ] 
                 } 
             })

@@ -13,7 +13,7 @@
     "aio-input": "^8.3.1",
     "aio-log": "^1.0.0",
     "aio-login": "^7.1.0",
-    "aio-popup": "^3.2.0",
+    "aio-popup": "^3.2.1",
     "aio-service": "^6.2.0",
     "aio-storage": "^4.0.1",
     "aio-swip": "^2.0.0",

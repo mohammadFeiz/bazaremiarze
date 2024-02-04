@@ -65,6 +65,7 @@ export type I_rsa_addModal = {
     position?:'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom',
     id?:string,
     attrs?:any,
+    backdrop?:{attrs?:any},
     header?:false | {
         title:string,subtitle?:string,attrs?:any,backButton?:boolean,
         buttons?:[text:React.ReactNode,attrs?:any][]
@@ -336,6 +337,7 @@ export type I_app_state = {
     guaranteeExistItems:any,
     SetState:(obj:any,callback?:any)=>void,
     setCart:(newcart:I_state_cart)=>void,
+    newBazargah:boolean
 }
 export type I_state_spreeCategories = { icon_type: I_spreeCategory[], slider_type: I_spreeCategory[], dic: {} }
 export type I_state_Shop = {[shopId:string]:I_ShopClass}

@@ -11,20 +11,21 @@ import {Icon} from '@mdi/react';
 import { mdiAlert, mdiAlertOutline, mdiInformation } from '@mdi/js';
 import './bg.css'
 
-type I_bazargah_order = {
+type I_bg_order = {
     status:I_bg_status,
     submitDate:number,
-    deliverDate?:number,
+    deliverDate?:number,//use in status:sent
     code:string,
     price:number,
-    items:I_bazargah_order_item[],
+    items:I_bg_order_item[],
     isInVitrin:boolean,
     distanceKM:number,
-    preCode?:number,
+    deliveryType?:I_deliveryType,//use in status:sending
+    trackingCode?:string,//use in status:sending
     info:{name:string,lat:number,lng:number,address:string,city:string,province:string,postal:number,phone:string}
 }
 type I_bg_status = 'canTake'|'takenByOther'|'shouldSend' | 'sending' | 'sent'
-type I_bazargah_order_item = {
+type I_bg_order_item = {
     count:number,
     price:number,
     image:string,
@@ -33,58 +34,17 @@ type I_bazargah_order_item = {
 }
 type I_tab = 'اطراف من' | 'سفارشات من';
 export default function Bazargah(){
+    let {apis}:I_app_state = useContext(appContext);
     let [tab,setTab] = useState<I_tab>('اطراف من')
     let tabs:I_tab[] = ['اطراف من','سفارشات من'];
-    let [order] = useState<I_bazargah_order>({
-        status:'sending',
-        submitDate:new Date().getTime() - (9 * 60 * 60 * 1000) - (22 * 60 * 1000),
-        code:'R534534534',
-        price:1230000,
-        isInVitrin:true,
-        distanceKM:4.6,
-        preCode:378,
-        info:{
-            name:'محمد شریف فیض',lat:35.70080152485188,lng:51.40090942382813,province:'تهران',postal:1992233212,phone:'09123534314',
-            address:'تهران شیخ بهایی شمالی نوربخش پلاک 30 واحد 4 طبقه دوم',city:'تهران'
-        },
-        items:[
-            {
-                count:3,
-                price:54000,
-                image:lampsrc as string,
-                name:'لامپ حبابی 7 وات',
-                details:[{key:'رنگ نور',value:'مهتابی'},{key:'سرپیچ',value:'E27'}]
-            },
-            {
-                count:3,
-                price:54000,
-                image:lampsrc as string,
-                name:'لامپ حبابی 7 وات لامپ حبابی 7 وات لامپ حبابی 7 وات لامپ حبابی 7 وات',
-                details:[{key:'رنگ نور',value:'مهتابی'},{key:'سرپیچ',value:'E27'}]
-            },
-            {
-                count:3,
-                price:54000,
-                image:lampsrc as string,
-                name:'لامپ حبابی 7 وات',
-                details:[{key:'رنگ نور',value:'مهتابی'},{key:'سرپیچ',value:'E27'}]
-            },
-            {
-                count:3,
-                price:54000,
-                image:lampsrc as string,
-                name:'لامپ حبابی 7 وات',
-                details:[{key:'رنگ نور',value:'مهتابی'},{key:'سرپیچ',value:'E27'}]
-            },
-            {
-                count:3,
-                price:54000,
-                image:lampsrc as string,
-                name:'لامپ حبابی 7 وات',
-                details:[{key:'رنگ نور',value:'مهتابی'},{key:'سرپیچ',value:'E27'}]
-            }
-        ]
-    })
+    let [orders,setOrders] = useState<I_bg_order[]>([])
+    function getOrders(newTab = tab){
+        apis.request({
+            api:'bazargah.bg_orders',description:`دریافت سفارشات بازارگاه از نوع ${newTab}`,parameter:tab,
+            onSuccess:(orders:I_bg_order[])=>setOrders(orders)
+        })
+    }
+    useEffect(()=>{getOrders()},[])
     function tabs_layout(){
         return {
             className:'of-visible m-b-6',
@@ -93,17 +53,14 @@ export default function Bazargah(){
             )
         }
     }
-    function orderCard_layout(){
+    function orderCard_layout(order:I_bg_order){
         return {
             html:<BazargahOrderCard order={order}/>
         }
     }
-    function orderPage_layout(){
-        return {html:<BazargahOrderPage order={order}/>}
-    }
-    function deliveryPopup_layout(){
-        return {html:<DeliveryPopup onSubmit={()=>{}} onCansel={()=>{}}/>}
-    }
+    // function deliveryPopup_layout(){
+    //     return {html:<DeliveryPopup onSubmit={()=>{}} onCansel={()=>{}}/>}
+    // }
     return (
         <RVD
             layout={{
@@ -112,13 +69,7 @@ export default function Bazargah(){
                     tabs_layout(),
                     {
                         flex:1,className:'bg-body ofy-auto p-t-0',
-                        column:[
-                            orderCard_layout(),
-                            {size:12},
-                            orderPage_layout(),
-                            {size:12},
-                            deliveryPopup_layout()
-                        ]
+                        column:orders.map((order:I_bg_order)=>orderCard_layout(order))
                     }
                 ]
             }}
@@ -126,11 +77,11 @@ export default function Bazargah(){
     )
 } 
 type I_BazargahOrderCard = {
-    order:I_bazargah_order
+    order:I_bg_order
 }
 
 export function BazargahOrderCard(props:I_BazargahOrderCard){
-    let {backOffice}:I_app_state = useContext(appContext);
+    let {backOffice,rsa}:I_app_state = useContext(appContext);
     let {order} = props;
     let {status,deliverDate,price,items,isInVitrin,code} = order;
     function status_layout(){
@@ -158,15 +109,43 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
     function count_layout(){
         return {html:`${items.length} کالا`,className:'fs-14 bold theme-medium-font-color'}
     }
+    function openItemModal(image:string,name:string,details:{key:string,value:string}[],count:number){
+        let render = ()=>{
+            let image_layout = {size:240,html:<img src={image} alt='' height='100%'/>,align:'vh'}
+            let details_layout = {show:!!details && !!details.length,column:()=>details.map((o)=>popupDetail_layout(o))}
+            return (<RVD layout={{column:[image_layout,details_layout]}}/>)
+        }
+        rsa.addModal({
+            position:'center',
+            header:{title:name.slice(0,36),subtitle:`${count} عدد`},
+            backdrop:{attrs:{style:{backdropFilter:'blur(1px)'}}},
+            body:{attrs:{className:'p-12',style:{minHeight:300}},render}
+        })
+    }
+    function popupDetail_layout(p:{key:string,value:string}){
+        let {key,value} = p;
+        return {
+            className:'fs-12 p-3',style:{borderBottom:'1px solid #ddd'},
+            row:[
+                {size:16,align:'vh',html:<div style={{width:6,height:6,background:'#999',borderRadius:24}}></div>},
+                {html:key,flex:1},
+                {html:value,className:'bold'}
+            ]
+        }
+    }
     function items_layout(){
-        let images = items.map((o:I_bazargah_order_item)=>o.image)
+        let images = items.map((o:I_bg_order_item)=>o.image)
+        let names = items.map((o:I_bg_order_item)=>o.name)
+        let details = items.map((o:I_bg_order_item)=>o.details)
+        let counts = items.map((o:I_bg_order_item)=>o.count)
         if(images.length < 5){images = [...images,'','','','','']}
         images = images.slice(0,5);
         return {
             align:'vh',gap:6,className:'m-b-12',
-            row:images.map((image)=>{
+            row:images.map((image:string,i:number)=>{
                 return {
-                    html:<img src={image} alt='' width='100%'/>,flex:1,style:{maxWidth:80},align:'vh'
+                    html:<><img src={image} alt='' width='100%'/><div className='bg-order-card-count'>{counts[i]}</div></>,flex:1,style:{maxWidth:80},align:'vh',attrs:{title:names[i]},
+                    onClick:()=>openItemModal(image,names[i],details[i],counts[i])
                 }
             })
         }
@@ -179,7 +158,7 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
     function footer_layout(){
         return {row:[{html:(<button className='bg-button-1'>مشاهده جزییات</button>)}]}
     }
-    let showVitrinText = !isInVitrin || status !== 'canTake';
+    let showVitrinText = !!isInVitrin && status === 'canTake';
     return (
         <RVD
             layout={{
@@ -198,7 +177,7 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
 }
 
 type I_BazargahItemCard = {
-    item:I_bazargah_order_item
+    item:I_bg_order_item
 }
 function BazargahItemCard(props:I_BazargahItemCard){
     let {item} = props;
@@ -252,7 +231,7 @@ function BazargahItemCard(props:I_BazargahItemCard){
 }
 
 type I_BazargahOrderPage = {
-    order:I_bazargah_order
+    order:I_bg_order
 }
 function BazargahOrderPage(props:I_BazargahOrderPage){
     let {order} = props;
@@ -280,7 +259,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
         return {
             column:[
                 {html:<BGLabel text='کالا های سفارش' subtext={`${items.length} کالا`}/>,className:'p-h-12'},
-                {column:items.map((item:I_bazargah_order_item)=>{return {html:<BazargahItemCard item={item}/>}})}
+                {column:items.map((item:I_bg_order_item)=>{return {html:<BazargahItemCard item={item}/>}})}
             ]
         }
     }
@@ -327,7 +306,6 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
                     showVitrin?{html:<BGVitrinText/>}:false,
                     !isMine?{html:<BGPage_PublicStatus order={order}/>}:false,
                     isMine?{html:<BGPage_PrivateStatus order={order} changeStatus={changeStatus}/>}:false,
-                    sendDetails_layout(),
                     isMine?{html:<BGPage_Location order={order}/>}:false,
                     isMine && status !== 'shouldSend'?{html:<BGPage_SendInfo order={order}/>}:false,
                     items_layout(),
@@ -346,7 +324,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
         />
     )
 }
-type I_BGPage_PublicStatus = {order:I_bazargah_order}
+type I_BGPage_PublicStatus = {order:I_bg_order}
 function BGPage_PublicStatus(props:I_BGPage_PublicStatus){
     let {backOffice}:I_app_state = useContext(appContext);
     let {order} = props,{status,code} = order;
@@ -364,7 +342,7 @@ function BGPage_PublicStatus(props:I_BGPage_PublicStatus){
     function code_layout(){return {html:code,align:'v',className:'fs-14 theme-dark-font-color'}}
     return <RVD layout={{column:[box_layout(),footer_layout()]}}/>
 }
-type I_BGPage_PrivateStatus = {order:I_bazargah_order,changeStatus:(from:I_bg_status,to:I_bg_status)=>void}
+type I_BGPage_PrivateStatus = {order:I_bg_order,changeStatus:(from:I_bg_status,to:I_bg_status)=>void}
 function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     let {backOffice,actionClass,rsa}:I_app_state = useContext(appContext);
     let total = backOffice.bazargah.forsate_ersale_sefareshe_bazargah;    
@@ -425,7 +403,7 @@ type I_deliveryType = 'post' | 'carier'
 
 function BGDeliveryType(props:I_BGDeliveryType){
     let [deliveryType,setDeliveryType] = useState<I_deliveryType>();
-    let [trakingCode,setTrakingCode] = useState<string>('')
+    let [trackingCode,setTrackingCode] = useState<string>('')
     let {onSubmit} = props;
     let options:I_deliveryType[] = ['post','carier']
     let trans = {'post':'پست','carier':'پیک شخصی / سرویس های دیگر'}
@@ -453,25 +431,24 @@ function BGDeliveryType(props:I_BGDeliveryType){
                         html:(
                             <AIOInput 
                                 style={{border:'1px solid #ddd'}} className='m-v-12 fs-12 h-36'
-                                type='text' value={trakingCode} onChange={(trakingCode:string)=>setTrakingCode(trakingCode)} placeholder='شماره پیگیری'
+                                type='text' value={trackingCode} onChange={(trackingCode:string)=>setTrackingCode(trackingCode)} placeholder='شماره پیگیری'
                             />
                         )
                     },
-                    {html:(<button disabled={!deliveryType || !trakingCode} className='button-2' onClick={()=>onSubmit()}>ارسال</button>)}
+                    {html:(<button disabled={!deliveryType || !trackingCode} className='button-2' onClick={()=>onSubmit()}>ارسال</button>)}
                 ]
             }}
         />
     )
 }
-type I_BGPassCode = {order:I_bazargah_order,onSubmit:()=>void}
+type I_BGPassCode = {order:I_bg_order,onSubmit:()=>void}
 function BGPassCode(props:I_BGPassCode){
     let {apis}:I_app_state = useContext(appContext);
     let [passCodes,setPassCodes] = useState<any[]>([false,false,false])
     let [submitedCode,setSubmitedCode] = useState<boolean>(false);
-    let {order,onSubmit} = props,{preCode} = order;
-    if(!preCode){alert('bazargah error : order status is sending but missing preCode property on order object')}
+    let {order,onSubmit} = props;
     function submitCode(){
-        let parameter:number = +`${preCode}${passCodes[0]}${passCodes[1]}${passCodes[2]}`
+        let parameter:number = +`${passCodes[0]}${passCodes[1]}${passCodes[2]}`
         apis.request({
             api:'bazargah.bg_submit_code',loading:true,parameter,message:{success:true},
             description:'تایید کد تحویل بازارگاه',onSuccess:()=>setSubmitedCode(true)
@@ -485,7 +462,6 @@ function BGPassCode(props:I_BGPassCode){
     }
     function getOptions(){return new Array(11).fill(0).map((o,i:number)=>{return {text:i === 0?'':i - 1,value:i === 0?false:i - 1}})}
     function change(v,index){setPassCodes(passCodes.map((passCode:number,i:number)=>i === index?v:passCode))}
-    function preCode_layout(index:number){return {html:preCode.toString()[index],align:'vh',className:'theme-link-font-color bazargah-pre-code',size:24}}
     function input_layout(index:number){
         let p = {type:'list',width:36,size:36,count:1,className:'bazargah-pass-code',value:passCodes[index]}
         return {html:<AIOInput {...p} options={getOptions()} onChange={(v:number)=>change(v,index)}/>}
@@ -511,7 +487,7 @@ function BGPassCode(props:I_BGPassCode){
                     {size:16},
                     {
                         gap:6,align:'vh',className:'dir-ltr',
-                        row:[preCode_layout(0),preCode_layout(1),preCode_layout(2),passCode_layout(0),passCode_layout(1),passCode_layout(2)]
+                        row:[passCode_layout(0),passCode_layout(1),passCode_layout(2)]
                     },
                     {size:16},
                     {
@@ -543,7 +519,7 @@ function BGVitrinText(){
         />
     )
 }
-type I_BGPage_Location = {order:I_bazargah_order}
+type I_BGPage_Location = {order:I_bg_order}
 function BGPage_Location(props:I_BGPage_Location){
     let {order} = props,{info} = order,{lat,lng,name,phone,city,province,postal,address} = info;
     function kv_layout(p:[key:string,value:string]){
@@ -573,9 +549,11 @@ function BGPage_Location(props:I_BGPage_Location){
         />
     )
 }
-type I_BGPage_SendInfo = {order:I_bazargah_order}
+type I_BGPage_SendInfo = {order:I_bg_order}
 function BGPage_SendInfo(props:I_BGPage_SendInfo){
-    let {order} = props,{info} = order,{lat,lng,name,phone,city,province,postal,address} = info;
+    let {order} = props,{deliveryType,trackingCode} = order;
+    if(!deliveryType){alert('bazargah error : order.status is sending but missing order.deliveryType')}
+    if(!trackingCode){alert('bazargah error : order.status is sending but missing order.trackingCode')}
     function kv_layout(p:[key:string,value:string]){
         return {className:'p-12 p-b-0',column:[{html:p[0],className:'bold fs-12'},{html:p[1],className:'fs-12 theme-medium-font-color t-a-right'}]}
     }
@@ -584,19 +562,9 @@ function BGPage_SendInfo(props:I_BGPage_SendInfo){
             layout={{
                 className:'p-b-12',style:{borderBottom:'1px solid #eee'},
                 column:[
-                    {html:<BGLabel text='اطلاعات محل تحویل'/>,className:'p-12'},
-                    {
-                        html:(
-                            <AIOInput 
-                                type='map' value={{lat,lng}} mapConfig={{showAddress:false}} className='w-100 h-96'
-                            />
-                        )
-                    },
-                    kv_layout(['نام و نام خانوادگی تحویل گیرنده',name]),
-                    kv_layout(['شماره تلفن تحویل گیرنده',phone]),
-                    kv_layout(['استان و شهر',`${city},${province}`]),
-                    kv_layout(['آدرس',address]),
-                    kv_layout(['کد پستی',postal.toString()])
+                    {html:<BGLabel text='اطلاعات ارسال سفارش'/>,className:'p-12'},
+                    kv_layout(['نحوه ارسال',deliveryType]),
+                    kv_layout(['کد پیگیری',trackingCode]),
                     
                 ]
             }}
@@ -630,7 +598,7 @@ function BazargahSlider(props:I_BazargahSlider){
         }}/>
     )
 }
-type I_BazargahExpiredDate = {order:I_bazargah_order,total:number}
+type I_BazargahExpiredDate = {order:I_bg_order,total:number}
 function BazargahExpiredDate(props:I_BazargahExpiredDate){
     function getColor(percent:number){
         if(percent < 25){return 'red'}
@@ -669,12 +637,19 @@ function BazargahExpiredDate(props:I_BazargahExpiredDate){
     let color = getColor(percent)
     return (<RVD layout={{column:[slider_layout(percent,color),text_layout(expiredDate,color,now)]}}/>)
 }
-type I_BazargahSubmitDate = {order:I_bazargah_order}
+type I_BazargahSubmitDate = {order:I_bg_order}
 function BazargahSubmitDate(props:I_BazargahSubmitDate){
     let {order} = props,{submitDate} = order,text:string;
     let delta = new Date().getTime() - submitDate;
     if(delta < 0){alert(`bazargah error : submitDate is after now!!!`); return null}
-    if(delta < 24 * 60 * 60 * 1000){text = AIODate().convertMiliseconds({miliseconds:delta,unit:'hour',pattern:'{hour} ساعت و {minute} دقیقه پیش'})}
+    if(delta < 72 * 60 * 60 * 1000){
+        let {day,hour,minute} = AIODate().convertMiliseconds({miliseconds:delta,unit:'day'})
+        let list = [];
+        if(day){list.push(`${day} روز`)}
+        if(hour){list.push(`${hour} ساعت`)}
+        if(minute){list.push(`${minute} دقیقه`)}
+        text = list.join(' و ') + ' پیش' 
+    }
     else {text = AIODate().getDateByPattern({date:submitDate,jalali:true,pattern:'{year}/{month}/{day} {hour}:{minute}'})}
     return (<RVD layout={{html:text,align:'v',className:'fs-10 theme-medium-font-color bold'}}/>)
 }

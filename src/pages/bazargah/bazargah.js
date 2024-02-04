@@ -109,6 +109,15 @@ export default class Bazargah extends Component{
             })
         }
     }
+    componentDidMount(){
+        if(this.props.renderInHome){return false}
+        let {rsa,SetState} = this.context;
+        rsa.addConfirm({
+            title:'بازارگاه جدید',
+            text:'ورود به بازارگاه جدید فقط برای ادمین های سیستم؟',
+            onSubmit:()=>SetState({newBazargah:true})
+        })
+    }
     tabs_layout(){
         let {bazargahOrders,backOffice} = this.context;
         if(!backOffice.activeManager.bazargah){return false}

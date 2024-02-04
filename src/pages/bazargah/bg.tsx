@@ -32,6 +32,8 @@ type I_bg_order_item = {
     name:string,
     details:{key:string,value:string}[]
 }
+type I_deliveryType = 'post' | 'carier'
+
 type I_tab = 'اطراف من' | 'سفارشات من';
 export default function Bazargah(){
     let {apis}:I_app_state = useContext(appContext);
@@ -399,7 +401,6 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     return (<RVD layout={{column:[details_layout(),card_layout()]}}/>)
 }
 type I_BGDeliveryType = {onSubmit:()=>void}
-type I_deliveryType = 'post' | 'carier'
 
 function BGDeliveryType(props:I_BGDeliveryType){
     let [deliveryType,setDeliveryType] = useState<I_deliveryType>();

@@ -218,4 +218,3 @@ export default function App() {
   let appState = { apis, Login, Logger, userInfo,b1Info, backOffice, baseUrl, updateProfile, msfReport };
   return Login.render({appState})
 }
-

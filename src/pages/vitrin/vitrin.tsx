@@ -179,7 +179,7 @@ function Search(props:I_Search) {
                     column: [
                         search_layout(),
                         categories_layout(),
-                        brands_layout(),
+                        //brands_layout(),
                         products_layout(products, paging),
                         suggestion_layout(isFirstTime)
                     ]
@@ -218,6 +218,7 @@ function Search(props:I_Search) {
         let newPaging:I_paging = { ...paging, number: 1 }
         paging = newPaging;
         setCategoryPath(pathes);
+        setTaxon(taxon);
         updateProducts();
     }
     function openCategories() {
@@ -244,7 +245,6 @@ function Search(props:I_Search) {
                     />
                 },
             ]
-
         }
     }
     function products_layout(products, paging) {

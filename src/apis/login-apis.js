@@ -32,6 +32,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                 if (loginType) { Axios.get(`${baseUrl}/login?type=${loginType}`); }
                 const isSuperAdmin = (userInfo) => ['09123534314', '+989123534314'].indexOf(userInfo.userName) !== -1;
                 const isAdmin = (userInfo) => {
+                    debugger
                     if (userInfo.userName === '09123534314') { return true }
                     let { accessPhoneNumbers = [] } = backOffice;
                     let res = false;

@@ -2088,9 +2088,10 @@ function Shipping(props: I_Shipping) {
                         <button
                             className="button-2"
                             onClick={async () => {
+                                let parameter = { ...params, shopId };
                                 await apis.request({
                                     api: "kharid.payment", description: 'عملیات ثبت و پرداخت',
-                                    parameter: { ...params, shopId },
+                                    parameter,
                                     onSuccess: () => {
                                         msfReport({ actionName: 'send to visitor', actionId: 234, tagName: 'kharid', result: 'success', eventName: 'action' })
                                     },

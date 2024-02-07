@@ -26,7 +26,8 @@ import appContext from './app-context';
 import { 
     I_ShopClass, I_taxon, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_cartShop_Product, I_cartShop_bundle, I_cartShop_bundle_product, 
     I_cartShop_bundle_taxon, I_cartShop_taxon, I_cartTaxon, I_cartVariant, I_discount, I_product, I_product_optionType, I_shippingOptions, I_renderIn, 
-    I_variant, I_variant_optionValues, I_cartProduct, I_getFactorDetails_result, I_factorItem, I_cartShop_bundle_variant, I_marketingLine_bundle, I_cartShop, I_ShopProps 
+    I_variant, I_variant_optionValues, I_cartProduct, I_getFactorDetails_result, I_factorItem, I_cartShop_bundle_variant, I_marketingLine_bundle, I_cartShop, I_ShopProps, 
+    I_spreeCategory
 } from "./types";
 import { I_getTaxonProducts_p } from "./apis/kharid-apis";
 import noItemSrc from './images/not-found.png';
@@ -37,6 +38,8 @@ export default class ShopClass implements I_ShopClass {
     /****type defined**** */
     getAppState: () => I_app_state;
     shopId: string;
+    discountPercent?:number;
+    maxTotal?:number;
     active: boolean;
     shopName: string;
     taxons?: I_taxon[];
@@ -47,7 +50,7 @@ export default class ShopClass implements I_ShopClass {
     products?: I_product;
     description?: string;
     icon?: string;
-    itemType: 'Product' | 'Bundle' | 'Taxon'
+    itemType: 'Product' | 'Bundle' | 'Taxon' | 'Category';
     items: I_bundle_taxon[] | I_product[] | { [taxonId: string]: I_product[] }
     cart:I_cartShop;
     constructor(p:{ getAppState:()=>I_app_state, config:I_ShopProps }) {
@@ -88,10 +91,17 @@ export default class ShopClass implements I_ShopClass {
             }
             return this.items
         }
-        else if(this.shopId === 'Regular' || this.itemType === 'Taxon'){
+        else if(this.shopId === 'Regular' || this.itemType === 'Taxon' || this.itemType === 'Category'){
             if(!this.items){this.items = {}}
             if(!p || !p.taxonId){
                 if(this.itemType === 'Taxon'){return this.taxons}
+                if(this.itemType === 'Category'){
+                    let {spreeCategories} = this.getAppState();
+                    return Object.keys(spreeCategories.dic).map((key:string)=>{
+                        let category:I_spreeCategory = spreeCategories.dic[key];
+                        return category;
+                    })
+                }
                 alert('error 34234')
             }
             let taxonId = p.taxonId;
@@ -537,57 +547,72 @@ export default class ShopClass implements I_ShopClass {
         let {actionClass} = this.getAppState();
         let res = await this.getAmounts(undefined, 'cart');
         let { payment } = res;
+        let disabled = true;
+        let disabledReason = '';
+        if(this.maxTotal){
+            if(payment > this.maxTotal){
+                disabledReason = `حداکثر مبلغ مجاز این فاکتور ${SplitNumber(this.maxTotal)} ریال است`
+                disabled = true
+            }
+        }
         let hasError = this.hasCartError();
         return (
             <RVD
                 layout={{
                     size: 72, className: "bgFFF p-h-12 theme-box-shadow",
-                    row: [
+                    column:[
                         {
-                            flex: 1,
-                            column: [
-                                { flex: 1 },
-                                { align: "v", html: "مبلغ قابل پرداخت", className: "theme-medium-font-color fs-12" },
+                            row: [
                                 {
-                                    row: [
-                                        { align: "v", html: SplitNumber(payment), className: "theme-dark-font-color fs-20 bold" },
-                                        { size: 4 },
-                                        { align: "v", html: " ریال", className: "theme-dark-font-color fs-12" }
-                                    ]
+                                    flex: 1,
+                                    column: [
+                                        { flex: 1 },
+                                        { align: "v", html: "مبلغ قابل پرداخت", className: "theme-medium-font-color fs-12" },
+                                        {
+                                            row: [
+                                                { align: "v", html: SplitNumber(payment), className: "theme-dark-font-color fs-20 bold" },
+                                                { size: 4 },
+                                                { align: "v", html: " ریال", className: "theme-dark-font-color fs-12" }
+                                            ]
+                                        },
+                                        { flex: 1 },
+                                    ],
                                 },
-                                { flex: 1 },
-                            ],
+                                {
+                                    html: () => (
+                                        <button
+                                            disabled={disabled}
+                                            onClick={() => {
+                                                if(hasError){
+                                                    actionClass.fixCartByPricing(this.shopId)
+                                                }
+                                                else {
+                                                    let { rsa } = this.getAppState();
+                                                    rsa.removeModal('all');
+                                                    this.edameye_farayande_kharid()
+                                                }
+                                            }}
+                                            className={hasError?"button-3":"button-2"} style={{ height: 36, padding: '0 12px' }}
+                                        >{hasError?'اصلاح سبد خرید':'ادامه فرایند خرید'}</button>
+                                    ),
+                                    align: "v"
+                                },
+                            ]
                         },
-                        {
-                            html: () => (
-                                <button
-                                    //disabled={!!hasError}
-                                    onClick={() => {
-                                        if(hasError){
-                                            actionClass.fixCartByPricing(this.shopId)
-                                        }
-                                        else {
-                                            let { rsa } = this.getAppState();
-                                            rsa.removeModal('all');
-                                            this.edameye_farayande_kharid()
-                                        }
-                                    }}
-                                    className={hasError?"button-3":"button-2"} style={{ height: 36, padding: '0 12px' }}
-                                >{hasError?'اصلاح سبد خرید':'ادامه فرایند خرید'}</button>
-                            ),
-                            align: "v"
-                        },
-                    ],
+                        {show:!!disabled,html:disabledReason,align:'v',className:'fs-10',style:{color:'red'}}
+                    ]
                 }}
             />
         )
     }
 }
-type I_CategoryView = { shopId:string,billboard?: string, description?: string, renderItem: Function, items: (I_product | I_bundle_taxon | I_taxon)[], itemType: 'Product' | 'Taxon' | 'Bundle' }
+type I_CategoryView = { shopId:string,billboard?: string, description?: string, renderItem: Function, items: (I_product | I_bundle_taxon | I_taxon | I_spreeCategory)[], itemType: 'Product' | 'Taxon' | 'Bundle' | 'Category' }
 function CategoryView(props: I_CategoryView) {
     let {Shop,cart}:I_app_state = useContext(appContext);
+    let [tab,setTab] = useState<string>();
+    let [tabItems,setTabItems] = useState<I_product[]>([])
     let [searchValue, setSearchValue] = useState<string>('')
-    let { billboard, description, renderItem, items,shopId } = props
+    let { billboard, description, renderItem, items,shopId,itemType } = props
     let [factor, setFactor] = useState<React.ReactNode>()
     async function getFactor(){
         let factor = await Shop[shopId].renderCartFactor();
@@ -598,7 +623,7 @@ function CategoryView(props: I_CategoryView) {
     }, [cart])
     
     function search_layout() {
-        return { html: <SearchBox value={searchValue} onChange={(searchValue) => setSearchValue(searchValue)} /> }
+        return { html: <SearchBox value={searchValue} onChange={(searchValue:string) => setSearchValue(searchValue)} /> }
     }
     function banner_layout() {
         if (!billboard) { return false }
@@ -607,6 +632,18 @@ function CategoryView(props: I_CategoryView) {
     function description_layout() {
         if (!description) { return false }
         return { html: <pre className='category-view-description'>{description}</pre>,className:'of-visible' }
+    }
+    function tabs_layout(){
+        if(itemType !== 'Category'){return false}
+        let categories = items as I_spreeCategory[];
+        let options = categories.map((category)=>{
+            let {name,id} = category;
+            return {text:name,value:id}
+        })
+        return {html:(<AIOInput type='tabs' options={options} value={tab} onChange={async (tab:string)=>{
+            let items:I_product[] = await Shop[shopId].getShopItems({taxonId:tab});
+            setTabItems(items); setTab(tab)
+        }}/>)}
     }
     function products_layout() {
         return { gap: 12, column: getProductsBySearch().map((product, index) => product_layout(product, index)) }
@@ -625,7 +662,7 @@ function CategoryView(props: I_CategoryView) {
         if (!factor) { return false }
         return { html: factor }
     }
-    return (<RVD layout={{ className: 'theme-popup-bg', column: [search_layout(), body_layout(),payment_layout()] }} />)
+    return (<RVD layout={{ className: 'theme-popup-bg', column: [tabs_layout(),search_layout(), body_layout(),payment_layout()] }} />)
 }
 type I_TaxonCard = {
     taxon: I_taxon, shopId: string, shopName: string, renderIn: I_renderIn,
@@ -787,18 +824,20 @@ function RegularCard(props: I_RegularCard) {
     function name_layout(fontSize) {return { html: product.name, className: `fs-${fontSize} theme-medium-font-color bold`, style: { whiteSpace: 'normal', textAlign: 'right' } }}
     function discount_layout() {
         let { inStock, Price, B1Dscnt = 0, CmpgnDscnt = 0, PymntDscnt = 0 } = product;
+        let {discountPercent} = Shop[shopId];
         if (!Price || !inStock) { return false }
         return {
             gap: 4, className: 'p-h-6',
             row: [
-                { show: !!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt, html: <del>{SplitNumber(Price)}</del>, className: 'fs-12 theme-light-font-color' },
+                { show: !!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt || !!discountPercent, html: <del>{SplitNumber(Price)}</del>, className: 'fs-12 theme-light-font-color' },
                 dps_layout()
             ]
         }
     }
     function dps_layout(){
         let { B1Dscnt = 0, CmpgnDscnt = 0, PymntDscnt = 0 } = product;
-        return {gap: 3,row: [dp_layout(B1Dscnt,'#FFD335'),dp_layout(CmpgnDscnt,'#ffa835'),dp_layout(PymntDscnt,'#ff4335')]}
+        let {discountPercent} = Shop[shopId];
+        return {gap: 3,row: [dp_layout(B1Dscnt,'#FFD335'),dp_layout(CmpgnDscnt,'#ffa835'),dp_layout(PymntDscnt,'#ff4335'),dp_layout(discountPercent,'#ff4335')]}
     }
     function dp_layout(percent:number,color){return !percent?false:{ html: <div className='discount-percent' style={{ background: color}}>{percent + '%'}</div> }}
     function description_layout() {return {html: product.description, className: 'fs-9',style: {whiteSpace: 'nowrap',overflow: 'hidden'}}}

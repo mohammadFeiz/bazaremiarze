@@ -173,7 +173,7 @@ export default class ActionClass implements I_actionClass {
                 lastname:userInfo.lastName,
                 location:{lat:userInfo.latitude,lng:userInfo.longitude},
                 storeName:userInfo.storeName,
-                phone:userInfo.landline || userInfo.landlineNumber,
+                phone:userInfo.landlineNumber,
                 address:userInfo.address,
                 city:userInfo.userCity,
                 state:userInfo.userProvince

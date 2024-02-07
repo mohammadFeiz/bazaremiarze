@@ -37,7 +37,6 @@ export type I_userInfo = {
     cardCode:string,
     osVendorId:string,
     accessToken:{access_token:string}
-
 }
 export type I_B1Info = {
     itemPrices:I_itemPrice[],//notice
@@ -207,11 +206,12 @@ export type I_ShopProps = {
     PriceListNum?:number,
     taxons?:I_taxon[],
     description?:string,
-    itemType:'Product' | 'Taxon' | 'Bundle'
+    itemType:'Product' | 'Taxon' | 'Bundle' | 'Category'
 } 
 export type I_taxon = {id:string,name:string,min:number,max:number}
 export type I_ShopClass = {
     shopName: string,
+    discountPercent?:number,
     active:boolean,
     shopId: string,
     taxons?: I_taxon[],
@@ -222,7 +222,7 @@ export type I_ShopClass = {
     products?: I_product,
     description?: string,
     icon?:string,
-    itemType: 'Product' | 'Bundle' | 'Taxon',
+    itemType: 'Product' | 'Bundle' | 'Taxon' | 'Category',
     getShopItems:(p?:{taxonId?: string, productId?: string})=>Promise<any[]>,
     renderCard_Regular: (
         p: {product: I_product, renderIn: I_renderIn, index: number,loading?: boolean, type?: 'horizontal' | 'vertical'}

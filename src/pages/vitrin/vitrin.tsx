@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, Component } from "react";
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from "../../npm/aio-input/aio-input";
 import getSvg from "./getSvg";
@@ -96,29 +96,46 @@ type I_paging = {
     number:number,size:number,sizes:number[],serverSide:boolean,length:number,onChange:(obj:any)=>void
 }
 type I_Search = {isFirstTime:boolean}
-function Search(props:I_Search) {
-    let {apis,backOffice,msfReport,rsa,actionClass}:I_app_state = useContext(appContext);
-    let {isFirstTime} = props;
-    let [categories,setCategories] = useState<any[]>([])
-    let [taxon,setTaxon] = useState<string | false>(false)
-    let [categoryPath,setCategoryPath] = useState<I_path[]>([])
-    let [searchValue,setSearchValue] = useState<string>('');
-    let [products,setProducts] = useState<I_vitrin_product[]>()
-    let [total,setTotal] = useState<false | number>(false)
-    let [brand,setBrand] = useState({})
-    let [paging,setPaging] = useState<I_paging>(getInitialPaging())
-    function getInitialPaging(){
-        return {
-            number: 1, size: 20, sizes: [10, 20, 40, 100], serverSide: true, length: 0,
-            onChange: (obj) => {
-                let newPaging:I_paging = { ...paging, ...obj }
-                paging = newPaging;
-                updateProducts();
-            }
+type I_Search_state = {
+    categories:any[],
+    taxon:false | number,
+    categoryPath:I_path[],
+    searchValue:string,
+    products:I_vitrin_product[],
+    total:false | number,
+    brand:any,
+    paging:I_paging
+}
+class Search extends Component<I_Search,I_Search_state> {
+    static contextType = appContext;
+    constructor(props){
+        super(props);
+        this.state = {
+           categories:[],
+           taxon:false,
+           categoryPath:[],
+           searchValue:'',
+           products:[],
+           total:false,
+           brand:{},
+           paging:this.getInitialPaging()
         }
     }
-    async function updateProducts() {
-        setProducts(undefined)
+    changePaging(obj){
+        let {paging} = this.state;
+        let newPaging:I_paging = { ...paging, ...obj }
+        this.setState({paging:newPaging},()=>this.updateProducts())
+    }
+    getInitialPaging(){
+        return {
+            number: 1, size: 20, sizes: [10, 20, 40, 100], serverSide: true, length: 0,
+            onChange: (obj)=>this.changePaging(obj)
+        }
+    }
+    async updateProducts() {
+        let {backOffice,apis} = this.context as I_app_state;
+        let {searchValue,taxon,paging,brand} = this.state;
+        this.setState({products:undefined})
         let parameter:v_kolle_mahsoolat_payload = { pageSize: paging.size, pageNumber: paging.number, searchValue, taxon: taxon || '10673'}
         let activeBrands = backOffice.vitrinBrands.filter((o)=>brand[o])
         if(activeBrands.length){
@@ -127,32 +144,34 @@ function Search(props:I_Search) {
         let { products, total } = await apis.request({
             api: 'vitrin.v_kolle_mahsoolat', description: 'دریافت لیست محصولات قابل انتخاب ویترین', loading: false,def:[],parameter
         })
-        setProducts(products);
-        setPaging({ ...paging, length: total });
-        setTotal(total);
+        this.setState({products,paging:{ ...paging, length: total },total});
     }
-    useEffect(()=>{
-        setCategories(backOffice.vitrinCategories);
-        updateProducts()
-    },[])
-    function changeSearch(value) {
+    componentDidMount(){
+        let {backOffice} = this.context as I_app_state;
+        this.setState({categories:backOffice.vitrinCategories})
+        this.updateProducts()
+    }
+    changeSearch(value) {
+        let {msfReport} = this.context as I_app_state;
         if (value.length > 3) {
             msfReport({ actionName: 'vitrin search', actionId: 56, targetName: value, tagName: 'vitrin', eventName: 'action' })
         }
-        searchValue = value;
+        let {paging} = this.state;
         let newPaging:I_paging = {...paging,number:1}
         paging = newPaging;
-        updateProducts()
+        this.setState({paging:newPaging,searchValue:value},()=>this.updateProducts())
     }
-    function header_layout() {
+    header_layout() {
+        let {isFirstTime} = this.props;
         return !isFirstTime ? false : { html: <Box type='description' /> }
     }
-    function changeBrand(value){
-        brand = {...brand,[value]:!brand[value]}
-        setBrand(brand)
-        updateProducts()
+    changeBrand(value){
+        let {brand} = this.state;
+        this.setState({brand:{...brand,[value]:!brand[value]}},()=>this.updateProducts()) 
     }
-    function brands_layout(){
+    brands_layout(){
+        let {backOffice} = this.context as I_app_state;
+        let {brand} = this.state;
         let className = 'vitrin-brand-filter';
         if(IsTouch()){className += ' hide-scroll'}
         return {
@@ -163,41 +182,45 @@ function Search(props:I_Search) {
                     {
                         align:'vh',
                         html:(
-                            <button onClick={()=>changeBrand(o)} className={'vitrin-brand-button' + (active?' active':'')}>{o}</button>
+                            <button onClick={()=>this.changeBrand(o)} className={'vitrin-brand-button' + (active?' active':'')}>{o}</button>
                         )
                     }
                 )
             })
         }
     }
-    function body_layout() {
+    body_layout() {
+        let {rsa} = this.context as I_app_state;
+        let {isFirstTime} = this.props;
+        let {products,paging} = this.state;
         return {
             flex: 1,
             column: [
                 {
                     flex: 1, className: 'ofy-auto',
                     column: [
-                        search_layout(),
-                        categories_layout(),
+                        this.search_layout(),
+                        this.categories_layout(),
                         //brands_layout(),
-                        products_layout(products, paging),
-                        suggestion_layout(isFirstTime)
+                        this.products_layout(products, paging),
+                        this.suggestion_layout(isFirstTime)
                     ]
                 },
-                inter_layout(isFirstTime, rsa.removeModal)
+                this.inter_layout(isFirstTime, rsa.removeModal)
             ]
         }
     }
-    function search_layout() {
+    search_layout() {
         let className = 'vitrin-search-box gap-4', placeholder = "جستجو در محصولات", before = <Icon path={mdiMagnify} size={1} />
-        let props = { type: 'text', className, placeholder, before, onChange: (value) => { console.log(value); changeSearch(value) }, delay: 1200 }
+        let props = { type: 'text', className, placeholder, before, onChange: (value) => { console.log(value); this.changeSearch(value) }, delay: 1200 }
         return { html: <AIOInput {...props} /> }
     }
     // function categories_layout(categories,total){
     //     let props = {rtl:true,total,categories,onChange:(taxon) => changeCategory(taxon)}
     //     return !categories.length?false:{className: 'm-h-6',html: <TreeCategories {...props} />}
     // }
-    function getCategoryTitle() {
+    getCategoryTitle() {
+        let {categoryPath} = this.state;
         if (!categoryPath.length) { return 'دسته بندی محصولات' }
         let res = [];
         for (let i = 0; i < categoryPath.length; i++) {
@@ -208,27 +231,26 @@ function Search(props:I_Search) {
         }
         return res.join(' / ')
     }
-    function changeCategory(pathes:I_path[]) {
+    changeCategory(pathes:I_path[]) {
+        let {msfReport} = this.context as I_app_state;
+        let {paging,taxon} = this.state;
         let lastPath:I_path = pathes[pathes.length - 1];
         let newTaxon = lastPath.id;
         msfReport({ actionName: 'vitrin filter by category', actionId: 57, targetName: pathes.map((o:I_path)=>o.name).join('/'), targetId: taxon, tagName: 'vitrin', eventName: 'action' })
-        taxon = newTaxon;
-        total = false;
-        categoryPath = pathes;
         let newPaging:I_paging = { ...paging, number: 1 }
-        paging = newPaging;
-        setCategoryPath(pathes);
-        setTaxon(taxon);
-        updateProducts();
+        this.setState({paging:newPaging,categoryPath:pathes,taxon:newTaxon,total:false},()=>this.updateProducts())
     }
-    function openCategories() {
+    openCategories() {
+        let {actionClass,rsa} = this.context as I_app_state;
         let render = () => {
-            let props = { rtl: true, total, categories, onChange: (taxon) => { changeCategory(taxon); rsa.removeModal() } }
+            let {categories,total} = this.state;
+            let props = { rtl: true, total, categories, onChange: (taxon) => { this.changeCategory(taxon); rsa.removeModal() } }
             return <Categories {...props} />
         }
         actionClass.openPopup('vitrin-categories', { render })
     }
-    function categories_layout() {
+    categories_layout() {
+        let {categories} = this.state;
         if (!categories.length) { return false }
         return {
             className: 'p-8 bg-32',
@@ -238,29 +260,31 @@ function Search(props:I_Search) {
                         type='button'
                         style={{ width: 'fit-content', minHeight: 30, padding: '0 12px', textAlign: 'right',color:'#3B55A5' }}
                         className='fs-14 bold h-24 p-0 w-100'
-                        text={getCategoryTitle()}
+                        text={this.getCategoryTitle()}
                         before={<Icon path={mdiMenu} size={1} />}
                         after={<Icon path={mdiChevronLeft} size={1} />}
-                        onClick={() => openCategories()}
+                        onClick={() => this.openCategories()}
                     />
                 },
             ]
         }
     }
-    function products_layout(products, paging) {
+    products_layout(products, paging) {
         let props = { type: 'table',style:{border:'none'}, value: products, paging, rowsTemplate: () => <Products products={products} count={paging.size}/> }
         return { html: <AIOInput {...props} /> }
     }
-    function suggestion_layout(isFirstTime:boolean) {
+    suggestion_layout(isFirstTime:boolean) {
         return !!isFirstTime ? false : { className: 'p-24', style: { background: '#eee' }, html: () => <Suggestion /> }
     }
-    function inter_layout(isFirstTime:boolean, removeModal) {
+    inter_layout(isFirstTime:boolean, removeModal) {
         return !isFirstTime ? false : {
             className: 'm-12', align: 'vh',
             html: () => <button onClick={() => removeModal()} className='button-2'>تایید و ورود به ویترین من</button>
         }
     }
-    return (<RVD layout={{ className: 'theme-popup-bg', column: [header_layout(), body_layout()] }} />)
+    render(){
+        return (<RVD layout={{ className: 'theme-popup-bg', column: [this.header_layout(), this.body_layout()] }} />)
+    }
 }
 type I_Categories = {categories?:any[],onChange:(path:I_path[])=>void}
 function Categories(props:I_Categories) {

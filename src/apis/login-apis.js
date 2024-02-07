@@ -59,8 +59,15 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
         },
         async checkToken(token) {
             setToken(token);
-            let response = await Axios.get(`${baseUrl}/Users/CheckExpireToken`);
-            return { result: response.status === 200 }
+            try
+            {
+                let response = await Axios.get(`${baseUrl}/Users/CheckExpireToken`);
+                return { result: response.status === 200 }
+            }
+            catch
+            {
+                return { result: false }
+            }
         },
         async OTPNumber(userId) {
             let url = `${baseUrl}/Users/FirstStep?phoneNumber=${userId}`;
@@ -75,7 +82,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
             return { response, result }
         },
         async loginByOTPCode({ id, otpCode }) {
-            //let stallRes = await stall(5000)    
+            //let stallRes = await stall(5000)
             const response = await Axios.get(`${baseUrl}/Users/SecondStep?userId=${id}&code=${otpCode}`);
             let result = response.data.isSuccess ? response.data.data : response.data.message;
             if(result === null){result = 'دریافت اطلاعات کاربری با خطا روبرو شد'}

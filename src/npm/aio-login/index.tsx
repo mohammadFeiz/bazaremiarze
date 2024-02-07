@@ -8,6 +8,7 @@ import AIOPopup from 'aio-popup';
 import './index.css';
 export type I_AIOLogin = {
     setToken:(token:string)=>void,getToken:()=>string,
+    getUserId:() => void,
     setUserInfo:(userInfo:any)=>void,getUserInfo:()=>any,
     setMode:(mode:I_AL_mode)=>void,
     render:(p?:I_AL_render_parameter)=>React.ReactNode,
@@ -85,6 +86,7 @@ export default class AIOlogin {
         this.setToken = (token:string)=>storage.save({ name: 'token', value:token })
         this.setUserInfo = (userInfo:any)=>storage.save({ name: 'userInfo', value:userInfo })
         this.getUserInfo = ()=>storage.load({ name: 'userInfo' })
+        this.getUserId = ()=>storage.load({ name: 'userId' })
         this.setStorage = (key, value) => storage.save({ name: key, value });
         this.getStorage = (key:I_AL_storageKey) => {
             let token = storage.load({ name: 'token', def: false });

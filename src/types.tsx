@@ -22,7 +22,6 @@ export type I_apiFunctionReturn = {result:any,response?:any}
 /////aio-service
 export type I_userInfo = {
     landlineNumber:string,
-    landline:string,
     latitude:number,
     longitude:number,
     firstName:string,

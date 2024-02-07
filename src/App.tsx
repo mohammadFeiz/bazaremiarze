@@ -122,14 +122,15 @@ export default function App() {
         if(place === 'submit button'){return 'ثبت نام در بازار می ارزه'}
       },
       checkIsRegistered:async ({userId,userInfo,token})=>{
-        return await apis.request({ 
+        let res = await apis.request({
           api: 'login.checkIsRegistered',loading: false, 
           parameter: {phoneNumber:userId,Logger}, 
           description: 'دریافت اطلاعات ثبت نام' })
+        return res;
       },
       registerFields: [
         ['*firstname', '*lastname'],
-        ['*storeName_text_نام فروشگاه', { input: { type: 'text',justNumber:true }, field: 'value.phone', label: 'شماره تلفن ثابت', validations: [['required'], ['length>', 10]] }],
+        ['*storeName_text_نام فروشگاه', { input: { type: 'text',justNumber:true }, field: 'value.register.phone', label: 'شماره تلفن ثابت', validations: [['required'], ['length>', 10]] }],
         ['password', 'repassword'], '*location', '*address', ['*state', '*city']
       ],
       onSubmitRegister:async (model) => {
@@ -184,7 +185,7 @@ export default function App() {
     let oldUserInfo = (userInfo || {}) as I_userInfo;
     let newUserInfo: I_userInfo = { ...oldUserInfo, ...model} as I_userInfo
     try{
-      newUserInfo = {...newUserInfo,latitude:model.location.lat,longitude:model.location.lng}
+      newUserInfo = {...newUserInfo,latitude:model.location.lat,longitude:model.location.lng,landlineNumber:model.phone,phoneNumber:Login.getUserId()}
       if(!newUserInfo.address){newUserInfo.address = model.location.address}
     }
     catch{}
@@ -208,7 +209,9 @@ export default function App() {
     if (typeof res === 'object') {
       setUserInfo(newUserInfo);
       Login.setUserInfo(newUserInfo)
-      callback();
+      if (callback){
+        callback();
+      };
       return newUserInfo;
     }
     return false

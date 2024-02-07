@@ -7,8 +7,15 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
         },  
         async checkToken(token) {
             setToken(token);
-            let response = await Axios.get(`${baseUrl}/Users/CheckExpireToken`);
-            return { result: response.status === 200 }
+            try
+            {
+                let response = await Axios.get(`${baseUrl}/Users/CheckExpireToken`);
+                return { result: response.status === 200 }
+            }
+            catch
+            {
+                return { result: false }
+            }
         },
         async OTPNumber(userId) {
             let url = `${baseUrl}/Users/FirstStep?phoneNumber=${userId}`;

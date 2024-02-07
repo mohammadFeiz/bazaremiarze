@@ -10,7 +10,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "aio-date": "^4.1.0",
-    "aio-input": "^8.3.1",
+    "aio-input": "^8.3.3",
     "aio-log": "^1.0.0",
     "aio-login": "^7.1.0",
     "aio-popup": "^3.2.1",

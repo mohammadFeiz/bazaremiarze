@@ -1991,7 +1991,7 @@ function Image(props: I_Image) {
   let { onRemove, id, onChange, url, style, placeholder } = props;
   return (
     <AIOInput
-      before={onRemove ? <div onClick={(e) => { e.stopPropagation(); onRemove() }}><Icon path={mdiClose} size={1} /></div> : undefined}
+      before={onRemove && url ? <div onClick={(e) => { e.stopPropagation(); onRemove() }}><Icon path={mdiClose} size={1} /></div> : undefined}
       type='file' className='back-office-image' style={{ ...style }}
       text={!url && placeholder ? placeholder : (<img src={url} alt='' width='100%' />)}
       onChange={async (file) => {
@@ -2275,6 +2275,7 @@ function FormSetting(props: I_FormSetting) {
                     <Image
                       id={`${type}_${id === undefined ? '' : `${id}_`}billboard`}
                       style={{ minHeight: 74, height: 'fit-content' }}
+                      onRemove={()=>change('billboard','')}
                       url={data.billboard} onChange={(billboard) => change('billboard',billboard)}
                     />
                   )
@@ -2292,6 +2293,7 @@ function FormSetting(props: I_FormSetting) {
                   return (
                     <Image
                       id={`${type}_${id === undefined ? '' : `${id}_`}icon`}
+                      onRemove={()=>change('icon','')}
                       url={data.icon} style={{ height: 74, width: 74 }} onChange={(icon) => change('icon',icon)}
                     />
                   )
@@ -2315,7 +2317,7 @@ function FormSetting(props: I_FormSetting) {
           },
           {
             show: ['Regular', 'Bundle'].indexOf(type) !== -1 || (data as I_ShopProps).itemType === 'Category',
-            input: { type: 'text' }, label: 'نام', field: 'value.name',
+            input: { type: 'text' }, label: 'نام', field: 'value.shopName',
           },
           {
             show: type === 'spreeCampaigns',

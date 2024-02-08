@@ -194,6 +194,7 @@ export type I_spreeCategory = { showType:'icon' | 'slider', id:string,active:boo
 
 export type I_ShopProps = {
     active:boolean,
+    justActiveForAdmins:boolean,
     shopName:string,
     PayDueDate:number,PaymentTime:number,DeliveryType:number,
     PayDueDates:number[],PaymentTimes:number[],DeliveryTypes:number[],
@@ -203,6 +204,7 @@ export type I_ShopProps = {
     billboard?:string,
     icon?:string,
     maxCart?:number,
+    maxTotal?:boolean,
     PriceListNum?:number,
     taxons?:I_taxon[],
     description?:string,

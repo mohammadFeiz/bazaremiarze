@@ -267,9 +267,6 @@
 .back-office .aio-input-form-body{
     padding:0;
 }
-.back-office .aio-input-form .aio-input-checkbox{
-    border:none;
-}
 .back-office-price-list-toolbar label{
     background: var(--bo-color-4);
     color: #fff;

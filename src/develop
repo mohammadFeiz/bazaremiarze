@@ -1,28 +1,28 @@
-update backOffice data on server => b1Id => CampaignId
-review backOffice handleCacheVersions
+// update backOffice data on server => b1Id => CampaignId
+// review backOffice handleCacheVersions
 
-implement cart on ShopClass
+// implement cart on ShopClass
 
-ba bastane bundlepage bayad maghadire sabad eslah shavad
-change getCartProducts in all of project to renderCartItems (because of async may should place this data to state and get by componentDidMount)
-cache productFullDetail? if yes should implement
-login ghabl az load ettelaat az disabled dar miad
-vaghti cache karabra ro pak mikonam bayad hatman reload kone ta bere tooye login amma avalesh mire too 
+// ba bastane bundlepage bayad maghadire sabad eslah shavad
+// change getCartProducts in all of project to renderCartItems (because of async may should place this data to state and get by componentDidMount)
+// cache productFullDetail? if yes should implement
+// login ghabl az load ettelaat az disabled dar miad
+// vaghti cache karabra ro pak mikonam bayad hatman reload kone ta bere tooye login amma avalesh mire too 
 
-cacheVersions = {
-    taxonProducts:{
-        Regular:{
-            10716:[],
-            10715:[]
-        },
-        Bundle:[],
-        10767:[],
-        10343:[],
-        10118:{
-            10433:[],
-            45332:[],
-            64564:[]
-        },
+// cacheVersions = {
+//     taxonProducts:{
+//         Regular:{
+//             10716:[],
+//             10715:[]
+//         },
+//         Bundle:[],
+//         10767:[],
+//         10343:[],
+//         10118:{
+//             10433:[],
+//             45332:[],
+//             64564:[]
+//         },
         
-    }
-}
+//     }
+// }

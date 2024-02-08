@@ -39,7 +39,7 @@ export default class ShopClass implements I_ShopClass {
     getAppState: () => I_app_state;
     shopId: string;
     discountPercent?:number;
-    maxTotal?:number;
+    maxTotal?:boolean;
     active: boolean;
     shopName: string;
     taxons?: I_taxon[];
@@ -153,7 +153,7 @@ export default class ShopClass implements I_ShopClass {
         let { item, renderIn, index } = p;
         if (this.itemType === 'Bundle') { return this.renderCard_Bundle({ taxon: item as I_bundle_taxon, renderIn, index }) }
         if (this.itemType === 'Taxon') { return this.renderCard_taxon({ taxon: item as I_taxon, renderIn }) }
-        if (this.itemType === 'Product') { return this.renderCard_Regular({ product: item as I_product, renderIn, index }) }
+        if (this.itemType === 'Product' || this.itemType === 'Category') { return this.renderCard_Regular({ product: item as I_product, renderIn, index }) }
     }
     renderCard_Regular = (
         p: {
@@ -164,8 +164,8 @@ export default class ShopClass implements I_ShopClass {
         let { product, renderIn, index, loading, type } = p;
         let props: I_RegularCard = {
             product, renderIn, loading, index, type, shopId: this.shopId,
-            onClick: async (product: I_product) => {
-                let newProduct: I_product = await this.openProductPage(product);
+            onClick: async () => {
+                let newProduct: I_product = await this.openProductPage(product,'renderCard_Regular');
                 return newProduct;
             }
         }
@@ -215,7 +215,7 @@ export default class ShopClass implements I_ShopClass {
         let index: number = items.findIndex((o: I_product) => o.id === product.id)
         items[index] = product;
     }
-    updateProductByFullDetail = async (product:I_product) => {
+    updateProductByFullDetail = async (product:I_product,caller:string) => {
         let { apis } = this.getAppState();
         if (!product.hasFullDetail) {
             product = await apis.request({ api: 'kharid.getProductFullDetail', parameter: product })
@@ -224,9 +224,9 @@ export default class ShopClass implements I_ShopClass {
         }
         return product;
     }
-    openProductPage = async (product: I_product) => {
+    openProductPage = async (product: I_product,caller:string) => {
         let { rsa, actionClass, msfReport } = this.getAppState();
-        product = await this.updateProductByFullDetail(product);
+        product = await this.updateProductByFullDetail(product,'openProductPage');
         msfReport({ actionName: 'open product', actionId: 5, targetName: product.name, targetId: product.id, tagName: 'kharid', eventName: 'page view' })
         rsa.addModal({
             position: 'fullscreen', id: 'product',
@@ -266,7 +266,7 @@ export default class ShopClass implements I_ShopClass {
             bundleCartVariants:I_cartShop_bundle_variant[]
         } = {cartVariants:[],bundleCartVariants:[],marketingLines:[],bundleMarketingLines:[],total:0} 
         if (!actionClass.getCartShop(this.shopId)) { return res } 
-        if (this.itemType === 'Taxon') {
+        if (this.itemType === 'Taxon' || this.itemType === 'Category' || this.shopId === 'Regular') {
             let cartTab = actionClass.getCartShop(this.shopId) as I_cartShop_taxon;
             for (let taxonId in cartTab.taxons) {
                 if (p && p.taxonId && p.taxonId !== taxonId) {continue }
@@ -277,7 +277,7 @@ export default class ShopClass implements I_ShopClass {
                     let products = await this.getShopItems({taxonId,productId}) as I_product[];
                     let product = products[0];
                     if(!product.hasFullDetail){debugger}
-                    product = await this.updateProductByFullDetail(product);
+                    product = await this.updateProductByFullDetail(product,'getCartVariants itemType === taxon');
                     for(let variantId in cartProduct.variants){
                         let {count} = cartProduct.variants[variantId];
                         let variant = product.variants.find((o:I_variant)=>o.id === variantId)
@@ -299,7 +299,7 @@ export default class ShopClass implements I_ShopClass {
                 let products:I_product[] = await this.getShopItems({taxonId:cartProduct.productCategory.taxonId,productId}) as I_product[];
                 let product = products[0];
                 if(!product.hasFullDetail){debugger}
-                product = await this.updateProductByFullDetail(product);
+                product = await this.updateProductByFullDetail(product,'getCartVariant itemType === Product || Category');
                 for(let variantId in cartProduct.variants){
                     let {count} = cartProduct.variants[variantId];
                     let variant = product.variants.find((o:I_variant)=>o.id === variantId)
@@ -412,13 +412,23 @@ export default class ShopClass implements I_ShopClass {
             }
         }
         else {
-            let cartTab = actionClass.getCartShop(this.shopId) as I_cartShop_Product;
-            let cartProducts: I_cartProduct[] = this.dicToArray(cartTab.products);
+            let cartProducts: I_cartProduct[] = [];
+            if (this.itemType === 'Category' || this.shopId === 'Regular') {
+                let cartTab = actionClass.getCartShop(this.shopId) as I_cartShop_taxon
+                for(let taxonId in cartTab.taxons){
+                    let products = this.dicToArray(cartTab.taxons[taxonId].products);
+                    cartProducts = [...cartProducts,...products]
+                }   
+            }
+            else{
+                let cartTab = actionClass.getCartShop(this.shopId) as I_cartShop_Product;
+                cartProducts = this.dicToArray(cartTab.products);
+            }
             for(let i = 0; i < cartProducts.length; i++){
                 let { productId, productCategory } = cartProducts[i];
                 let products = await this.getShopItems({productId, taxonId:productCategory.taxonId});
                 let product = products[0];
-                product = await this.updateProductByFullDetail(product);
+                product = await this.updateProductByFullDetail(product,'renderCartItems');
                 renders.push(this.renderCard_Regular({ product, renderIn, index:i }))
             }
         }
@@ -546,15 +556,17 @@ export default class ShopClass implements I_ShopClass {
     renderCartFactor = async (button?:boolean) => {
         let {actionClass} = this.getAppState();
         let res = await this.getAmounts(undefined, 'cart');
+        let max = 1000000000;
         let { payment } = res;
-        let disabled = true;
-        let disabledReason = '';
-        if(this.maxTotal){
-            if(payment > this.maxTotal){
-                disabledReason = `حداکثر مبلغ مجاز این فاکتور ${SplitNumber(this.maxTotal)} ریال است`
+        let disabled = false;
+        let description = '';
+        if(this.maxTotal && max){
+            if(payment > max){
                 disabled = true
             }
+            description = `حداکثر مبلغ مجاز این فاکتور ${SplitNumber(max)} ریال است`
         }
+
         let hasError = this.hasCartError();
         return (
             <RVD
@@ -599,7 +611,7 @@ export default class ShopClass implements I_ShopClass {
                                 },
                             ]
                         },
-                        {show:!!disabled,html:disabledReason,align:'v',className:'fs-10',style:{color:'red'}}
+                        {show:!!description,html:()=>description,align:'v',className:'fs-10',style:{color:'red'}}
                     ]
                 }}
             />
@@ -623,9 +635,11 @@ function CategoryView(props: I_CategoryView) {
     }, [cart])
     
     function search_layout() {
+        if(itemType === 'Category'){return false}
         return { html: <SearchBox value={searchValue} onChange={(searchValue:string) => setSearchValue(searchValue)} /> }
     }
     function banner_layout() {
+        if(itemType === 'Category'){return false}
         if (!billboard) { return false }
         return { html: <img src={billboard} alt='' width='100%' /> }
     }
@@ -637,10 +651,10 @@ function CategoryView(props: I_CategoryView) {
         if(itemType !== 'Category'){return false}
         let categories = items as I_spreeCategory[];
         let options = categories.map((category)=>{
-            let {name,id} = category;
-            return {text:name,value:id}
+            let {name,id,icon} = category;
+            return {text:<img src={icon} width='60' height='60'/>,value:id,subtext:name}
         })
-        return {html:(<AIOInput type='tabs' options={options} value={tab} onChange={async (tab:string)=>{
+        return {html:(<AIOInput type='tabs' className='category-tabs' options={options} value={tab} onChange={async (tab:string)=>{
             let items:I_product[] = await Shop[shopId].getShopItems({taxonId:tab});
             setTabItems(items); setTab(tab)
         }}/>)}
@@ -650,9 +664,11 @@ function CategoryView(props: I_CategoryView) {
     }
     function product_layout(product, index) {
         if (searchValue && product.name.indexOf(searchValue) === -1) { return false; }
-        return { html: renderItem(product, index), className: 'of-visible' }
+        let html = renderItem(product, index)
+        return { html, className: 'of-visible' }
     }
     function getProductsBySearch() {
+        if(itemType === 'Category'){return tabItems}
         return items.filter((o) => !searchValue || o.name.indexOf(searchValue) !== -1)
     }
     function body_layout() {
@@ -945,8 +961,8 @@ function RegularCard(props: I_RegularCard) {
                         //name_layout(),
                         { flex: 1 },
                         { row: [{ flex: 1 }, discount_layout()] },
-                        price_layout(),
-                        notExist_layout(),
+                        { row: [{ flex: 1 }, price_layout()] },
+                        product.inStock?false:notExist_layout(),
                         { size: 12 }
                     ]
                 }}

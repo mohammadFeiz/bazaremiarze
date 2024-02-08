@@ -1,6 +1,8 @@
 import React ,{Component, useContext, useEffect, useState} from 'react';
 import ACS from '../../npm/aio-content-slider/aio-content-slider';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
+import deficonsrc from './../../images/deficon.png';
+import defbillboardsrc from './../../images/defbillboard.png';
 import appContext from '../../app-context';
 import { I_app_state, I_backOffice_content } from '../../types';
 type I_Billboard = {renderIn:'buy' | 'home'}
@@ -15,7 +17,7 @@ export default function Billboard(props:I_Billboard){
         if(renderIn === 'buy'){
             for(let shopId in Shop){
                 let ShopClass = Shop[shopId]
-                if(shopId === 'Regular' || !ShopClass.active || !ShopClass.billboard){continue}
+                if(shopId === 'Regular' || !ShopClass.active){continue}
                 let {billboard,icon,shopName} = ShopClass;
                 items.push({name:shopName,billboard,icon,onClick:()=>ShopClass.openCategory()})
                 
@@ -33,7 +35,7 @@ export default function Billboard(props:I_Billboard){
         setItems(items)
     }
     function billboards_layout(){
-        return {html:<ACS items={items.map(({billboard,onClick},i)=><img src={billboard} alt="" width='100%' onClick={onClick}/>)}/>}
+        return {html:<ACS items={items.map(({billboard = defbillboardsrc,onClick},i)=><img src={billboard} alt="" width='100%' onClick={onClick}/>)}/>}
     }
     function icons_layout(){
         if(renderIn !== 'buy'){return false}
@@ -43,7 +45,7 @@ export default function Billboard(props:I_Billboard){
             column:[
                 {html:'جشنواره ها',className:'fs-14 bold theme-dark-font-color p-h-24',size:36,align:'v'},
                 {
-                    row:items.map(({name,icon,onClick})=>{
+                    row:items.map(({name,icon = deficonsrc,onClick})=>{
                         return {
                             flex:1,align:'h',onClick,gap:3,
                             column:[

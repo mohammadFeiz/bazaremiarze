@@ -121,3 +121,6 @@
     border: 2px solid #fff;
     box-shadow: 0 0 0 3px #0094D4;
 }
+.category-tabs .aio-input-tabs-option-subtext{
+    justify-content:center
+}

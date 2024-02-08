@@ -122,8 +122,9 @@ export default class ActionClass implements I_actionClass {
         }
         for (let i = 0; i < spreeCampaigns.length; i++) {
             let spreeCampaign:I_ShopProps = spreeCampaigns[i];
-            let { shopId, active  } = spreeCampaign;
+            let { shopId, active,justActiveForAdmins  } = spreeCampaign;
             if (!active) { continue }
+            if(!backOffice.isAdmin(userInfo) && justActiveForAdmins){continue}
             Shop[shopId] = new ShopClass({getAppState: () => this.getState(),config: {...spreeCampaign}})
         }
         let cart:I_state_cart = await apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});
@@ -542,12 +543,14 @@ export default class ActionClass implements I_actionClass {
         let { MarketingLines } = factorDetails;
         let hasError = false;
         for(let i = 0; i < MarketingLines.length; i++){
+            if(!MarketingLines[i].CampaignDetails){continue}
             let {CampaignDetails = {},ItemCode,ItemQty} = MarketingLines[i];
             let {productId,taxonId} = variantsParents[ItemCode]; 
             let products = await Shop[shopId].getShopItems({taxonId,productId})
             let product = products[0];
             let cartVariant:I_cartVariant = cartTaxon.products[productId].variants[ItemCode];
             let {Information,BundleRowsInfos} = CampaignDetails;
+            if(!BundleRowsInfos){continue}
             let {isUnderValue,isOverValue} = BundleRowsInfos;
             if(isUnderValue){
                 if(ItemQty === 0){

@@ -2012,7 +2012,9 @@ function SpreeCampaigns() {
       `آی دی کمپین در اسپری موجود نیست`,
       `آیا از حذف این کمپین اطمینان دارید؟`,
       `لیست کمپین های اسپری`,
-      `افزودن کمپین`
+      `افزودن با آی دی`,
+      `افزودن با نام`,
+      `نام کمپین را وارد کنید`,
     ][type]
   }
   async function getAddItem(id) {
@@ -2021,13 +2023,14 @@ function SpreeCampaigns() {
       let { shopName, src, CampaignId, PriceListNum,taxons } = list[0];
       
       let addItem:I_ShopProps = { 
+        justActiveForAdmins:false,
         shopId: id, shopName, billboard: src, CampaignId, PriceListNum, icon: '',itemType:'Product' ,
         active:false,PayDueDate:0,PaymentTime:0,DeliveryType:0,PayDueDates:[],PaymentTimes:[],DeliveryTypes:[],taxons
       }
       return addItem;
     }
   }
-  async function add() {
+  async function addById() {
     let { spreeCampaigns = [] } = model;
     let id = window.prompt(trans(0))
     if (id === undefined || id === null) { return }
@@ -2035,6 +2038,17 @@ function SpreeCampaigns() {
     let addItem = await getAddItem(id);
     if (addItem) { setModel('spreeCampaigns', [...spreeCampaigns, addItem]) }
     else { alert(trans(3)) }
+  }
+  async function addByName() {
+    let { spreeCampaigns = [] } = model;
+    let name = window.prompt(trans(0))
+    if (name === undefined || name === null) { return }
+    if (spreeCampaigns.find((o: I_ShopProps) => o.shopName === name)) { alert(trans(1)); return }
+    let addItem = { 
+      shopName:name, src:'', CampaignId:'', PriceListNum:'',icon:'',itemType:'Category',shopId:Math.floor(Math.random() * 10000),
+      active:false,PayDueDate:0,PaymentTime:0,DeliveryType:0,PayDueDates:[],PaymentTimes:[],DeliveryTypes:[]
+    };
+    setModel('spreeCampaigns', [...spreeCampaigns, addItem])
   }
   function remove(shopId) {
     let { spreeCampaigns = [] } = model;
@@ -2047,10 +2061,17 @@ function SpreeCampaigns() {
       row: [
         { html: trans(5), className: 'fs-12 bold', flex: 1, align: 'v' },
         {
-          className: 'back-office-add-button', onClick: () => add(),
+          className: 'back-office-add-button', onClick: () => addById(),
           row: [
             { html: <Icon path={mdiPlusThick} size={.7} />, align: 'vh', size: 24 },
             { html: trans(6), align: 'v' }
+          ]
+        },
+        {
+          className: 'back-office-add-button', onClick: () => addByName(),
+          row: [
+            { html: <Icon path={mdiPlusThick} size={.7} />, align: 'vh', size: 24 },
+            { html: trans(7), align: 'v' }
           ]
         }
       ]
@@ -2238,7 +2259,7 @@ function FormSetting(props: I_FormSetting) {
   let { PayDueDate_options, DeliveryType_options, PaymentTime_options } = model;
   return (
     <AIOInput
-      type='form' lang='fa' style={{ padding: 12 }} value={data} className='back-office-form-setting'
+      type='form' lang='fa' style={{ padding: 12 }} value={{...data}} className='back-office-form-setting'
       inputs={{
         props: { gap: 12 },
         column: [
@@ -2286,11 +2307,22 @@ function FormSetting(props: I_FormSetting) {
             }
           },
           {
+            show: true, field: 'value.justActiveForAdmins',
+            input: {type: 'checkbox',text: 'نمایش فقط برای ادمین'}
+          },
+          {
             input:{type: 'textarea',inputAttrs:{style:{height:144}}}, label: 'توضیحات', field: 'value.description',
           },
           {
-            show: ['Regular', 'Bundle'].indexOf(type) !== -1,
+            show: ['Regular', 'Bundle'].indexOf(type) !== -1 || (data as I_ShopProps).itemType === 'Category',
             input: { type: 'text' }, label: 'نام', field: 'value.name',
+          },
+          {
+            show: type === 'spreeCampaigns',
+            input: { type: 'number' }, label: 'تخفیف مازاد برای نمایش روی کارت محصول', field: 'value.discountPercent',
+          },
+          {
+            input: { type: 'checkbox' }, label: 'سقف فاکتور دارد', field: 'value.maxTotal',
           },
           {
             show: type === 'spreeCategories', label: 'نمایش به صورت', field: 'value.showType',
@@ -2303,7 +2335,7 @@ function FormSetting(props: I_FormSetting) {
             show: type === 'spreeCampaigns', label: 'نوع محصولات کمپین', field: 'value.itemType',
             input: {
               type: 'radio', optionStyle: { width: 'fit-content' },
-              options: [{ text: 'پروداکت', value: 'Product' }, { text: 'تکزون', value: 'Taxon' }]
+              options: (data as I_ShopProps).itemType === 'Category'?[{ text: 'دسته بندی', value: 'Category' }]:[{ text: 'پروداکت', value: 'Product' }, { text: 'تکزون', value: 'Taxon' }]
             }
           },
           {

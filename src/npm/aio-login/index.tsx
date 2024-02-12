@@ -7,12 +7,17 @@ import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, md
 import AIOPopup from 'aio-popup';
 import './index.css';
 export type I_AIOLogin = {
-    setToken:(token:string)=>void,getToken:()=>string,
+    setToken:(token:string | false)=>void,
+    getToken:()=>string,
+    removeToken:()=>void,
+    setUserInfo:(userInfo:any,key?:string)=>any,
+    getUserInfo:(key?:string)=>any,
+    updateUserInfo:(key:string,value:any)=>any,
     getUserId:() => string,
-    setUserInfo:(userInfo:any)=>void,getUserInfo:()=>any,
     setMode:(mode:I_AL_mode)=>void,
     render:(p?:I_AL_render_parameter)=>React.ReactNode,
-    logout:()=>void
+    logout:()=>void,
+    isRegistered:()=>boolean
 }
 type I_AL_storageKey = 'token' | 'userInfo' | 'userId' | 'isRegistered';
 export type I_AL_model = {
@@ -35,7 +40,7 @@ type I_AL_profile = {model:any,onSubmit:(model:any)=>void,fields:any[],title?:st
 type I_AL_forget = {mode:'email' | 'phoneNumber',text?:React.ReactNode}
 export type I_AL_props = { 
     id:string, 
-    onSubmit:(model:I_AL_model,mode:I_AL_mode)=>Promise<void>, 
+    onSubmit:(model:I_AL_model,mode:I_AL_mode)=>Promise<boolean>, 
     checkToken:(token:string | false,obj:{userId:string,userInfo?:any})=>Promise<boolean | undefined>, 
     renderApp:(obj:{token:string,userId:string,userInfo:any,logout:()=>void,appState:any,isRegistered?:boolean})=>React.ReactNode,
     modes:I_AL_mode[], 
@@ -76,26 +81,43 @@ export default class AIOlogin {
     setMode:I_AL_setMode;
     render:I_AL_render;
     getActions:I_AL_getActions;
-    setUserInfo:(userInfo:any)=>void;
-    getUserInfo:()=>any;
+    setUserInfo:(userInfo:any,key?:string)=>any;
+    updateUserInfo:(key:string,value:any)=>any;
+    getUserInfo:(key?:string)=>any;
+    getUserId:()=>string;
     getToken:()=>string;
     setToken:(token:string)=>void;
-    getUserId:()=>string;
+    removeToken:()=>void;
+    isRegistered:()=>boolean;
     constructor(props:I_AL_props) {
         let storage = AIOStorage(`-AIOLogin-${props.id}`);
-        this.getToken = ()=>storage.load({ name: 'token' })
-        this.setToken = (token:string)=>storage.save({ name: 'token', value:token })
-        this.setUserInfo = (userInfo:any)=>storage.save({ name: 'userInfo', value:userInfo })
-        this.getUserInfo = ()=>storage.load({ name: 'userInfo' })
+        this.getToken = ()=>storage.load({ name: 'token' });
+        this.setToken = (token:string)=>storage.save({ name: 'token', value:token });
+        this.removeToken = ()=>storage.save({ name: 'token', value:false });
+        this.setUserInfo = (userInfo:any,key?:string)=>storage.save({ name: `userInfo${key?'.' + key:''}`, value:userInfo });
+        this.getUserInfo = (key?:string)=>storage.load({ name: `userInfo${key?'.' + key:''}` })
+        this.updateUserInfo = (key:string,value:any)=>{
+            let userInfo = this.getUserInfo();
+            userInfo = userInfo || {};
+            userInfo[key] = value;
+            this.setUserInfo(userInfo);
+            return userInfo
+        };
         this.getUserId = ()=>storage.load({ name: 'userId' })
         this.setStorage = (key, value) => storage.save({ name: key, value });
         this.getStorage = (key:I_AL_storageKey) => {
             let token = storage.load({ name: 'token', def: false });
             let userId = storage.load({ name: 'userId', def: '' });
             let userInfo = storage.load({ name: 'userInfo' });
-            let res = { token, userId, userInfo }
+            let isRegistered = storage.load({ name: 'isRegistered' });
+            let res = { token, userId, userInfo,isRegistered }
             if(key){return res[key]}
             return res
+        }
+        this.isRegistered = ()=>{
+            let isRegistered = this.getStorage('isRegistered');
+            if(typeof isRegistered !== 'boolean'){return false}
+            return isRegistered
         }
         this.removeStorage = (key:I_AL_storageKey)=>storage.remove({name:key})
         this.logout = () => { this.removeStorage('token'); window.location.reload() }
@@ -198,7 +220,11 @@ function AIOLOGIN(props:I_AL_AIOLOGIN) {
     async function onSubmit(model:I_AL_model) {
         try { 
             setLoading(true);
-            await props.onSubmit(model, mode)
+            let res = await props.onSubmit(model, mode);
+            if(typeof res !== 'boolean'){
+                new AIOPopup().addAlert({type: 'error',text: 'aio login developer warning',subtext:'onSubmit should return a boolean'});
+            }
+            if(res === false){setLoading(false); return}
             //اگر ارسال شماره برای دریافت رمز یکبار مصرف موفقیت آمیز است برو به صفحه ورود کد یکبار مصرف
             if(mode === 'OTPNumber'){setMode('OTPCode'); setLoading(false);}
             //اگر بررسی رمز عبور موفقیت آمیز است برو برای تصمیم گیری ورود به اپ یا ورود به ثبت نام

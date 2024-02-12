@@ -1,5 +1,5 @@
-﻿///***Version 1.1.36 ****///
-//Edited: 2024-01-31
+﻿///***Version 1.1.43 ****///
+//Edited: 2024-02-06
 
 "use strict";
 
@@ -1123,13 +1123,18 @@ export default class Pricing {
         for (let itemrules of campaignRules) {
             if ((itemrules.campaignId == (MD.marketingdetails.Campaign))
                 && (itemrules.camType == "B")
-                && (!itemrules.camCardCode || (itemrules.camCardCode.indexOf("," + MD.CardCode + ",")) > -1)
-                && (!itemrules.camCardGroupCode || (itemrules.camCardGroupCode.indexOf("," + MD.CardGroupCode + ",")) > -1)
+                && this.isExistInCSV(itemrules.camCardCode, MD.CardCode)
+                //&& (!itemrules.camCardCode || (itemrules.camCardCode.indexOf("," + MD.CardCode + ",")) > -1)
+                && this.isExistInCSV(itemrules.camCardGroupCode, MD.CardGroupCode)
+                //&& (!itemrules.camCardGroupCode || (itemrules.camCardGroupCode.indexOf("," + MD.CardGroupCode + ",")) > -1)
                 && (!itemrules.camValidFrom || MD.DocTime >= itemrules.camValidFrom)
                 && (!itemrules.camValidTo || MD.DocTime <= itemrules.camValidTo)
-                && (!itemrules.camSettleType || (itemrules.camSettleType.indexOf("," + MD.marketingdetails.SettleType + ",")) > -1)
-                && (!itemrules.camPayDue || (itemrules.camPayDue.indexOf("," + MD.marketingdetails.PayDueDate + ",")) > -1)
-                && (!itemrules.camPayTime || (itemrules.camPayTime.indexOf("," + MD.marketingdetails.PaymentTime + ",")) > -1)
+                && this.isExistInCSV(itemrules.camSettleType, MD.marketingdetails.SettleType)
+                //&& (!itemrules.camSettleType || (itemrules.camSettleType.indexOf("," + MD.marketingdetails.SettleType + ",")) > -1)
+                && this.isExistInCSV(itemrules.camPayDue, MD.marketingdetails.PayDueDate)
+                //&& (!itemrules.camPayDue || (itemrules.camPayDue.indexOf("," + MD.marketingdetails.PayDueDate + ",")) > -1)
+                && this.isExistInCSV(itemrules.camPayTime, MD.marketingdetails.PaymentTime)
+                //&& (!itemrules.camPayTime || (itemrules.camPayTime.indexOf("," + MD.marketingdetails.PaymentTime + ",")) > -1)
                 && (!itemrules.camSalesChannel || (itemrules.camSalesChannel == MD.marketingdetails.SaleChannel || itemrules.camSalesChannel == 1))
             ) {
                 shortrules.push(itemrules);
@@ -1144,6 +1149,29 @@ export default class Pricing {
         let PrssdLine = [];
         let br = {};
         if (shortrules.length > 0) {
+            ActiveCam = shortrules[0];
+
+            /// خواندن مقادیر و شرایظ خاص کمپین
+            if (!MD.CampaignDetails.Conditions) MD.CampaignDetails.Conditions = {};
+            MD.CampaignDetails.Conditions.MaxOrderValue = ActiveCam.camMaxValue;
+            MD.CampaignDetails.Conditions.MinOrderValue = ActiveCam.camMinValue;
+            MD.CampaignDetails.Conditions.MaxLine = ActiveCam.camMaxRow;
+            MD.CampaignDetails.Conditions.MinLine = ActiveCam.camMinRow;
+            if (ActiveCam.camPayDue) {
+                MD.CampaignDetails.Conditions.PayDueDate = [];
+                for (let itemPayDue of ActiveCam.camPayDue.split(',')) {
+                    if (itemPayDue.length > 0)
+                        MD.CampaignDetails.Conditions.PayDueDate.push(itemPayDue);
+                }
+            }
+            if (ActiveCam.camPayTime) {
+                MD.CampaignDetails.Conditions.CamPayTime = [];
+                for (let itemPayDue of ActiveCam.camPayTime.split(',')) {
+                    if (itemPayDue.length > 0)
+                        MD.CampaignDetails.Conditions.CamPayTime.push(itemPayDue);
+                }
+            }
+
             let isReq = false;
             let linenum = 0;
             let maxline = 0;
@@ -1176,14 +1204,28 @@ export default class Pricing {
 
                 linenum = 0;
                 for (let line of results.MarketingLines) {
-                    if (!line || (line.ItemQty ?? 0) <= 0) {
+                    if (!line || (line.ItemQty ?? 0) <= 0 || !line.ItemCode) {
                         linenum++;
                         continue;
                     }
+                    if ((item.lineItemChckCond ?? 0) == 1 && this.isExistInCSV(item.lineItemCode, line.ItemCode)) {
+                        line.CampaignDetails.Status = -32766;
+                        line.CampaignDetails.Information = "فروش این قلم کالا در این کمپین ممنوع است:" + line.ItemCode;
+                        line.CampaignDetails.RequestedQty = line.ItemQty;
+                        line.CampaignDetails.RequestedValue = line.LineTotal;
+                        results.CampaignDetails.Status |= 8;
+                        this.ZerolineMarketing(line);
+                        linenum++;
+                        continue;
+                    }
+
                     line.CampaignDetails.CampainId = ActiveCam.campaignId;
 
-                    let temp = "," + item.lineItemCode + ",";
-                    if (temp.indexOf("," + line.ItemCode + ",") > -1 && !PrssdLine.indexOf(linenum) > -1) {
+                    if (!PrssdLine.indexOf(linenum) > -1 &&
+                        (this.isExistInCSV(item.lineItemCode, line.ItemCode)
+                            || item.lineItemCode == "ALLITEMS"
+                            || (item.lineItemCode == "RESTITEMS" && shortrules.every((xl) => !this.isExistInCSV(xl.lineItemCode, line.ItemCode)))
+                        )) {
                         br.isExist = true;
                         PrssdLine.push(linenum);
                         br.lines.push(linenum);
@@ -1483,14 +1525,14 @@ export default class Pricing {
                         if (!line.CampaignDetails.Information) {
                             line.CampaignDetails.Information = "";
                         }
-                        line.CampaignDetails.Information += " مبلغ سفارش" + DocSum + " کمتر از حداقل مبلغ کمپین" + ActiveCam.camMinValue + "میباشد.";
+                        line.CampaignDetails.Information += " مبلغ سفارش " + DocSum + " کمتر از حداقل مبلغ کمپین " + ActiveCam.camMinValue + " میباشد.";
                     }
                     else {
                         line.CampaignDetails.Status |= -32752;
                         if (!line.CampaignDetails.Information) {
                             line.CampaignDetails.Information = "";
                         }
-                        line.CampaignDetails.Information += " مبلغ سفارش" + DocSum + " بیشتر از حداقل مبلغ کمپین" + ActiveCam.camMaxValue + "میباشد.";
+                        line.CampaignDetails.Information += " مبلغ سفارش " + DocSum + " بیشتر از حداکثر مبلغ کمپین " + ActiveCam.camMaxValue + " میباشد.";
                     }
                     line.CampaignDetails.RequestedQty = line.ItemQty;
                     line.CampaignDetails.RequestedValue = line.LineTotal;
@@ -1608,7 +1650,7 @@ export default class Pricing {
             return results;
         }
         if (ActiveCam.camShouldPassCam == 'Y' && !(KeepOthers ?? false)) {
-            return this.ResetDocDiscount(MD);
+            return this.ResetDocDiscount(results);
         }
 
         return results;
@@ -1622,7 +1664,7 @@ export default class Pricing {
                 item.CampaignDetails.Status |= -32704;
                 if (!item.CampaignDetails.Information) item.CampaignDetails.Information = "";
                 item.CampaignDetails.Information += "سفارش مشمول قواعد کمپین نمی باشد.";
-  }
+            }
         }
         if (!Doc.CampaignDetails) Doc.CampaignDetails = {};
         if (!Doc.CampaignDetails.Status) Doc.CampaignDetails.Status = -32704;
@@ -1630,10 +1672,26 @@ export default class Pricing {
         if (!Doc.CampaignDetails.Information) Doc.CampaignDetails.Information = "";
         Doc.CampaignDetails.Information += "سفارش مشمول قواعد کمپین نمی باشد.";
 
-        if (!Doc.marketingdetails) {
+        if (Doc.marketingdetails) {
             Doc.marketingdetails.DocumentDiscount = Doc.marketingdetails.DocumentDiscountPercent = 0;
         }
+        else {
+            Doc.marketingdetails = { DocumentDiscount: 0, DocumentDiscountPercent: 0 };
+        }
         return Doc;
+    }
+    isExistInCSV(Value, Cond) {
+        if (!Cond || Cond.toString().trim().length == 0)
+            return false;
+        if (!Value || Value.toString().trim().length == 0)
+            return true;
+        if (Value.startsWith(Cond + ","))
+            return true;
+        if (Value.endsWith("," + Cond))
+            return true;
+        if (Value.indexOf("," + Cond + ",") > -1)
+            return true;
+        return false;
     }
 
     CalculateClubPoint(MD) {

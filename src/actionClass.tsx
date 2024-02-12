@@ -120,11 +120,12 @@ export default class ActionClass implements I_actionClass {
             let shopProps:I_ShopProps = { ...Bundle, shopId: 'Bundle',itemType:'Bundle' }
             Shop.Bundle = new ShopClass({getAppState: () => this.getState(),config: shopProps})
         }
+        let isAdmin = backOffice.isAdmin(userInfo);
         for (let i = 0; i < spreeCampaigns.length; i++) {
             let spreeCampaign:I_ShopProps = spreeCampaigns[i];
             let { shopId, active,justActiveForAdmins  } = spreeCampaign;
             if (!active) { continue }
-            if(!backOffice.isAdmin(userInfo) && justActiveForAdmins){continue}
+            if(!isAdmin && justActiveForAdmins){continue}
             Shop[shopId] = new ShopClass({getAppState: () => this.getState(),config: {...spreeCampaign}})
         }
         let cart:I_state_cart = await apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});

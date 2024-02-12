@@ -556,7 +556,10 @@ export default class ShopClass implements I_ShopClass {
     renderCartFactor = async (button?:boolean) => {
         let {actionClass} = this.getAppState();
         let res = await this.getAmounts(undefined, 'cart');
-        let max = 1000000000;
+        let max;
+        if(this.CampaignId === 55){
+            max = 5000000
+        }
         let { payment } = res;
         let disabled = false;
         let description = '';
@@ -573,6 +576,15 @@ export default class ShopClass implements I_ShopClass {
                 layout={{
                     size: 72, className: "bgFFF p-h-12 theme-box-shadow",
                     column:[
+                        {
+                            show:!!description,style:{color:'orange'},
+                            row:[
+                                {html:<Icon path={mdiInformation} size={0.8}/>,align:'vh',size:36},
+                                {
+                                    html:description,align:'v',className:'fs-10'
+                                }
+                            ]
+                        },
                         {
                             row: [
                                 {
@@ -610,8 +622,7 @@ export default class ShopClass implements I_ShopClass {
                                     align: "v"
                                 },
                             ]
-                        },
-                        {show:!!description,html:()=>description,align:'v',className:'fs-10',style:{color:'red'}}
+                        }
                     ]
                 }}
             />

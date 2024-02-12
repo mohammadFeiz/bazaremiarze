@@ -2344,7 +2344,7 @@ function FormSetting(props: I_FormSetting) {
             show: type !== 'spreeCategories',
             column: [
               {
-                input: { type: 'text' }, label: 'CampaignId', field: 'value.CampaignId'
+                input: { type: 'number' }, label: 'CampaignId', field: 'value.CampaignId'
               },
               {
                 input: { type: 'multiselect', options: PayDueDate_options, text: 'پرداخت های چکی' }, field: 'value.PayDueDates',

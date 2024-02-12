@@ -35,27 +35,28 @@ export default function Billboard(props:I_Billboard){
         setItems(items)
     }
     function billboards_layout(){
-        return {html:<ACS items={items.map(({billboard = defbillboardsrc,onClick},i)=><img src={billboard} alt="" width='100%' onClick={onClick}/>)}/>}
+        let billboards = items.map(({billboard,onClick},i)=><img src={billboard || defbillboardsrc} alt="" width='100%' onClick={onClick}/>)
+        return {html:<ACS items={billboards}/>}
     }
     function icons_layout(){
         if(renderIn !== 'buy'){return false}
-        items = items.filter((o)=>!!o.icon);
         if(!items.length){return false}
+        let icons = items.map((o:I_Billboard_item)=>icon_layout(o))
         return {
             column:[
                 {html:'جشنواره ها',className:'fs-14 bold theme-dark-font-color p-h-24',size:36,align:'v'},
-                {
-                    row:items.map(({name,icon = deficonsrc,onClick})=>{
-                        return {
-                            flex:1,align:'h',onClick,gap:3,
-                            column:[
-                                {html:<img src={icon} width={54} height={54} alt='' style={{borderRadius:16}}/>},
-                                {html:name,className:'fs-12 bold theme-dark-font-color'}
-                            ]
-                        }
-                    })
-                },
+                {row:icons},
                 {size:12}
+            ]
+        }
+    }
+    function icon_layout(p:I_Billboard_item){
+        let {name,icon,onClick} = p;
+        return {
+            flex:1,align:'h',onClick,gap:3,
+            column:[
+                {html:<img src={icon || deficonsrc} width={54} height={54} alt='' style={{borderRadius:16}}/>},
+                {html:name,className:'fs-12 bold theme-dark-font-color'}
             ]
         }
     }

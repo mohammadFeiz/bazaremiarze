@@ -335,9 +335,12 @@ export default class ShopClass implements I_ShopClass {
         else { return await this.getAmounts_all(shippingOptions, container) }
     }
     getAmounts_all = async (shippingOptions: I_shippingOptions, container?: string) => {
-        let { actionClass } = this.getAppState();
+        let { actionClass,userInfo,b1Info } = this.getAppState();
         let {marketingLines,total} = await this.getCartVariants();
+        
         let factorDetails: I_getFactorDetails_result = actionClass.getFactorDetails(marketingLines, { ...shippingOptions, CampaignId: this.CampaignId }, container);
+        debugger
+        let res1 = actionClass.autoGetCampaignConditionsByCardCode(this.CampaignId,userInfo.cardCode,b1Info.customer.groupCode);
         let { marketingdetails, DocumentTotal } = factorDetails;
         let { DiscountList, ClubPoints = {} } = marketingdetails;
         let { DiscountValueUsed, DiscountPercentage, PaymentDiscountPercent, PaymentDiscountValue, PromotionValueUsed } = DiscountList;
@@ -474,17 +477,16 @@ export default class ShopClass implements I_ShopClass {
     }
     sabt = async (obj) => {
         //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
-        let { baseUrl } = this.getAppState();
+        let { baseUrl,rsa } = this.getAppState();
         let body = await this.getOrderBody(obj)
         let res = await Axios.post(`${baseUrl}/BOne/AddNewOrder`, body);
         if (res.data.isSuccess) {
             try { return { orderNumber: res.data.data[0].docNum } }
             catch {
-                console.log('5567', res)
-                return 'خطا در محاسبه result:res.data.data[0].docNum برای مشاهده ریسپانس خروجی 5567 در کنسول را بررسی کنید'
+                rsa.addAlert({text:'خطای دولوپمنت',type:'error'})
             }
         }
-        else { return res.data.message }
+        else { rsa.addAlert({text:res.data.message,type:'error'}) }
     }
     pardakht = async (obj) => {
         //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
@@ -563,12 +565,12 @@ export default class ShopClass implements I_ShopClass {
         let { payment } = res;
         let disabled = false;
         let description = '';
-        if(this.maxTotal && max){
-            if(payment > max){
-                disabled = true
-            }
-            description = `حداکثر مبلغ مجاز این فاکتور ${SplitNumber(max)} ریال است`
-        }
+        // if(this.maxTotal && max){
+        //     if(payment > max){
+        //         disabled = true
+        //     }
+        //     description = `حداکثر مبلغ مجاز این فاکتور ${SplitNumber(max)} ریال است`
+        // }
 
         let hasError = this.hasCartError();
         return (

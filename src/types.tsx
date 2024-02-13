@@ -89,6 +89,7 @@ export type I_rsa_addConfirm = {
     onCansel?:()=>void,
     attrs?:any
 }
+export type I_rsa_addAlert = {type:'error' | 'success'}
 export type I_rsa = {
     setNavId:(navId:string)=>void,
     addModal:(p:I_rsa_addModal)=>void,
@@ -97,6 +98,7 @@ export type I_rsa = {
     closeSide:()=>void,
     getNavId:()=>string,
     addConfirm:(p:I_rsa_addConfirm)=>void,
+    addAlert:(p:I_rsa_addAlert)=>void,
     openSide:()=>void,
     render:()=>React.ReactNode,
     changeTheme: (index:number) => void
@@ -260,6 +262,7 @@ export type I_actionClass = {
     getSideItems:()=>I_rsa_sideItem[],
     getSideFooter:()=>React.ReactNode,
     getShopState:()=>Promise<void>,
+    autoGetCampaignConditionsByCardCode:(CampaignId:number, CardCode:string, CardGroupCode?:any)=>any,
     fixPrice:(
         p:{ 
             items:{itemCode:string,ItemCode:string,itemQty:number,ItemQty:number}[], 

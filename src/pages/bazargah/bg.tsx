@@ -41,6 +41,9 @@ export default function Bazargah(){
     let tabs:I_tab[] = ['اطراف من','سفارشات من'];
     let [orders,setOrders] = useState<I_bg_order[]>([])
     function getOrders(newTab = tab){
+        if(tab !== newTab){
+            setTab(newTab)
+        }
         apis.request({
             api:'bazargah.bg_orders',description:`دریافت سفارشات بازارگاه از نوع ${newTab}`,parameter:tab,
             onSuccess:(orders:I_bg_order[])=>setOrders(orders)
@@ -51,7 +54,7 @@ export default function Bazargah(){
         return {
             className:'of-visible m-b-6',
             html:(
-                <AIOInput value={tab} className='bazargah-tabs theme-box-shadow' type='tabs' options={tabs} optionText='option' optionValue='option' onChange={(tab:I_tab)=>setTab(tab)}/>
+                <AIOInput value={tab} className='bazargah-tabs theme-box-shadow' type='tabs' options={tabs} optionText='option' optionValue='option' onChange={(tab:I_tab)=>getOrders(tab)}/>
             )
         }
     }
@@ -111,6 +114,14 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
     function count_layout(){
         return {html:`${items.length} کالا`,className:'fs-14 bold theme-medium-font-color'}
     }
+    function openPage(){
+        rsa.addModal({
+            header:{title:'جزییات سفارش'},
+            body:{
+                render:()=><BazargahOrderPage order={order}/>
+            }
+        })
+    }
     function openItemModal(image:string,name:string,details:{key:string,value:string}[],count:number){
         let render = ()=>{
             let image_layout = {size:240,html:<img src={image} alt='' height='100%'/>,align:'vh'}
@@ -158,7 +169,7 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
         return {html:<BazargahExpiredDate order={order} total={total}/>,className:'m-b-12'}
     }
     function footer_layout(){
-        return {row:[{html:(<button className='bg-button-1'>مشاهده جزییات</button>)}]}
+        return {row:[{html:(<button className='bg-button-1' onClick={()=>openPage()}>مشاهده جزییات</button>)}]}
     }
     let showVitrinText = !!isInVitrin && status === 'canTake';
     return (
@@ -183,7 +194,7 @@ type I_BazargahItemCard = {
 }
 function BazargahItemCard(props:I_BazargahItemCard){
     let {item} = props;
-    let {name,details,price,image,count} = item;
+    let {name,details = [],price,image,count} = item;
     function name_layout(){return {html:name,className:'fs-14 bold m-b-12',style:{color:'#00164E',textAlign:'right'}}}
     function details_layout(){return {gap:3,column:[...details,{key:'قیمت واحد',value:`${price} تومان`}].map((o:{key:string,value:string})=>detail_layout(o))}}
     function detail_layout(p:{key:string,value:string}){
@@ -330,19 +341,25 @@ type I_BGPage_PublicStatus = {order:I_bg_order}
 function BGPage_PublicStatus(props:I_BGPage_PublicStatus){
     let {backOffice}:I_app_state = useContext(appContext);
     let {order} = props,{status,code} = order;
-    let text = {canTake:'سفارش جدید! جزئیات را بررسی کنید',takenByOther:'سفارش توسط فروشنده دیگری اخذ شده است.'}
-    let color = {canTake:'#0F7B6C',takenByOther:'#E03E3E'}
+    let text = {canTake:'سفارش جدید! جزئیات را بررسی کنید',takenByOther:'سفارش توسط فروشنده دیگری اخذ شده است.'}[status]
+    let color = {canTake:'#0F7B6C',takenByOther:'#E03E3E'}[status]
     let total = backOffice.bazargah.forsate_akhze_sefareshe_bazargah;
     function box_layout(){
         let className = 'p-12 fs-12 bold br-12 m-12',style = {color,background:`${color}27`};
-        return {align:'v',className,style,column:[text_layout(),expiredDate_layout()]}
+        return {align:'v',className,style,column:[
+            text_layout(),
+            expiredDate_layout()
+        ]}
     }
     function text_layout(){return {html:text}}
     function expiredDate_layout(){return {show:status === 'canTake',html:()=><BazargahExpiredDate order={order} total={total}/>}}
     function footer_layout(){return {row:[{html:submitDate_layout()},{flex:1},code_layout()]}}
     function submitDate_layout(){return <BazargahSubmitDate order={order}/>}
     function code_layout(){return {html:code,align:'v',className:'fs-14 theme-dark-font-color'}}
-    return <RVD layout={{column:[box_layout(),footer_layout()]}}/>
+    return <RVD layout={{column:[
+        box_layout(),
+        footer_layout()
+    ]}}/>
 }
 type I_BGPage_PrivateStatus = {order:I_bg_order,changeStatus:(from:I_bg_status,to:I_bg_status)=>void}
 function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){

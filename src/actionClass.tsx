@@ -55,7 +55,8 @@ export default class ActionClass implements I_actionClass {
         this.getProps = getProps;
         this.SetState = SetState;
         let { userInfo } = this.getProps();
-        this.pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode, 12 * 60 * 60 * 1000)
+        debugger;
+        this.pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode, 12 * 60 * 60 * 1000);
         this.pricing.startservice().then((value) => { return value; });
     }
     
@@ -324,7 +325,6 @@ export default class ActionClass implements I_actionClass {
         let {Logger} = this.getState();
         if (!b1Info.customer.groupCode) { console.error('fixPrice missing userInfo.groupCode') }
         if (!userInfo.cardCode) { console.error('fixPrice missing userInfo.cardCode') }
-        if (!b1Info.customer.slpcode) { console.error('fixPrice missing userInfo.slpcode') }
         let data = {
             "CardGroupCode": b1Info.customer.groupCode,
             "CardCode": userInfo.cardCode,
@@ -440,6 +440,10 @@ export default class ActionClass implements I_actionClass {
             Logger.add(`autoCalcDoc response(${container})`, data, 'autoCalcDoc_response' + container) 
         }
         return res
+    }
+    autoGetCampaignConditionsByCardCode = (CampaignId, CardCode, CardGroupCode)=>{
+        let res = this.pricing.autoGetCampaignConditionsByCardCode(CampaignId, CardCode, CardGroupCode);
+        debugger
     }
     openLink = (linkTo:string) => {
         let { Shop, rsa,backOffice } = this.getState();

@@ -1,5 +1,5 @@
-﻿///***Version 1.1.43 ****///
-//Edited: 2024-02-06
+﻿///***Version 1.1.48 ****///
+//Edited: 2024-02-13
 
 "use strict";
 
@@ -15,7 +15,7 @@ export default class Pricing {
     db = {};
 
     constructor(fetchURL, applicator, interval = 300 * 60 * 1000) {
-
+debugger
         this.fetchUrl = fetchURL;
 
         this.updateInterval = interval;
@@ -394,6 +394,9 @@ export default class Pricing {
                 break;
             case 20: //"(BasePrice)*((100-BaseDis)*(100-RowDis)/10000)":
                 res = (BasePrice) * ((100 - BaseDis) * (100 - RowDis) / 10000);
+                break;
+            case 22: //"(BasePrice)*((100-BaseDis)*(100-RowDis)/10000)":
+                res = (BasePrice - FixAmnt) * (Math.max((1 - BaseDis / 100) * (1 - RowDis / 100) * (1 - FixDis / 100) * (1 - QtyDis / 100) * (1 - VolDis / 100), 1 - MaxDis / 100));
                 break;
             case 16: //"(BasePrice-FixAmnt)*(1-(BaseDis+min(MaxDis,FixDis+QtyDis+VolDis+RowDis ))/100)":
                 res = (BasePrice - FixAmnt) * (1 - (Math.min(MaxDis, BaseDis + FixDis + QtyDis + VolDis + RowDis)) / 100);
@@ -1414,12 +1417,12 @@ export default class Pricing {
                             }
 
                             // اصلاح شود
-                            let newPrice = this.CalcColumns(item.lineDisRelationId, lineMD.Price, item.camCanHaveB1Dis ? lineMD.DiscountPercent : (item.lineBaseDis ?? 0)
+                            let newPrice = this.CalcColumns(item.lineDisRelationId, lineMD.Price, item.camCanHaveB1Dis ? lineMD.DiscountPercent : 0
                                 , item.lineBaseDis ?? 0, br.disQty, br.disVol ?? 0, 0, item.lineFixedValue ?? 0, Math.min(item.lineMaxDisPrcnt ?? 80, item.camMaxDisPrcnt ?? 80));
                             lineMD.CampaignDetails.ExDiscount = lineMD.DiscountPercent;
                             lineMD.CampaignDetails.CamDiscount = 100 - (10000 * newPrice / lineMD.Price / (100 - lineMD.DiscountPercent));
                             lineMD.CampaignDetails.ExtraDiscount = 100 - (10000 * newPrice / lineMD.Price / (100 - lineMD.DiscountPercent));
-                            lineMD.DiscountPercent = Math.round(Math.max(0.0, 100.0 - newPrice / lineMD.Price * 100), 2);
+                            lineMD.DiscountPercent = Math.round(Math.max(0.0, 100.0 - newPrice / lineMD.Price * 100) * 100) / 100;
                             if (item.lineFixedValue != null) {
                                 if (!lineMD.CampaignDetails.Information) {
                                     lineMD.CampaignDetails.Information = "";
@@ -1685,6 +1688,8 @@ export default class Pricing {
             return false;
         if (!Value || Value.toString().trim().length == 0)
             return true;
+        if (Value == Cond)
+            return true;
         if (Value.startsWith(Cond + ","))
             return true;
         if (Value.endsWith("," + Cond))
@@ -1895,6 +1900,7 @@ export default class Pricing {
         }
 
         let DocAfterB1 = doctocalc;
+        CurrentDoc = DocAfterB1;
         // محاسبه قیمت و تخفیف در بی وان
         if (isneedb1) {
             DocAfterB1 = this.CalculateDocumentByB1(doctocalc, Items, DisRules, SlpCodes);
@@ -1921,15 +1927,16 @@ export default class Pricing {
         }
 
         //بررسی متد کمپین
-        if (doctocalc.marketingdetails?.Campaign) {
+        if ((doctocalc.marketingdetails?.Campaign ?? 0) > 0) {
             let PriceListCalcState = "C";
             for (let camrul of campaignRules)
                 if (camrul.campaignId == doctocalc.marketingdetails.Campaign) {
                     PriceListCalcState = camrul.priceListCalcState;
                     break;
                 }
-            if (PriceListCalcState != "N") {
+            if (PriceListCalcState == "N") {
                 let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, true);
+                CurrentDoc = DocAfterCa;
                 let lp = {};
                 for (let item of DocAfterCa.MarketingLines) {
                     lp = {};
@@ -2016,4 +2023,70 @@ export default class Pricing {
             , [this.pricingData.SlpCode], MD, CardCode, CardGroupCode, payDueDate, paymentTime, settleType, WhsCode);
         return newdoc;// this.CaseUpPropOfDoc(newdoc);
     }
+    autoGetCampaignConditionsByCardCode(CampaignId, CardCode, CardGroupCode) {
+        let result = {
+            Status: -32766,
+        };
+debugger;
+        if (CampaignId <= 0) {
+            result.Status = 0;
+            return result;
+        }
+        let ActiveCam = {};
+        for (let itemrules of this.pricingData.CampRules) {
+            if (itemrules.campaignId == CampaignId) {
+                ActiveCam = itemrules;
+                break;
+            }
+        }
+
+        if (!ActiveCam || !ActiveCam.camType) {
+            result.Status = 0;
+            return result;
+        }
+        let shortrules = [];
+        if (ActiveCam.camType == 'B') {
+            /// این مدل قواعد شامل تعریف بسته ها، تخفیف اقلامی و تخفیف ریالی می باشد
+            // ساخت لیست قواعد مربوط به مشتری یا گروه مشتری
+            for (let itemrules of this.pricingData.CampRules) {
+                if ((itemrules.campaignId == CampaignId)
+                    && (itemrules.camType == "B")
+                    && this.isExistInCSV(itemrules.camCardCode, CardCode)
+                    && this.isExistInCSV(itemrules.camCardGroupCode, CardGroupCode)) {
+                    shortrules.push(itemrules);
+                }
+            }
+            if (shortrules.length <= 0) {
+                result.Status = -32768 + 2048;
+                return result;
+            }
+            debugger
+            ActiveCam = shortrules[0];
+            result.MaxOrderValue = ActiveCam.camMaxValue;
+            result.MinOrderValue = ActiveCam.camMinValue;
+            result.MaxLine = ActiveCam.camMaxRow;
+            result.MinLine = ActiveCam.camMinRow;
+            result.StartDate = ActiveCam.camValidFrom;
+            result.EndDate = ActiveCam.camValidTo;
+            if (ActiveCam.camPayDue) {
+                result.PayDueDate = [];
+                for (let itemPayDue of ActiveCam.camPayDue.split(',')) {
+                    if (itemPayDue.length > 0)
+                        result.PayDueDate.push(itemPayDue);
+                }
+            }
+            if (ActiveCam.camPayTime) {
+                result.CamPayTime = [];
+                for (let itemPayDue of ActiveCam.camPayTime.split(',')) {
+                    if (itemPayDue.length > 0)
+                        result.CamPayTime.push(itemPayDue);
+                }
+            }
+
+            result.Status = 1;
+            return result;
+        }
+        return result;
+    }
+
 }

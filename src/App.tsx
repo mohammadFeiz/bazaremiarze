@@ -58,7 +58,9 @@ export default function App() {
           //در اوتی پی بعد از ارسال شماره یک آی دی دریافت می شود که در ای پی آی او تی پی کد مورد نیاز است پس ما این آی دی رو در دیس ذخیره می کنیم
           Login.setUserInfo({id:res.id});
           Login.setMode('OTPCode')
+          return true
         }
+        else {return false}
       }
       else if (mode === 'OTPCode' || mode === 'phoneNumber') {
         let api,description,parameter,userId,phoneNumber = model.login.userId;
@@ -75,7 +77,7 @@ export default function App() {
             actionName: `login by ${mode}`, actionId: mode === 'OTPCode' ? 0 : 1, result: 'unsuccess',
             message: userInfo, tagName: 'user authentication', eventName: 'action'
           }, { userId:model.login.userId });
-          return;
+          return false;
         }
         userInfo = fixUserInfo(userInfo)
         let { accessToken } = userInfo;
@@ -87,6 +89,7 @@ export default function App() {
         msfReport({ actionName: `login by ${mode}`, actionId: mode === 'OTPCode' ? 0 : 1, result: 'success', tagName: 'user authentication', eventName: 'action' }, {userId,phoneNumber})
         setUserInfo(userInfo);
         setB1Info(b1Info)
+        return true
       }
     },
     checkToken:async (token) => {

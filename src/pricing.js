@@ -15,7 +15,6 @@ export default class Pricing {
     db = {};
 
     constructor(fetchURL, applicator, interval = 300 * 60 * 1000) {
-debugger
         this.fetchUrl = fetchURL;
 
         this.updateInterval = interval;
@@ -2027,7 +2026,6 @@ debugger
         let result = {
             Status: -32766,
         };
-debugger;
         if (CampaignId <= 0) {
             result.Status = 0;
             return result;
@@ -2060,7 +2058,6 @@ debugger;
                 result.Status = -32768 + 2048;
                 return result;
             }
-            debugger
             ActiveCam = shortrules[0];
             result.MaxOrderValue = ActiveCam.camMaxValue;
             result.MinOrderValue = ActiveCam.camMinValue;

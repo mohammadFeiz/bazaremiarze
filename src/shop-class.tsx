@@ -39,7 +39,6 @@ export default class ShopClass implements I_ShopClass {
     getAppState: () => I_app_state;
     shopId: string;
     discountPercent?:number;
-    maxTotal?:boolean;
     active: boolean;
     shopName: string;
     taxons?: I_taxon[];
@@ -276,7 +275,6 @@ export default class ShopClass implements I_ShopClass {
                     let cartProduct:I_cartProduct = cartTaxon.products[productId];
                     let products = await this.getShopItems({taxonId,productId}) as I_product[];
                     let product = products[0];
-                    if(!product.hasFullDetail){debugger}
                     product = await this.updateProductByFullDetail(product,'getCartVariants itemType === taxon');
                     for(let variantId in cartProduct.variants){
                         let {count} = cartProduct.variants[variantId];
@@ -298,7 +296,6 @@ export default class ShopClass implements I_ShopClass {
                 if(p && p.productId && p.productId !== productId){continue}
                 let products:I_product[] = await this.getShopItems({taxonId:cartProduct.productCategory.taxonId,productId}) as I_product[];
                 let product = products[0];
-                if(!product.hasFullDetail){debugger}
                 product = await this.updateProductByFullDetail(product,'getCartVariant itemType === Product || Category');
                 for(let variantId in cartProduct.variants){
                     let {count} = cartProduct.variants[variantId];
@@ -339,8 +336,13 @@ export default class ShopClass implements I_ShopClass {
         let {marketingLines,total} = await this.getCartVariants();
         
         let factorDetails: I_getFactorDetails_result = actionClass.getFactorDetails(marketingLines, { ...shippingOptions, CampaignId: this.CampaignId }, container);
-        debugger
-        let res1 = actionClass.autoGetCampaignConditionsByCardCode(this.CampaignId,userInfo.cardCode,b1Info.customer.groupCode);
+        let maxTotal;
+        try{
+            let res = actionClass.autoGetCampaignConditionsByCardCode(this.CampaignId,userInfo.cardCode,b1Info.customer.groupCode);
+            maxTotal = res.MaxOrderValue
+        }
+        catch{}
+        
         let { marketingdetails, DocumentTotal } = factorDetails;
         let { DiscountList, ClubPoints = {} } = marketingdetails;
         let { DiscountValueUsed, DiscountPercentage, PaymentDiscountPercent, PaymentDiscountValue, PromotionValueUsed } = DiscountList;
@@ -354,7 +356,7 @@ export default class ShopClass implements I_ShopClass {
         if (PromotionValueUsed) {
             discounts.push({ value: PromotionValueUsed, title: 'کارت هدیه' })
         }
-        return { total, discounts, payment: DocumentTotal, ClubPoints }
+        return { total, discounts, payment: DocumentTotal, ClubPoints,maxTotal }
     }
     getAmounts_Bundle = async (shippingOptions: I_shippingOptions, container?: string) => {
         let { actionClass, backOffice } = this.getAppState();
@@ -389,7 +391,7 @@ export default class ShopClass implements I_ShopClass {
             payment -= value;
         }
         payment = payment * cashPercent / 100;
-        return { total, discounts, payment, ClubPoints: {} };//notice // ClubPoints!!!!
+        return { total, discounts, payment, ClubPoints: {},maxTotal:0 };//notice // ClubPoints!!!!
     }
     renderCartItems = async (renderIn: I_renderIn) => {
         let { actionClass } = this.getAppState();
@@ -483,10 +485,11 @@ export default class ShopClass implements I_ShopClass {
         if (res.data.isSuccess) {
             try { return { orderNumber: res.data.data[0].docNum } }
             catch {
-                rsa.addAlert({text:'خطای دولوپمنت',type:'error'})
+                rsa.addAlert({text:'خطای دولوپمنت',type:'error'});
+                return false
             }
         }
-        else { rsa.addAlert({text:res.data.message,type:'error'}) }
+        else { rsa.addAlert({text:res.data.message,type:'error'}); return false }
     }
     pardakht = async (obj) => {
         //obj => { address, SettleType, PaymentTime, DeliveryType, PayDueDate }
@@ -558,19 +561,15 @@ export default class ShopClass implements I_ShopClass {
     renderCartFactor = async (button?:boolean) => {
         let {actionClass} = this.getAppState();
         let res = await this.getAmounts(undefined, 'cart');
-        let max;
-        if(this.CampaignId === 55){
-            max = 5000000
-        }
-        let { payment } = res;
+        let { payment,maxTotal } = res;
         let disabled = false;
         let description = '';
-        // if(this.maxTotal && max){
-        //     if(payment > max){
-        //         disabled = true
-        //     }
-        //     description = `حداکثر مبلغ مجاز این فاکتور ${SplitNumber(max)} ریال است`
-        // }
+        if(maxTotal){
+            if(payment > maxTotal){
+                disabled = true
+            }
+            description = `حداکثر مبلغ مجاز این فاکتور ${SplitNumber(maxTotal)} ریال است`
+        }
 
         let hasError = this.hasCartError();
         return (
@@ -646,7 +645,14 @@ function CategoryView(props: I_CategoryView) {
     useEffect(() => {
         getFactor()
     }, [cart])
-    
+    useEffect(()=>{
+        if(itemType !== 'Category'){return}
+        changeTab(items[0].id)
+    },[])
+    async function changeTab(tab:string){
+        let items:I_product[] = await Shop[shopId].getShopItems({taxonId:tab});
+        setTabItems(items); setTab(tab)
+    }
     function search_layout() {
         if(itemType === 'Category'){return false}
         return { html: <SearchBox value={searchValue} onChange={(searchValue:string) => setSearchValue(searchValue)} /> }
@@ -667,10 +673,7 @@ function CategoryView(props: I_CategoryView) {
             let {name,id,icon} = category;
             return {text:<img src={icon} width='60' height='60'/>,value:id,subtext:name}
         })
-        return {html:(<AIOInput type='tabs' className='category-tabs' options={options} value={tab} onChange={async (tab:string)=>{
-            let items:I_product[] = await Shop[shopId].getShopItems({taxonId:tab});
-            setTabItems(items); setTab(tab)
-        }}/>)}
+        return {html:(<AIOInput type='tabs' className='category-tabs' options={options} value={tab} onChange={(tab:string)=>changeTab(tab)}/>)}
     }
     function products_layout() {
         return { gap: 12, column: getProductsBySearch().map((product, index) => product_layout(product, index)) }

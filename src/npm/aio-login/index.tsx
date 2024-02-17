@@ -230,7 +230,7 @@ function AIOLOGIN(props:I_AL_AIOLOGIN) {
             //اگر بررسی رمز عبور موفقیت آمیز است برو برای تصمیم گیری ورود به اپ یا ورود به ثبت نام
             else {await setAuthenticated(model.login.userId)}
         }
-        catch {}
+        catch {setLoading(false)}
     }
     async function onRegister(model:I_AL_model){
         try{

@@ -89,7 +89,7 @@ export type I_rsa_addConfirm = {
     onCansel?:()=>void,
     attrs?:any
 }
-export type I_rsa_addAlert = {type:'error' | 'success'}
+export type I_rsa_addAlert = {type:'error' | 'success',text:string,subtext?:string}
 export type I_rsa = {
     setNavId:(navId:string)=>void,
     addModal:(p:I_rsa_addModal)=>void,
@@ -253,7 +253,7 @@ export type I_ShopClass = {
 }
 export type I_factorItem = {key:string,value:string,className?:string}
 export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>Promise<I_amounts>;
-export type I_amounts = { total:number, discounts:I_discount[], payment:number, ClubPoints?: any };
+export type I_amounts = { total:number, discounts:I_discount[], payment:number, ClubPoints?: any,maxTotal?:number };
 export type I_renderIn = 'product'|'shipping'|'cart'|'category' | 'slider';
 export type I_actionClass = {
     getNavItems:()=>{

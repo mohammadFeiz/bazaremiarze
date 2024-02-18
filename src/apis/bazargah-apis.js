@@ -173,87 +173,90 @@ export default function bazargahApis({baseUrl,helper}) {
         },
         async bg_orders(type){
             //type 'اطراف من' | 'سفارشات من'
-            if(type === 'سفارشات من'){type = 'myorders'}
-            else if(type === 'اطراف من'){type = 'aroundme'}
-            let def = [
-                {
-                    status:'canTake',submitDate:new Date().getTime() - ( 8 * 60 * 60 * 1000) - (22 * 60 * 1000),
+            let response = await Axios.get(`https://retailerapp.bbeta.ir/api/v2/os/getorders?aroundMe=${type === 'سفارشات من'?'false':'true'}`)
+            // console.log(res.data.data)
+
+            const data = response.data.data;
+
+            let result = data.map((o)=>{
+                return {
+                    status:o.status,submitDate:o.submitDate,
                     //deliverDate?:number,//use in status:sent
-                    code:'R12321423',price:16788000,
+                    code: o.code ,price: o.price,
                     items:[
                         {
-                            count:4,price:156000,image:lampsrc,name:'لامپ حبابی 12 وات',
-                            details:[{key:'رنگ نور',value:'آفتابی'},{key:'سر پیچ',value:'E27'}]
+                            count:o.items.count,price:o.items.price,image:o.items.image,name:o.items.name,
+                            details:o.items.details
                         }
                     ],
-                    distanceKM:6.4,
+                    distanceKM:o.distance,
                     //deliveryType?:I_deliveryType,//use in status:sending
                     //trackingCode?:string,//use in status:sending
-                    info:{name:'کتایون مهرانفر',lat:35.699739,lng:51.338097,address:'تهران شیخ بهایی شمالی نوربخش پلاک 30 واحد 4',city:'تهران',province:'تهران',postal:1234567,phone:'02188050006'}
-                },
-                {
-                    status:'canTake',submitDate:new Date().getTime() - ( 15 * 60 * 60 * 1000) - (45 * 60 * 1000),
-                    //deliverDate?:number,//use in status:sent
-                    code:'R12321423',price:16788000,
-                    items:[
-                        {
-                            count:4,price:156000,image:'https://foroozeshh.ir/uploads/35c364159798460e8c0d9fcf7b3c900f.png',name:'بست کمربندی',
-                            details:[{key:'سایز',value:'35'}]
-                        },
-                        {
-                            count:1,price:156000,image:'https://dkstatics-public.digikala.com/digikala-products/ad471d52115052c14a17dbeb99c48ea506c1bb8a_1650959811.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90',name:'اسپیکر جی بی ال',
-                            details:[{key:'رنگ',value:'سبز ارتشی'}]
-                        },
-                        {
-                            count:1,price:156000,image:'https://irananker.com/wp-content/uploads/2020/01/A8133-4-600x600.jpg',name:'کابل انکر طول 1.8 متر powerline Micro USB',
-                        },
-                    ],
-                    isInVitrin:true,
-                    distanceKM:6.4,
-                    //deliveryType?:I_deliveryType,//use in status:sending
-                    //trackingCode?:string,//use in status:sending
-                    info:{name:'محمد شریف احتشامی',lat:35.699739,lng:51.338097,address:'تهران شیخ بهایی شمالی نوربخش پلاک 30 واحد 4',city:'تهران',province:'تهران',postal:1234567,phone:'02188050006'}
-                },
-                {
-                    status:'takenByOther',submitDate:new Date().getTime() - ( 3 * 60 * 60 * 1000) - (10 * 60 * 1000),
-                    //deliverDate?:number,//use in status:sent
-                    code:'R12321423',price:16788000,
-                    items:[
-                        {
-                            count:4,price:156000,image:lampsrc,name:'لامپ حبابی 12 وات',
-                            details:[{key:'رنگ نور',value:'آفتابی'},{key:'سر پیچ',value:'E27'}]
-                        },
-                        {
-                            count:4,price:156000,image:lampsrc,name:'لامپ حبابی 12 وات',
-                            details:[{key:'رنگ نور',value:'مهتابی'},{key:'سر پیچ',value:'E27'}]
-                        }
-                    ],
-                    distanceKM:6.4,
-                    //deliveryType?:I_deliveryType,//use in status:sending
-                    //trackingCode?:string,//use in status:sending
-                    info:{name:'داوود عباس نژاد',lat:35.699739,lng:51.338097,address:'تهران شیخ بهایی شمالی نوربخش پلاک 30 واحد 4',city:'تهران',province:'تهران',postal:1234567,phone:'02188050006'}
-                },
-                {
-                    status:'takenByOther',submitDate:new Date().getTime() - ( 1 * 60 * 60 * 1000) - (22 * 60 * 1000),
-                    //deliverDate?:number,//use in status:sent
-                    code:'R12321423',price:16788000,
-                    items:[
-                        {
-                            count:4,price:156000,image:lampsrc,name:'لامپ حبابی 12 وات',
-                            details:[{key:'رنگ نور',value:'آفتابی'},{key:'سر پیچ',value:'E27'}]
-                        },
-                        {
-                            count:1,price:1159787,image:'https://image.torob.com/base/images/e8/bW/e8bWco3U1x-5AdDk.jpg_/0x176.jpg 1x,https://image.torob.com/base/images/e8/bW/e8bWco3U1x-5AdDk.jpg_/0x352.jpg 2x',name:'دریل چکشی رونیکس'
-                        }
-                    ],
-                    distanceKM:6.4,
-                    //deliveryType?:I_deliveryType,//use in status:sending
-                    //trackingCode?:string,//use in status:sending
-                    info:{name:'دانیال عنایتی',lat:35.699739,lng:51.338097,address:'تهران شیخ بهایی شمالی نوربخش پلاک 30 واحد 4',city:'تهران',province:'تهران',postal:1234567,phone:'02188050006'}
+                    info:{name:o.info.name,lat:o.info.lat,lng:o.info.lng,address:o.info.address,city:o.info.city,province:o.info.province,postal:o.info.postal,phone:o.info.phone}
                 }
-            ]
-            let result = AIOStorage('bgmock').load({name:type,def})
-            return {result}
+            })
+
+                // {
+                //     status:'canTake',submitDate:new Date().getTime() - ( 15 * 60 * 60 * 1000) - (45 * 60 * 1000),
+                //     //deliverDate?:number,//use in status:sent
+                //     code:'R12321423',price:16788000,
+                //     items:[
+                //         {
+                //             count:4,price:156000,image:'https://foroozeshh.ir/uploads/35c364159798460e8c0d9fcf7b3c900f.png',name:'بست کمربندی',
+                //             details:[{key:'سایز',value:'35'}]
+                //         },
+                //         {
+                //             count:1,price:156000,image:'https://dkstatics-public.digikala.com/digikala-products/ad471d52115052c14a17dbeb99c48ea506c1bb8a_1650959811.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90',name:'اسپیکر جی بی ال',
+                //             details:[{key:'رنگ',value:'سبز ارتشی'}]
+                //         },
+                //         {
+                //             count:1,price:156000,image:'https://irananker.com/wp-content/uploads/2020/01/A8133-4-600x600.jpg',name:'کابل انکر طول 1.8 متر powerline Micro USB',
+                //         },
+                //     ],
+                //     isInVitrin:true,
+                //     distanceKM:6.4,
+                //     //deliveryType?:I_deliveryType,//use in status:sending
+                //     //trackingCode?:string,//use in status:sending
+                //     info:{name:'محمد شریف احتشامی',lat:35.699739,lng:51.338097,address:'تهران شیخ بهایی شمالی نوربخش پلاک 30 واحد 4',city:'تهران',province:'تهران',postal:1234567,phone:'02188050006'}
+                // },
+                // {
+                //     status:'takenByOther',submitDate:new Date().getTime() - ( 3 * 60 * 60 * 1000) - (10 * 60 * 1000),
+                //     //deliverDate?:number,//use in status:sent
+                //     code:'R12321423',price:16788000,
+                //     items:[
+                //         {
+                //             count:4,price:156000,image:lampsrc,name:'لامپ حبابی 12 وات',
+                //             details:[{key:'رنگ نور',value:'آفتابی'},{key:'سر پیچ',value:'E27'}]
+                //         },
+                //         {
+                //             count:4,price:156000,image:lampsrc,name:'لامپ حبابی 12 وات',
+                //             details:[{key:'رنگ نور',value:'مهتابی'},{key:'سر پیچ',value:'E27'}]
+                //         }
+                //     ],
+                //     distanceKM:6.4,
+                //     //deliveryType?:I_deliveryType,//use in status:sending
+                //     //trackingCode?:string,//use in status:sending
+                //     info:{name:'داوود عباس نژاد',lat:35.699739,lng:51.338097,address:'تهران شیخ بهایی شمالی نوربخش پلاک 30 واحد 4',city:'تهران',province:'تهران',postal:1234567,phone:'02188050006'}
+                // },
+                // {
+                //     status:'takenByOther',submitDate:new Date().getTime() - ( 1 * 60 * 60 * 1000) - (22 * 60 * 1000),
+                //     //deliverDate?:number,//use in status:sent
+                //     code:'R12321423',price:16788000,
+                //     items:[
+                //         {
+                //             count:4,price:156000,image:lampsrc,name:'لامپ حبابی 12 وات',
+                //             details:[{key:'رنگ نور',value:'آفتابی'},{key:'سر پیچ',value:'E27'}]
+                //         },
+                //         {
+                //             count:1,price:1159787,image:'https://image.torob.com/base/images/e8/bW/e8bWco3U1x-5AdDk.jpg_/0x176.jpg 1x,https://image.torob.com/base/images/e8/bW/e8bWco3U1x-5AdDk.jpg_/0x352.jpg 2x',name:'دریل چکشی رونیکس'
+                //         }
+                //     ],
+                //     distanceKM:6.4,
+                //     //deliveryType?:I_deliveryType,//use in status:sending
+                //     //trackingCode?:string,//use in status:sending
+                //     info:{name:'دانیال عنایتی',lat:35.699739,lng:51.338097,address:'تهران شیخ بهایی شمالی نوربخش پلاک 30 واحد 4',city:'تهران',province:'تهران',postal:1234567,phone:'02188050006'}
+                // }
+            return {response,result}
         },
         async bg_myOrders(){
 

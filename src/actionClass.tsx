@@ -50,13 +50,13 @@ export default class ActionClass implements I_actionClass {
     };
     SetState:(obj:any)=>void
     pricing:any;
-    constructor({ getState, getProps,SetState }) {
+    constructor({ getState, getProps,SetState,onPricingStarted }) {
         this.getState = getState;
         this.getProps = getProps;
         this.SetState = SetState;
         let { userInfo } = this.getProps();
         this.pricing = new Pricing('https://b1api.burux.com/api/BRXIntLayer/GetCalcData', userInfo.cardCode, 12 * 60 * 60 * 1000);
-        this.pricing.startservice().then((value) => { return value; });
+        this.pricing.startservice(()=>onPricingStarted()).then((value) => { return value; });
     }
     
     getGuaranteeItems = async () => {
@@ -111,7 +111,7 @@ export default class ActionClass implements I_actionClass {
         ]
     }
     getShopState = async () => {
-        let { apis,backOffice, userInfo } = this.getProps();
+        let { apis,backOffice, userInfo,b1Info } = this.getProps();
         let {setCart} = this.getState();
         let { Bundle, Regular, spreeCampaigns = [] } = backOffice;
         let Shop:I_state_Shop = {}
@@ -123,9 +123,15 @@ export default class ActionClass implements I_actionClass {
         let isAdmin = backOffice.isAdmin(userInfo);
         for (let i = 0; i < spreeCampaigns.length; i++) {
             let spreeCampaign:I_ShopProps = spreeCampaigns[i];
-            let { shopId, active,justActiveForAdmins  } = spreeCampaign;
+            let { shopId, active,justActiveForAdmins,CampaignId  } = spreeCampaign;
             if (!active) { continue }
             if(!isAdmin && justActiveForAdmins){continue}
+            if(CampaignId === 54){
+                let {MaxOrderValue,PayDueDate,CamPayTime} = this.autoGetCampaignConditionsByCardCode(CampaignId,userInfo.cardCode,b1Info.customer.groupCode)
+                if(Array.isArray(PayDueDate) && PayDueDate.length){spreeCampaign.PayDueDates = PayDueDate.map((o)=>+o)}
+                if(Array.isArray(CamPayTime) && CamPayTime.length){spreeCampaign.PaymentTimes = CamPayTime.map((o)=>+o)}
+                if(MaxOrderValue && typeof MaxOrderValue === 'number'){spreeCampaign.maxTotal = MaxOrderValue}
+            }
             Shop[shopId] = new ShopClass({getAppState: () => this.getState(),config: {...spreeCampaign}})
         }
         let cart:I_state_cart = await apis.request({api: 'kharid.getCart',parameter: { userInfo, Shop },description: 'دریافت اطلاعات سبد خرید'});

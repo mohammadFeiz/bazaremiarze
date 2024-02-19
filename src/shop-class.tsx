@@ -42,6 +42,7 @@ export default class ShopClass implements I_ShopClass {
     active: boolean;
     shopName: string;
     taxons?: I_taxon[];
+    maxTotal?:number;
     maxCart?: number;
     CampaignId?: number;
     PriceListNum?: number;
@@ -336,13 +337,6 @@ export default class ShopClass implements I_ShopClass {
         let {marketingLines,total} = await this.getCartVariants();
         
         let factorDetails: I_getFactorDetails_result = actionClass.getFactorDetails(marketingLines, { ...shippingOptions, CampaignId: this.CampaignId }, container);
-        let maxTotal;
-        try{
-            let res = actionClass.autoGetCampaignConditionsByCardCode(this.CampaignId,userInfo.cardCode,b1Info.customer.groupCode);
-            maxTotal = res.MaxOrderValue
-        }
-        catch{}
-        
         let { marketingdetails, DocumentTotal } = factorDetails;
         let { DiscountList, ClubPoints = {} } = marketingdetails;
         let { DiscountValueUsed, DiscountPercentage, PaymentDiscountPercent, PaymentDiscountValue, PromotionValueUsed } = DiscountList;
@@ -356,7 +350,7 @@ export default class ShopClass implements I_ShopClass {
         if (PromotionValueUsed) {
             discounts.push({ value: PromotionValueUsed, title: 'کارت هدیه' })
         }
-        return { total, discounts, payment: DocumentTotal, ClubPoints,maxTotal }
+        return { total, discounts, payment: DocumentTotal, ClubPoints }
     }
     getAmounts_Bundle = async (shippingOptions: I_shippingOptions, container?: string) => {
         let { actionClass, backOffice } = this.getAppState();
@@ -391,7 +385,7 @@ export default class ShopClass implements I_ShopClass {
             payment -= value;
         }
         payment = payment * cashPercent / 100;
-        return { total, discounts, payment, ClubPoints: {},maxTotal:0 };//notice // ClubPoints!!!!
+        return { total, discounts, payment, ClubPoints: {} };//notice // ClubPoints!!!!
     }
     renderCartItems = async (renderIn: I_renderIn) => {
         let { actionClass } = this.getAppState();
@@ -561,14 +555,14 @@ export default class ShopClass implements I_ShopClass {
     renderCartFactor = async (button?:boolean) => {
         let {actionClass} = this.getAppState();
         let res = await this.getAmounts(undefined, 'cart');
-        let { payment,maxTotal } = res;
+        let { payment } = res;
         let disabled = false;
         let description = '';
-        if(maxTotal){
-            if(payment > maxTotal){
+        if(this.maxTotal){
+            if(payment > this.maxTotal){
                 disabled = true
             }
-            description = `حداکثر مبلغ مجاز این فاکتور ${SplitNumber(maxTotal)} ریال است`
+            description = `حداکثر مبلغ مجاز این فاکتور ${SplitNumber(this.maxTotal)} ریال است`
         }
 
         let hasError = this.hasCartError();

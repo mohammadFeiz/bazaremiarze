@@ -34,11 +34,14 @@ export type I_Main_state = {
   bazargahOrders:{wait_to_get?:[],wait_to_send?:[]}
 }
 export default class Main extends Component <I_Main,I_Main_state>{
+  timeout:any;
+  isPricingStarted:boolean;
   constructor(props){
     super(props);
+    this.isPricingStarted = false;
     props.apis.setProperty('getState',()=>{return this.getContext()});
     let actionClass = new ActionClass({
-      getState:this.getContext.bind(this),getProps:()=>this.props,SetState:this.SetState.bind(this)
+      getState:this.getContext.bind(this),getProps:()=>this.props,SetState:this.SetState.bind(this),onPricingStarted:()=>this.isPricingStarted = true
     })
     let rsaProps:I_rsa_props = {
       rtl:true,maxWidth:770,id:'bazarmiarzersa',
@@ -185,8 +188,23 @@ export default class Main extends Component <I_Main,I_Main_state>{
     if (backOffice.activeManager.garanti && b1Info.customer.slpcode) { actionClass.getGuaranteeItems(); }
     if (backOffice.activeManager.bazargah) { actionClass.getBazargahOrders(); }
     actionClass.handleMissedLocation()
-    await actionClass.getShopState()
+    this.getShopState()
     this.SetState({mounted:true})  
+  }
+  async getShopState(){
+    let {actionClass} = this.state;
+    clearTimeout(this.timeout);
+    this.timeout = setTimeout(()=>{
+      if(this.isPricingStarted){
+        debugger
+        actionClass.getShopState()
+      } 
+      else{
+        debugger
+        this.getShopState()
+      }      
+    },500)
+    
   }
   logout(){
     let {msfReport,Login} = this.props;

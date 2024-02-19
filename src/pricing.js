@@ -320,7 +320,7 @@ export default class Pricing {
         return this.pricingData.ItemPrices;
     }
 
-    startservice() {
+    startservice(callback = ()=>{}) {
         let self = this;
         let result = new Promise(async function (resolve, reject) {
             let newdb = await self.CreateDatabase()
@@ -337,7 +337,7 @@ export default class Pricing {
                 resfetch = await self.#getAllFromDataBase();
             }
             self.updateTimer = setTimeout(self.refresh, self.updateInterval, self);
-
+            callback()
             resolve(resfetch);
         });
         return result;

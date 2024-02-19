@@ -2324,9 +2324,6 @@ function FormSetting(props: I_FormSetting) {
             input: { type: 'number' }, label: 'تخفیف مازاد برای نمایش روی کارت محصول', field: 'value.discountPercent',
           },
           {
-            input: { type: 'checkbox' }, label: 'سقف فاکتور دارد', field: 'value.maxTotal',
-          },
-          {
             show: type === 'spreeCategories', label: 'نمایش به صورت', field: 'value.showType',
             input: {
               type: 'radio', optionStyle: { width: 'fit-content' },

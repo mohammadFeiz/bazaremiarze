@@ -190,6 +190,7 @@ export default function bazargahApis({baseUrl,helper}) {
                         }
                     ],
                     distanceKM:o.distance,
+                    orderId:o.orderId,
                     //deliveryType?:I_deliveryType,//use in status:sending
                     //trackingCode?:string,//use in status:sending
                     info:{name:o.info.name,lat:o.info.lat,lng:o.info.lng,address:o.info.address,city:o.info.city,province:o.info.province,postal:o.info.postal,phone:o.info.phone}

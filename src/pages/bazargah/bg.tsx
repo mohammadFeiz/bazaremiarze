@@ -9,13 +9,18 @@ import bgvsrc from './../../images/bgv.png';
 import { I_app_state } from '../../types.js';
 import {Icon} from '@mdi/react';
 import { mdiAlert, mdiAlertOutline, mdiInformation } from '@mdi/js';
-import './bg.css'
+import './bg.css';
+// import toTaken from '../../axios.js';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from "axios";
 
 type I_bg_order = {
     status:I_bg_status,
     submitDate:number,
     deliverDate?:number,//use in status:sent
     code:string,
+    orderId:number,
     price:number,
     items:I_bg_order_item[],
     isInVitrin:boolean,
@@ -248,7 +253,7 @@ type I_BazargahOrderPage = {
 }
 function BazargahOrderPage(props:I_BazargahOrderPage){
     let {order} = props;
-    let {isInVitrin,status,items,distanceKM,price} = order;
+    let {isInVitrin,status,items,distanceKM,orderId,price} = order;
     function changeStatus(from:I_bg_status,to:I_bg_status){}
     function sendDetails_layout(){
         if(status !== 'sending' && status !== 'sent'){return false}
@@ -297,7 +302,27 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
             ]
         }
     }
-    function button_layout(){return {className:'p-12',html:(<button onClick={()=>changeStatus('canTake','shouldSend')} className='button-2'>قبول سفارش</button>)}}
+
+    const handleButton = () => {
+
+        console.log(order);
+        console.log(orderId);
+
+        axios
+            .post(
+                'https://retailerapp.bbeta.ir/api/v2/os/toTaken/',
+                { orderId: orderId },
+                { timeout: 1000 },
+            )
+            .then(function (response) {
+                toast.success('sefaresh akhz shod', {
+                    position: toast.POSITION.BOTTOM_RIGHT
+                });
+            })
+            .catch(function (error) {});
+
+    };
+    function button_layout(){return {className:'p-12',html:(<button onClick={()=>handleButton()} className='button-2'>قبول سفارش</button>)}}
     function hint_layout(){
         return {
             column:[

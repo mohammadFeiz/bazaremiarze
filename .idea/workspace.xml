@@ -7,7 +7,9 @@
     <list default="true" id="aa52f775-acd0-48b7-a649-e727a845b127" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/apis/bazargah-apis.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/apis/bazargah-apis.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/bazargah/bg.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/bazargah/bg.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

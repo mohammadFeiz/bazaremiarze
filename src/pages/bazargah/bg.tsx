@@ -11,7 +11,6 @@ import {Icon} from '@mdi/react';
 import { mdiAlert, mdiAlertOutline, mdiInformation } from '@mdi/js';
 import './bg.css';
 // import toTaken from '../../axios.js';
-import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios";
 
@@ -252,22 +251,15 @@ type I_BazargahOrderPage = {
     order:I_bg_order
 }
 function BazargahOrderPage(props:I_BazargahOrderPage){
-<<<<<<< Updated upstream
-    let {order} = props;
-    let {isInVitrin,status,items,distanceKM,orderId,price} = order;
-    function changeStatus(from:I_bg_status,to:I_bg_status){}
-=======
     let {apis}:I_app_state = useContext(appContext);
     let [order,setOrder] = useState<I_bg_order>(props.order)
-    let {isInVitrin,status,items,distanceKM,price} = order;
+    let {isInVitrin,status,items,distanceKM,orderId,price} = order;
     function changeStatus(parameter?:any){
         apis.request({
-            api:'bazargah.bg_changeStatus',
-            parameter:{order,currentStatus:status,parameter},
-            onSuccess:(changedOrder:I_bg_order)=>setOrder(changedOrder)
+            api:'baargah.bg_changeStatus',parameter,description:'تغییر استتوس سفارش بازارگاه',
+            onSuccess:(changedOrder)=>setOrder(changedOrder)
         })
     }
->>>>>>> Stashed changes
     function sendDetails_layout(){
         if(status !== 'sending' && status !== 'sent'){return false}
         return {
@@ -315,31 +307,8 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
             ]
         }
     }
-<<<<<<< Updated upstream
 
-    const handleButton = () => {
-
-        console.log(order);
-        console.log(orderId);
-
-        axios
-            .post(
-                'https://retailerapp.bbeta.ir/api/v2/os/toTaken/',
-                { orderId: orderId },
-                { timeout: 1000 },
-            )
-            .then(function (response) {
-                toast.success('sefaresh akhz shod', {
-                    position: toast.POSITION.BOTTOM_RIGHT
-                });
-            })
-            .catch(function (error) {});
-
-    };
-    function button_layout(){return {className:'p-12',html:(<button onClick={()=>handleButton()} className='button-2'>قبول سفارش</button>)}}
-=======
     function button_layout(){return {className:'p-12',html:(<button onClick={()=>changeStatus()} className='button-2'>قبول سفارش</button>)}}
->>>>>>> Stashed changes
     function hint_layout(){
         return {
             column:[

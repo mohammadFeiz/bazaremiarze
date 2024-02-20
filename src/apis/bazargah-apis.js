@@ -259,7 +259,7 @@ export default function bazargahApis({baseUrl,helper}) {
                 // }
             return {response,result}
         },
-        async bg_changeStatus({order,from,to,parameter}){
+        async bg_changeStatus({order,parameter}){
             
         },
         async bg_submit_code({order,code}){

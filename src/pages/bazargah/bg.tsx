@@ -11,8 +11,6 @@ import {Icon} from '@mdi/react';
 import { mdiAlert, mdiAlertOutline, mdiInformation } from '@mdi/js';
 import './bg.css';
 // import toTaken from '../../axios.js';
-import 'react-toastify/dist/ReactToastify.css';
-import axios from "axios";
 
 type I_bg_order = {
     status:I_bg_status,

@@ -259,17 +259,10 @@ export default function bazargahApis({baseUrl,helper}) {
                 // }
             return {response,result}
         },
-        async bg_myOrders(){
-
+        async bg_changeStatus({order,from,to,parameter}){
+            
         },
-        async bg_to_shouldSend({order,status}){
-
-        },
-        async bg_to_sending({order,status,parameter},appState){
-            let {trakingCode,deliveryType} = parameter
-        },
-        async bg_to_sent({order,status,parameter}){
-            let {passCode} = parameter;
+        async bg_submit_code({order,code}){
 
         } 
     }

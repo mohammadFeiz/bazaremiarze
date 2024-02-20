@@ -225,6 +225,7 @@ export type I_ShopClass = {
     billboard?:string,
     products?: I_product,
     description?: string,
+    PayDueDates:number[],
     icon?:string,
     itemType: 'Product' | 'Bundle' | 'Taxon' | 'Category',
     getShopItems:(p?:{taxonId?: string, productId?: string})=>Promise<any[]>,

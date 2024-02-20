@@ -252,9 +252,22 @@ type I_BazargahOrderPage = {
     order:I_bg_order
 }
 function BazargahOrderPage(props:I_BazargahOrderPage){
+<<<<<<< Updated upstream
     let {order} = props;
     let {isInVitrin,status,items,distanceKM,orderId,price} = order;
     function changeStatus(from:I_bg_status,to:I_bg_status){}
+=======
+    let {apis}:I_app_state = useContext(appContext);
+    let [order,setOrder] = useState<I_bg_order>(props.order)
+    let {isInVitrin,status,items,distanceKM,price} = order;
+    function changeStatus(parameter?:any){
+        apis.request({
+            api:'bazargah.bg_changeStatus',
+            parameter:{order,currentStatus:status,parameter},
+            onSuccess:(changedOrder:I_bg_order)=>setOrder(changedOrder)
+        })
+    }
+>>>>>>> Stashed changes
     function sendDetails_layout(){
         if(status !== 'sending' && status !== 'sent'){return false}
         return {
@@ -302,6 +315,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
             ]
         }
     }
+<<<<<<< Updated upstream
 
     const handleButton = () => {
 
@@ -323,6 +337,9 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
 
     };
     function button_layout(){return {className:'p-12',html:(<button onClick={()=>handleButton()} className='button-2'>قبول سفارش</button>)}}
+=======
+    function button_layout(){return {className:'p-12',html:(<button onClick={()=>changeStatus()} className='button-2'>قبول سفارش</button>)}}
+>>>>>>> Stashed changes
     function hint_layout(){
         return {
             column:[
@@ -386,7 +403,7 @@ function BGPage_PublicStatus(props:I_BGPage_PublicStatus){
         footer_layout()
     ]}}/>
 }
-type I_BGPage_PrivateStatus = {order:I_bg_order,changeStatus:(from:I_bg_status,to:I_bg_status)=>void}
+type I_BGPage_PrivateStatus = {order:I_bg_order,changeStatus:(parameter?:any)=>void}
 function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     let {backOffice,actionClass,rsa}:I_app_state = useContext(appContext);
     let total = backOffice.bazargah.forsate_ersale_sefareshe_bazargah;    
@@ -420,7 +437,7 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
             column.push({html:<BazargahExpiredDate order={order} total={total}/>})
         }
         if(['shouldSend'].indexOf(status) !== -1){
-            column.push({html:<BGDeliveryType onSubmit={()=>changeStatus('shouldSend','sending')}/>})
+            column.push({html:<BGDeliveryType changeStatus={(parameter?:any)=>changeStatus(parameter)}/>})
         }
         if(['sending'].indexOf(status) !== -1){
             column.push({
@@ -429,7 +446,7 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
                         order={order} 
                         onSubmit={()=>{
                             actionClass.openPopup('bazargah-sent',{
-                                render:()=><DeliveryPopup onSubmit={()=>changeStatus('sending','sent')} onCansel={()=>rsa.removeModal()}/>
+                                render:()=><DeliveryPopup onSubmit={()=>changeStatus()} onCansel={()=>rsa.removeModal()}/>
                             })
                         }}
                     />
@@ -442,12 +459,12 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     function text_layout(){return {html:text,className:'fs-14 bold'}}
     return (<RVD layout={{column:[details_layout(),card_layout()]}}/>)
 }
-type I_BGDeliveryType = {onSubmit:()=>void}
+type I_BGDeliveryType = {changeStatus:(parameter?:any)=>void}
 
 function BGDeliveryType(props:I_BGDeliveryType){
     let [deliveryType,setDeliveryType] = useState<I_deliveryType>();
     let [trackingCode,setTrackingCode] = useState<string>('')
-    let {onSubmit} = props;
+    let {changeStatus} = props;
     let options:I_deliveryType[] = ['post','carier']
     let trans = {'post':'پست','carier':'پیک شخصی / سرویس های دیگر'}
     function label_layout(text:string){return {html:text,className:'fs-14 bold'}}
@@ -478,7 +495,7 @@ function BGDeliveryType(props:I_BGDeliveryType){
                             />
                         )
                     },
-                    {html:(<button disabled={!deliveryType || !trackingCode} className='button-2' onClick={()=>onSubmit()}>ارسال</button>)}
+                    {html:(<button disabled={!deliveryType || !trackingCode} className='button-2' onClick={()=>changeStatus({trackingCode,deliveryType})}>ارسال</button>)}
                 ]
             }}
         />
@@ -491,9 +508,9 @@ function BGPassCode(props:I_BGPassCode){
     let [submitedCode,setSubmitedCode] = useState<boolean>(false);
     let {order,onSubmit} = props;
     function submitCode(){
-        let parameter:number = +`${passCodes[0]}${passCodes[1]}${passCodes[2]}`
+        let code:number = +`${passCodes[0]}${passCodes[1]}${passCodes[2]}`
         apis.request({
-            api:'bazargah.bg_submit_code',loading:true,parameter,message:{success:true},
+            api:'bazargah.bg_submit_code',loading:true,parameter:{order,code},message:{success:true},
             description:'تایید کد تحویل بازارگاه',onSuccess:()=>setSubmitedCode(true)
         })
     }
@@ -713,7 +730,7 @@ function BGLabel(props:I_BGLabel){
         />
     )
 }
-type I_DeliveryPopup = {onSubmit:()=>void,onCansel:()=>void}
+type I_DeliveryPopup = {onSubmit:(parameter?:any)=>void,onCansel:()=>void}
 function DeliveryPopup(props:I_DeliveryPopup){
     let {onSubmit,onCansel} = props;
     return (
@@ -727,12 +744,12 @@ function DeliveryPopup(props:I_DeliveryPopup){
                     {size:6},
                     {
                         html:(
-                            <button onClick={()=>onSubmit()} className='button-2'>بازگشت</button>
+                            <button onClick={()=>onCansel()} className='button-2'>بازگشت</button>
                         )
                     },
                     {
                         html:(
-                            <button onClick={()=>onCansel()} className='button-1'>مرسوله به خریدار تحویل شده است</button>
+                            <button onClick={()=>onSubmit()} className='button-1'>مرسوله به خریدار تحویل شده است</button>
                         )
                     }
                 ]

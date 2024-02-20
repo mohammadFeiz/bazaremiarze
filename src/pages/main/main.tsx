@@ -195,16 +195,9 @@ export default class Main extends Component <I_Main,I_Main_state>{
     let {actionClass} = this.state;
     clearTimeout(this.timeout);
     this.timeout = setTimeout(()=>{
-      if(this.isPricingStarted){
-        debugger
-        actionClass.getShopState()
-      } 
-      else{
-        debugger
-        this.getShopState()
-      }      
-    },500)
-    
+      if(this.isPricingStarted){actionClass.getShopState()} 
+      else{this.getShopState()}
+    },1000)
   }
   logout(){
     let {msfReport,Login} = this.props;

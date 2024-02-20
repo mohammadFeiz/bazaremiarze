@@ -37,6 +37,8 @@ import './shop-class.css';
 export default class ShopClass implements I_ShopClass {
     /****type defined**** */
     getAppState: () => I_app_state;
+    PayDueDates:number[];
+    PaymentTimes:number[];
     shopId: string;
     discountPercent?:number;
     active: boolean;

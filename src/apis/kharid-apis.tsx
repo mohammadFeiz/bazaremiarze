@@ -3,7 +3,7 @@ import nosrcImage from './../images/no-src.png';
 import nosrc from './../images/no-src.png';
 import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
-import { I_B1Info, I_ShopProps, I_actionClass, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_itemPrice, I_product, I_product_category, I_product_detail, I_product_optionType, I_state_cart, I_variant, I_variant_optionValues } from "../types";
+import { I_B1Info, I_PaydueDate_option, I_ShopProps, I_actionClass, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_itemPrice, I_product, I_product_category, I_product_detail, I_product_optionType, I_state_cart, I_variant, I_variant_optionValues } from "../types";
 type I_chekcCode_return = any;
 type I_getCampaigns_return = { shopName: string, id: string, CampaignId: number, PriceListNum: number,taxons?:{name:string,id:any,min:number,max:number}[] };
 type I_getCategories_return = { name: string, id: string }[]
@@ -611,8 +611,8 @@ class Spree implements I_Spree{
     return details;
   }
   getProduct = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,category:I_product_category) => { 
-    let {b1Info,actionClass,Shop} = this.appState;
-    let {CampaignId,PriceListNum} = Shop[category.shopId];
+    let {b1Info,actionClass,Shop,backOffice} = this.appState;
+    let {CampaignId,PriceListNum,PayDueDates} = Shop[category.shopId];
     let { relationships,attributes,id } = spreeProduct,name = attributes.name;
     let productSku = attributes.sku;
     const sku = spreeIncluded.variants[relationships.default_variant.data.id].attributes.sku;
@@ -623,8 +623,15 @@ class Spree implements I_Spree{
     let fixPrice_payload = {items:[{ ItemCode: sku, itemCode: sku, ItemQty: 1, itemQty: 1 }], CampaignId, PriceListNum}
     let fixPrice_results:I_fixPrice_result[] = actionClass.fixPrice(fixPrice_payload)
     let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
-    let {OnHand,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
+    let {OnHand,B1Dscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
     if(!OnHand || OnHand === null){OnHand = {qtyLevel:0}}  
+    let PymntDscnt;
+    try{
+      let firstPayDueDate = PayDueDates[0]
+      let firstPayDueDateObject = backOffice.PayDueDate_options.find((o:I_PaydueDate_option)=>o.id.toString() === firstPayDueDate.toString())
+      PymntDscnt = firstPayDueDateObject.discountPercent;
+    }
+    catch{PymntDscnt = 0;}
     let {qtyLevel = 0} = OnHand;
     let product:I_product = {productSku,category,images,name,id,inStock:!!qtyLevel,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price,hasFullDetail:false}
     return product;

@@ -6,7 +6,8 @@ import ShopClass from './shop-class.tsx';
 import { Icon } from '@mdi/react';
 import { 
     mdiShieldCheck, mdiCellphoneMarker, mdiClipboardList,mdiCodeBraces, mdiExitToApp, mdiCash, mdiSecurity, mdiSkullScan, 
-    mdiCart,mdiStore, mdiShopping, mdiAccountBox, mdiDelete, mdiEye 
+    mdiCart,mdiStore, mdiShopping, mdiAccountBox, mdiDelete, mdiEye, 
+    mdiLoading
 } from "@mdi/js";
 import getSvg from './utils/getSvg';
 import Register from './components/register/register';
@@ -80,8 +81,8 @@ export default class ActionClass implements I_actionClass {
     }
     getNavItems = () => {
         let { userInfo } = this.getProps();
-        let {newBazargah} = this.getState();
-        let icon = (path) => <Icon path={path} size={.9} />
+        let {newBazargah,isPricingStarted} = this.getState();
+        let icon = (path:any,spin?:boolean) => <Icon path={path} size={.9} spin={spin?0.3:undefined}/>
         let firstName = userInfo.firstName;
         let lastName = userInfo.lastName;
         lastName = typeof lastName !== 'string'?'':lastName;
@@ -89,7 +90,7 @@ export default class ActionClass implements I_actionClass {
             { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin",render:()=><Vitrin/> },
             { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=>newBazargah?<BazargahNew/>:<Bazargah/> },
             { text: "خانه", icon: () => getSvg('home'), id: "khane",render:()=><Home/> },
-            { text: "خرید", icon: () => icon(mdiShopping), id: "kharid",render:()=><Buy/> },
+            { text: "خرید", icon: () => icon(isPricingStarted?mdiShopping:mdiLoading,!isPricingStarted), id: "kharid",render:()=><Buy/> },
             { text: () => `${firstName} ${lastName}`, marquee: true, icon: () => icon(mdiAccountBox), id: "profile",render:()=><Profile/> },
         ]
     }
@@ -401,7 +402,7 @@ export default class ActionClass implements I_actionClass {
         let categories:I_state_spreeCategories = { icon_type: [], slider_type: [], dic: {} }
         for (let i = 0; i < spreeCategories.length; i++) {
             let sc:I_spreeCategory = spreeCategories[i];
-            let { showType = 'icon', id } = sc;
+            let { showType = 'icon', id ,active} = sc;
             categories[`${showType}_type`].push(sc);
             categories.dic[id] = sc;
         }

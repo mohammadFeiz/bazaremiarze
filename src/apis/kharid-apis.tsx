@@ -571,7 +571,11 @@ class Spree implements I_Spree{
       let fixPrice_results:I_fixPrice_result[] = actionClass.fixPrice({ items: [{ ItemCode: sku, itemCode: sku, ItemQty: 1, itemQty: 1 }] });
       let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
       let {OnHand,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
-      let {canSell,qtyRelation} = b1Info.itemPrices.find(o => o.itemCode === sku || o.mainSku === sku);
+      let b1Result:I_itemPrice = b1Info.itemPrices.find(o => o.itemCode === sku || o.mainSku === sku);
+      if(!b1Result){
+        continue
+      }
+      let {canSell,qtyRelation} = b1Result;
       //let dropShipping = qtyRelation === 4
       if(!OnHand || OnHand === null){OnHand = {qtyLevel:0}}  
       let {qtyLevel = 0} = OnHand;

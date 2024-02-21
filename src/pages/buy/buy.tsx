@@ -26,7 +26,7 @@ export default function Buy() {
   useEffect(()=>{getSliders()},[])
   function categories_layout(){
     let {spreeCategories = []} = backOffice;
-    let categories:I_spreeCategory[] = spreeCategories.filter(({showType})=>showType === 'icon');
+    let categories:I_spreeCategory[] = spreeCategories.filter(({showType,active})=>active && showType === 'icon');
     return {
       column:[
         {html:'دسته بندی ها',align:'v',className:'p-h-24 fs-14 bold',size:36},

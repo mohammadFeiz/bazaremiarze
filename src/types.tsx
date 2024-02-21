@@ -323,6 +323,7 @@ export type I_app_state = {
     apis:I_AIOService_class,
     Login:I_AIOLogin,
     userInfo:I_userInfo,
+    isPricingStarted:boolean,
     b1Info:I_B1Info,
     Logger:any,
     Shop:I_state_Shop,

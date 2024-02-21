@@ -31,17 +31,16 @@ export type I_Main_state = {
   guaranteeItems:any[],
   guaranteeExistItems:any,
   newBazargah:boolean,
+  isPricingStarted:boolean,
   bazargahOrders:{wait_to_get?:[],wait_to_send?:[]}
 }
 export default class Main extends Component <I_Main,I_Main_state>{
   timeout:any;
-  isPricingStarted:boolean;
   constructor(props){
     super(props);
-    this.isPricingStarted = false;
     props.apis.setProperty('getState',()=>{return this.getContext()});
     let actionClass = new ActionClass({
-      getState:this.getContext.bind(this),getProps:()=>this.props,SetState:this.SetState.bind(this),onPricingStarted:()=>this.isPricingStarted = true
+      getState:this.getContext.bind(this),getProps:()=>this.props,SetState:this.SetState.bind(this),onPricingStarted:()=>this.SetState({isPricingStarted:true})
     })
     let rsaProps:I_rsa_props = {
       rtl:true,maxWidth:770,id:'bazarmiarzersa',
@@ -71,6 +70,7 @@ export default class Main extends Component <I_Main,I_Main_state>{
     let vitrin = this.getInitialVitrin()
     this.state = {
       mounted:false,rsa,
+      isPricingStarted:false,
       newBazargah:false,
       actionClass,vitrin,
       developerMode:false,
@@ -192,10 +192,10 @@ export default class Main extends Component <I_Main,I_Main_state>{
     this.SetState({mounted:true})  
   }
   async getShopState(){
-    let {actionClass} = this.state;
+    let {actionClass,isPricingStarted} = this.state;
     clearTimeout(this.timeout);
     this.timeout = setTimeout(()=>{
-      if(this.isPricingStarted){actionClass.getShopState()} 
+      if(isPricingStarted){actionClass.getShopState()} 
       else{this.getShopState()}
     },1000)
   }

@@ -90,7 +90,7 @@ export default class ActionClass implements I_actionClass {
             { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin",render:()=><Vitrin/> },
             { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=>newBazargah?<BazargahNew/>:<Bazargah/> },
             { text: "خانه", icon: () => getSvg('home'), id: "khane",render:()=><Home/> },
-            { text: "خرید", icon: () => icon(isPricingStarted?mdiShopping:mdiLoading,!isPricingStarted), id: "kharid",render:()=><Buy/> },
+            { text: "خرید", icon: () => icon(isPricingStarted?mdiShopping:mdiLoading,!isPricingStarted), id: "kharid",render:()=><Buy/>,disabled:!isPricingStarted },
             { text: () => `${firstName} ${lastName}`, marquee: true, icon: () => icon(mdiAccountBox), id: "profile",render:()=><Profile/> },
         ]
     }

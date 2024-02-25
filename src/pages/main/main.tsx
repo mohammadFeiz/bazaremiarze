@@ -32,6 +32,7 @@ export type I_Main_state = {
   guaranteeExistItems:any,
   newBazargah:boolean,
   isPricingStarted:boolean,
+  isShopReady:boolean,
   bazargahOrders:{wait_to_get?:[],wait_to_send?:[]}
 }
 export default class Main extends Component <I_Main,I_Main_state>{
@@ -71,6 +72,7 @@ export default class Main extends Component <I_Main,I_Main_state>{
     this.state = {
       mounted:false,rsa,
       isPricingStarted:false,
+      isShopReady:false,
       newBazargah:false,
       actionClass,vitrin,
       developerMode:false,
@@ -194,8 +196,11 @@ export default class Main extends Component <I_Main,I_Main_state>{
   async getShopState(){
     let {actionClass,isPricingStarted} = this.state;
     clearTimeout(this.timeout);
-    this.timeout = setTimeout(()=>{
-      if(isPricingStarted){actionClass.getShopState()} 
+    this.timeout = setTimeout(async ()=>{
+      if(isPricingStarted){
+        await actionClass.getShopState();
+        this.SetState({isShopReady:true})
+      } 
       else{this.getShopState()}
     },1000)
   }

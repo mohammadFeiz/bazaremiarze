@@ -1,5 +1,6 @@
 import Axios from "axios";
 import imgph from './../images/imgph.png';
+import AIODate from 'aio-date';
 import { I_bg_order, I_bg_tab, I_deliveryType } from "../pages/bazargah/bg";
 export type I_bg_orders_param = I_bg_tab;
 export type I_bg_orders_result = I_bg_order[];
@@ -31,8 +32,10 @@ export default function bgApis({baseUrl,helper}) {
             let result;
             if(response.data.isSuccess){
                 result = data.map((o)=>{
+                    let {orderDate} = o;
+                    let submitDate = AIODate().getTime({date:orderDate})
                     return {
-                        status:o.status,submitDate:o.submitDate,
+                        status:o.status,submitDate,
                         //deliverDate?:number,//use in status:sent
                         code: o.code ,price: o.price,
                         items:o.items.map((item)=>{

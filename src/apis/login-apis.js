@@ -25,7 +25,7 @@ export default function loginApis({ baseUrl, helper, Axios, setToken }) {
                 }
                 let cacheResult = apis.handleCacheVersions(backOffice.versions || {});
                 //اگر ورژن کش لاگین عوض شده پس کابر رو هدایت کن به صفحه لاگین
-                if(cacheResult.login === true){
+                if(cacheResult.login === true || cacheResult.all === true){
                     Login.logout();
                 }
                 let loginType = new URL(window.location.href).searchParams.get("login");

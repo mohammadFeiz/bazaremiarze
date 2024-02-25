@@ -39,6 +39,7 @@ export default function BackOffice(props: I_BackOffice) {
   let [tab, setTab] = useState<I_BackOffice_tabName>('appsetting')
   let accessKeys:I_backOffice_accessKey[] = ['appsetting','spreeManagement','contentManagement','priceList','vitrinSuggestions','vitrinBrands','vitrinCategories'];
   function fixInitialModel(model: I_state_backOffice) {
+    model.versions.all = model.versions.all || 1
     return model;
     // let bo:I_state_backOffice = {
     //   "activeManager": {

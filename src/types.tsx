@@ -168,6 +168,7 @@ export type I_backOffice_versions = {
     login?: number,
     taxonProducts?: number,
     cart?: number,
+    all?:number
 }
 export type I_backOffice_vitrinCategory = {
     name:string,imageUrl?:any,id:any,open:boolean,
@@ -324,6 +325,7 @@ export type I_app_state = {
     Login:I_AIOLogin,
     userInfo:I_userInfo,
     isPricingStarted:boolean,
+    isShopReady:boolean,
     b1Info:I_B1Info,
     Logger:any,
     Shop:I_state_Shop,

@@ -81,7 +81,7 @@ export default class ActionClass implements I_actionClass {
     }
     getNavItems = () => {
         let { userInfo } = this.getProps();
-        let {newBazargah,isPricingStarted} = this.getState();
+        let {newBazargah,isShopReady} = this.getState();
         let icon = (path:any,spin?:boolean) => <Icon path={path} size={.9} spin={spin?0.3:undefined}/>
         let firstName = userInfo.firstName;
         let lastName = userInfo.lastName;
@@ -90,7 +90,7 @@ export default class ActionClass implements I_actionClass {
             { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin",render:()=><Vitrin/> },
             { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=>newBazargah?<BazargahNew/>:<Bazargah/> },
             { text: "خانه", icon: () => getSvg('home'), id: "khane",render:()=><Home/> },
-            { text: "خرید", icon: () => icon(isPricingStarted?mdiShopping:mdiLoading,!isPricingStarted), id: "kharid",render:()=><Buy/>,disabled:!isPricingStarted },
+            { text: "خرید", icon: () => icon(isShopReady?mdiShopping:mdiLoading,!isShopReady), id: "kharid",render:()=><Buy/>,disabled:!isShopReady },
             { text: () => `${firstName} ${lastName}`, marquee: true, icon: () => icon(mdiAccountBox), id: "profile",render:()=><Profile/> },
         ]
     }

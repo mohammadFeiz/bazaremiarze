@@ -69,7 +69,10 @@ export default class AIOservice{
       if(storedCacheVersions[prop] === undefined){continue}
       if (storedCacheVersions[prop] !== cacheVersions[prop]) {
         diffrences[prop] = true;
-        this.removeCache(prop)
+        if(prop === 'all'){
+          this.storage.reset();
+        }
+        else{this.removeCache(prop)}
       }
       else {diffrences[prop] = false;}
     }

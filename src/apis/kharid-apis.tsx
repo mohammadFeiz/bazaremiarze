@@ -632,7 +632,7 @@ class Spree implements I_Spree{
     let PymntDscnt;
     try{
       let firstPayDueDate = PayDueDates[0]
-      let firstPayDueDateObject = backOffice.PayDueDate_options.find((o:I_PaydueDate_option)=>o.id.toString() === firstPayDueDate.toString())
+      let firstPayDueDateObject = backOffice.PayDueDate_options.find((o:I_PaydueDate_option)=>o.value.toString() === firstPayDueDate.toString())
       PymntDscnt = firstPayDueDateObject.discountPercent;
     }
     catch{PymntDscnt = 0;}

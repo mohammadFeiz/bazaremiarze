@@ -260,11 +260,45 @@ export default function bazargahApis({baseUrl,helper}) {
             return {response,result}
         },
         async bg_changeStatus({order,parameter}){
-            
-        },
-        async bg_submit_code({order,code}){
-
-        } 
+            let {status,id} = order;
+            let url,body;
+            if(status === 'canTake'){
+                url = `https://retailerapp.bbeta.ir/api/v2/OS/toTaken`;
+                body = {orderId:id}
+            }
+            else if(status === 'shouldSend'){
+                let {deliveryType} = parameter;
+                url = `https://retailerapp.bbeta.ir/api/v2/OS/toDelivere`;
+                if(deliveryType === 'carier'){
+                    let {carierName,carierPhoneNumber} = parameter;
+                    body = {
+                        "orderId": id, // required
+                        "deliveryType": "Peyk", // required 
+                        "PhoneNumber": carierPhoneNumber, // required
+                        "Fullname": carierName // optional
+                      }    
+                }
+                else if(deliveryType === 'post'){
+                    let {trackingCode} = parameter;
+                    body = {
+                        "orderId": id, // required
+                        "deliveryType": "Post", // required 
+                        "trackingCode": trackingCode, // optional
+                    }
+                }
+            }
+            else if(status === 'sending'){
+                let {deliveryCode} = parameter;
+                url = `https://retailerapp.bbeta.ir/api/v2/OS/toCustomer`;
+                body = {
+                    "orderId": id,
+                    "code": deliveryCode
+                  }
+            }
+            let response = await Axios.post(url,body);
+            let result = !!response.data.isSuccess;
+            return {response,result} 
+        }
     }
 }
 

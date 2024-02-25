@@ -10,9 +10,10 @@ import { I_app_state } from '../../types.js';
 import {Icon} from '@mdi/react';
 import { mdiAlert, mdiAlertOutline, mdiInformation } from '@mdi/js';
 import './bg.css';
+import { I_bg_to_sending_param, I_bg_to_sent_param } from '../../apis/bg-apis.js';
 // import toTaken from '../../axios.js';
 
-type I_bg_order = {
+export type I_bg_order = {
     status:I_bg_status,
     submitDate:number,
     deliverDate?:number,//use in status:sent
@@ -34,13 +35,13 @@ type I_bg_order_item = {
     name:string,
     details:{key:string,value:string}[]
 }
-type I_deliveryType = 'post' | 'carier'
+export type I_deliveryType = 'post' | 'carier'
 
-type I_tab = 'اطراف من' | 'سفارشات من';
+export type I_bg_tab = 'اطراف من' | 'سفارشات من';
 export default function Bazargah(){
     let {apis}:I_app_state = useContext(appContext);
-    let [tab,setTab] = useState<I_tab>('اطراف من')
-    let tabs:I_tab[] = ['اطراف من','سفارشات من'];
+    let [tab,setTab] = useState<I_bg_tab>('اطراف من')
+    let tabs:I_bg_tab[] = ['اطراف من','سفارشات من'];
     let [orders,setOrders] = useState<I_bg_order[]>([])
     function getOrders(newTab = tab){
         if(tab !== newTab){
@@ -56,7 +57,7 @@ export default function Bazargah(){
         return {
             className:'of-visible m-b-6',
             html:(
-                <AIOInput value={tab} className='bazargah-tabs theme-box-shadow' type='tabs' options={tabs} optionText='option' optionValue='option' onChange={(tab:I_tab)=>getOrders(tab)}/>
+                <AIOInput value={tab} className='bazargah-tabs theme-box-shadow' type='tabs' options={tabs} optionText='option' optionValue='option' onChange={(tab:I_bg_tab)=>getOrders(tab)}/>
             )
         }
     }
@@ -249,13 +250,31 @@ type I_BazargahOrderPage = {
     order:I_bg_order
 }
 function BazargahOrderPage(props:I_BazargahOrderPage){
-    let {apis}:I_app_state = useContext(appContext);
+    let {apis,rsa}:I_app_state = useContext(appContext);
     let [order,setOrder] = useState<I_bg_order>(props.order)
     let {isInVitrin,status,items,distanceKM,orderId,price} = order;
-    function changeStatus(parameter?:any){
+    function toShouldSend(){
+        let parameter = {order}
         apis.request({
-            api:'baargah.bg_changeStatus',parameter,description:'تغییر استتوس سفارش بازارگاه',
-            onSuccess:(changedOrder)=>setOrder(changedOrder)
+            api:'bg.bg_to_shouldsend',parameter,description:'اخذ سفارش بازارگاه',
+            onSuccess:()=>setOrder({...order,status:'shouldSend'})
+        })
+    }
+    function toSending(data:I_bg_to_sending_param){
+        let parameter = {order,data}
+        apis.request({
+            api:'baargah.bg_to_sending',parameter,description:'ارسال سفارش بازارگاه',
+            onSuccess:()=>setOrder({...order,status:'sending'})
+        })
+    }
+    function toSent(data:I_bg_to_sent_param){
+        let parameter = {order,data}
+        apis.request({
+            api:'baargah.bg_to_sent',parameter,description:'تحویل سفارش بازارگاه',
+            onSuccess:()=>{
+                setOrder({...order,status:'sent'});
+                rsa.removeModal();
+            }
         })
     }
     function sendDetails_layout(){
@@ -306,7 +325,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
         }
     }
 
-    function button_layout(){return {className:'p-12',html:(<button onClick={()=>changeStatus()} className='button-2'>قبول سفارش</button>)}}
+    function button_layout(){return {className:'p-12',html:(<button onClick={()=>toShouldSend()} className='button-2'>قبول سفارش</button>)}}
     function hint_layout(){
         return {
             column:[
@@ -327,7 +346,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
                 column:[
                     showVitrin?{html:<BGVitrinText/>}:false,
                     !isMine?{html:<BGPage_PublicStatus order={order}/>}:false,
-                    isMine?{html:<BGPage_PrivateStatus order={order} changeStatus={changeStatus}/>}:false,
+                    isMine?{html:<BGPage_PrivateStatus order={order} toSending={toSending} toSent={toSent}/>}:false,
                     isMine?{html:<BGPage_Location order={order}/>}:false,
                     isMine && status !== 'shouldSend'?{html:<BGPage_SendInfo order={order}/>}:false,
                     items_layout(),
@@ -370,11 +389,11 @@ function BGPage_PublicStatus(props:I_BGPage_PublicStatus){
         footer_layout()
     ]}}/>
 }
-type I_BGPage_PrivateStatus = {order:I_bg_order,changeStatus:(parameter?:any)=>void}
+type I_BGPage_PrivateStatus = {order:I_bg_order,toSending:(data:I_bg_to_sending_param)=>void,toSent:(data:I_bg_to_sent_param)=>void}
 function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
-    let {backOffice,actionClass,rsa}:I_app_state = useContext(appContext);
+    let {backOffice,actionClass}:I_app_state = useContext(appContext);
     let total = backOffice.bazargah.forsate_ersale_sefareshe_bazargah;    
-    let {order,changeStatus} = props,{code,price,status} = order;
+    let {order,toSending,toSent} = props,{code,price,status} = order;
     let index = {'shouldSend':0,'sending':1,'sent':2}[status]
     let text = {'shouldSend':'سفارش را برای خریدار ارسال کنید','sending':'مرسوله در مسیر تحویل است','sent':'مرسوله به مشتری تحویل شد'}[status];
     function details_layout(){
@@ -404,21 +423,10 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
             column.push({html:<BazargahExpiredDate order={order} total={total}/>})
         }
         if(['shouldSend'].indexOf(status) !== -1){
-            column.push({html:<BGDeliveryType changeStatus={(parameter?:any)=>changeStatus(parameter)}/>})
+            column.push({html:<BGDeliveryType toSending={toSending}/>})
         }
         if(['sending'].indexOf(status) !== -1){
-            column.push({
-                html:(
-                    <BGPassCode 
-                        order={order} 
-                        onSubmit={()=>{
-                            actionClass.openPopup('bazargah-sent',{
-                                render:()=><DeliveryPopup onSubmit={()=>changeStatus()} onCansel={()=>rsa.removeModal()}/>
-                            })
-                        }}
-                    />
-                )
-            })
+            column.push({html:(<BGPassCode toSent={toSent}/>)})
         }
         return {className:'theme-card-bg theme-box-shadow theme-border-radius p-12 m-12',gap:8,column}
     }
@@ -426,12 +434,14 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     function text_layout(){return {html:text,className:'fs-14 bold'}}
     return (<RVD layout={{column:[details_layout(),card_layout()]}}/>)
 }
-type I_BGDeliveryType = {changeStatus:(parameter?:any)=>void}
+type I_BGDeliveryType = {toSending:(data:I_bg_to_sending_param)=>void}
 
 function BGDeliveryType(props:I_BGDeliveryType){
     let [deliveryType,setDeliveryType] = useState<I_deliveryType>();
     let [trackingCode,setTrackingCode] = useState<string>('')
-    let {changeStatus} = props;
+    let [carierName,setCarierName] = useState<string>('')
+    let [carierPhoneNumber,setCarierPhoneNumber] = useState<string>('')
+    let {toSending} = props;
     let options:I_deliveryType[] = ['post','carier']
     let trans = {'post':'پست','carier':'پیک شخصی / سرویس های دیگر'}
     function label_layout(text:string){return {html:text,className:'fs-14 bold'}}
@@ -453,38 +463,65 @@ function BGDeliveryType(props:I_BGDeliveryType){
                         )
                     },
                     {size:6},
-                    label_layout('شماره پیگیری مرسوله را وارد کنید'),
+                    !deliveryType?false:label_layout(deliveryType === 'post'?'شماره پیگیری مرسوله را وارد کنید':'اطلاعات را وارد کنید'),
                     {
-                        html:(
+                        show:deliveryType === 'post',
+                        html:()=>(
                             <AIOInput 
                                 style={{border:'1px solid #ddd'}} className='m-v-12 fs-12 h-36'
                                 type='text' value={trackingCode} onChange={(trackingCode:string)=>setTrackingCode(trackingCode)} placeholder='شماره پیگیری'
                             />
                         )
                     },
-                    {html:(<button disabled={!deliveryType || !trackingCode} className='button-2' onClick={()=>changeStatus({trackingCode,deliveryType})}>ارسال</button>)}
+                    {
+                        show:deliveryType === 'carier',
+                        html:()=>(
+                            <AIOInput 
+                                style={{border:'1px solid #ddd'}} className='m-v-12 fs-12 h-36'
+                                type='text' value={carierName} onChange={(carierName:string)=>setCarierName(carierName)} placeholder='نام پیک'
+                            />
+                        )
+                    },
+                    {
+                        show:deliveryType === 'carier',
+                        html:()=>(
+                            <AIOInput 
+                                style={{border:'1px solid #ddd'}} className='m-v-12 fs-12 h-36'
+                                type='text' value={carierPhoneNumber} onChange={(carierPhoneNumber:string)=>setCarierPhoneNumber(carierPhoneNumber)} placeholder='شماره همراه پیک'
+                            />
+                        )
+                    },
+                    {
+                        show:deliveryType === 'post',
+                        html:()=>(
+                            <button 
+                                disabled={!deliveryType || !trackingCode} className='button-2' 
+                                onClick={()=>toSending({trackingCode,deliveryType})}
+                            >ارسال</button>
+                        )
+                    },
+                    {
+                        show:deliveryType === 'carier',
+                        html:()=>(
+                            <button 
+                                disabled={!deliveryType || !carierName || !carierPhoneNumber} className='button-2' 
+                                onClick={()=>toSending({carierName,carierPhoneNumber,deliveryType})}
+                            >ارسال</button>
+                        )
+                    }
                 ]
             }}
         />
     )
 }
-type I_BGPassCode = {order:I_bg_order,onSubmit:()=>void}
+type I_BGPassCode = {toSent:(data:I_bg_to_sent_param)=>void}
 function BGPassCode(props:I_BGPassCode){
-    let {apis}:I_app_state = useContext(appContext);
+    let {actionClass}:I_app_state = useContext(appContext);
     let [passCodes,setPassCodes] = useState<any[]>([false,false,false])
-    let [submitedCode,setSubmitedCode] = useState<boolean>(false);
-    let {order,onSubmit} = props;
-    function submitCode(){
-        let code:number = +`${passCodes[0]}${passCodes[1]}${passCodes[2]}`
-        apis.request({
-            api:'bazargah.bg_submit_code',loading:true,parameter:{order,code},message:{success:true},
-            description:'تایید کد تحویل بازارگاه',onSuccess:()=>setSubmitedCode(true)
-        })
-    }
+    let {toSent} = props;
     function submitDelivered(){
-        apis.request({
-            api:'bazargah.bg_submit_delivered',loading:true,description:'اعلام تحویل سفارش بازارگاه',
-            onSuccess:()=>onSubmit(),message:{success:true}
+        actionClass.openPopup('bazargah-sent',{
+            render:()=><DeliveryPopup toSent={toSent} deliveryCode={`${passCodes[0]}${passCodes[1]}${passCodes[2]}`}/>
         })
     }
     function getOptions(){return new Array(11).fill(0).map((o,i:number)=>{return {text:i === 0?'':i - 1,value:i === 0?false:i - 1}})}
@@ -516,17 +553,16 @@ function BGPassCode(props:I_BGPassCode){
                         gap:6,align:'vh',className:'dir-ltr',
                         row:[passCode_layout(0),passCode_layout(1),passCode_layout(2)]
                     },
-                    {size:16},
+                    {size:12},
                     {
                         html:(
                             <button 
+                                className='button-2' 
                                 disabled={passCodes[0] === false || passCodes[1] === false || passCodes[2] === false} 
-                                className='button-2' onClick={()=>submitCode()}
-                            >تایید کد تحویل</button>
+                                onClick={()=>submitDelivered()}
+                            >سفارش تحویل شد</button>
                         )
-                    },
-                    {size:12},
-                    {html:(<button className='button-1' disabled={!submitedCode} onClick={()=>submitDelivered()}>سفارش تحویل شد</button>)}
+                    }
                 ]
             }}
         />
@@ -697,9 +733,10 @@ function BGLabel(props:I_BGLabel){
         />
     )
 }
-type I_DeliveryPopup = {onSubmit:(parameter?:any)=>void,onCansel:()=>void}
+type I_DeliveryPopup = {toSent:(data:I_bg_to_sent_param)=>void,deliveryCode:string}
 function DeliveryPopup(props:I_DeliveryPopup){
-    let {onSubmit,onCansel} = props;
+    let {rsa}:I_app_state = useContext(appContext);
+    let {toSent,deliveryCode} = props;
     return (
         <RVD
             layout={{
@@ -709,16 +746,8 @@ function DeliveryPopup(props:I_DeliveryPopup){
                     {html:'لطفا مطمئن شوید مرسوله به دست مشتری رسیده باشد.',className:'bold',align:'vh'},
                     {html:'برای سفارش های زیر ۱ میلیون میتوانید بدون کد تحویل سفارش را تحویل دهید'},
                     {size:6},
-                    {
-                        html:(
-                            <button onClick={()=>onCansel()} className='button-2'>بازگشت</button>
-                        )
-                    },
-                    {
-                        html:(
-                            <button onClick={()=>onSubmit()} className='button-1'>مرسوله به خریدار تحویل شده است</button>
-                        )
-                    }
+                    {html:(<button onClick={()=>rsa.removeModal()} className='button-2'>بازگشت</button>)},
+                    {html:(<button onClick={()=>{toSent({deliveryCode}); rsa.removeModal()}} className='button-1'>مرسوله به خریدار تحویل شده است</button>)}
                 ]
             }}
         />

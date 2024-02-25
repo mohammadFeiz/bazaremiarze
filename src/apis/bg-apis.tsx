@@ -1,4 +1,5 @@
 import Axios from "axios";
+import imgph from './../images/imgph.png';
 import { I_bg_order, I_bg_tab, I_deliveryType } from "../pages/bazargah/bg";
 export type I_bg_orders_param = I_bg_tab;
 export type I_bg_orders_result = I_bg_order[];
@@ -26,7 +27,6 @@ export default function bgApis({baseUrl,helper}) {
             //type 'اطراف من' | 'سفارشات من'
             let response = await Axios.get(`https://retailerapp.bbeta.ir/api/v2/os/getorders?aroundMe=${type === 'سفارشات من'?'false':'true'}`)
             // console.log(res.data.data)
-
             const data = response.data.data;
             let result;
             if(response.data.isSuccess){
@@ -36,6 +36,8 @@ export default function bgApis({baseUrl,helper}) {
                         //deliverDate?:number,//use in status:sent
                         code: o.code ,price: o.price,
                         items:o.items.map((item)=>{
+                            if(!item.image || typeof item.image !== 'string'){item.image = imgph}
+                            if(!item.details || !Array.isArray(item.details)){item.details = []}
                             return {count:item.count,price:item.price,image:item.image,name:item.name,details:item.details}
                         }),
                         distanceKM:o.distance,
@@ -113,6 +115,7 @@ export default function bgApis({baseUrl,helper}) {
             return {response,result}
         },
         async bg_to_shouldSend({order}){
+            debugger
             let url = `https://retailerapp.bbeta.ir/api/v2/OS/toTaken`;
             let body = {orderId:order.orderId}
             let response = await Axios.post(url,body);

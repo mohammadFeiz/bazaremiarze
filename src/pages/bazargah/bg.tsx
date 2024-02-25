@@ -48,7 +48,7 @@ export default function Bazargah(){
             setTab(newTab)
         }
         apis.request({
-            api:'bazargah.bg_orders',description:`دریافت سفارشات بازارگاه از نوع ${newTab}`,parameter:tab,
+            api:'bg.bg_orders',description:`دریافت سفارشات بازارگاه از نوع ${newTab}`,parameter:tab,
             onSuccess:(orders:I_bg_order[])=>setOrders(orders)
         })
     }
@@ -63,7 +63,7 @@ export default function Bazargah(){
     }
     function orderCard_layout(order:I_bg_order){
         return {
-            html:<BazargahOrderCard order={order}/>
+            className:'of-visible',html:<BazargahOrderCard order={order}/>
         }
     }
     // function deliveryPopup_layout(){
@@ -76,7 +76,7 @@ export default function Bazargah(){
                 column:[
                     tabs_layout(),
                     {
-                        flex:1,className:'bg-body ofy-auto p-t-0',
+                        flex:1,className:'bg-body ofy-auto p-t-0 gap-12 ofx-visible',
                         column:orders.map((order:I_bg_order)=>orderCard_layout(order))
                     }
                 ]
@@ -128,7 +128,7 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
     function openItemModal(image:string,name:string,details:{key:string,value:string}[],count:number){
         let render = ()=>{
             let image_layout = {size:240,html:<img src={image} alt='' height='100%'/>,align:'vh'}
-            let details_layout = {show:!!details && !!details.length,column:()=>details.map((o)=>popupDetail_layout(o))}
+            let details_layout = {show:!!Array.isArray(details) && !!details.length,column:()=>details.map((o)=>popupDetail_layout(o))}
             return (<RVD layout={{column:[image_layout,details_layout]}}/>)
         }
         rsa.addModal({
@@ -178,7 +178,7 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
     return (
         <RVD
             layout={{
-                className:'bg-order-card',
+                className:'bg-order-card theme-box-shadow',
                 column:[
                     status_layout(),
                     {row:[price_layout(),{flex:1},count_layout()],align:'v',size:36},

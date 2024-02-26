@@ -2322,7 +2322,6 @@ export function CategorySlider(props: I_CategorySlider) {
         if (!products) {
             let fakeProduct = {
                 id: '1231',
-                productSku:'234234',
                 name: 'محصول تستی',
                 images: [nosrc],
                 inStock: true,

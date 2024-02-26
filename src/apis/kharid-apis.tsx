@@ -314,7 +314,6 @@ export default function kharidApis({ baseUrl, helper }) {
     getFakeProduct(){
       let product:I_product = {
         id:'1231',
-        productSku:'4324',
         name:'محصول تستی',
         images:[nosrc],
         inStock:true,
@@ -462,7 +461,7 @@ type I_Spree = {
   getTaxonProducts:(p:I_getTaxonProducts_p)=>Promise<{products:I_product[],total:number}>,
   getProductFullDetail:(product:I_product)=>Promise<I_product>,
   getOptionTypes:(spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded)=>I_product_optionType[],
-  getVariants:(spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,optionTypes:I_product_optionType[]) =>I_variant[],
+  getVariants:(shopId:string,spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,optionTypes:I_product_optionType[]) =>I_variant[],
   getVariantOptionValues:(relationships:I_spreeVariant_relationships,optionTypes:I_product_optionType[]) => I_variant_optionValues,
   getDetails:(spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded) => I_product_detail[]
 }
@@ -535,7 +534,8 @@ class Spree implements I_Spree{
     let spreeProduct:I_spreeProduct = spreeProducts[0];
     let spreeIncluded:I_spreeIncluded = this.getIncluded(spreeResult);
     let optionTypes:I_product_optionType[] = this.getOptionTypes(spreeProduct,spreeIncluded);
-    let variants:I_variant[] = this.getVariants(spreeProduct,spreeIncluded,optionTypes);
+    let shopId:string = product.category.shopId;
+    let variants:I_variant[] = this.getVariants(shopId,spreeProduct,spreeIncluded,optionTypes);
     let details:I_product_detail[] = this.getDetails(spreeProduct,spreeIncluded)
     return {...product,optionTypes,variants,details,hasFullDetail:true}
   }
@@ -556,34 +556,6 @@ class Spree implements I_Spree{
       optionTypes.push({ id, name: attributes.presentation, items })
     }
     return optionTypes;
-  }
-  getVariants = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,optionTypes:I_product_optionType[]) => {
-    let {b1Info,actionClass} = this.appState;
-    let variants:I_variant[] = []
-    for (const spreeVariant of spreeProduct.relationships.variants.data) {
-      const {attributes,relationships}:I_spreeVariant = spreeIncluded.variants[spreeVariant.id.toString()]
-      let sku = attributes.sku;
-      if (!sku) { continue }
-      let optionValues = this.getVariantOptionValues(relationships,optionTypes)
-      let images = relationships.images.data.map(({id})=>{
-        return `https://spree.burux.com${spreeIncluded.images[id].attributes.original_url}`
-      })
-      let fixPrice_results:I_fixPrice_result[] = actionClass.fixPrice({ items: [{ ItemCode: sku, itemCode: sku, ItemQty: 1, itemQty: 1 }] });
-      let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
-      let {OnHand,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
-      let b1Result:I_itemPrice = b1Info.itemPrices.find(o => o.itemCode === sku || o.mainSku === sku);
-      if(!b1Result){
-        continue
-      }
-      let {canSell,qtyRelation} = b1Result;
-      //let dropShipping = qtyRelation === 4
-      if(!OnHand || OnHand === null){OnHand = {qtyLevel:0}}  
-      let {qtyLevel = 0} = OnHand;
-      let inStock = !!qtyLevel && !!canSell;
-      let variant:I_variant = {optionValues,inStock,images,id: sku,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price}
-      variants.push(variant);
-    }
-    return variants;
   }
   getVariantOptionValues = (relationships:I_spreeVariant_relationships,optionTypes:I_product_optionType[]) => {
     let {option_values} = relationships;
@@ -614,30 +586,61 @@ class Spree implements I_Spree{
     }
     return details;
   }
-  getProduct = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,category:I_product_category) => { 
-    let {b1Info,actionClass,Shop,backOffice} = this.appState;
-    let {CampaignId,PriceListNum,PayDueDates} = Shop[category.shopId];
-    let { relationships,attributes,id } = spreeProduct,name = attributes.name;
-    let productSku = attributes.sku;
-    const sku = spreeIncluded.variants[relationships.default_variant.data.id].attributes.sku;
-    if (!sku) {return false}
-    let images = relationships.images.data.map(({id})=>`https://spree.burux.com${spreeIncluded.images[id.toString()].attributes.styles[9].url}`)
-    const itemFromB1 = b1Info.itemPrices.find((o) =>  o.itemCode === sku || o.mainSku === sku);
-    if (!itemFromB1) {return false}
-    let fixPrice_payload = {items:[{ ItemCode: sku, itemCode: sku, ItemQty: 1, itemQty: 1 }], CampaignId, PriceListNum}
-    let fixPrice_results:I_fixPrice_result[] = actionClass.fixPrice(fixPrice_payload)
-    let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
-    let {OnHand,B1Dscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
-    if(!OnHand || OnHand === null){OnHand = {qtyLevel:0}}  
-    let PymntDscnt;
+  getPymntDscnt = (shopId:string)=>{
+    let {Shop,backOffice} = this.appState;
+    let {PayDueDates} = Shop[shopId];
+    let PymntDscnt:number;
     try{
       let firstPayDueDate = PayDueDates[0]
       let firstPayDueDateObject = backOffice.PayDueDate_options.find((o:I_PaydueDate_option)=>o.value.toString() === firstPayDueDate.toString())
       PymntDscnt = firstPayDueDateObject.discountPercent;
     }
     catch{PymntDscnt = 0;}
+    return PymntDscnt
+  }
+  getVariants = (shopId:string,spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,optionTypes:I_product_optionType[]) => {
+    let variants:I_variant[] = []
+    for (const spreeVariant of spreeProduct.relationships.variants.data) {
+      const {attributes,relationships}:I_spreeVariant = spreeIncluded.variants[spreeVariant.id.toString()]
+      let cartInfo = this.getCartInfo(attributes.sku,shopId);
+      if(!cartInfo){continue}
+      let optionValues = this.getVariantOptionValues(relationships,optionTypes)
+      let images = relationships.images.data.map(({id})=>{
+        return `https://spree.burux.com${spreeIncluded.images[id].attributes.original_url}`
+      })
+      let {inStock,B1Dscnt,CmpgnDscnt,PymntDscnt,FinalPrice,Price} = cartInfo; 
+      let variant:I_variant = {optionValues,inStock,images,id: attributes.sku,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price}
+      variants.push(variant);
+    }
+    return variants;
+  }
+  getCartInfo = (sku,shopId)=>{
+    if(!sku){return false}
+    let {b1Info,actionClass,Shop} = this.appState;
+    const b1Result = b1Info.itemPrices.find((o) =>  o.itemCode === sku || o.mainSku === sku);
+    if (!b1Result) {return false}
+    let {CampaignId,PriceListNum} = Shop[shopId];
+    let fixPrice_payload = {items:[{ ItemCode: sku, itemCode: sku, ItemQty: 1, itemQty: 1 }], CampaignId, PriceListNum}
+    let fixPrice_results:I_fixPrice_result[] = actionClass.fixPrice(fixPrice_payload)
+    let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
+    let {canSell,qtyRelation} = b1Result;
+    //let dropShipping = qtyRelation === 4
+    let {OnHand,B1Dscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
+    if(CmpgnDscnt){debugger}
+    if(!OnHand || OnHand === null){OnHand = {qtyLevel:0}}  
     let {qtyLevel = 0} = OnHand;
-    let product:I_product = {productSku,category,images,name,id,inStock:!!qtyLevel,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price,hasFullDetail:false}
+    let inStock = !!qtyLevel && !!canSell;
+    let PymntDscnt = this.getPymntDscnt(shopId);
+    return {inStock,B1Dscnt,CmpgnDscnt,PymntDscnt,FinalPrice,Price}
+  }
+  getProduct = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,category:I_product_category) => { 
+    let { relationships,attributes,id } = spreeProduct,name = attributes.name;
+    const sku = spreeIncluded.variants[relationships.default_variant.data.id].attributes.sku;
+    let cartInfo = this.getCartInfo(sku,category.shopId);
+    if(!cartInfo){return false}
+    let images = relationships.images.data.map(({id})=>`https://spree.burux.com${spreeIncluded.images[id.toString()].attributes.styles[9].url}`)
+    let {inStock,B1Dscnt,CmpgnDscnt,PymntDscnt,FinalPrice,Price} = cartInfo; 
+    let product:I_product = {category,images,name,id,inStock,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price,hasFullDetail:false}
     return product;
   }
 }

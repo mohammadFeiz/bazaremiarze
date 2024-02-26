@@ -413,7 +413,6 @@ export type I_product = {
     CmpgnDscnt:number,
     PymntDscnt:number,
     FinalPrice:number, 
-    productSku:string | number,
     Price:number,
     hasFullDetail:boolean,
     category:I_product_category, //اطلاعات دسته بندی محصول

@@ -1,5 +1,5 @@
-﻿///***Version 1.1.48 ****///
-//Edited: 2024-02-13
+﻿///***Version 1.1.50 ****///
+//Edited: 2024-02-27
 
 "use strict";
 
@@ -15,6 +15,7 @@ export default class Pricing {
     db = {};
 
     constructor(fetchURL, applicator, interval = 300 * 60 * 1000) {
+
         this.fetchUrl = fetchURL;
 
         this.updateInterval = interval;
@@ -320,7 +321,7 @@ export default class Pricing {
         return this.pricingData.ItemPrices;
     }
 
-    startservice(callback = ()=>{}) {
+    startservice(callback = ()=> {}) {
         let self = this;
         let result = new Promise(async function (resolve, reject) {
             let newdb = await self.CreateDatabase()
@@ -741,7 +742,6 @@ export default class Pricing {
         let disctemp = [];
 
         shortitem = Items.filter((x) => (x.canSell)
-            //      && ((GetMaxPriceFromListNum(x.ListNums) ?? -1.0) > 0)
             && itemcodes.indexOf(x.itemCode) > -1);
 
         for (let item of DisRules) {
@@ -755,9 +755,6 @@ export default class Pricing {
 
             }
         }
-        //shortrules = DisRules.filter((x) => (x.cardcode == cardcode || x.cardGroupCode == cardgroupcode || x.priceList == listnum)
-        //    && (shortitem.indexOf((y) => y.itemCode == x.itemCode || y.groupCode == x.itemGroupCode) > -1)
-        //    && (!x.validFrom || docdate >= x.validFrom) && (!x.validTo || docdate <= x.validTo));
 
         for (let item of lines) {
             res = null;
@@ -998,10 +995,6 @@ export default class Pricing {
         let shortitem = [];
         let shortrules = [];
         let disctemp = [];
-        //shortrules = DisRules.filter((x) => {
-        //    return (x.CardCode == MD.CardCode || x.CardGroupCode == MD.CardGroupCode || x.PriceList == MD.marketingdetails.PriceList)
-        //        && (x.ValidFrom == null ? true : MD.DocTime >= x.ValidFrom) && (x.ValidTo == null ? true : MD.DocTime <= x.ValidTo)
-        //});
         shortrules = DisRules.filter(checkshortrules);
         function checkshortrules(disrules) {
             return (disrules.cardCode == MD.CardCode || disrules.cardGroupCode == MD.CardGroupCode || disrules.priceList == MD.marketingdetails.PriceList)
@@ -1019,6 +1012,7 @@ export default class Pricing {
             if (!item || !item.ItemCode || !item.ItemQty || !item.Gross) {
                 continue;
             }
+            item.B1DisPrcnt = item.DiscountPercent;
             sum += item.LineTotal ?? 0;
             if (item.LineCommission) {
                 for (let x of item.LineCommission) {
@@ -1040,7 +1034,17 @@ export default class Pricing {
                 Percent: (sum) ? parseInt(100 * commission / sum) : 0
             };
         }
-
+        if (MD.DocSeries == 70) {
+            /// مربوط به گارانتی نعویض می باشد
+            sum = 0;
+            for (let line of results.MarketingLines) {
+                if (!line || !line.ItemCode || !line.ItemQty || !line.Gross) {
+                    continue;
+                }
+                line.DiscountPercent = 0;
+                this.FilllineMarketing(line);
+            }
+        }
         MD = this.CalculatePaymentDiscount(MD);
         this.CalculateClubPoint(MD);
 
@@ -1416,7 +1420,7 @@ export default class Pricing {
                             }
 
                             // اصلاح شود
-                            let newPrice = this.CalcColumns(item.lineDisRelationId, lineMD.Price, item.camCanHaveB1Dis ? lineMD.DiscountPercent : 0
+                            let newPrice = this.CalcColumns(item.lineDisRelationId, lineMD.Price, item.camCanHaveB1Dis ? lineMD.B1DisPrcnt : 0
                                 , item.lineBaseDis ?? 0, br.disQty, br.disVol ?? 0, 0, item.lineFixedValue ?? 0, Math.min(item.lineMaxDisPrcnt ?? 80, item.camMaxDisPrcnt ?? 80));
                             lineMD.CampaignDetails.ExDiscount = lineMD.DiscountPercent;
                             lineMD.CampaignDetails.CamDiscount = 100 - (10000 * newPrice / lineMD.Price / (100 - lineMD.DiscountPercent));
@@ -2026,6 +2030,7 @@ export default class Pricing {
         let result = {
             Status: -32766,
         };
+
         if (CampaignId <= 0) {
             result.Status = 0;
             return result;
@@ -2054,10 +2059,11 @@ export default class Pricing {
                     shortrules.push(itemrules);
                 }
             }
-            if (shortrules.length <= 0) {
+            if (shortrules.Count <= 0) {
                 result.Status = -32768 + 2048;
                 return result;
             }
+
             ActiveCam = shortrules[0];
             result.MaxOrderValue = ActiveCam.camMaxValue;
             result.MinOrderValue = ActiveCam.camMinValue;

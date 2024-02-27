@@ -28,19 +28,28 @@ export default class OrderPopup extends Component {
       };
     }
     getStatus(status) {
+      debugger
+
+      let {order} = this.state;
+      let {docStatus} = order;
+
       let statuses = [
+        { title: "درحال بررسی", color: "#3B55A5", percent: 20},
+        { title: "درانتظار پرداخت", color: "#E9A23B4D", percent: 35},
         { title: "در حال پردازش", color: "#662D91", percent: 50 },
-        { title: "مرسوله در مسیر فروشگاه است", color: "#108ABE", percent: 65 },
-        { title: "تحویل شده", color: "#107C10", percent: 100 },
-        { title: "لغو شده", color: "#A4262C", percent: 100 },
+        { title: "درحال ارسال", color: "#0095DA", percent: 65},
+        { title: "تحویل شده", color: "#3B55A5", percent: 80 },
+        { title: "تکمیل شده", color: "#2F9461", percent: 100 },
+        { title: "لغو شده", color: "#CD3636", percent: 100 },
       ];
-      let obj = statuses[status];
-      if (!obj) {return null;}
+
+      let obj = statuses.find((o)=>o.title === order.translate);
+      if (!docStatus) {return null;}
       return {
-        style: { padding: "0 24px" },className: "box",
+        style: { padding: "0 24px" },className: "box m-h-12",
         column: [
           { size: 16 },
-          {size: 24,html: obj.title,style: { color: obj.color },className: "fs-14 bold"},
+          {size: 24,html: obj.title,style: { color: obj.color },className: "fs-14 bold m-b-6"},
           {
             html: (
               <div style={{height: 12,display: "flex",width: "100%",borderRadius: 3,overflow: "hidden"}}>
@@ -91,16 +100,16 @@ export default class OrderPopup extends Component {
           this.getRow("نام کمپین", details.campaignName),
           this.getRow("قیمت پایه", SplitNumber(details.basePrice) + ' ریال'),
           this.getRow("نام ویزیتور", details.visitorName),
-          this.getRow("کد ویزیتور", details.visitorCode),
+          // this.getRow("کد ویزیتور", details.visitorCode),
           this.splitter_layout(),
           this.getRow("آدرس", details.address),
           this.getRow("تلفن همراه", details.mobile),
           this.getRow("تلفن ثابت", details.phone),
           this.splitter_layout(),
-          this.getRow("نحوه ارسال", details.nahve_ersal),
-          this.getRow("نحوه پرداخت", details.nahve_pardakht),
-          this.getRow("مهلت تسویه", details.mohlate_tasvie,!!details.mohlate_tasvie),
-          this.getRow("مبلغ پرداختی کل", SplitNumber(order.total) + ' ریال')
+          // this.getRow("نحوه ارسال", details.nahve_ersal),
+          // this.getRow("مهلت تسویه", details.mohlate_tasvie,!!details.mohlate_tasvie),
+          this.getRow("مبلغ پرداختی کل", SplitNumber(order.total) + ' ریال'),
+          this.getRow("نحوه پرداخت", details.nahve_pardakht)
         ],
       }
     }
@@ -109,7 +118,7 @@ export default class OrderPopup extends Component {
       let {docStatus} = order;
       let {details = {}} = order;
       let {nahve_pardakht} = details;
-      if(docStatus !== 'WaitingForPayment' || nahve_pardakht !== 'اینترنتی'){return false}
+      if(docStatus !== 'WaitingForPayment' || nahve_pardakht !== 'آنلاین'){return false}
       return {
         className:'p-12',
         html:(<button className="button-2" onClick={()=>this.pardakht()}>پرداخت</button>)
@@ -139,6 +148,9 @@ export default class OrderPopup extends Component {
       }
     }
     render() {
+      debugger
+      let {order} = this.state;
+      
       return (
         <RVD
           layout={{
@@ -146,9 +158,11 @@ export default class OrderPopup extends Component {
             column: [
               {className:'theme-vertical-gap'},
               {
-                flex: 1,className: "ofy-auto",
+                flex: 2,className: "ofy-auto",
                 column: [
                   this.details_layout(),
+                  {size: 12},
+                  this.getStatus(order),
                   {className:'theme-vertical-gap'},
                   this.products_layout(),
                 ],
@@ -160,7 +174,6 @@ export default class OrderPopup extends Component {
       );
     }
   }
-
   class ProductCard extends Component{
     getStyle(){
       let {isFirst,isLast} = this.props;

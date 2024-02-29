@@ -626,7 +626,6 @@ class Spree implements I_Spree{
     let {canSell,qtyRelation} = b1Result;
     //let dropShipping = qtyRelation === 4
     let {OnHand,B1Dscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
-    if(CmpgnDscnt){debugger}
     if(!OnHand || OnHand === null){OnHand = {qtyLevel:0}}  
     let {qtyLevel = 0} = OnHand;
     let inStock = !!qtyLevel && !!canSell;

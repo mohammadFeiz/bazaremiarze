@@ -8,6 +8,7 @@
 .product-option-value{
     border: 1px solid #999;
     color: #605E5C;
+    direction:ltr;
 }
 .product-option-value.active{
     border: 1px solid #0094D4;

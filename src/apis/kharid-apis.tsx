@@ -178,7 +178,7 @@ export default function kharidApis({ baseUrl, helper }) {
         "isDraft": order.mainDocisDraft
       });
       let result = res.data.data.results;
-      if(!Array.isArray(result)){
+      if(result === null){
         return {result:'خطا در دریافت اطلاعات'}
       }
       let Skus = [];
@@ -660,6 +660,7 @@ class Spree implements I_Spree{
     if (!b1Result) {return false}
     let {CampaignId,PriceListNum} = Shop[shopId];
     let PayDueDate;
+    if(CampaignId === 55){debugger}
     try{
       let res = actionClass.autoGetCampaignConditionsByCardCode(CampaignId,userInfo.cardCode,b1Info.customer.groupCode)
       PayDueDate = res.PayDueDate[0]

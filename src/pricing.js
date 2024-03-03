@@ -1,5 +1,5 @@
-﻿///***Version 1.1.50 ****///
-//Edited: 2024-02-27
+﻿///***Version 1.1.51 ****///
+//Edited: 2024-03-03
 
 "use strict";
 
@@ -321,7 +321,7 @@ export default class Pricing {
         return this.pricingData.ItemPrices;
     }
 
-    startservice(callback = ()=> {}) {
+    startservice(callback = ()=>{}) {
         let self = this;
         let result = new Promise(async function (resolve, reject) {
             let newdb = await self.CreateDatabase()
@@ -1570,6 +1570,11 @@ export default class Pricing {
                 }
             }
 
+            //حذف تخفیف اقلامی برای لیست قیمت
+            if (KeepOthers ?? false) {
+                RowDis = 0;
+            }
+
             // محاسبه تخفیف اقلام
             // تخفیفات برای همه اقلام براساس یک فرمول محاسبه می گردد.
             let Rule = ActiveCam.camDisRelationId;
@@ -2059,7 +2064,7 @@ export default class Pricing {
                     shortrules.push(itemrules);
                 }
             }
-            if (shortrules.Count <= 0) {
+            if (shortrules.length <= 0) {
                 result.Status = -32768 + 2048;
                 return result;
             }

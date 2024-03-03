@@ -13,11 +13,11 @@ import {  I_AIOService_class, I_AIOService_onCatch, I_B1Info, I_Report_parameter
 import { I_AL_props,I_AIOLogin, I_AL_model } from './npm/aio-login/index.tsx';
 type I_getBaseUrl = () => string
 const getBaseUrl: I_getBaseUrl = function () {
-  //return "https://apimy.burux.com/api/v1";
-  let url = window.location.href;
-  if (url.indexOf('bazar') !== -1) { return "https://apimy.burux.com/api/v1"; }
-  else if (url.indexOf('bbeta') !== -1) { return "https://retailerapp.bbeta.ir/api/v1"; }
-  else { return "https://retailerapp.bbeta.ir/api/v1"; }
+  return "https://apimy.burux.com/api/v1";
+  // let url = window.location.href;
+  // if (url.indexOf('bazar') !== -1) { return "https://apimy.burux.com/api/v1"; }
+  // else if (url.indexOf('bbeta') !== -1) { return "https://retailerapp.bbeta.ir/api/v1"; }
+  // else { return "https://retailerapp.bbeta.ir/api/v1"; }
 }
 type I_getUrlUserId = () => string | undefined;
 const getUrlUserId: I_getUrlUserId = function () {

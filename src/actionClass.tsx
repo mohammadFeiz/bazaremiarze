@@ -223,10 +223,10 @@ export default class ActionClass implements I_actionClass {
         }
         else if (type === 'peygiriye-sefareshe-kharid') {
             msfReport({actionName:'open order follow up popup',actionId:25,tagName:'kharid',eventName:'page view'})
-            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <OrdersHistory activeTab={parameter} /> }, header: { title: 'جزيیات سفارش خرید' } })
+            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <OrdersHistory activeTab={parameter} /> }, header: { title: 'پیگیری سفارش خرید' } })
         }
         if (type === 'joziate-sefareshe-kharid') {
-            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <OrderPopup order={parameter} /> }, header: { title: 'پیگیری سفارش خرید' } })
+            rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <OrderPopup order={parameter} /> }, header: { title: 'جزییات سفارش خرید' } })
         }
         else if (type === 'sabteGarantiJadid') {
             rsa.addModal({ id: type, position: 'fullscreen', body: { render: () => <SabteGarantiJadid /> }, header: { title: 'درخواست مرجوع کالای سوخته' } })
@@ -448,7 +448,9 @@ export default class ActionClass implements I_actionClass {
         return res
     }
     autoGetCampaignConditionsByCardCode = (CampaignId, CardCode, CardGroupCode)=>{
-        return this.pricing.autoGetCampaignConditionsByCardCode(CampaignId, CardCode, CardGroupCode);
+        debugger
+        let result = this.pricing.autoGetCampaignConditionsByCardCode(CampaignId, CardCode, CardGroupCode);
+        return result;
     }
     openLink = (linkTo:string) => {
         let { Shop, rsa,backOffice } = this.getState();

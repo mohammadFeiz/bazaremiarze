@@ -21,38 +21,63 @@ export default class OrderPopup extends Component {
       return {
         align: "v",
         row: [
-          { size: 110, html: key + " : ", className: "fs-10 bold" },
+          { size: 120, html: key + " : ", className: "fs-10 bold" },
           {flex:1},
           { html: value, className: "fs-12" },
         ],
       };
     }
     getStatus(status) {
-      debugger
 
       let {order} = this.state;
-      let {docStatus} = order;
+      let {details = {}} = order;
+      details.basePrice = details.basePrice || 0;
 
       let statuses = [
-        { title: "درحال بررسی", color: "#3B55A5", percent: 20},
-        { title: "درانتظار پرداخت", color: "#E9A23B4D", percent: 35},
-        { title: "در حال پردازش", color: "#662D91", percent: 50 },
-        { title: "درحال ارسال", color: "#0095DA", percent: 65},
-        { title: "تحویل شده", color: "#3B55A5", percent: 80 },
-        { title: "تکمیل شده", color: "#2F9461", percent: 100 },
+        // در حال بررسی
+        { title: "در انتظار بررسی", color: "#3B55A5", percent: 20},
+        { title: "سفارش ثبت شده", color: "#3B55A5", percent: 20},
+        // در انتظار پرداخت
+        { title: "مغایرت پرداخت", color: "#E9A23B", percent: 35},
+        { title: "ثبت اولیه پرداخت", color: "#E9A23B", percent: 35},
+        { title: "در انتظار پرداخت", color: "#E9A23B", percent: 35},
+        // در حال پردازش
+        { title: "تایید واحد مالی", color: "#662D91", percent: 50 },
+        { title: "دریافت اطلاعات پرداخت", color: "#662D91", percent: 50 },
+        { title: "تایید پای بار واحد فروش", color: "#662D91", percent: 50 },
+        { title: "عملیات انبار", color: "#662D91", percent: 50 },
+        //در حال ارسال
+        { title: "بخشی فاکتور شده", color: "#0095DA", percent: 65},
+        { title: "بخشی تحویل برخی فاکتور شده", color: "#0095DA", percent: 65},
+        { title: "آماده توزیع", color: "#0095DA", percent: 65},
+        { title: "بخشی تحویل شده", color: "#0095DA", percent: 65},
+        //تحویل شده
+        { title: "تحویل کامل و برخی فاکتور شده", color: "#455a96", percent: 80 },
+        { title: "تحویل شده", color: "#455a96", percent: 80 },
+        //تکمیل شده
+        { title: "فاکتور شده", color: "#2F9461", percent: 100 },
+        //لغو شده
         { title: "لغو شده", color: "#CD3636", percent: 100 },
+        { title: "کنسل شده", color: "#CD3636", percent: 100 },
+        { title: "مرجوع شده", color: "#CD3636", percent: 100 },
       ];
 
       let obj = statuses.find((o)=>o.title === order.translate);
-      if (!docStatus) {return null;}
+      if (!obj) {return null;}
       return {
-        style: { padding: "0 24px" },className: "box m-h-12",
+        style: { padding: "0 24px" },className: "box m-h-12 gap-no-color theme-gap-h",gap: 12,
         column: [
           { size: 16 },
+          //قیمت پایه
+          this.getRow("مبلغ پرداختی کل", SplitNumber(order.total) + ' ریال'),
+          this.getRow("نحوه تسویه", details.nahve_tasvie),
+          this.getRow("موعد پرداخت", details.moede_pardakht),
+          this.getRow("نحوه پرداخت", details.nahve_pardakht),
+          this.splitter_layout(),
           {size: 24,html: obj.title,style: { color: obj.color },className: "fs-14 bold m-b-6"},
           {
             html: (
-              <div style={{height: 12,display: "flex",width: "100%",borderRadius: 3,overflow: "hidden"}}>
+              <div style={{height: 12,display: "flex",width: "100%",borderRadius: 3,overflow: "hidden"} }>
                 <div style={{ width: obj.percent + "%", background: obj.color }}></div>
                 <div style={{ flex: 1, background: obj.color, opacity: 0.3 }}></div>
               </div>
@@ -69,10 +94,13 @@ export default class OrderPopup extends Component {
       let {apis} = this.context;
       let {order} = this.state;
       if(order.details){return}
-      let newOrder = await apis.request({
-        api:'kharid.mahsoolate_sefareshe_kharid',parameter:order,loading:false,description:'دریافت محصولات سفارش خرید'
+      await apis.request({
+        api:'kharid.mahsoolate_sefareshe_kharid',parameter:order,loading:false,description:'دریافت محصولات سفارش خرید',
+        onSuccess:(newOrder)=>{
+          this.setState({order:newOrder})
+        }
       })
-      this.setState({order:newOrder})
+      
     }
     async pardakht(){
       let {apis} = this.context;
@@ -88,7 +116,6 @@ export default class OrderPopup extends Component {
       let {b1Info} = this.context;
       let {order} = this.state;
       let {details = {}} = order;
-      details.basePrice = details.basePrice || 0
       return {
         className: "box gap-no-color theme-gap-h p-12",gap: 12,
         column: [
@@ -97,19 +124,29 @@ export default class OrderPopup extends Component {
           this.splitter_layout(),
           this.getRow("نام مشتری",details.customerName + " - " + details.customerCode),
           this.getRow("گروه مشتری", b1Info.customer.groupName),
-          this.getRow("نام کمپین", details.campaignName),
-          this.getRow("قیمت پایه", SplitNumber(details.basePrice) + ' ریال'),
-          this.getRow("نام ویزیتور", details.visitorName),
+          this.getRow("نام کمپین", details.campain_name),
+          // this.getRow("نام ویزیتور", details.visitorName),
           // this.getRow("کد ویزیتور", details.visitorCode),
           this.splitter_layout(),
           this.getRow("آدرس", details.address),
           this.getRow("تلفن همراه", details.mobile),
-          this.getRow("تلفن ثابت", details.phone),
-          this.splitter_layout(),
+          // this.getRow("تلفن ثابت", details.phone),
           // this.getRow("نحوه ارسال", details.nahve_ersal),
           // this.getRow("مهلت تسویه", details.mohlate_tasvie,!!details.mohlate_tasvie),
-          this.getRow("مبلغ پرداختی کل", SplitNumber(order.total) + ' ریال'),
-          this.getRow("نحوه پرداخت", details.nahve_pardakht)
+        ],
+      }
+    }
+    takhfifat_layout(){
+      let {order} = this.state;
+      let {details = {}} = order;
+      return {
+        className: "box gap-no-color theme-gap-h p-12",gap: 12,
+        column: [
+          this.getRow("قیمت کالاها", SplitNumber(details.basePrice) + ' ریال'),
+          this.getRow("تخفیف نحوه پرداخت " + details.discountPercent + '%' ),
+          this.getRow("تخفیف گروه مشتری"),
+          this.splitter_layout(),
+          this.getRow("جمع نهایی", SplitNumber(order.total) + ' ریال'),
         ],
       }
     }
@@ -118,7 +155,7 @@ export default class OrderPopup extends Component {
       let {docStatus} = order;
       let {details = {}} = order;
       let {nahve_pardakht} = details;
-      if(docStatus !== 'WaitingForPayment' || nahve_pardakht !== 'آنلاین'){return false}
+      if(docStatus !== 'WaitingForPayment' || nahve_pardakht !== 'اینترنتی'){return false}
       return {
         className:'p-12',
         html:(<button className="button-2" onClick={()=>this.pardakht()}>پرداخت</button>)
@@ -148,7 +185,7 @@ export default class OrderPopup extends Component {
       }
     }
     render() {
-      debugger
+
       let {order} = this.state;
       
       return (
@@ -165,6 +202,9 @@ export default class OrderPopup extends Component {
                   this.getStatus(order),
                   {className:'theme-vertical-gap'},
                   this.products_layout(),
+                  {className:'theme-vertical-gap'},
+                  this.takhfifat_layout(),
+                  {className:'theme-vertical-gap'},
                 ],
               },
               this.dokmeye_pardakht_layout()
@@ -191,7 +231,11 @@ export default class OrderPopup extends Component {
     }
     count_layout(){
       let {itemQty} = this.props;
-      return {size:24,html:itemQty,align:'vh'}
+      return {size:24,html:<div>تعداد : {itemQty}</div>,align:'v'}
+    }
+    unit_layout(){
+      let {unitOfMeasure} = this.props;
+      return {size:24,html:<div>واحد : {unitOfMeasure}</div>,align:'v'}
     }
     campaign_layout(){
       let {campaign} = this.props;
@@ -200,7 +244,7 @@ export default class OrderPopup extends Component {
     }
     name_layout(){
       let {itemName} = this.props;
-      return {html:itemName,className:'fs-12 theme-medium-font-color bold'}
+      return {html:<div>نام کالا : {itemName}</div>,className:'fs-12 theme-medium-font-color bold'}
     }
     details_layout(){
       let {details = []} = this.props;
@@ -243,8 +287,7 @@ export default class OrderPopup extends Component {
               {
                 size:96,
                 column:[
-                    this.image_layout(),
-                    this.count_layout()
+                    this.image_layout()
                 ]
               },
               {size:3},
@@ -254,6 +297,8 @@ export default class OrderPopup extends Component {
                       {size:3},
                       this.campaign_layout(),
                       this.name_layout(),
+                      this.count_layout(),
+                      this.unit_layout(),
                       {flex:1},
                       this.details_layout(),
                       this.discount_layout(),

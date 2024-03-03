@@ -182,7 +182,8 @@ export default function bazargahApis({baseUrl,helper}) {
                 return {
                     status:o.status,submitDate:o.submitDate,
                     //deliverDate?:number,//use in status:sent
-                    code: o.code ,price: o.price,
+                    code: o.code,
+                    price: o.price,
                     items:[
                         {
                             count:o.items.count,price:o.items.price,image:o.items.image,name:o.items.name,

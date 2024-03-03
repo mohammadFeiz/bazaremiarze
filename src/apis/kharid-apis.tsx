@@ -52,9 +52,10 @@ export default function kharidApis({ baseUrl, helper }) {
         { text: 'در حال بررسی', orders: [] },
         { text: 'در انتظار پرداخت', orders: [] },
         { text: 'در حال پردازش', orders: [] },
+        { text: 'در حال ارسال', orders: [] },
         { text: 'تحویل شده', orders: [] },
-        { text: 'لغو شده', orders: [] },
-        { text: 'مرجوع شده', orders: [] }
+        { text: 'تکمیل شده', orders: [] },
+        { text: 'لغو شده', orders: [] }
       ]
 
       let results;
@@ -93,24 +94,33 @@ export default function kharidApis({ baseUrl, helper }) {
 
       if (!Array.isArray(results)) { return { result: tabs } }
       let statuses = {
-        Returned: [-390, 'مرجوع شده', 'مرجوع شده'],//
-        Cancelled: [-290, 'لغو شده', 'لغو شده'],//
-        Rejected: [-190, 'در حال بررسی', 'رد شده'],//
-        NotSet: [0, 'در حال بررسی', 'نا مشخص'],//
-        PendingPreOrder: [100, 'در حال بررسی', 'ارسال شده برای ویزیتور'],//
-        PreOrder: [120, 'در حال بررسی', 'در حال بررسی'],//
-        CustomerApproved: [130, 'در حال بررسی', 'در حال بررسی'],//
-        VisitorApproved: [140, 'در حال بررسی', 'در حال بررسی'],//
-        SuperVisorApproved: [150, 'در حال بررسی', 'در حال بررسی'],//
-        ManagerApproved: [160, 'در حال بررسی', 'در حال بررسی'],//
+        Returned: [-390, 'لغو شده', 'مرجوع شده'],//
+        Cancelled: [-290, 'لغو شده', 'کنسل شده'],//
+        Rejected: [-190, 'لغو شده', 'لغو شده'],//
+        CustomerApproved: [130, 'در حال بررسی', 'در انتظار بررسی'],//
         Registered: [190, 'در حال بررسی', 'سفارش ثبت شده'],//
-        SalesApproved: [210, 'در حال بررسی', 'تایید واحد مالی'],//
         WaitingForPayment: [220, 'در انتظار پرداخت', 'در انتظار پرداخت'],//
-        PaymentPassed: [230, 'در حال پردازش', 'پرداخت شده'],//
-        PaymentApproved: [290, 'در حال پردازش', 'پرداخت شده'],//
-        WarhousePicked: [350, 'در حال پردازش', 'آماده سازی جهت حمل'],//
-        DeliveryPacked: [370, 'در حال پردازش', 'آماده سازی جهت حمل'],//
+        AdvancedPayment: [225, 'در انتظار پرداخت', 'ثبت اولیه پرداخت'],//
+        PaymentConflict: [240, 'در انتظار پرداخت', 'مغایرت پرداخت'],//
+        PaymentApproved: [310, 'در حال پردازش', 'تایید واحد مالی'],//
+        ByDeliveryApproved: [305, 'در حال پردازش', 'تایید پای بار واحد فروش'],//
+        PaymentPassed: [230, 'در حال پردازش', 'دریافت اطلاعات پرداخت'],//
+        WarhousePicked: [350, 'در حال پردازش', 'عملیات انبار'],//
+        PartiallyDelivered: [380, 'در حال ارسال', 'بخشی تحویل شده'],//
+        DeliveryPacked: [370, 'در حال ارسال', 'آماده توزیع'],//
+        PartiallyDeliveredPartiallyInvoiced: [460, 'در حال ارسال', 'بخشی تحویل برخی فاکتور شده'],//
+        PartiallyDeliveredInvoiced: [470, 'در حال ارسال', 'بخشی فاکتور شده'],//
         Delivered: [390, 'تحویل شده', 'تحویل شده'],//
+        ShippingRestDeliveryPacked: [480, 'تحویل شده', 'تحویل کامل و برخی فاکتور شده'],//
+        Invoiced: [490, 'تکمیل شده', 'فاکتور شده'],//
+        // NotSet: [0, 'در حال بررسی', 'نا مشخص'],//
+        // PendingPreOrder: [100, 'در حال بررسی', 'ارسال شده برای ویزیتور'],//
+        // PreOrder: [120, 'در حال بررسی', 'در حال بررسی'],//
+        // VisitorApproved: [140, 'در حال بررسی', 'در حال بررسی'],//
+        // SuperVisorApproved: [150, 'در حال بررسی', 'در حال بررسی'],//
+        // ManagerApproved: [160, 'در حال بررسی', 'در حال بررسی'],//
+        // SalesApproved: [210, 'در حال بررسی', 'تایید واحد مالی'],//
+        // PaymentApproved: [290, 'در حال پردازش', 'پرداخت شده'],//
         //Invoiced:[490,'در حال پردازش'],
         //PartiallyDelivered:[380,'در حال پردازش'],
         //Settlled:[590,'نا مشخص'],
@@ -168,20 +178,24 @@ export default function kharidApis({ baseUrl, helper }) {
         "isDraft": order.mainDocisDraft
       });
       let result = res.data.data.results;
-
+      if(!Array.isArray(result)){
+        return {result:'خطا در دریافت اطلاعات'}
+      }
       let Skus = [];
-      const products = result.marketingLines.map((i) => {
-        Skus.push(i.itemCode)
-        return { ...i, src: nosrcImage, details: [] };
-      })
-
+      let products = result.marketingLines.map((i) => {
+          Skus.push(i.itemCode)
+          return { ...i, src: nosrcImage, details: [] };
+        })
+      //moede-pardakht
       //PayDueDate:'ByDelivery',
       let dic1 = {
         'ByDelivery': 'نقد',
         'By15Days': 'چک 15 روزه',
         'ByMonth': 'چک 30 روزه',
         'By45Days': 'چک 45 روزه',
-        'By60Days': 'چک 60 روزه'
+        'By60Days': 'چک 60 روزه',
+        'Cash25_TwoMonth75': '',
+        'Cash10_OneMonth90': '10% نقد ما بقی چک یک ماهه'
       }
       //PaymentTime:'ByOnlineOrder'
 
@@ -198,29 +212,54 @@ export default function kharidApis({ baseUrl, helper }) {
         'HotDelivery': 'پخش گرم',
         'BySalesMan': 'ارسال توسط ویزیتور'
       }
+      //cmpaigns
+      let dic4 = {
+        'EidanehCredit': 'عیدانه چکی',
+        'EidanehCash': 'عیدانه نقدی',
+        'ItemDis1402_69': '',
+        'NA': 'فروش عادی',
+        'HeavyItemDis1402_69': '',
+      }
+      //nahve-tasvie
+      let dic5 = {
+        'Cash': 'نقد',
+        'Cheque': 'چکی',
+        'Hybrid': 'ترکیبی'
+      }
+
+      let campain_name = dic4[result.marketingdetails.campaign];
+
       let nahve_pardakht = dic2[result.marketingdetails.paymentTime];
+
+      let nahve_tasvie = dic5[result.marketingdetails.settleType];
+
       let discount;
+
       try {
         discount = result.marketingdetails.documentDiscount || 0;
       }
+
       catch { discount = 0; }
-      let campaignName = '';
+      // let campaignName = '';
       let details = {
         products,
         nahve_ersal: dic3[result.marketingdetails.deliveryType],
-        mohlate_tasvie: result.marketingdetails.paymentTime === 'ByOnlineOrder' ? undefined : dic1[result.marketingdetails.payDueDate],
+        moede_pardakht: result.marketingdetails.paymentTime === 'ByOnlineOrder' ? undefined : dic1[result.marketingdetails.payDueDate],
         nahve_pardakht,
-        paymentMethod: result.paymentdetails.paymentTermName,
+        // paymentMethod: result.paymentdetails.paymentTermName,
+        nahve_tasvie,
         visitorName: result.marketingdetails.slpName,
         visitorCode: result.marketingdetails.slpCode,
         customerName: result.cardName,
         customerCode: result.cardCode,
         customerGroup: result.cardGroupCode,
         basePrice: result.documentTotal + discount,
-        campaignName,
+        //campaignName
+        campain_name,
         address: result.deliverAddress,
-        phone: userInfo.landline,
+        phone: userInfo.landlineNumber,
         mobile: userInfo.phoneNumber,
+        discountPercent: result.marketingdetails.documentDiscountPercent,
       }
       return { result: { ...order, details } }
     },

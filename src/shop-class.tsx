@@ -725,7 +725,7 @@ function TaxonCard(props: I_TaxonCard) {
         return {
             align: 'v', className: 'taxon-card-group-discount',gap:6,
             row:[
-                {html:`${0.5 * notHasErrors.length} %`,className:'discount-percent',style:{background:'orange'},size:36,align:'vh'},
+                {html:`${1 * notHasErrors.length} %`,className:'discount-percent',style:{background:'orange'},size:36,align:'vh'},
                 { html: `تخفیف گروه کالا`}
             ]
         }

@@ -32,11 +32,19 @@ export default function bgApis({baseUrl,helper}) {
             let result;
             if(response.data.isSuccess){
                 result = data.map((o)=>{
-                    let {orderDate} = o;
+                    let {orderDate,takenDate,deliveryType,trackingCode,delivererPhone,delivererName} = o;
                     let submitDate = AIODate().getTime({date:orderDate})
+                    
+                    if(o.status === 'sending' && (!deliveryType || deliveryType === null)){
+                        debugger
+                    }
+                    if(o.status === 'sent' && (!takenDate || takenDate === null)){
+                        debugger
+                    }
+
                     return {
                         status:o.status,submitDate,
-                        //deliverDate?:number,//use in status:sent
+                        deliverDate:takenDate?AIODate().getTime({date:takenDate}):undefined,//use in status:sent
                         code: o.code ,price: o.price,
                         items:o.items.map((item)=>{
                             if(!item.image || typeof item.image !== 'string'){item.image = imgph}
@@ -45,8 +53,10 @@ export default function bgApis({baseUrl,helper}) {
                         }),
                         distanceKM:o.distance,
                         orderId:o.orderId,
-                        //deliveryType?:I_deliveryType,//use in status:sending
-                        //trackingCode?:string,//use in status:sending
+                        deliveryType:deliveryType?{'Peyk':'carier','Post':'post'}[deliveryType]:undefined,//use in status:sending
+                        trackingCode,//use in status:sending
+                        carierName:delivererName || '',//use in status:sending
+                        carierPhoneNumber:delivererPhone || '',//use in status:sending
                         info:{name:o.info.name,lat:o.info.lat,lng:o.info.lng,address:o.info.address,city:o.info.city,province:o.info.province,postal:o.info.postal,phone:o.info.phone}
                     }
                 })

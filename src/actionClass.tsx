@@ -127,7 +127,7 @@ export default class ActionClass implements I_actionClass {
             let { shopId, active,justActiveForAdmins,CampaignId  } = spreeCampaign;
             if (!active) { continue }
             if(!isAdmin && justActiveForAdmins){continue}
-            if(CampaignId === 54){
+            if(CampaignId === 54 || CampaignId === 55){
                 let {MaxOrderValue,PayDueDate,CamPayTime} = this.autoGetCampaignConditionsByCardCode(CampaignId,userInfo.cardCode,b1Info.customer.groupCode)
                 if(Array.isArray(PayDueDate) && PayDueDate.length){spreeCampaign.PayDueDates = PayDueDate.map((o)=>+o)}
                 if(Array.isArray(CamPayTime) && CamPayTime.length){spreeCampaign.PaymentTimes = CamPayTime.map((o)=>+o)}
@@ -326,7 +326,7 @@ export default class ActionClass implements I_actionClass {
         }
         return DiscountList
     }
-    fixPrice = ({ items, CampaignId, PriceListNum }) => {
+    fixPrice = ({ items, CampaignId, PriceListNum,PayDueDate }) => {
         let { userInfo,b1Info } = this.getProps();
         let {Logger} = this.getState();
         if (!b1Info.customer.groupCode) { console.error('fixPrice missing userInfo.groupCode') }
@@ -337,7 +337,8 @@ export default class ActionClass implements I_actionClass {
             "marketingdetails": {
                 "PriceList": PriceListNum,
                 "SlpCode": b1Info.customer.slpcode,
-                "Campaign": CampaignId
+                "Campaign": CampaignId,
+                PayDueDate
             },
             "MarketingLines": items
         }
@@ -448,9 +449,8 @@ export default class ActionClass implements I_actionClass {
         return res
     }
     autoGetCampaignConditionsByCardCode = (CampaignId, CardCode, CardGroupCode)=>{
-        debugger
-        let result = this.pricing.autoGetCampaignConditionsByCardCode(CampaignId, CardCode, CardGroupCode);
-        return result;
+        let res = this.pricing.autoGetCampaignConditionsByCardCode(CampaignId, CardCode, CardGroupCode);
+        return res;
     }
     openLink = (linkTo:string) => {
         let { Shop, rsa,backOffice } = this.getState();

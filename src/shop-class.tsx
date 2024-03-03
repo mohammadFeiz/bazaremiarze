@@ -579,7 +579,7 @@ export default class ShopClass implements I_ShopClass {
                             row:[
                                 {html:<Icon path={mdiInformation} size={0.8}/>,align:'vh',size:36},
                                 {
-                                    html:description,align:'v',className:'fs-10'
+                                    html:description,align:'v',className:'fs-12'
                                 }
                             ]
                         },
@@ -1229,7 +1229,15 @@ function RegularPage(props: I_RegularPage) {
                                     row: optionValueIds.map((optionValueId) => {
                                         optionValueId = optionValueId.toString();
                                         let optionValueName = items[optionValueId];
-                                        let active = selectedDic[optionType.id].toString() === optionValueId;
+                                        let value = selectedDic[optionType.id];
+                                        if(!value){
+                                            debugger
+                                            console.log(`check this:`)
+                                            console.log(`selectedDic => `,selectedDic);
+                                            console.log(`product => `,product);
+                                            
+                                        }
+                                        let active = value?value.toString() === optionValueId:false;
                                         let className = 'fs-12 p-v-3 p-h-12 br-4 product-option-value' + (active ? ' active' : '');
                                         return { html: optionValueName, align: "vh", className, onClick: () => changeOptionType({ [optionType.id]: optionValueId }) };
                                     })

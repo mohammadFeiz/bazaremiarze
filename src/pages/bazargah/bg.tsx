@@ -23,6 +23,7 @@ export type I_bg_order = {
     items:I_bg_order_item[],
     isInVitrin:boolean,
     distanceKM:number,
+    carierPhoneNumber?:string,
     deliveryType?:I_deliveryType,//use in status:sending
     trackingCode?:string,//use in status:sending
     info:{name:string,lat:number,lng:number,address:string,city:string,province:string,postal:number,phone:string}
@@ -43,16 +44,14 @@ export default function Bazargah(){
     let [tab,setTab] = useState<I_bg_tab>('اطراف من')
     let tabs:I_bg_tab[] = ['اطراف من','سفارشات من'];
     let [orders,setOrders] = useState<I_bg_order[]>([])
-    function getOrders(newTab = tab){
-        if(tab !== newTab){
-            setTab(newTab)
-        }
+    function getOrders(newTab){
+        setTab(newTab)
         apis.request({
-            api:'bg.bg_orders',description:`دریافت سفارشات بازارگاه از نوع ${newTab}`,parameter:tab,
+            api:'bg.bg_orders',description:`دریافت سفارشات بازارگاه از نوع ${newTab}`,parameter:newTab,
             onSuccess:(orders:I_bg_order[])=>setOrders(orders)
         })
     }
-    useEffect(()=>{getOrders()},[])
+    useEffect(()=>{getOrders('اطراف من')},[])
     function tabs_layout(){
         return {
             className:'of-visible m-b-6',
@@ -256,21 +255,21 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
     function toShouldSend(){
         let parameter = {order}
         apis.request({
-            api:'bg.bg_to_shouldsend',parameter,description:'اخذ سفارش بازارگاه',
+            api:'bg.bg_to_shouldSend',parameter,description:'اخذ سفارش بازارگاه',
             onSuccess:()=>setOrder({...order,status:'shouldSend'})
         })
     }
     function toSending(data:I_bg_to_sending_param){
         let parameter = {order,data}
         apis.request({
-            api:'baargah.bg_to_sending',parameter,description:'ارسال سفارش بازارگاه',
+            api:'bg.bg_to_sending',parameter,description:'ارسال سفارش بازارگاه',
             onSuccess:()=>setOrder({...order,status:'sending'})
         })
     }
     function toSent(data:I_bg_to_sent_param){
         let parameter = {order,data}
         apis.request({
-            api:'baargah.bg_to_sent',parameter,description:'تحویل سفارش بازارگاه',
+            api:'bg.bg_to_sent',parameter,description:'تحویل سفارش بازارگاه',
             onSuccess:()=>{
                 setOrder({...order,status:'sent'});
                 rsa.removeModal();
@@ -517,11 +516,11 @@ function BGDeliveryType(props:I_BGDeliveryType){
 type I_BGPassCode = {toSent:(data:I_bg_to_sent_param)=>void}
 function BGPassCode(props:I_BGPassCode){
     let {actionClass}:I_app_state = useContext(appContext);
-    let [passCodes,setPassCodes] = useState<any[]>([false,false,false])
+    let [passCodes,setPassCodes] = useState<any[]>([false,false,false,false])
     let {toSent} = props;
     function submitDelivered(){
         actionClass.openPopup('bazargah-sent',{
-            render:()=><DeliveryPopup toSent={toSent} deliveryCode={`${passCodes[0]}${passCodes[1]}${passCodes[2]}`}/>
+            render:()=><DeliveryPopup toSent={toSent} deliveryCode={`${passCodes[0]}${passCodes[1]}${passCodes[2]}${passCodes[3]}`}/>
         })
     }
     function getOptions(){return new Array(11).fill(0).map((o,i:number)=>{return {text:i === 0?'':i - 1,value:i === 0?false:i - 1}})}
@@ -551,14 +550,14 @@ function BGPassCode(props:I_BGPassCode){
                     {size:16},
                     {
                         gap:6,align:'vh',className:'dir-ltr',
-                        row:[passCode_layout(0),passCode_layout(1),passCode_layout(2)]
+                        row:[passCode_layout(0),passCode_layout(1),passCode_layout(2),passCode_layout(3)]
                     },
                     {size:12},
                     {
                         html:(
                             <button 
                                 className='button-2' 
-                                disabled={passCodes[0] === false || passCodes[1] === false || passCodes[2] === false} 
+                                disabled={passCodes[0] === false || passCodes[1] === false || passCodes[2] === false || passCodes[3] === false} 
                                 onClick={()=>submitDelivered()}
                             >سفارش تحویل شد</button>
                         )
@@ -614,9 +613,9 @@ function BGPage_Location(props:I_BGPage_Location){
 }
 type I_BGPage_SendInfo = {order:I_bg_order}
 function BGPage_SendInfo(props:I_BGPage_SendInfo){
-    let {order} = props,{deliveryType,trackingCode} = order;
+    let {order} = props,{deliveryType,trackingCode,carierPhoneNumber} = order;
     if(!deliveryType){alert('bazargah error : order.status is sending but missing order.deliveryType')}
-    if(!trackingCode){alert('bazargah error : order.status is sending but missing order.trackingCode')}
+    //if(!trackingCode){alert('bazargah error : order.status is sending but missing order.trackingCode')}
     function kv_layout(p:[key:string,value:string]){
         return {className:'p-12 p-b-0',column:[{html:p[0],className:'bold fs-12'},{html:p[1],className:'fs-12 theme-medium-font-color t-a-right'}]}
     }
@@ -627,7 +626,8 @@ function BGPage_SendInfo(props:I_BGPage_SendInfo){
                 column:[
                     {html:<BGLabel text='اطلاعات ارسال سفارش'/>,className:'p-12'},
                     kv_layout(['نحوه ارسال',deliveryType]),
-                    kv_layout(['کد پیگیری',trackingCode]),
+                    deliveryType !== 'post'?false:kv_layout(['کد پیگیری',trackingCode || '']),
+                    deliveryType !== 'carier'?false:kv_layout(['شماره پیک',carierPhoneNumber || '']),
                     
                 ]
             }}

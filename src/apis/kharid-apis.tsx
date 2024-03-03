@@ -616,11 +616,17 @@ class Spree implements I_Spree{
   }
   getCartInfo = (sku,shopId)=>{
     if(!sku){return false}
-    let {b1Info,actionClass,Shop} = this.appState;
+    let {userInfo,b1Info,actionClass,Shop} = this.appState;
     const b1Result = b1Info.itemPrices.find((o) =>  o.itemCode === sku || o.mainSku === sku);
     if (!b1Result) {return false}
     let {CampaignId,PriceListNum} = Shop[shopId];
-    let fixPrice_payload = {items:[{ ItemCode: sku, itemCode: sku, ItemQty: 1, itemQty: 1 }], CampaignId, PriceListNum}
+    let PayDueDate;
+    try{
+      let res = actionClass.autoGetCampaignConditionsByCardCode(CampaignId,userInfo.cardCode,b1Info.customer.groupCode)
+      PayDueDate = res.PayDueDate[0]
+    }
+    catch{}
+    let fixPrice_payload = {items:[{ ItemCode: sku, itemCode: sku, ItemQty: 1, itemQty: 1 }], CampaignId, PriceListNum,PayDueDate}
     let fixPrice_results:I_fixPrice_result[] = actionClass.fixPrice(fixPrice_payload)
     let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
     let {canSell,qtyRelation} = b1Result;

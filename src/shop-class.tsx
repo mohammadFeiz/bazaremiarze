@@ -578,7 +578,7 @@ export default class ShopClass implements I_ShopClass {
                             row:[
                                 {html:<Icon path={mdiInformation} size={0.8}/>,align:'vh',size:36},
                                 {
-                                    html:description,align:'v',className:'fs-10'
+                                    html:description,align:'v',className:'fs-12'
                                 }
                             ]
                         },

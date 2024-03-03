@@ -326,7 +326,7 @@ export default class ActionClass implements I_actionClass {
         }
         return DiscountList
     }
-    fixPrice = ({ items, CampaignId, PriceListNum }) => {
+    fixPrice = ({ items, CampaignId, PriceListNum,PayDueDate }) => {
         let { userInfo,b1Info } = this.getProps();
         let {Logger} = this.getState();
         if (!b1Info.customer.groupCode) { console.error('fixPrice missing userInfo.groupCode') }
@@ -337,7 +337,8 @@ export default class ActionClass implements I_actionClass {
             "marketingdetails": {
                 "PriceList": PriceListNum,
                 "SlpCode": b1Info.customer.slpcode,
-                "Campaign": CampaignId
+                "Campaign": CampaignId,
+                PayDueDate
             },
             "MarketingLines": items
         }
@@ -449,7 +450,6 @@ export default class ActionClass implements I_actionClass {
     }
     autoGetCampaignConditionsByCardCode = (CampaignId, CardCode, CardGroupCode)=>{
         let res = this.pricing.autoGetCampaignConditionsByCardCode(CampaignId, CardCode, CardGroupCode);
-        debugger
         return res;
     }
     openLink = (linkTo:string) => {

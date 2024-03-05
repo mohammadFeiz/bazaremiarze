@@ -555,7 +555,6 @@ export default class ShopClass implements I_ShopClass {
         return false
     }
     renderCartFactor = async (button?:boolean) => {
-        debugger
         let {actionClass} = this.getAppState();
         let res = await this.getAmounts(undefined, 'cart');
         let { payment } = res;

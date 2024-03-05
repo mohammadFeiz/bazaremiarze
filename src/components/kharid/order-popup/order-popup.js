@@ -143,8 +143,8 @@ export default class OrderPopup extends Component {
         className: "box gap-no-color theme-gap-h p-12",gap: 12,
         column: [
           this.getRow("قیمت کالاها", SplitNumber(details.basePrice) + ' ریال'),
-          this.getRow("تخفیف نحوه پرداخت " + details.discountPercent + '%' ),
-          this.getRow("تخفیف گروه مشتری"),
+          this.getRow("تخفیف نحوه پرداخت " + details.discountPercent + '%',  SplitNumber(details.docDiscount) + ' ریال' ),
+          // this.getRow("تخفیف گروه مشتری"),
           this.splitter_layout(),
           this.getRow("جمع نهایی", SplitNumber(order.total) + ' ریال'),
         ],
@@ -256,6 +256,7 @@ export default class OrderPopup extends Component {
       }
     }
     discount_layout(){
+      debugger
       let {discountPercent,price} = this.props;
       if(!discountPercent){return false}
       return {
@@ -265,6 +266,13 @@ export default class OrderPopup extends Component {
             {html:<del>{SplitNumber(price)}</del>,className:'fs-14 theme-light-font-color',align:'v'},
             {html:<div style={{background:'#FFD335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{discountPercent + '%'}</div>,align:'v'},
         ]  
+      }
+    }
+    takhfif_moshtari(){
+      let {discountPercent} = this.props;
+      if(!discountPercent){return false}
+      return {
+        html:<div>تخفیف ویژه : {discountPercent + '%'}</div>
       }
     }
     price_layout(){
@@ -299,6 +307,7 @@ export default class OrderPopup extends Component {
                       this.name_layout(),
                       this.count_layout(),
                       this.unit_layout(),
+                      this.takhfif_moshtari(),
                       {flex:1},
                       this.details_layout(),
                       this.discount_layout(),

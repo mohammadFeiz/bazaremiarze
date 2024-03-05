@@ -177,8 +177,9 @@ export default function kharidApis({ baseUrl, helper }) {
         "DocType": docTypeDictionary[order.mainDocType],
         "isDraft": order.mainDocisDraft
       });
+
       let result = res.data.data.results;
-      if(!Array.isArray(result)){
+      if(result===null){
         return {result:'خطا در دریافت اطلاعات'}
       }
       let Skus = [];
@@ -186,16 +187,47 @@ export default function kharidApis({ baseUrl, helper }) {
           Skus.push(i.itemCode)
           return { ...i, src: nosrcImage, details: [] };
         })
+
       //moede-pardakht
       //PayDueDate:'ByDelivery',
       let dic1 = {
-        'ByDelivery': 'نقد',
+        'ByDelivery': 'به روز',
         'By15Days': 'چک 15 روزه',
         'ByMonth': 'چک 30 روزه',
         'By45Days': 'چک 45 روزه',
         'By60Days': 'چک 60 روزه',
-        'Cash25_TwoMonth75': '',
-        'Cash10_OneMonth90': '10% نقد ما بقی چک یک ماهه'
+        'Cash10_OneMonth90': '10% نقد مابقی چک یک ماهه',
+        'Cash40_FourMonth60': '40% نقد مابقی چک 4 ماهه',
+        'Cash30_ThreeMonth70': '30% نقد مابقی چک 3 ماهه',
+        'Golden1500_45Days': 'قرارداد طلایی 1500 میلیونی 45 روزه',
+        'Golden900_40Days': 'قرارداد طلایی 900 میلیونی 40 روزه',
+        'Golden600_OneMonth': 'قرارداد طلایی 600 میلیونی 30 روزه',
+        'Golden300_OneMonth': 'قرارداد طلایی 300 میلیونی 30 روزه',
+        'Golden180_OneMonth': 'قرارداد طلایی 180 میلیونی 30 روزه',
+        'Golden90_OneMonth': 'قرارداد طلایی 90 میلیونی 30 روزه',
+        'Golden50_OneMonth': 'قرارداد طلایی 50 میلیونی 30 روزه',
+        'Cash20_TwoMonth80': '20% نقد مابقی چک 2 ماهه',
+        'Cash50_FourMonth50': '50% نقد مابقی چک 4 ماهه',
+        'Cash40_ThreeMonth60': '40% نقد مابقی چک 3 ماهه',
+        'Cash30_TwoMonth70': '30% نقد مابقی چک 2 ماهه',
+        'Cash50_OneMonth50': '50% نقد مابقی چک 1 ماهه',
+        'Cash10_FourMonth90': '10% نقد مابقی چک 4 ماهه',
+        'Cash10_ThreeMonth90': '10% نقد مابقی چک 3 ماهه',
+        'Cash10_TwoMonth90': '10% نقد مابقی چک 2 ماهه',
+        'Cash50_FiveMonth50': '50% نقد مابقی چک 5 ماهه',
+        'Cash30_FourMonth70': '30% نقد مابقی چک 4 ماهه',
+        'Cash20_ThreeMonth80': '20% نقد مابقی چک 3 ماهه',
+        'Cash50_ThreeMonth50': '50% نقد مابقی چک 3 ماهه',
+        'Cash25_TwoMonth75': '25% نقد مابقی چک 2 ماهه',
+        'By6Months': '6 ماه بعد',
+        'By5_5Months': '5 ماه و نیم بعد',
+        'By5Months': '5 ماه بعد',
+        'By4_5Months': '4 ماه و نیم بعد',
+        'By4Months': '4 ماه بعد',
+        'By3_5Months': '3 ماه و نیم بعد',
+        'By3Months': '3 ماه بعد ',
+        'By75Days': '2 ماه و نیم بعد',
+        'NotSet': 'تعیین نشده',
       }
       //PaymentTime:'ByOnlineOrder'
 
@@ -216,15 +248,31 @@ export default function kharidApis({ baseUrl, helper }) {
       let dic4 = {
         'EidanehCredit': 'عیدانه چکی',
         'EidanehCash': 'عیدانه نقدی',
-        'ItemDis1402_69': '',
+        'ItemDis1402_69': 'طرح اقلامی زمستان 1402',
         'NA': 'فروش عادی',
-        'HeavyItemDis1402_69': '',
+        'HeavyItemDis1402_69': 'طرح اقلامی سنگین زمستان 1402',
+        // 'QtyWinter': 'حبابی های زمستان 1402',
+        // 'ItemDis1402': 'طرح اقلامی زمستان 1402',
+        // 'Belex403_National_Tools': 'فروش اقلامی همایش بلکس 2023',
+        // 'Belex403_National_Packs': 'بسته های اقلامی همایش بلکس 2023',
+        // 'ClubCredit': 'فروش امتیازی باشگاه',
+        // 'Belex403_National': 'همایش بلکس 2023',
+        // 'Golden10W1402': '10 وات طلایی اپ الکتریکی',
+        // 'Belex402_HMD': 'همایش همدان 1402'
       }
       //nahve-tasvie
       let dic5 = {
         'Cash': 'نقد',
         'Cheque': 'چکی',
-        'Hybrid': 'ترکیبی'
+        'Hybrid': 'ترکیبی',
+        'NotSet': 'تنظیم نشده',
+        'pos': 'کارتخوان',
+        'online': 'آنلاین',
+        'card': 'کارت به کارت',
+        'pos_cheque': 'کارتخوان-چک',
+        'online_cheque': 'آنلاین-چک',
+        'card_cheque': 'کارت به کارت-چک',
+        'ClubPoint': 'امتیاز باشگاه',
       }
 
       let campain_name = dic4[result.marketingdetails.campaign];
@@ -240,6 +288,7 @@ export default function kharidApis({ baseUrl, helper }) {
       }
 
       catch { discount = 0; }
+
       // let campaignName = '';
       let details = {
         products,
@@ -254,6 +303,7 @@ export default function kharidApis({ baseUrl, helper }) {
         customerCode: result.cardCode,
         customerGroup: result.cardGroupCode,
         basePrice: result.documentTotal + discount,
+        docDiscount: result.marketingdetails.documentDiscount,
         //campaignName
         campain_name,
         address: result.deliverAddress,

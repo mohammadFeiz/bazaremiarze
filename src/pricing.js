@@ -1,5 +1,5 @@
-﻿///***Version 1.1.50 ****///
-//Edited: 2024-02-27
+﻿///***Version 1.1.52 ****///
+//Edited: 2024-03-04
 
 "use strict";
 
@@ -321,7 +321,7 @@ export default class Pricing {
         return this.pricingData.ItemPrices;
     }
 
-    startservice(callback = ()=> {}) {
+    startservice(callback = ()=> {})  {
         let self = this;
         let result = new Promise(async function (resolve, reject) {
             let newdb = await self.CreateDatabase()
@@ -1077,16 +1077,46 @@ export default class Pricing {
                 }
                 if (camrule?.isHaveCampaignDis ?? true) {
                     let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, false);
+                    this.SetDocDiscountInfo(DocAfterCa);
                     return DocAfterCa;
                 }
+                this.SetDocDiscountInfo(DocAfterB1);
                 return DocAfterB1;
             }
         }
         DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
+        this.SetDocDiscountInfo(DocAfterB1);
         return DocAfterB1;
-        //    let DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes);
-        //    let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, false);
-        //    return DocAfterCa;
+    }
+    SetDocDiscountInfo(doc) {
+        if ((doc?.MarketingLines?.length ?? -1) < 0) {
+            return;
+        }
+        let sumItems = 0;
+        let sumQty = 0;
+        let sumdiscount = 0;
+        let sumCampaign = 0;
+        for (let item of doc.MarketingLines) {
+            sumQty += item.ItemQty ?? 0;
+            sumItems += (item.ItemQty ?? 0) * (item.Price ?? 0);
+            if ((item.CampaignDetails?.CamDiscount ?? -1) > 0) {
+                sumCampaign += (item.ItemQty ?? 0) * (item.Price ?? 0) * (item.CampaignDetails?.CamDiscount ?? 0);
+            }
+            sumdiscount += (item.ItemQty ?? 0) * ((item.Price ?? 0) - (item.PriceAfterVat ?? 0));
+        }
+        if (!doc.marketingdetails)
+            doc.marketingdetails = {};
+        if (!doc.marketingdetails.DiscountList)
+            doc.marketingdetails.DiscountList = {};
+        doc.marketingdetails.DiscountList.ShowCamDisValue = sumCampaign;
+        doc.marketingdetails.DiscountList.ShowPayDisValue = (doc.marketingdetails.DocumentDiscount ?? 0);
+        doc.marketingdetails.DiscountList.ShowPAyDisPer = (doc.marketingdetails.DocumentDiscountPercent ?? 0) * 100;
+        doc.marketingdetails.DiscountList.ShowDisValue = sumdiscount;
+        doc.marketingdetails.DiscountList.ShowDisPer = (sumdiscount / sumItems) * 100;
+        doc.marketingdetails.DiscountList.ShowB1DisValue = sumdiscount - sumCampaign;
+        doc.marketingdetails.DiscountList.ShowB1DisPer = ((sumdiscount - sumCampaign) / sumItems) * 100;
+        doc.marketingdetails.DiscountList.ShowTotalBfDis = sumItems;
+        doc.marketingdetails.DiscountList.ShowTotalQty = sumQty;
     }
 
     CalculatePriceDiscountByCampaign(MD, campaignRules, KeepOthers = false) {
@@ -1568,6 +1598,11 @@ export default class Pricing {
                     VolDis = (ActiveCam.camValueDisPrcnt ?? 0) * ValStep;
                     VolDis = Math.min(VolDis, (ActiveCam.camMaxValueDisPrcnt ?? 100));
                 }
+            }
+
+            //حذف تخفیف اقلامی برای لیست قیمت
+            if (KeepOthers ?? false) {
+                RowDis = 0;
             }
 
             // محاسبه تخفیف اقلام
@@ -2059,7 +2094,7 @@ export default class Pricing {
                     shortrules.push(itemrules);
                 }
             }
-            if (shortrules.Count <= 0) {
+            if (shortrules.length <= 0) {
                 result.Status = -32768 + 2048;
                 return result;
             }

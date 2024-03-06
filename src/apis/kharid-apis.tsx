@@ -1,6 +1,6 @@
 import Axios from "axios";
-import nosrcImage from './../images/no-src.png';
-import nosrc from './../images/no-src.png';
+import nosrcImage from './../images/imgph.png';
+import nosrc from './../images/imgph.png';
 import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
 import { I_B1Info, I_PaydueDate_option, I_ShopProps, I_actionClass, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_itemPrice, I_product, I_product_category, I_product_detail, I_product_optionType, I_state_cart, I_variant, I_variant_optionValues } from "../types";
@@ -179,7 +179,7 @@ export default function kharidApis({ baseUrl, helper }) {
       });
 
       let result = res.data.data.results;
-      if(result === null){
+      if(result===null){
         return {result:'خطا در دریافت اطلاعات'}
       }
       let Skus = [];
@@ -302,14 +302,17 @@ export default function kharidApis({ baseUrl, helper }) {
         customerName: result.cardName,
         customerCode: result.cardCode,
         customerGroup: result.cardGroupCode,
-        basePrice: result.documentTotal + discount,
-        docDiscount: result.marketingdetails.documentDiscount,
+        // basePrice: result.documentTotal + discount,
+        basePrice: result.marketingdetails.discountList.showTotalBfDis,
+        docDiscount: result.marketingdetails.documentDiscount * 1.09,
         //campaignName
         campain_name,
         address: result.deliverAddress,
         phone: userInfo.landlineNumber,
         mobile: userInfo.phoneNumber,
         discountPercent: result.marketingdetails.documentDiscountPercent,
+        takhfif_vizhe: result.marketingdetails.discountList.showDisValue,
+        darsad_takfif_vizhe: result.marketingdetails.discountList.showDisPer,
       }
       return { result: { ...order, details } }
     },

@@ -26,7 +26,7 @@ export default function bgApis({baseUrl,helper}) {
     } = {
         async bg_orders(type){
             //type 'اطراف من' | 'سفارشات من'
-            let response = await Axios.get(`https://retailerapp.bbeta.ir/api/v2/os/getorders?aroundMe=${type === 'سفارشات من'?'false':'true'}`)
+            let response = await Axios.get(`${baseUrl.replace('v1','v2')}/os/getorders?aroundMe=${type === 'سفارشات من'?'false':'true'}`)
             // console.log(res.data.data)
             const data = response.data.data;
             let result;
@@ -129,7 +129,7 @@ export default function bgApis({baseUrl,helper}) {
         },
         async bg_to_shouldSend({order}){
             debugger
-            let url = `https://retailerapp.bbeta.ir/api/v2/OS/toTaken`;
+            let url = `${baseUrl.replace('v1','v2')}/OS/toTaken`;
             let body = {orderId:order.orderId}
             let response = await Axios.post(url,body);
             let result = response.data.isSuccess?true:response.data.message;
@@ -137,7 +137,7 @@ export default function bgApis({baseUrl,helper}) {
         },
         async bg_to_sending({order,data}){
             let {deliveryType,carierName,carierPhoneNumber,trackingCode} = data;
-            let url = `https://retailerapp.bbeta.ir/api/v2/OS/toDelivere`;
+            let url = `${baseUrl.replace('v1','v2')}/OS/toDelivere`;
             let body;
             if(deliveryType === 'carier'){
                 body = {
@@ -160,7 +160,7 @@ export default function bgApis({baseUrl,helper}) {
         },
         async bg_to_sent({order,data}){
             let {deliveryCode} = data
-            let url = `https://retailerapp.bbeta.ir/api/v2/OS/toCustomer`;
+            let url = `${baseUrl.replace('v1','v2')}/OS/toCustomer`;
             let body = {
                 "orderId": order.orderId,
                 "code": deliveryCode

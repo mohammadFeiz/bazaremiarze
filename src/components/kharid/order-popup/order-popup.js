@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import RVD from "./../../../npm/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
 import SplitNumber from "../../../npm/aio-functions/split-number";
-import NoSrc from './../../../images/no-src.png';
+import NoSrc from './../../../images/imgph.png';
 // code:25965
 // date:"1401/11/24"
 // docStatus:"CustomerApproved"
@@ -15,18 +15,26 @@ import NoSrc from './../../../images/no-src.png';
 export default class OrderPopup extends Component {
     static contextType = appContext;
     state = {order:this.props.order}
-    getRow(key, value = '-------------',show = true) {
+    getRow(key, value = '-------------',show = true, style) {
       if(value === null){value = '-------------'}
       if(!show){return false}
       return {
         align: "v",
+        style,
         row: [
-          { size: 120, html: key + " : ", className: "fs-10 bold" },
+          { size: 140, html: key + " : ", className: "fs-12" },
           {flex:1},
           { html: value, className: "fs-12" },
         ],
       };
     }
+
+    splitter_layout(){
+      return {
+        html:'',style:{borderBottom:'1px solid #eee'}
+      }
+    }
+
     getStatus(status) {
 
       let {order} = this.state;
@@ -69,19 +77,26 @@ export default class OrderPopup extends Component {
         column: [
           { size: 16 },
           //قیمت پایه
-          this.getRow("مبلغ پرداختی کل", SplitNumber(order.total) + ' ریال'),
+          this.getRow("مبلغ پرداختی کل", SplitNumber(order.total) + ' ریال', true, {color:'#242424', fontSize:14, fontWeight:'bold'}),
           this.getRow("نحوه تسویه", details.nahve_tasvie),
           this.getRow("موعد پرداخت", details.moede_pardakht),
           this.getRow("نحوه پرداخت", details.nahve_pardakht),
-          this.splitter_layout(),
-          {size: 24,html: obj.title,style: { color: obj.color },className: "fs-14 bold m-b-6"},
+          { size: 16 },
+          // this.splitter_layout(),
           {
-            html: (
-              <div style={{height: 12,display: "flex",width: "100%",borderRadius: 3,overflow: "hidden"} }>
-                <div style={{ width: obj.percent + "%", background: obj.color }}></div>
-                <div style={{ flex: 1, background: obj.color, opacity: 0.3 }}></div>
-              </div>
-            ),
+            className:'p-12',
+            style:{background:'#f5f5f5', borderRadius:'10px'},
+            column:[
+              {size: 24,html: obj.title,style: { color: obj.color },className: "fs-14 bold m-b-6"},
+              {
+                html: (
+                  <div style={{height: 6,display: "flex",width: "100%",borderRadius: 3,overflow: "hidden"} }>
+                    <div style={{ width: obj.percent + "%", background: obj.color }}></div>
+                    <div style={{ flex: 1, background: '#eee' }}></div>
+                  </div>
+                )
+              }
+            ]
           },
           { size: 16 },
         ],
@@ -107,11 +122,6 @@ export default class OrderPopup extends Component {
       let {order} = this.props;
       await apis.request({api:'kharid.pardakhte_kharid',parameter:{order},description:'پرداخت خرید عادی'})
     }
-    splitter_layout(){
-      return {
-        html:'',style:{borderBottom:'1px solid #ccc'}
-      }
-    }
     details_layout(){
       let {b1Info} = this.context;
       let {order} = this.state;
@@ -125,28 +135,36 @@ export default class OrderPopup extends Component {
           this.getRow("نام مشتری",details.customerName + " - " + details.customerCode),
           this.getRow("گروه مشتری", b1Info.customer.groupName),
           this.getRow("نام کمپین", details.campain_name),
-          // this.getRow("نام ویزیتور", details.visitorName),
-          // this.getRow("کد ویزیتور", details.visitorCode),
           this.splitter_layout(),
-          this.getRow("آدرس", details.address),
           this.getRow("تلفن همراه", details.mobile),
-          // this.getRow("تلفن ثابت", details.phone),
-          // this.getRow("نحوه ارسال", details.nahve_ersal),
-          // this.getRow("مهلت تسویه", details.mohlate_tasvie,!!details.mohlate_tasvie),
+          this.getRow("آدرس", details.address),
         ],
       }
     }
+    // factorDetails_layout(){
+    //   let {order} = this.state;
+    //   return {
+    //     style: { padding: "0 24px" },className: "box gap-no-color theme-gap-h p-12",gap: 12,
+    //     row:[
+    //         {html:<div>پیش فاکتور : {order.mainDocNum}</div>,className:'fs-12 theme-medium-font-color bold',align:'v'},
+    //         {flex:2},
+    //         {html:<div>تاریخ ثبت : {order.date}</div>,className:'fs-12 theme-medium-font-color bold',align:'v'},
+    //         {flex:1},
+    //     ]
+    //   }
+    // }
     takhfifat_layout(){
       let {order} = this.state;
       let {details = {}} = order;
+      details.basePrice = details.basePrice || 0;
       return {
         className: "box gap-no-color theme-gap-h p-12",gap: 12,
         column: [
           this.getRow("قیمت کالاها", SplitNumber(details.basePrice) + ' ریال'),
-          this.getRow("تخفیف نحوه پرداخت " + details.discountPercent + '%',  SplitNumber(details.docDiscount) + ' ریال' ),
-          // this.getRow("تخفیف گروه مشتری"),
+          this.getRow("تخفیف ویژه " + '(' + details.darsad_takfif_vizhe + '%' + ')', SplitNumber(details.takhfif_vizhe) + ' ریال', true, {color:'#0095DA',fontWeight:'bold',fontSize:16}),
+          this.getRow("تخفیف نحوه پرداخت " + '(' + details.discountPercent + '%' + ')',  SplitNumber(details.docDiscount) + ' ریال', true, {color:'#2F9461',fontWeight:'bold',fontSize:16}),
           this.splitter_layout(),
-          this.getRow("جمع نهایی", SplitNumber(order.total) + ' ریال'),
+          this.getRow("جمع نهایی", SplitNumber(order.total) + ' ریال', true, {fontWeight:'bold',fontSize:16}),
         ],
       }
     }
@@ -195,16 +213,20 @@ export default class OrderPopup extends Component {
             column: [
               {className:'theme-vertical-gap'},
               {
-                flex: 2,className: "ofy-auto",
+                flex: 1,className: "gap-12",
                 column: [
-                  this.details_layout(),
-                  {size: 12},
-                  this.getStatus(order),
-                  {className:'theme-vertical-gap'},
-                  this.products_layout(),
-                  {className:'theme-vertical-gap'},
-                  this.takhfifat_layout(),
-                  {className:'theme-vertical-gap'},
+                  //position=fixed
+                  // this.factorDetails_layout(),
+                  {
+                    flex:1,
+                    className: "ofy-auto gap-12 m-b-12",
+                    column:[
+                      this.details_layout(),                               
+                      this.getStatus(order),                 
+                      this.products_layout(),                 
+                      this.takhfifat_layout(),
+                    ]
+                  }                  
                 ],
               },
               this.dokmeye_pardakht_layout()
@@ -227,15 +249,20 @@ export default class OrderPopup extends Component {
     }
     image_layout(){
       let {src = NoSrc} = this.props;
-      return {flex:1,html:<img src={src} width={'100%'} alt=''/>}
+      return {html:<img src={src} width={'100%'} alt=''/>}
     }
-    count_layout(){
-      let {itemQty} = this.props;
-      return {size:24,html:<div>تعداد : {itemQty}</div>,align:'v'}
-    }
+
     unit_layout(){
+      let {itemQty} = this.props;
       let {unitOfMeasure} = this.props;
-      return {size:24,html:<div>واحد : {unitOfMeasure}</div>,align:'v'}
+      return {
+        gap:4,
+        column:[
+          {size:6},
+          {html:<div>تعداد :  {itemQty}</div>,className:'fs-10 op-80 theme-light-font-color bold',align:'h'},
+          {html:<div>واحد : {unitOfMeasure}</div>,className:'fs-10 op-80 theme-light-font-color bold',align:'h'},
+        ]
+      }
     }
     campaign_layout(){
       let {campaign} = this.props;
@@ -244,7 +271,21 @@ export default class OrderPopup extends Component {
     }
     name_layout(){
       let {itemName} = this.props;
-      return {html:<div>نام کالا : {itemName}</div>,className:'fs-12 theme-medium-font-color bold'}
+      return {
+        gap:4,
+        row:[
+          {html:<div style={{color:'#455a96'}}>{itemName}</div>,className:'fs-14 bold m-b-6',align:'v'},
+        ]
+      }
+    }
+    itemCode_layout(){
+      let {itemCode} = this.props;
+      return {
+        gap:4,
+        row:[
+          {html:<div style={{background:'#e8e8e8',fontWeight:'bold',padding:'1px 3px',fontSize:12,borderRadius:6}}>{itemCode}</div>,className:'fs-12 theme-medium-font-color bold',align:'v'},
+        ]
+      }
     }
     details_layout(){
       let {details = []} = this.props;
@@ -256,23 +297,37 @@ export default class OrderPopup extends Component {
       }
     }
     discount_layout(){
-      debugger
-      let {discountPercent,price} = this.props;
-      if(!discountPercent){return false}
-      return {
-        gap:4,
-        row:[
-            {flex:1},
-            {html:<del>{SplitNumber(price)}</del>,className:'fs-14 theme-light-font-color',align:'v'},
-            {html:<div style={{background:'#FFD335',color:'#fff',padding:'1px 3px',fontSize:12,borderRadius:6}}>{discountPercent + '%'}</div>,align:'v'},
-        ]  
-      }
-    }
-    takhfif_moshtari(){
+      let {price} = this.props;
+      let {priceAfterVat} = this.props;
       let {discountPercent} = this.props;
+      let {itemQty} =this.props;
       if(!discountPercent){return false}
       return {
-        html:<div>تخفیف ویژه : {discountPercent + '%'}</div>
+        row:[
+          {flex:1},
+          {
+            className:'gap-3',
+            column:[
+              {
+                className:'gap-3',align:'v',
+                row:[
+                  {flex:1},
+                  {html:<del>{SplitNumber(price*itemQty)}</del>,className:'fs-12'},
+                  {html:<div style={{background:'#0095DA',color:'#fff',padding:'1px 5px',fontSize:12,borderRadius:6}}>{discountPercent + '%'}</div>,align:'v'}
+                  
+                ]
+              },
+              {
+                className:'gap-3',align:'v',
+                row:[
+                  {flex:1},
+                  {html:SplitNumber(priceAfterVat*itemQty),className:'fs-14 theme-medium-font-color bold'},
+                  {html:'ریال',className:'fs-10'}
+                ]
+              }
+            ]  
+          }
+        ]
       }
     }
     price_layout(){
@@ -284,8 +339,20 @@ export default class OrderPopup extends Component {
         ]
       }
     }
+    row_layout(key,value){
+      return {
+        gap:3,
+        className:'fs-12 theme-medium-font-color',align:'v',
+        row:[
+          {size:12,align:'vh',html:<div className='w-6 h-6 bg-18 br-100'></div>},
+          {html:key,className:'op-80'},
+          {html:':'},
+          {html:value,className:'bold'},
+        ]
+      }
+    }
     render(){
-      let {loading} = this.props;
+      let {loading,unitOfMeasure,boxName,inBox,price,priceAfterVat} = this.props;
       return (
         <RVD
           loading={loading}
@@ -295,23 +362,29 @@ export default class OrderPopup extends Component {
               {
                 size:96,
                 column:[
-                    this.image_layout()
+                    this.image_layout(),
+                    this.unit_layout(),
                 ]
               },
-              {size:3},
+              {size:6},
               {
                   flex:1,gap:6,
                   column:[
                       {size:3},
                       this.campaign_layout(),
+                      this.itemCode_layout(),
                       this.name_layout(),
-                      this.count_layout(),
-                      this.unit_layout(),
-                      this.takhfif_moshtari(),
+                      {
+                        className:'theme-medium-font-color fs-10 gap-6',
+                        column:[
+                          this.row_layout('محتوای بسته',`${inBox} ${unitOfMeasure} در هر ${boxName}`),
+                          this.row_layout('قیمت تکی',`${SplitNumber(price)} ریال`),
+                          this.row_layout('قیمت تکی بعد از تخفیف',`${SplitNumber(priceAfterVat)} ریال`)
+                        ]
+                      },
                       {flex:1},
                       this.details_layout(),
                       this.discount_layout(),
-                      this.price_layout(),
                       {size:3}
                   ]
               },

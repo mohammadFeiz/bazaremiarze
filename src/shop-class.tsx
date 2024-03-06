@@ -724,7 +724,7 @@ function TaxonCard(props: I_TaxonCard) {
         return {
             align: 'v', className: 'taxon-card-group-discount',gap:6,
             row:[
-                {html:`${0.5 * notHasErrors.length} %`,className:'discount-percent',style:{background:'orange'},size:36,align:'vh'},
+                {html:`${1 * notHasErrors.length} %`,className:'discount-percent',style:{background:'orange'},size:36,align:'vh'},
                 { html: `تخفیف گروه کالا`}
             ]
         }
@@ -865,9 +865,9 @@ function RegularCard(props: I_RegularCard) {
     function dps_layout(){
         let { B1Dscnt = 0, CmpgnDscnt = 0, PymntDscnt = 0 } = product;
         let {discountPercent} = Shop[shopId];
-        return {gap: 3,row: [dp_layout(B1Dscnt,'#FFD335'),dp_layout(CmpgnDscnt,'#ffa835'),dp_layout(PymntDscnt,'#ff4335'),dp_layout(discountPercent,'#ff4335')]}
+        return {gap: 3,row: [dp_layout(B1Dscnt,'#FFD335'),dp_layout(CmpgnDscnt,'#13a73a'),dp_layout(PymntDscnt,'#f75b00'),dp_layout(discountPercent,'#ff4335')]}
     }
-    function dp_layout(percent:number,color){return !percent?false:{ html: <div className='discount-percent' style={{ background: color}}>{percent + '%'}</div> }}
+    function dp_layout(percent:number,color){return !percent?false:{ html: <div className='discount-percent' style={{ background: color}}>{percent.toFixed(1) + '%'}</div> }}
     function description_layout() {return {html: product.description, className: 'fs-9',style: {whiteSpace: 'nowrap',overflow: 'hidden'}}}
     function notExist_layout() {return { row: [{ flex: 1 }, { html: 'نا موجود', className: 'colorD83B01 bold fs-12' }, { size: 12 }] }}
     function price_layout() {
@@ -1323,17 +1323,17 @@ function RegularPage(props: I_RegularPage) {
                         { show: !!B1Dscnt || !!CmpgnDscnt || !!PymntDscnt, html: () => <del>{SplitNumber(selectedVariant.Price)}</del>, className: "theme-light-font-color" },
                         { size: 1 },
                         {
-                            html: "%" + B1Dscnt, show: !!B1Dscnt,
+                            html: ()=>"%" + B1Dscnt.toFixed(1), show: !!B1Dscnt,
                             style: { background: "#FDB913", color: "#fff", borderRadius: 8, padding: "0 3px" },
                         },
                         { size: 1 },
                         {
-                            html: "%" + CmpgnDscnt, show: !!CmpgnDscnt,
+                            html: ()=>"%" + CmpgnDscnt.toFixed(1), show: !!CmpgnDscnt,
                             style: { background: "#FDB913", color: "#fff", borderRadius: 8, padding: "0 3px" },
                         },
                         { size: 1 },
                         {
-                            html: "%" + PymntDscnt, show: !!PymntDscnt,
+                            html: ()=>"%" + PymntDscnt.toFixed(1), show: !!PymntDscnt,
                             style: { background: "#ff4335", color: "#fff", borderRadius: 8, padding: "0 3px" },
                         }
                     ],
@@ -2075,7 +2075,9 @@ function Shipping(props: I_Shipping) {
     async function onMount() {
         let backOfficeData = backOffice[shopId] || backOffice.spreeCampaigns.find((o) => o.shopId === shopId);
         let { PayDueDate, PaymentTime, DeliveryType, PayDueDates, PaymentTimes, DeliveryTypes } = backOfficeData
-
+        if(Array.isArray(Shop[shopId].PayDueDates) && Shop[shopId].PayDueDates.length){
+            PayDueDates = Shop[shopId].PayDueDates.map((o)=>+o)
+        }
         let data = {
             PayDueDate: { value: PayDueDate, options: backOffice.PayDueDate_options.filter(({ value }) => PayDueDates.indexOf(value) !== -1) },
             PaymentTime: { value: PaymentTime, options: backOffice.PaymentTime_options.filter(({ value }) => PaymentTimes.indexOf(value) !== -1) },

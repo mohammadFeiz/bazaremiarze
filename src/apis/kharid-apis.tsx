@@ -304,7 +304,7 @@ export default function kharidApis({ baseUrl, helper }) {
         customerGroup: result.cardGroupCode,
         // basePrice: result.documentTotal + discount,
         basePrice: result.marketingdetails.discountList.showTotalBfDis,
-        docDiscount: result.marketingdetails.documentDiscount * 1.09,
+        docDiscount: result.marketingdetails.documentDiscount,
         //campaignName
         campain_name,
         address: result.deliverAddress,

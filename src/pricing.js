@@ -1,5 +1,5 @@
-﻿///***Version 1.1.52 ****///
-//Edited: 2024-03-04
+﻿///***Version 1.1.53 ****///
+//Edited: 2024-03-07
 
 "use strict";
 
@@ -321,7 +321,7 @@ export default class Pricing {
         return this.pricingData.ItemPrices;
     }
 
-    startservice(callback = ()=> {})  {
+        startservice(callback = ()=> {})  {
         let self = this;
         let result = new Promise(async function (resolve, reject) {
             let newdb = await self.CreateDatabase()
@@ -1109,7 +1109,7 @@ export default class Pricing {
         if (!doc.marketingdetails.DiscountList)
             doc.marketingdetails.DiscountList = {};
         doc.marketingdetails.DiscountList.ShowCamDisValue = sumCampaign;
-        doc.marketingdetails.DiscountList.ShowPayDisValue = (doc.marketingdetails.DocumentDiscount ?? 0);
+        doc.marketingdetails.DiscountList.ShowPayDisValue = (doc.marketingdetails.DocumentDiscount ?? 0) * 1.09;
         doc.marketingdetails.DiscountList.ShowPAyDisPer = (doc.marketingdetails.DocumentDiscountPercent ?? 0) * 100;
         doc.marketingdetails.DiscountList.ShowDisValue = sumdiscount;
         doc.marketingdetails.DiscountList.ShowDisPer = (sumdiscount / sumItems) * 100;

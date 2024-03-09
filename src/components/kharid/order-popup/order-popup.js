@@ -13,6 +13,8 @@ import NoSrc from './../../../images/imgph.png';
 // translate:"در حال بررسی"
 // _time:"00:00:00"
 export default class OrderPopup extends Component {
+
+    //making row
     static contextType = appContext;
     state = {order:this.props.order}
     getRow(key, value = '-------------',show = true, style) {
@@ -29,12 +31,14 @@ export default class OrderPopup extends Component {
       };
     }
 
+    //making number splitter
     splitter_layout(){
       return {
         html:'',style:{borderBottom:'1px solid #eee'}
       }
     }
-
+    
+    //status sefareshat
     getStatus(status) {
 
       let {order} = this.state;
@@ -76,13 +80,12 @@ export default class OrderPopup extends Component {
         style: { padding: "0 24px" },className: "box m-h-12 gap-no-color theme-gap-h",gap: 12,
         column: [
           { size: 16 },
-          //قیمت پایه
+          //مبلغ پرداختی کل  = قیمت پایه
           this.getRow("مبلغ پرداختی کل", SplitNumber(order.total) + ' ریال', true, {color:'#242424', fontSize:14, fontWeight:'bold'}),
           this.getRow("نحوه تسویه", details.nahve_tasvie),
           this.getRow("موعد پرداخت", details.moede_pardakht),
           this.getRow("نحوه پرداخت", details.nahve_pardakht),
           { size: 16 },
-          // this.splitter_layout(),
           {
             className:'p-12',
             style:{background:'#f5f5f5', borderRadius:'10px'},
@@ -102,6 +105,7 @@ export default class OrderPopup extends Component {
         ],
       };
     }
+
     async componentDidMount(){
       await this.getDetails()  
     }
@@ -117,6 +121,7 @@ export default class OrderPopup extends Component {
       })
       
     }
+    
     async pardakht(){
       let {apis} = this.context;
       let {order} = this.props;
@@ -248,8 +253,8 @@ export default class OrderPopup extends Component {
       }
     }
     image_layout(){
-      let {src = NoSrc} = this.props;
-      return {html:<img src={src} width={'100%'} alt=''/>}
+      let {imageUrl} = this.props;
+      return {html:<img src={imageUrl} width={'100%'} alt=''/>}
     }
 
     unit_layout(){

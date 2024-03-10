@@ -312,7 +312,7 @@ export default function kharidApis({ baseUrl, helper }) {
         mobile: userInfo.phoneNumber,
         discountPercent: result.marketingdetails.documentDiscountPercent,
         takhfif_vizhe: result.marketingdetails.discountList.showDisValue,
-        darsad_takfif_vizhe: result.marketingdetails.discountList.showDisPer,
+        darsad_takfif_vizhe: result.marketingdetails.discountList.showDisPer.toFixed(1),
       }
       return { result: { ...order, details } }
     },

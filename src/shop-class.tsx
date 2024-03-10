@@ -334,15 +334,23 @@ export default class ShopClass implements I_ShopClass {
         if (this.shopId === 'Bundle') { return this.getAmounts_Bundle(shippingOptions, container) }
         else { return await this.getAmounts_all(shippingOptions, container) }
     }
+    // ijade section takhfifat
+    //data az DiscountList migire
     getAmounts_all = async (shippingOptions: I_shippingOptions, container?: string) => {
         let { actionClass,userInfo,b1Info } = this.getAppState();
         let {marketingLines,total} = await this.getCartVariants();
-        
         let factorDetails: I_getFactorDetails_result = actionClass.getFactorDetails(marketingLines, { ...shippingOptions, CampaignId: this.CampaignId }, container);
         let { marketingdetails, DocumentTotal } = factorDetails;
+        debugger
         let { DiscountList, ClubPoints = {} } = marketingdetails;
-        let { DiscountValueUsed, DiscountPercentage, PaymentDiscountPercent, PaymentDiscountValue, PromotionValueUsed } = DiscountList;
+        let { DiscountValueUsed, DiscountPercentage, PaymentDiscountPercent, PaymentDiscountValue, PromotionValueUsed, ShowDisPer, ShowDisValue, ShowTotalBfDis } = DiscountList;
         let discounts: I_discount[] = []
+        if (ShowDisPer && ShowDisValue) {
+            discounts.push({ percent: ShowDisPer.toFixed(1), value: ShowDisValue, title: 'تخفیف ویژه' })
+        }
+        if (ShowTotalBfDis && ShowDisValue) {
+            discounts.push({ value: ShowTotalBfDis - ShowDisValue, title: 'مجموع پس از تخفیف' })
+        }
         if (PaymentDiscountPercent && PaymentDiscountValue) {
             discounts.push({ percent: PaymentDiscountPercent, value: PaymentDiscountValue, title: 'تخفیف نحوه پرداخت' })
         }
@@ -439,6 +447,7 @@ export default class ShopClass implements I_ShopClass {
         try { return +value.toFixed(v) }
         catch { return 0 }
     }
+    //ijade etelaate factor va ersal baray visitor
     getFactorItems = async (shippingOptions: I_shippingOptions, container) => {
         let amounts = await this.getAmounts(shippingOptions, container);
         let { total, payment, discounts, ClubPoints } = amounts;
@@ -461,7 +470,17 @@ export default class ShopClass implements I_ShopClass {
             if (!title) { alert('missing discount.title in ShopClass.getFactorItems') }
             if (!value) { alert('missing discount.value in ShopClass.getFactorItems') }
             let text = `${percent ? `${percent}% - ` : ''}${SplitNumber(value)} ریال`
-            res.push({ key: title, value: text, className: 'colorFDB913 fs-14' })
+            let className = 'fs-14'
+            if (title === "تخفیف ویژه") {
+                className += ' color0095DA'
+            }
+            else {
+                className += ' colorFDB913'
+            }
+            if (title === "مجموع پس از تخفیف") {
+                className += ' theme-medium-font-color'
+            }
+            res.push({ key: title, value: text, className})
         }
         res.push(
             { key: 'مبلغ قابل پرداخت', value: SplitNumber(this.fix(payment)) + ' ریال', className: 'theme-dark-font-color bold fs-16' }
@@ -1314,6 +1333,7 @@ function RegularPage(props: I_RegularPage) {
             return { column: [{ flex: 1 }, { html: "ناموجود", className: "colorD83B01 bold fs-14" }, { flex: 1 }] };
         }
         let { B1Dscnt, CmpgnDscnt, PymntDscnt } = selectedVariant;
+        console.log(selectedVariant);
         return {
             column: [
                 { flex: 1 },
@@ -1329,7 +1349,7 @@ function RegularPage(props: I_RegularPage) {
                         { size: 1 },
                         {
                             html: ()=>"%" + CmpgnDscnt.toFixed(1), show: !!CmpgnDscnt,
-                            style: { background: "#FDB913", color: "#fff", borderRadius: 8, padding: "0 3px" },
+                            style: { background: "#13a73a", color: "#fff", borderRadius: 8, padding: "0 3px" },
                         },
                         { size: 1 },
                         {

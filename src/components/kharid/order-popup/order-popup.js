@@ -166,7 +166,7 @@ export default class OrderPopup extends Component {
         className: "box gap-no-color theme-gap-h p-12",gap: 12,
         column: [
           this.getRow("قیمت کالاها", SplitNumber(details.basePrice) + ' ریال'),
-          this.getRow("تخفیف ویژه " + '(' + Math.round(details.darsad_takfif_vizhe) + '%' + ')', SplitNumber(details.takhfif_vizhe) + ' ریال', true, {color:'#0095DA',fontWeight:'bold',fontSize:16}),
+          this.getRow("تخفیف ویژه " + '(' + details.darsad_takfif_vizhe + '%' + ')', SplitNumber(details.takhfif_vizhe) + ' ریال', true, {color:'#0095DA',fontWeight:'bold',fontSize:16}),
           this.getRow("تخفیف نحوه پرداخت " + '(' + details.discountPercent + '%' + ')',  SplitNumber(details.docDiscount) + ' ریال', true, {color:'#2F9461',fontWeight:'bold',fontSize:16}),
           this.splitter_layout(),
           this.getRow("جمع نهایی", SplitNumber(order.total) + ' ریال', true, {fontWeight:'bold',fontSize:16}),
@@ -210,9 +210,11 @@ export default class OrderPopup extends Component {
     render() {
 
       let {order} = this.state;
-      
+      let {loading} = this.props;
+
       return (
         <RVD
+        loading={loading}
           layout={{
             className: "theme-popup-bg",
             column: [

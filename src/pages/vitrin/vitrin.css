@@ -111,7 +111,7 @@ body {
     font-size:16px;
     gap:1px;
     font-weight: bold;
-    color:#2E312F;
+    color:#405AAA;
     padding:0 6px;
   }
   .v-product-card-no-price{
@@ -132,12 +132,21 @@ body {
   .v-product-card-add-button{
     color:#3B55A5;
     background:none;
-    border:1px solid #E1E3E0;
+    border:1px solid;
     padding: 6px 16px;
     border-radius:4px;
     font-size:14px;
     font-weight:bold;
     min-width:94px;
+
+  }
+  .v-product-card-remove-button{
+    color: #CD3636;
+    background: none;
+    border: 1px solid #FAC7C7;
+    padding: 2px;
+    border-radius: 6px;
+    font-size: 10px;
 
   }
   .v-product-page-add-button{
@@ -167,8 +176,13 @@ body {
   }
   .v-product-card-variants{
     padding:6px 12px;
-    border:1px dashed #aaa;
     margin-top:12px;
+    border-radius:12px;
+    gap:8px;
+  }
+  .v-product-card-variant{
+    padding:12px;
+    border:1px dashed #ddd;
     border-radius:12px;
     gap:4px;
   }

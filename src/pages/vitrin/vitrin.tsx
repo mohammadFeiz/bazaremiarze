@@ -6,7 +6,7 @@ import appContext from "../../app-context";
 import Loading from './loading';
 import Icon from "@mdi/react";
 import vbsrc from './../../images/vitrin-bazargah.png';
-import { mdiCamera, mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu, mdiChevronLeft } from "@mdi/js";
+import { mdiCamera, mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu, mdiChevronLeft, mdiDelete, mdiToggleSwitch } from "@mdi/js";
 import './vitrin.css';
 import imgph from './../../images/imgph.png';
 import image_src from './../../images/vitrin-landing.png';
@@ -53,9 +53,9 @@ function VitrinPage1() {
                     className: 'w-144 h-144 br-6', style: { border: '1px solid #eee' }, align: 'v',
                     column: [
                         { html: getSvg('svg1'), align: 'vh' },
-                        { size: 6 },
+                        { size: 12 },
+                        { html: 'در ویترین شما', className: 'theme-medium-font-color fs-10', align: 'h' },
                         { html: `${Object.keys(vitrinSelected).length} کالا`, align: 'vh', className: 'bold fs-14 theme-dark-font-color', size: 24 },
-                        { html: 'در ویترین شما', className: 'theme-medium-font-color fs-10', align: 'h' }
                     ]
                 }
             ]
@@ -76,8 +76,9 @@ function VitrinPage1() {
                     show: !!vitrinSelected, html: (<button onClick={() => {
                         let render = () => (<Search isFirstTime={false}/>)
                         actionClass.openPopup('vitrin-search', { render })
-                    }} className='button-2'>افزودن محصول</button>)
-                }
+                    }} className='button-2'>افزودن کالای جدید</button>)
+                },
+                {html: <button className='button-1 m-r-8'>تاریخچه قیمت های پیشنهادی</button>}
             ]
         }
     }
@@ -470,9 +471,23 @@ function SelectedProducts() {
     let layout = { className: 'ofy-auto', column }
     return (<RVD layout={layout} />)
 }
+function Price(props) {
+    let {price} = props;
+    price = isNaN(price) ? 0 : price;
+    if (price < 500) { price = 0 }
+    return <RVD 
+        layout={{
+            align: 'v', className: 'v-product-card-price',gap:3,
+            row: [
+                { show: !price, html: 'در حال تامین', className: 'v-product-card-no-price' },
+                { show: !!price, html: () => SplitNumber(price) },
+                { show: !!price, html: 'تومان', className: 'v-product-card-unit' }
+            ]
+        }}/>
+}
 type I_ProductCard = {product:I_vitrin_product,loading?:boolean,renderIn?:any}
 function ProductCard(props:I_ProductCard) {
-    let {vitrin,actionClass}:I_app_state = useContext(appContext);
+    let {vitrin,actionClass,apis,rsa}:I_app_state = useContext(appContext);
     let {product,loading,renderIn} = props;
     function getSelectedVariantIds(){
         let {vitrinSelected} = vitrin;
@@ -480,11 +495,8 @@ function ProductCard(props:I_ProductCard) {
         if(!res){return []}
         return res.variantIds; 
     }
-    function openPopup() {
-        actionClass.openPopup('vitrin-product-page',{render:()=><ProductPage product={product}/>,product})
-    }
     function name_layout(name) {
-        return { html: name, className: `v-product-card-name` }
+        return { html: name, className: `v-product-card-name flex-1 align-v` }
     }
     function price_layout(price) {
         price = isNaN(price) ? 0 : price;
@@ -501,18 +513,62 @@ function ProductCard(props:I_ProductCard) {
     function image_layout(image) {
         return { className: 'v-product-card-image', size: 72, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
     }
-    function variants_layout(product,variantIds) {
-        if (!variantIds || !variantIds.length) { return false }
+    function variants_layout(product:I_vitrin_product) { 
         return {
             className: 'v-product-card-variants',
-            column: [
-                { className: 'v-product-card-variants-label', html: 'موجود در ویترین' },
-                { className:'m-t-6',show:!!variantIds.length,html:<VariantLabels product={product} variantIds={variantIds}/>}
+            column: product.variants.map((variant)=>{
+                return variant_layout(product,variant)
+            })
+            //column: [
+                //{ className: 'v-product-card-variants-label', html: 'موجود در ویترین' },
+                //{ className:'m-t-6',show:!!variantIds.length,html:<VariantLabels product={product} variantIds={variantIds}/>}
+            //]
+        }
+    }
+    function toggle(product,variantId){
+        vitrin.updateVitrinSelected(product,variantId)
+    }
+    function variant_layout(product,variant) {
+        let selected = vitrin.getIsSelected(product.id,variant.id)
+        let { price } = variant;
+        let vlProps:I_VariantLabel = {product,variantId:variant.id,type:'horizontal'}
+        return {
+            className: 'v-product-card-variant align-vh',
+            row: [
+                {
+                    column:[
+                        {html: <VariantLabel {...vlProps}/>, className:'fs-14 m-b-12'},
+                        // price_layout(price,'variant'),
+                        {html: <Price price={price} />},
+                        {size:6},
+                        {html: (<button className='v-product-card-price-problem' onClick={() => openPopup(variant)}>پیشنهاد قیمت دیگر</button>)}
+                    ]
+                },
+                {flex:1},
+                {show : !selected, html:()=> <button onClick={()=>toggle(product,variant.id)} className='v-product-card-add-button'>افزودن</button>}, 
+                {
+                    show : !!selected, 
+                    html:()=> (
+                        <button className='v-product-card-remove-button w-36 h-36' onClick={()=>toggle(product,variant.id)}>
+                            <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6.5 3H9.5C9.5 2.17157 8.82843 1.5 8 1.5C7.17157 1.5 6.5 2.17157 6.5 3ZM5.5 3C5.5 1.61929 6.61929 0.5 8 0.5C9.38071 0.5 10.5 1.61929 10.5 3H15.5C15.7761 3 16 3.22386 16 3.5C16 3.77614 15.7761 4 15.5 4H14.4456L13.2521 14.3439C13.0774 15.8576 11.7957 17 10.2719 17H5.72813C4.20431 17 2.92256 15.8576 2.7479 14.3439L1.55437 4H0.5C0.223858 4 0 3.77614 0 3.5C0 3.22386 0.223858 3 0.5 3H5.5ZM3.74131 14.2292C3.85775 15.2384 4.71225 16 5.72813 16H10.2719C11.2878 16 12.1422 15.2384 12.2587 14.2292L13.439 4H2.56101L3.74131 14.2292ZM6.5 6.5C6.77614 6.5 7 6.72386 7 7V13C7 13.2761 6.77614 13.5 6.5 13.5C6.22386 13.5 6 13.2761 6 13V7C6 6.72386 6.22386 6.5 6.5 6.5ZM10 7C10 6.72386 9.77614 6.5 9.5 6.5C9.22386 6.5 9 6.72386 9 7V13C9 13.2761 9.22386 13.5 9.5 13.5C9.77614 13.5 10 13.2761 10 13V7Z" fill="#CD3636"/>
+                            </svg>
+                        </button>
+                    )
+                }    
             ]
         }
     }
-    let { image = imgph, name, price } = product;
-    let variantIds = getSelectedVariantIds()
+    function openPopup(variant:I_vitrin_variant){
+        actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion onSubmit={(price:number)=>{
+            let parameter:v_price_suggestion_payload = {variant,price};
+            apis.request({
+                api:'vitrin.v_price_suggestion',description:'پیشنهاد قیمت ویترین',parameter,message:{success:true},
+                onSuccess:()=>rsa.removeModal()
+            })
+        }}/>})
+    }
+    let { image = imgph, name } = product;
     return (
         <RVD
             loading={loading}
@@ -522,19 +578,11 @@ function ProductCard(props:I_ProductCard) {
                     {
                         gap:6,
                         row: [
-                            {flex: 1,column: [name_layout(name),{ flex: 1 },price_layout(price)]},
-                            image_layout(image)
+                            image_layout(image),
+                            name_layout(name),
                         ]
                     },
-                    { size: 6 },
-                    {
-                        row: [
-                            {html: (<button className='v-product-card-add-button' onClick={() => openPopup()}>{renderIn === 'my-vitrin'?'ویرایش':'مشاهده و افزودن'}</button>)},
-                            { flex: 1 },
-                            {html: (<button className='v-product-card-price-problem' onClick={() => openPopup()}>با قیمت موافق نیستم</button>)}
-                        ]
-                    },
-                    variants_layout(product,variantIds)
+                    variants_layout(product)
                 ]
             }}
         />
@@ -553,9 +601,7 @@ function ProductPage(props:I_ProductPage){
         if(!res){return []}
         return res.variantIds; 
     }
-    function name_layout(name) {
-        return { align:'vh',html: name, className: `v-product-card-name` }
-    }
+    function name_layout(name) {return { align:'vh',html: name, className: `v-product-card-name` }}
     function card_layout(variant){
         return {
             className:'v-product-page-card',
@@ -607,11 +653,20 @@ function ProductPage(props:I_ProductPage){
 type I_VariantLabels = { product:I_vitrin_product, variantIds:(number|string)[],type?:'horizontal'|'vertical',showPrice?:boolean }
 function VariantLabels(props:I_VariantLabels) {
     let { product, variantIds,type = 'horizontal',showPrice } = props
+    let layout:I_RVD_layout = {align: 'v',gap:6,column: variantIds.map((variantId) => {
+        let p:I_VariantLabel = {product,variantId,type,showPrice}
+        return <VariantLabel {...p}/>
+    })}
+    return (<RVD layout={layout}/>)
+}
+type I_VariantLabel = {product,variantId,type,showPrice?:boolean}
+function VariantLabel(props:I_VariantLabel) {
+    let { product, variantId,type = 'horizontal',showPrice } = props
     let { variants, optionTypes } = product
-    function keyValues_layout(variantId) {
+    function keyValues_layout() {
         let variant:I_vitrin_variant = variants.find((o) => o.id === variantId);
         if(!variant){
-            ProductError('not_found_selected_variant_id_in_product_variants',{product,variantIds,variantId})
+            ProductError('not_found_selected_variant_id_in_product_variants',{product,variantIds:product.variants.map((o)=>o.id),variantId})
             return false
         }
         let { keys } = variant;
@@ -653,8 +708,7 @@ function VariantLabels(props:I_VariantLabels) {
             ]
         }
     }
-    let layout:I_RVD_layout = {align: 'v',gap:6,column: variantIds.map((variantId) => keyValues_layout(variantId))}
-    return (<RVD layout={layout}/>)
+    return (<RVD layout={keyValues_layout()}/>)
 }
 
 

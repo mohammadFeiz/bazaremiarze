@@ -67,7 +67,7 @@ function VitrinPage1() {
     function toolbar_layout() {
         let { vitrinSelected } = vitrin;
         return {
-            className: 'br-6 p-12 m-b-12 of-visible', style: { background: '#fff' },
+            className: 'br-6 p-12 m-b-12 of-visible ', style: { background: '#fff' },
             row: [
                 { html: getSvg('svg2'), style: { background: '#3b55a5', padding: 3, width: 36, height: 36, borderRadius: '100%' }, align: 'vh' },
                 { size: 12 },
@@ -569,6 +569,7 @@ function ProductCard(props:I_ProductCard) {
         }}/>})
     }
     let { image = imgph, name } = product;
+    debugger
     return (
         <RVD
             loading={loading}

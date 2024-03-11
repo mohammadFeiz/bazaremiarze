@@ -209,7 +209,7 @@ export function vitrinMock() {
                 },
                 "request": {}
             }
-            let product = response.data.data.result;
+            let product = response.data.data.result[0];
             let products = new Array(count).fill(0).map(()=>product)
             let result = {
                 products,

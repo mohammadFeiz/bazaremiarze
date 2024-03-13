@@ -1,12 +1,10 @@
 import React, { useContext, useState, useEffect, Component } from "react";
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from "../../npm/aio-input/aio-input";
-import getSvg from "./getSvg";
 import appContext from "../../app-context";
 import Loading from './loading';
 import Icon from "@mdi/react";
-import vbsrc from './../../images/vitrin-bazargah.png';
-import { mdiCamera, mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu, mdiChevronLeft, mdiDelete, mdiToggleSwitch } from "@mdi/js";
+import { mdiCamera, mdiMagnify, mdiLamp, mdiChevronDown, mdiMenu, mdiChevronLeft } from "@mdi/js";
 import './vitrin.css';
 import imgph from './../../images/imgph.png';
 import image_src from './../../images/vitrin-landing.png';
@@ -14,10 +12,9 @@ import vitlan1 from './../../images/vitrin-landing-1.png';
 import vitlan2 from './../../images/vitrin-landing-2.png';
 import SplitNumber from '../../npm/aio-functions/split-number';
 import {IsTouch} from 'aio-utils';
-import TreeCategories from '../../npm/aio-functions/tree-category/index';
 import notfounrsrc from './../../images/not-found.png';
 import { v_kolle_mahsoolat_payload, v_price_suggestion_payload, v_setStarted_payload, vitrinMock } from "../../apis/vitrin-apis";
-import { I_app_state, I_vitrin_product, I_vitrin_variant,I_RVD_layout, I_RVD_child } from "../../types";
+import { I_app_state, I_vitrin_product, I_vitrin_variant, I_RVD_child } from "../../types";
 type I_path = {id:string,show:boolean,name:string,childs?:I_path[]}
 export default function Vitrin() {
     let {apis, vitrin, actionClass,backOffice,userInfo}:I_app_state = useContext(appContext);
@@ -47,36 +44,44 @@ function VitrinPage1() {
     function count_layout() {
         let { vitrinSelected = {} } = vitrin;
         return {
-            align: 'vh', className: 'p-12',
             column: [
+                {className: 'm-t-10'},
                 {
-                    className: 'w-144 h-144 br-6', style: { border: '1px solid #eee' }, align: 'v',
+                    className: 'v-header-layout m-t-10',
                     column: [
-                        { html: getSvg('svg1'), align: 'vh' },
-                        { size: 12 },
-                        { html: 'در ویترین شما', className: 'theme-medium-font-color fs-10', align: 'h' },
-                        { html: `${Object.keys(vitrinSelected).length} کالا`, align: 'vh', className: 'bold fs-14 theme-dark-font-color', size: 24 },
-                    ]
+                        { size: 10 },
+                        { html: 'در ویترین شما'},
+                        { html: `${Object.keys(vitrinSelected).length} کالا`, size: 40 },
+                    ],
                 }
-            ]
+            ],
         }
     }
-    function bazargah_billboard_layout() {
-        return { html: <img src={vbsrc as string} width='100%' alt='' />, align: 'vh', className: 'm-h-12' }
-    }
+    // function bazargah_billboard_layout() {
+    //     return { html: <img src={vbsrc as string} width='100%' alt='' />, align: 'vh', className: 'm-h-12' }
+    // }
     function toolbar_layout() {
         let { vitrinSelected } = vitrin;
         return {
-            className: 'br-6 p-12 m-b-12 of-visible ', style: { background: '#fff' },
+            className: 'p-12 ofx-visible align-vh v-header-layout',
             row: [
-                { html: getSvg('svg2'), style: { background: '#3b55a5', padding: 3, width: 36, height: 36, borderRadius: '100%' }, align: 'vh' },
                 { size: 12 },
-                { flex: 1, className: 'fs-14 bold', html: 'ویترین من', align: 'v' },
+                // { flex: 1, className: 'fs-14 bold', html: 'ویترین من', align: 'v' },
                 {
-                    show: !!vitrinSelected, html: (<button onClick={() => {
-                        let render = () => (<Search isFirstTime={false}/>)
-                        actionClass.openPopup('vitrin-search', { render })
-                    }} className='button-2'>افزودن کالای جدید</button>)
+                    show: !!vitrinSelected, 
+                    html: (
+                        <button 
+                            onClick={() => {
+                            let render = () => (<Search isFirstTime={false}/>)
+                            actionClass.openPopup('vitrin-search', { render })
+                            }} 
+                            className='button-2 gap-5'>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 19" fill="none">
+                            <path d="M9.7091 3.82729C9.7091 3.43567 9.39163 3.11819 9.00001 3.11819C8.60839 3.11819 8.29092 3.43567 8.29092 3.82729V8.79092H3.32729C2.93567 8.79092 2.61819 9.10839 2.61819 9.50001C2.61819 9.89163 2.93567 10.2091 3.32729 10.2091H8.29092V15.1727C8.29092 15.5644 8.60839 15.8818 9.00001 15.8818C9.39163 15.8818 9.7091 15.5644 9.7091 15.1727V10.2091H14.6727C15.0644 10.2091 15.3818 9.89163 15.3818 9.50001C15.3818 9.10839 15.0644 8.79092 14.6727 8.79092H9.7091V3.82729Z" fill="white"/>
+                            </svg>
+                        افزودن کالای جدید
+                        </button>
+                        )
                 },
                 {html: <button className='button-1 m-r-8'>تاریخچه قیمت های پیشنهادی</button>}
             ]
@@ -88,7 +93,8 @@ function VitrinPage1() {
         <RVD
             layout={{
                 className: 'theme-popup-bg ofy-auto m-b-24', flex: 1,
-                column: [count_layout(), bazargah_billboard_layout(), toolbar_layout(), products_layout()]
+                // column: [count_layout(), bazargah_billboard_layout(), toolbar_layout(), products_layout()]
+                column: [count_layout(), toolbar_layout(), products_layout()]
             }}
         />
     )
@@ -489,26 +495,26 @@ type I_ProductCard = {product:I_vitrin_product,loading?:boolean,renderIn?:any}
 function ProductCard(props:I_ProductCard) {
     let {vitrin,actionClass,apis,rsa}:I_app_state = useContext(appContext);
     let {product,loading,renderIn} = props;
-    function getSelectedVariantIds(){
-        let {vitrinSelected} = vitrin;
-        let res = vitrinSelected[product.id]
-        if(!res){return []}
-        return res.variantIds; 
-    }
+    // function getSelectedVariantIds(){
+    //     let {vitrinSelected} = vitrin;
+    //     let res = vitrinSelected[product.id]
+    //     if(!res){return []}
+    //     return res.variantIds; 
+    // }
+    // function price_layout(price) {
+    //     price = isNaN(price) ? 0 : price;
+    //     if (price < 500) { price = 0 }
+    //     return {
+    //         align: 'v', className: 'v-product-card-price',gap:3,
+    //         row: [
+    //             { show: !price, html: 'در حال تامین', className: 'v-product-card-no-price' },
+    //             { show: !!price, html: () => SplitNumber(price) },
+    //             { show: !!price, html: 'تومان', className: 'v-product-card-unit' }
+    //         ]
+    //     }
+    // }
     function name_layout(name) {
         return { html: name, className: `v-product-card-name flex-1 align-v` }
-    }
-    function price_layout(price) {
-        price = isNaN(price) ? 0 : price;
-        if (price < 500) { price = 0 }
-        return {
-            align: 'v', className: 'v-product-card-price',gap:3,
-            row: [
-                { show: !price, html: 'در حال تامین', className: 'v-product-card-no-price' },
-                { show: !!price, html: () => SplitNumber(price) },
-                { show: !!price, html: 'تومان', className: 'v-product-card-unit' }
-            ]
-        }
     }
     function image_layout(image) {
         return { className: 'v-product-card-image', size: 72, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
@@ -537,11 +543,18 @@ function ProductCard(props:I_ProductCard) {
             row: [
                 {
                     column:[
-                        {html: <VariantLabel {...vlProps}/>, className:'fs-14 m-b-12'},
+                        {html: <VariantLabel {...vlProps}/>, className:'fs-14 m-b-12 fw-400'},
                         // price_layout(price,'variant'),
                         {html: <Price price={price} />},
                         {size:6},
-                        {html: (<button className='v-product-card-price-problem' onClick={() => openPopup(variant)}>پیشنهاد قیمت دیگر</button>)}
+                        {html: (
+                            <button className='v-product-card-price-problem align-v gap-2' onClick={() => openPopup(variant)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M9 7C9 8.10457 8.10457 9 7 9C5.89543 9 5 8.10457 5 7C5 5.89543 5.89543 5 7 5C8.10457 5 9 5.89543 9 7ZM8 7C8 6.44772 7.55228 6 7 6C6.44772 6 6 6.44772 6 7C6 7.55228 6.44772 8 7 8C7.55228 8 8 7.55228 8 7ZM1 4.25C1 3.55964 1.55964 3 2.25 3H11.75C12.4404 3 13 3.55964 13 4.25V9.75C13 10.4404 12.4404 11 11.75 11H2.25C1.55964 11 1 10.4404 1 9.75V4.25ZM2.25 4C2.11193 4 2 4.11193 2 4.25V5H2.5C2.77614 5 3 4.77614 3 4.5V4H2.25ZM2 9.75C2 9.88807 2.11193 10 2.25 10H3V9.5C3 9.22386 2.77614 9 2.5 9H2V9.75ZM4 9.5V10H10V9.5C10 8.67157 10.6716 8 11.5 8H12V6H11.5C10.6716 6 10 5.32843 10 4.5V4H4V4.5C4 5.32843 3.32843 6 2.5 6H2V8H2.5C3.32843 8 4 8.67157 4 9.5ZM11 10H11.75C11.8881 10 12 9.88807 12 9.75V9H11.5C11.2239 9 11 9.22386 11 9.5V10ZM12 5V4.25C12 4.11193 11.8881 4 11.75 4H11V4.5C11 4.77614 11.2239 5 11.5 5H12ZM4.5 13C3.8334 13 3.26836 12.5652 3.07304 11.9637C3.21179 11.9876 3.35444 12 3.5 12H11.75C12.9926 12 14 10.9926 14 9.75V5.08535C14.5826 5.29127 15 5.84689 15 6.5V9.75C15 11.5449 13.5449 13 11.75 13H4.5Z" fill="#596066"/>
+                                </svg>
+                            پیشنهاد قیمت دیگر
+                            </button>
+                        )}
                     ]
                 },
                 {flex:1},
@@ -560,7 +573,7 @@ function ProductCard(props:I_ProductCard) {
         }
     }
     function openPopup(variant:I_vitrin_variant){
-        actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion onSubmit={(price:number)=>{
+        actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion variant={variant} product={product} onSubmit={(price:number)=>{
             let parameter:v_price_suggestion_payload = {variant,price};
             apis.request({
                 api:'vitrin.v_price_suggestion',description:'پیشنهاد قیمت ویترین',parameter,message:{success:true},
@@ -569,7 +582,6 @@ function ProductCard(props:I_ProductCard) {
         }}/>})
     }
     let { image = imgph, name } = product;
-    debugger
     return (
         <RVD
             loading={loading}
@@ -589,77 +601,77 @@ function ProductCard(props:I_ProductCard) {
         />
     )
 }
-type I_ProductPage = {product:I_vitrin_product}
-function ProductPage(props:I_ProductPage){
-    let {vitrin,apis,rsa,actionClass}:I_app_state = useContext(appContext)
-    let {product} = props;
-    function image_layout(image) {
-        return { className: 'v-product-page-image', size: 144, html: <img src={image} alt='' height='100%' />, align: 'vh' }
-    }
-    function getSelectedVariantIds(){
-        let {vitrinSelected} = vitrin;
-        let res = vitrinSelected[product.id]
-        if(!res){return []}
-        return res.variantIds; 
-    }
-    function name_layout(name) {return { align:'vh',html: name, className: `v-product-card-name` }}
-    function card_layout(variant){
-        return {
-            className:'v-product-page-card',
-            column:[
-                {
-                    html:<VariantLabels product={product} variantIds={[variant.id]} type='vertical' showPrice={true}/>
-                },
-                {size:6},
-                buttons_layout(variant)
-            ]
-        }
-    }
-    function openPopup(variant:I_vitrin_variant){
-        actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion onSubmit={(price:number)=>{
-            let parameter:v_price_suggestion_payload = {variant,price};
-            apis.request({
-                api:'vitrin.v_price_suggestion',description:'پیشنهاد قیمت ویترین',parameter,message:{success:true},
-                onSuccess:()=>rsa.removeModal()
-            })
-        }}/>})
-    }
-    function buttons_layout(variant){
-        let variantIds = getSelectedVariantIds()
-        let selected = variantIds.indexOf(variant.id) !== -1;
-        let text = selected?'موجود در ویترین':'افزودن'
-        return {
-            row: [
-                {html: (<button className={'v-product-page-add-button' + (selected?' selected':'')} onClick={() => vitrin.updateVitrinSelected(product,variant.id)}>{text}</button>)},
-                { flex: 1 },
-                {html: (<button className='v-product-card-price-problem' onClick={() => openPopup(variant)}>با قیمت موافق نیستم</button>)}
-            ]
-        }
-    }
-    let { image = imgph, name, price } = product;
-    return (
-        <RVD
-            layout={{
-                gap:16,
-                column:[
-                    {size:24},
-                    image_layout(image),
-                    name_layout(name),
-                    {gap:12,column:product.variants.map((o)=>card_layout(o))}
-                ]
-            }}
-        />
-    )
-}
-type I_VariantLabels = { product:I_vitrin_product, variantIds:(number|string)[],type?:'horizontal'|'vertical',showPrice?:boolean }
-function VariantLabels(props:I_VariantLabels) {
-    let { product, variantIds,type = 'horizontal',showPrice } = props
-    let layout:I_RVD_layout = {align: 'v',gap:6,column: variantIds.map((variantId) => {
-        let p:I_VariantLabel = {product,variantId,type,showPrice}
-        return <VariantLabel {...p}/>
-    })}
-    return (<RVD layout={layout}/>)
-}
+// type I_ProductPage = {product:I_vitrin_product}
+// function ProductPage(props:I_ProductPage){
+//     let {vitrin,apis,rsa,actionClass}:I_app_state = useContext(appContext)
+//     let {product} = props;
+//     function image_layout(image) {
+//         return { className: 'v-product-page-image', size: 144, html: <img src={image} alt='' height='100%' />, align: 'vh' }
+//     }
+//     function getSelectedVariantIds(){
+//         let {vitrinSelected} = vitrin;
+//         let res = vitrinSelected[product.id]
+//         if(!res){return []}
+//         return res.variantIds; 
+//     }
+//     function name_layout(name) {return { align:'vh',html: name, className: `v-product-card-name` }}
+//     function card_layout(variant){
+//         return {
+//             className:'v-product-page-card',
+//             column:[
+//                 {
+//                     html:<VariantLabels product={product} variantIds={[variant.id]} type='vertical' showPrice={true}/>
+//                 },
+//                 {size:6},
+//                 buttons_layout(variant)
+//             ]
+//         }
+//     }
+//     function openPopup(variant:I_vitrin_variant){
+//         actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion onSubmit={(price:number)=>{
+//             let parameter:v_price_suggestion_payload = {variant,price};
+//             apis.request({
+//                 api:'vitrin.v_price_suggestion',description:'پیشنهاد قیمت ویترین',parameter,message:{success:true},
+//                 onSuccess:()=>rsa.removeModal()
+//             })
+//         }}/>})
+//     }
+//     function buttons_layout(variant){
+//         let variantIds = getSelectedVariantIds()
+//         let selected = variantIds.indexOf(variant.id) !== -1;
+//         let text = selected?'موجود در ویترین':'افزودن'
+//         return {
+//             row: [
+//                 {html: (<button className={'v-product-page-add-button' + (selected?' selected':'')} onClick={() => vitrin.updateVitrinSelected(product,variant.id)}>{text}</button>)},
+//                 { flex: 1 },
+//                 {html: (<button className='v-product-card-price-problem' onClick={() => openPopup(variant)}>با قیمت موافق نیستم</button>)}
+//             ]
+//         }
+//     }
+//     let { image = imgph, name } = product;
+//     return (
+//         <RVD
+//             layout={{
+//                 gap:16,
+//                 column:[
+//                     {size:24},
+//                     image_layout(image),
+//                     name_layout(name),
+//                     {gap:12,column:product.variants.map((o)=>card_layout(o))}
+//                 ]
+//             }}
+//         />
+//     )
+// }
+// type I_VariantLabels = { product:I_vitrin_product, variantIds:(number|string)[],type?:'horizontal'|'vertical',showPrice?:boolean }
+// function VariantLabels(props:I_VariantLabels) {
+//     let { product, variantIds,type = 'horizontal',showPrice } = props
+//     let layout:I_RVD_layout = {align: 'v',gap:6,column: variantIds.map((variantId) => {
+//         let p:I_VariantLabel = {product,variantId,type,showPrice}
+//         return <VariantLabel {...p}/>
+//     })}
+//     return (<RVD layout={layout}/>)
+// }
 type I_VariantLabel = {product,variantId,type,showPrice?:boolean}
 function VariantLabel(props:I_VariantLabel) {
     let { product, variantId,type = 'horizontal',showPrice } = props
@@ -777,26 +789,31 @@ function Landing(props:I_Landing) {
         />
     )
 }
-type I_VitrinPriceSuggestion = {onSubmit:(price:number)=>void}
+
+type I_VitrinPriceSuggestion = {product:I_vitrin_product,renderIn?:any,onSubmit:(price:number)=>void,variant:I_vitrin_variant}
 function VitrinPriceSuggestion(props:I_VitrinPriceSuggestion){
-    let {onSubmit} = props;
-    let [price,setPrice] = useState('');
+    let {onSubmit,product,variant} = props;
+    let [Price,setPrice] = useState('');
+    let vlProps:I_VariantLabel = {product,variantId:variant.id,type:'horizontal'}
     function submit(){
-        if(!price){return}
-        onSubmit(+price)
+        if(!Price){return}
+        onSubmit(+Price)
     }
     function description_layout(){
         return {
-            html:'بابت اتفاق پیش آمده متاسفیم. ما همواره در حال بررسی قیمت ها و ارائه قیمت رقابتی در بازار ِآنلاین هستیم. قیمت پیشنهادی خود را وارد کنید. در اسرع وقت کارشناسان ما قیمت پیشنهادی شما رو بررسی خواهند کرد'
+            html:' ما همواره در حال بررسی قیمت ها و ارائه قیمت رقابتی در بازار آنلاین هستیم. قیمت پیشنهادی خود را وارد کنید. در اسرع وقت کارشناسان ما قیمت پیشنهادی شما رو بررسی خواهند کرد.',
+            className: 'v-description-layout'
         }
     }
     function input_layout(){
         return {
             html:(
-                <AIOInput className='w-100' after='تومان'
-                    type='number' placeholder='قیمت پیشنهادی شما'
-                    value={price}
-                    onChange={(price)=>setPrice(price)}
+                <AIOInput 
+                    className='w-100'
+                    type='number' 
+                    placeholder='قیمت پیشنهادی شما (تومان)'
+                    value={Price}
+                    onChange={(Price)=>setPrice(Price)}
                 />
             )
         }
@@ -804,9 +821,66 @@ function VitrinPriceSuggestion(props:I_VitrinPriceSuggestion){
     function submit_layout(){
         return {
             html:(
-                <button disabled={!price} className='button-2' onClick={()=>submit()}>تایید</button>
+                <button disabled={!Price} className='button-2' onClick={()=>submit()}>ثبت</button>
             )
         }
     }
-    return (<RVD layout={{className:'p-12',gap:12,column:[description_layout(),input_layout(),submit_layout()]}}/>)
+    function name_layout(name) {
+        return { html: name, className: `v-product-card-name flex-1 align-v` }
+    }
+    function image_layout(image) {
+        return { className: 'v-product-card-image', size: 72, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
+    }
+    function price_layout(price,variant) {
+        price = isNaN(price) ? 0 : price;
+        if (price < 500) { price = 0 }
+        return {
+            align: 'v', className: 'v-product-card-price',gap:3,
+            row: [
+                { show: !price, html: 'در حال تامین', className: 'v-product-card-no-price' },
+                { show: !!price, html: () => SplitNumber(price) },
+                { show: !!price, html: 'تومان', className: 'v-product-card-unit' }
+            ]
+        }
+    }
+    let { image = imgph, name} = product;
+    let {price} = variant
+
+    return (<RVD 
+            layout={{
+                className:'p-12',
+                // style:{backgroundColor:'white'},
+                gap:12,
+                column:[
+                    {
+                        row:[
+                            {
+                                gap:6,size:96,
+                                column: [
+                                    image_layout(image)
+                                ]
+                            },
+                            {size:6},
+                            {
+                                gap:12,
+                                column: [
+                                    name_layout(name),
+                                    {html: <VariantLabel {...vlProps}/>, className:'fs-14 fw-400'},
+                                    price_layout(price,'variant'),
+                                ]
+                            },
+                        ],
+                    },
+                    {flex:1},
+                    {
+                        gap:16,
+                        column: [
+                            input_layout(),
+                            description_layout(),
+                            submit_layout()
+                        ]
+                    }
+                ]
+            }}/>
+        )
 }

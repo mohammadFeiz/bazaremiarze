@@ -168,9 +168,10 @@ export default class ActionClass implements I_actionClass {
         }
         else if(type === 'vitrin-price-suggestion'){
             let {render} = parameter;
-            rsa.addModal({body: {render},id: type,header: { title: 'گزارش اشکال قیمت' }})
+            rsa.addModal({body: {render},id: type,header: { title: 'پیشنهاد قیمت دیگر' }})
         }
         else if (type === 'profile') {
+            debugger
             let { Login,updateProfile} = this.getProps();
             msfReport({actionName:'open profile',actionId:20,tagName:'profile',eventName:'page view'})
             let mode = parameter;

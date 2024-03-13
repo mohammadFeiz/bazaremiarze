@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import RVD from "./../../../npm/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
 import SplitNumber from "../../../npm/aio-functions/split-number";
-import NoSrc from './../../../images/imgph.png';
+// import NoSrc from './../../../images/imgph.png';
 // code:25965
 // date:"1401/11/24"
 // docStatus:"CustomerApproved"
@@ -14,7 +14,7 @@ import NoSrc from './../../../images/imgph.png';
 // _time:"00:00:00"
 export default class OrderPopup extends Component {
 
-    //making row
+    //making rows
     static contextType = appContext;
     state = {order:this.props.order}
     getRow(key, value = '-------------',show = true, style) {
@@ -38,7 +38,7 @@ export default class OrderPopup extends Component {
       }
     }
     
-    //status sefareshat
+    //وضعیت سفارشات
     getStatus(status) {
 
       let {order} = this.state;
@@ -106,9 +106,12 @@ export default class OrderPopup extends Component {
       };
     }
 
+    //mortabet b sectione paiini ast
     async componentDidMount(){
       await this.getDetails()  
     }
+
+    //nmidoonam
     async getDetails(){
       let {apis} = this.context;
       let {order} = this.state;
@@ -118,15 +121,17 @@ export default class OrderPopup extends Component {
         onSuccess:(newOrder)=>{
           this.setState({order:newOrder})
         }
-      })
-      
+      })   
     }
-    
+
+    //بخش پرداخت فعلا غیر فعال است
     async pardakht(){
       let {apis} = this.context;
       let {order} = this.props;
       await apis.request({api:'kharid.pardakhte_kharid',parameter:{order},description:'پرداخت خرید عادی'})
     }
+
+    //جزییات فاکتور و مشخصات کاربر
     details_layout(){
       let {b1Info} = this.context;
       let {order} = this.state;
@@ -146,18 +151,8 @@ export default class OrderPopup extends Component {
         ],
       }
     }
-    // factorDetails_layout(){
-    //   let {order} = this.state;
-    //   return {
-    //     style: { padding: "0 24px" },className: "box gap-no-color theme-gap-h p-12",gap: 12,
-    //     row:[
-    //         {html:<div>پیش فاکتور : {order.mainDocNum}</div>,className:'fs-12 theme-medium-font-color bold',align:'v'},
-    //         {flex:2},
-    //         {html:<div>تاریخ ثبت : {order.date}</div>,className:'fs-12 theme-medium-font-color bold',align:'v'},
-    //         {flex:1},
-    //     ]
-    //   }
-    // }
+
+    //تخفیفات محصولات
     takhfifat_layout(){
       let {order} = this.state;
       let {details = {}} = order;
@@ -173,6 +168,8 @@ export default class OrderPopup extends Component {
         ],
       }
     }
+
+    //amalkardi nadare vali pakesh nmikonm shayad estefade beshe
     dokmeye_pardakht_layout(){
       let {order} = this.state;
       let {docStatus} = order;
@@ -184,6 +181,8 @@ export default class OrderPopup extends Component {
         html:(<button className="button-2" onClick={()=>this.pardakht()}>پرداخت</button>)
       }
     }
+
+    //section namayeshe mahsoolat
     products_layout(){
       let {order} = this.state;
       let {details = {}} = order;
@@ -207,11 +206,11 @@ export default class OrderPopup extends Component {
         })
       }
     }
-    render() {
 
+    //bakhsh render kole safe peygiri sefareshat
+    render() {
       let {order} = this.state;
       let {loading} = this.props;
-
       return (
         <RVD
         loading={loading}
@@ -222,7 +221,7 @@ export default class OrderPopup extends Component {
               {
                 flex: 1,className: "gap-12",
                 column: [
-                  //position=fixed
+                  //be in sorat neveshtan barabare position=fixed ast baes mishe on bakhshi k inja gharar migire sabet beshe
                   // this.factorDetails_layout(),
                   {
                     flex:1,
@@ -243,6 +242,8 @@ export default class OrderPopup extends Component {
       );
     }
   }
+
+  //کارت محصول
   class ProductCard extends Component{
     getStyle(){
       let {isFirst,isLast} = this.props;
@@ -254,11 +255,14 @@ export default class OrderPopup extends Component {
         borderTopRightRadius:!isFirst?0:undefined
       }
     }
+
+    //عکس محصول
     image_layout(){
       let {imageUrl} = this.props;
       return {html:<img src={imageUrl} width={'100%'} alt=''/>}
     }
 
+    //تعداد و واحد کالا
     unit_layout(){
       let {itemQty} = this.props;
       let {unitOfMeasure} = this.props;
@@ -271,11 +275,15 @@ export default class OrderPopup extends Component {
         ]
       }
     }
+
+    //کمپین های بازار می ارزه
     campaign_layout(){
       let {campaign} = this.props;
       if(!campaign){return false}
       return {html:campaign.name,className:'fs-10',style:{color:'rgb(253, 185, 19)'}}
     }
+
+    //نام کالا
     name_layout(){
       let {itemName} = this.props;
       return {
@@ -285,6 +293,8 @@ export default class OrderPopup extends Component {
         ]
       }
     }
+
+    //کد کالا
     itemCode_layout(){
       let {itemCode} = this.props;
       return {
@@ -294,6 +304,8 @@ export default class OrderPopup extends Component {
         ]
       }
     }
+
+    //nmidoonam
     details_layout(){
       let {details = []} = this.props;
       if(!details.length){return false}
@@ -303,6 +315,8 @@ export default class OrderPopup extends Component {
         })
       }
     }
+
+    //قیمت کل محصولات - درصد تخفیف ویژه - قیمت کالای تکی ضرب در تعداد آن
     discount_layout(){
       let {price} = this.props;
       let {priceAfterVat} = this.props;
@@ -320,7 +334,7 @@ export default class OrderPopup extends Component {
                 row:[
                   {flex:1},
                   {html:<del>{SplitNumber(price*itemQty)}</del>,className:'fs-12'},
-                  {html:<div style={{background:'#0095DA',color:'#fff',padding:'1px 5px',fontSize:12,borderRadius:6}}>{discountPercent + '%'}</div>,align:'v'}
+                  {html:<div style={{background:'#0095DA',color:'#fff',padding:'1px 5px',fontSize:12,borderRadius:6}}>{discountPercent.toFixed(1) + '%'}</div>,align:'v'}
                   
                 ]
               },
@@ -337,6 +351,8 @@ export default class OrderPopup extends Component {
         ]
       }
     }
+
+    //قیمت نهایی (قیمتی که تمام تخفیفات در ان اعمال شده)
     price_layout(){
       let {priceAfterVat} = this.props;
       return {
@@ -346,6 +362,8 @@ export default class OrderPopup extends Component {
         ]
       }
     }
+
+    //ijade radif
     row_layout(key,value){
       return {
         gap:3,
@@ -358,6 +376,8 @@ export default class OrderPopup extends Component {
         ]
       }
     }
+
+    //section render mahsoolat
     render(){
       let {loading,unitOfMeasure,boxName,inBox,price,priceAfterVat} = this.props;
       return (
@@ -403,6 +423,7 @@ export default class OrderPopup extends Component {
     }
   }
 
+  //kalahay fake
   let fakeData = [
     {
       "lineNum": 0,"itemName": "پنل پلي كربنات 18 وات آفتابي توكار","itemCode": "7570","itemQty": 3,"itemGroupCode": 104,"price": 924000,

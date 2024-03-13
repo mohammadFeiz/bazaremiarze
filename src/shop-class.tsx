@@ -334,10 +334,11 @@ export default class ShopClass implements I_ShopClass {
         if (this.shopId === 'Bundle') { return this.getAmounts_Bundle(shippingOptions, container) }
         else { return await this.getAmounts_all(shippingOptions, container) }
     }
+    
     // ijade section takhfifat
     //data az DiscountList migire
     getAmounts_all = async (shippingOptions: I_shippingOptions, container?: string) => {
-        let { actionClass,userInfo,b1Info } = this.getAppState();
+        let { actionClass } = this.getAppState();
         let {marketingLines,total} = await this.getCartVariants();
         let factorDetails: I_getFactorDetails_result = actionClass.getFactorDetails(marketingLines, { ...shippingOptions, CampaignId: this.CampaignId }, container);
         let { marketingdetails, DocumentTotal } = factorDetails;
@@ -447,7 +448,8 @@ export default class ShopClass implements I_ShopClass {
         try { return +value.toFixed(v) }
         catch { return 0 }
     }
-    //ijade etelaate factor va ersal baray visitor
+
+    //ایجاد اطلاعات فاکتور
     getFactorItems = async (shippingOptions: I_shippingOptions, container) => {
         let amounts = await this.getAmounts(shippingOptions, container);
         let { total, payment, discounts, ClubPoints } = amounts;

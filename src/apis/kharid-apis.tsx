@@ -3,7 +3,7 @@ import nosrcImage from './../images/imgph.png';
 import nosrc from './../images/imgph.png';
 import staticBundleData from './bundledata';
 import AIOStorage from 'aio-storage';
-import { I_B1Info, I_PaydueDate_option, I_ShopProps, I_actionClass, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_itemPrice, I_product, I_product_category, I_product_detail, I_product_optionType, I_state_cart, I_variant, I_variant_optionValues } from "../types";
+import { I_PaydueDate_option, I_app_state, I_bundle_product, I_bundle_taxon, I_bundle_variant, I_fixPrice_result, I_itemPrice, I_product, I_product_category, I_product_detail, I_product_optionType, I_state_cart, I_variant, I_variant_optionValues } from "../types";
 type I_chekcCode_return = any;
 type I_getCampaigns_return = { shopName: string, id: string, CampaignId: number, PriceListNum: number,taxons?:{name:string,id:any,min:number,max:number}[] };
 type I_getCategories_return = { name: string, id: string }[]
@@ -39,6 +39,8 @@ export default function kharidApis({ baseUrl, helper }) {
         return { result: response.data.message || response.data.Message }
       }
     },
+
+    //peygiri sefareshat service call
     async tarikhche_sefareshate_kharid(undefined, { userInfo }) {
       let res = await Axios.post(`${baseUrl}/BOne/GetOrders`, {
         "FieldName": "cardcode",
@@ -92,6 +94,7 @@ export default function kharidApis({ baseUrl, helper }) {
       //   {docStatus:'SettledWithBadDept',mainDocEntry:'123456',mainDocNum:'53453',mainDocisDraft:false,mainDocTotal:10},
       // ]
 
+      // وضعیت های پیگیری سفارشات
       if (!Array.isArray(results)) { return { result: tabs } }
       let statuses = {
         Returned: [-390, 'لغو شده', 'مرجوع شده'],//
@@ -113,20 +116,9 @@ export default function kharidApis({ baseUrl, helper }) {
         Delivered: [390, 'تحویل شده', 'تحویل شده'],//
         ShippingRestDeliveryPacked: [480, 'تحویل شده', 'تحویل کامل و برخی فاکتور شده'],//
         Invoiced: [490, 'تکمیل شده', 'فاکتور شده'],//
-        // NotSet: [0, 'در حال بررسی', 'نا مشخص'],//
-        // PendingPreOrder: [100, 'در حال بررسی', 'ارسال شده برای ویزیتور'],//
-        // PreOrder: [120, 'در حال بررسی', 'در حال بررسی'],//
-        // VisitorApproved: [140, 'در حال بررسی', 'در حال بررسی'],//
-        // SuperVisorApproved: [150, 'در حال بررسی', 'در حال بررسی'],//
-        // ManagerApproved: [160, 'در حال بررسی', 'در حال بررسی'],//
-        // SalesApproved: [210, 'در حال بررسی', 'تایید واحد مالی'],//
-        // PaymentApproved: [290, 'در حال پردازش', 'پرداخت شده'],//
-        //Invoiced:[490,'در حال پردازش'],
-        //PartiallyDelivered:[380,'در حال پردازش'],
-        //Settlled:[590,'نا مشخص'],
-        //SettledWithBadDept:[580,'نا مشخص'],
       }
 
+      //order 
       for (let i = 0; i < results.length; i++) {
         let order = results[i];
         let { date, time } = helper.getDateAndTime(order.mainDocDate);
@@ -146,6 +138,7 @@ export default function kharidApis({ baseUrl, helper }) {
       }
       return { result: tabs };
     },
+
     async mahsoolate_sefareshe_kharid(order, { userInfo }) {
       const docTypeDictionary = {
         Customer: 2,
@@ -172,12 +165,12 @@ export default function kharidApis({ baseUrl, helper }) {
         PurchaseRequest: 1470000113,
       };
 
+      //service call data har sefaresh
       let res = await Axios.post(`${baseUrl}/BOne/GetDocument`, {
         "DocEntry": order.code,
         "DocType": docTypeDictionary[order.mainDocType],
         "isDraft": order.mainDocisDraft
       });
-
       let result = res.data.data.results;
       if(result===null){
         return {result:'خطا در دریافت اطلاعات'}
@@ -188,8 +181,7 @@ export default function kharidApis({ baseUrl, helper }) {
           return { ...i, src: nosrcImage, details: [] };
         })
 
-      //moede-pardakht
-      //PayDueDate:'ByDelivery',
+      //موعد پرداخت
       let dic1 = {
         'ByDelivery': 'به روز',
         'By15Days': 'چک 15 روزه',
@@ -229,14 +221,15 @@ export default function kharidApis({ baseUrl, helper }) {
         'By75Days': '2 ماه و نیم بعد',
         'NotSet': 'تعیین نشده',
       }
-      //PaymentTime:'ByOnlineOrder'
 
+      //نحوه پرداخت
       let dic2 = {
         'ByOnlineOrder': 'اینترنتی',
         'ByOrder': 'واریز قبل ارسال',
         'ByDelivery': 'واریز پای بار'
       }
-      //DeliveryType:'BRXDistribution'
+
+      //نحوه ارسال
       let dic3 = {
         'BRXDistribution': 'ماشین توزیع بروکس',
         'RentalCar': 'ماشین اجاره ای',
@@ -244,23 +237,17 @@ export default function kharidApis({ baseUrl, helper }) {
         'HotDelivery': 'پخش گرم',
         'BySalesMan': 'ارسال توسط ویزیتور'
       }
-      //cmpaigns
+
+      //کمپین های بازار می ارزه
       let dic4 = {
         'EidanehCredit': 'عیدانه چکی',
         'EidanehCash': 'عیدانه نقدی',
         'ItemDis1402_69': 'طرح اقلامی زمستان 1402',
         'NA': 'فروش عادی',
         'HeavyItemDis1402_69': 'طرح اقلامی سنگین زمستان 1402',
-        // 'QtyWinter': 'حبابی های زمستان 1402',
-        // 'ItemDis1402': 'طرح اقلامی زمستان 1402',
-        // 'Belex403_National_Tools': 'فروش اقلامی همایش بلکس 2023',
-        // 'Belex403_National_Packs': 'بسته های اقلامی همایش بلکس 2023',
-        // 'ClubCredit': 'فروش امتیازی باشگاه',
-        // 'Belex403_National': 'همایش بلکس 2023',
-        // 'Golden10W1402': '10 وات طلایی اپ الکتریکی',
-        // 'Belex402_HMD': 'همایش همدان 1402'
       }
-      //nahve-tasvie
+
+      //نحوه ارسال
       let dic5 = {
         'Cash': 'نقد',
         'Cheque': 'چکی',

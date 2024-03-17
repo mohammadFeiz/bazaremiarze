@@ -40,7 +40,7 @@ export default function kharidApis({ baseUrl, helper }) {
       }
     },
 
-    //peygiri sefareshat service call
+    //service call peygiri sefareshat 
     async tarikhche_sefareshate_kharid(undefined, { userInfo }) {
       let res = await Axios.post(`${baseUrl}/BOne/GetOrders`, {
         "FieldName": "cardcode",
@@ -181,6 +181,7 @@ export default function kharidApis({ baseUrl, helper }) {
           return { ...i, src: nosrcImage, details: [] };
         })
 
+      //dictionary
       //موعد پرداخت
       let dic1 = {
         'ByDelivery': 'به روز',

@@ -186,7 +186,7 @@ export default class ActionClass implements I_actionClass {
                 phone:userInfo.landlineNumber,
                 address:userInfo.address,
                 city:userInfo.userCity,
-                state:userInfo.userProvince
+                state:userInfo.userProvince,
             }
             let fields = [];
             if(mode === 'profile'){

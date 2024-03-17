@@ -16,6 +16,8 @@ import notfounrsrc from './../../images/not-found.png';
 import { v_kolle_mahsoolat_payload, v_price_suggestion_payload, v_setStarted_payload, vitrinMock } from "../../apis/vitrin-apis";
 import { I_app_state, I_vitrin_product, I_vitrin_variant, I_RVD_child } from "../../types";
 type I_path = {id:string,show:boolean,name:string,childs?:I_path[]}
+
+//render vitrin
 export default function Vitrin() {
     let {apis, vitrin, actionClass,backOffice,userInfo}:I_app_state = useContext(appContext);
     let [splash,setSplash] = useState<boolean>(true)
@@ -34,20 +36,23 @@ export default function Vitrin() {
         return <div className='w-100 h-100 align-vh fs-12'>سرویس ویترین تا اطلاع ثانوی در حال بروز رسانی میباشد</div>    
     }
     let { started } = vitrin;
-    if(started === true){return <VitrinPage1 />}
+    //render vitrin body
+    if(started === true){return <VitrinBody />}
+    //render vitrin landing page
     if(started === false){return <Landing start={() => start()} />}
     return <div className='w-100 h-100 align-vh fs-12'>در حال بارگزاری اطلاعات ویترین</div>
 }
 
-function VitrinPage1() {
+//generate vitrin body
+function VitrinBody() {
     let {actionClass, vitrin}:I_app_state = useContext(appContext);
+    //تعداد کالاهای موجود در ویترین شما - header
     function count_layout() {
         let { vitrinSelected = {} } = vitrin;
         return {
             column: [
-                {className: 'm-t-10'},
                 {
-                    className: 'v-header-layout m-t-10',
+                    className: 'v-header-layout',
                     column: [
                         { size: 10 },
                         { html: 'در ویترین شما'},
@@ -57,16 +62,13 @@ function VitrinPage1() {
             ],
         }
     }
-    // function bazargah_billboard_layout() {
-    //     return { html: <img src={vbsrc as string} width='100%' alt='' />, align: 'vh', className: 'm-h-12' }
-    // }
+    //header and button section
     function toolbar_layout() {
         let { vitrinSelected } = vitrin;
         return {
             className: 'p-12 ofx-visible align-vh v-header-layout',
             row: [
                 { size: 12 },
-                // { flex: 1, className: 'fs-14 bold', html: 'ویترین من', align: 'v' },
                 {
                     show: !!vitrinSelected, 
                     html: (
@@ -87,21 +89,24 @@ function VitrinPage1() {
             ]
         }
     }
-
+    //render products and header
     function products_layout() {return { html: <SelectedProducts /> }}
     return (
         <RVD
             layout={{
                 className: 'theme-popup-bg ofy-auto m-b-24', flex: 1,
-                // column: [count_layout(), bazargah_billboard_layout(), toolbar_layout(), products_layout()]
                 column: [count_layout(), toolbar_layout(), products_layout()]
             }}
         />
     )
 }
+
+//render pagination
 type I_paging = {
     number:number,size:number,sizes:number[],serverSide:boolean,length:number,onChange:(obj:any)=>void
 }
+
+//render search box
 type I_Search = {isFirstTime:boolean}
 type I_Search_state = {
     categories:any[],
@@ -113,7 +118,10 @@ type I_Search_state = {
     brand:any,
     paging:I_paging
 }
+
+//search
 class Search extends Component<I_Search,I_Search_state> {
+    //context
     static contextType = appContext;
     constructor(props){
         super(props);
@@ -128,17 +136,20 @@ class Search extends Component<I_Search,I_Search_state> {
            paging:this.getInitialPaging()
         }
     }
+    //onChange pagination (تغییر صفحات)
     changePaging(obj){
         let {paging} = this.state;
         let newPaging:I_paging = { ...paging, ...obj }
         this.setState({paging:newPaging},()=>this.updateProducts())
     }
+    //دکمه تغییر تعداد محصولات در صفحات
     getInitialPaging(){
         return {
             number: 1, size: 20, sizes: [10, 20, 40, 100], serverSide: true, length: 0,
             onChange: (obj)=>this.changePaging(obj)
         }
     }
+    //فیلتر محصولات بر اساس برند
     async updateProducts() {
         let {backOffice,apis} = this.context as I_app_state;
         let {searchValue,taxon,paging,brand} = this.state;
@@ -158,6 +169,7 @@ class Search extends Component<I_Search,I_Search_state> {
         this.setState({categories:backOffice.vitrinCategories})
         this.updateProducts()
     }
+    //سرچ محصولات
     changeSearch(value) {
         let {msfReport} = this.context as I_app_state;
         if (value.length > 3) {
@@ -172,10 +184,12 @@ class Search extends Component<I_Search,I_Search_state> {
         let {isFirstTime} = this.props;
         return !isFirstTime ? false : { html: <Box type='description' /> }
     }
+    //تغییر فبلتر برند
     changeBrand(value){
         let {brand} = this.state;
         this.setState({brand:{...brand,[value]:!brand[value]}},()=>this.updateProducts()) 
     }
+    //بخش فیلترهای برند
     brands_layout(){
         let {backOffice} = this.context as I_app_state;
         let {brand} = this.state;
@@ -196,6 +210,7 @@ class Search extends Component<I_Search,I_Search_state> {
             })
         }
     }
+    //render body from brands and search
     body_layout() {
         let {rsa} = this.context as I_app_state;
         let {isFirstTime} = this.props;
@@ -208,7 +223,7 @@ class Search extends Component<I_Search,I_Search_state> {
                     column: [
                         this.search_layout(),
                         this.categories_layout(),
-                        //brands_layout(),
+                        this.brands_layout(),
                         this.products_layout(products, paging),
                         this.suggestion_layout(isFirstTime)
                     ]
@@ -217,6 +232,7 @@ class Search extends Component<I_Search,I_Search_state> {
             ]
         }
     }
+    //جستجو در محصولات
     search_layout() {
         let className = 'vitrin-search-box gap-4', placeholder = "جستجو در محصولات", before = <Icon path={mdiMagnify} size={1} />
         let props = { type: 'text', className, placeholder, before, onChange: (value) => { console.log(value); this.changeSearch(value) }, delay: 1200 }
@@ -226,6 +242,7 @@ class Search extends Component<I_Search,I_Search_state> {
     //     let props = {rtl:true,total,categories,onChange:(taxon) => changeCategory(taxon)}
     //     return !categories.length?false:{className: 'm-h-6',html: <TreeCategories {...props} />}
     // }
+    //گرفتن دسته بندی محصولات
     getCategoryTitle() {
         let {categoryPath} = this.state;
         if (!categoryPath.length) { return 'دسته بندی محصولات' }
@@ -238,6 +255,7 @@ class Search extends Component<I_Search,I_Search_state> {
         }
         return res.join(' / ')
     }
+    //تغییر دسته بندی محصولات
     changeCategory(pathes:I_path[]) {
         let {msfReport} = this.context as I_app_state;
         let {paging,taxon} = this.state;
@@ -247,6 +265,7 @@ class Search extends Component<I_Search,I_Search_state> {
         let newPaging:I_paging = { ...paging, number: 1 }
         this.setState({paging:newPaging,categoryPath:pathes,taxon:newTaxon,total:false},()=>this.updateProducts())
     }
+    //باز کردن دسته بندی محصولات
     openCategories() {
         let {actionClass,rsa} = this.context as I_app_state;
         let render = () => {
@@ -256,6 +275,7 @@ class Search extends Component<I_Search,I_Search_state> {
         }
         actionClass.openPopup('vitrin-categories', { render })
     }
+    //دسته بندی محصولات
     categories_layout() {
         let {categories} = this.state;
         if (!categories.length) { return false }
@@ -276,10 +296,12 @@ class Search extends Component<I_Search,I_Search_state> {
             ]
         }
     }
+    //محصولات
     products_layout(products, paging) {
         let props = { type: 'table',style:{border:'none'}, value: products, paging, rowsTemplate: () => <Products products={products} count={paging.size}/> }
         return { html: <AIOInput {...props} /> }
     }
+    //پیشنهاد افزودن محصول به ویترین
     suggestion_layout(isFirstTime:boolean) {
         return !!isFirstTime ? false : { className: 'p-24', style: { background: '#eee' }, html: () => <Suggestion /> }
     }
@@ -293,6 +315,7 @@ class Search extends Component<I_Search,I_Search_state> {
         return (<RVD layout={{ className: 'theme-popup-bg', column: [this.header_layout(), this.body_layout()] }} />)
     }
 }
+//دسته بندی محصولات
 type I_Categories = {categories?:any[],onChange:(path:I_path[])=>void}
 function Categories(props:I_Categories) {
     let { categories = [], onChange } = props || {}
@@ -366,6 +389,7 @@ function Categories(props:I_Categories) {
     }
     return (<RVD layout={{ className: 'categories-popup', row: [level0_layout(), level1_layout()] }} />);
 }
+
 type I_Box = {styleType?:0 | 1,type:'description',icon?:React.ReactNode,texts?:{show?:boolean,className:string,html:React.ReactNode}[],after?:React.ReactNode,onClick?:Function}
 function Box(props:I_Box) {
     let { styleType = 0,type, icon, texts, after, onClick } = props;
@@ -399,8 +423,8 @@ function Box(props:I_Box) {
             }}
         />
     )
-    
 }
+//پیشنهاد افزودن محصول به ویترین
 function Suggestion() {
     let { apis }:I_app_state = useContext(appContext);
     async function addSuggestion() {
@@ -436,13 +460,16 @@ function Suggestion() {
         />
     )
 }
+//محصولات فیک
 function getMockProducts(count) {
     let { result } = vitrinMock().v_getProducts(count)
     return result.products
 }
+//محصولات فیک ویترین من
 function getMockVitrinSelected() {
     return vitrinMock().v_mockVitrinSelected()
 }
+//محصولات اصلی ویترین من
 type I_Products = {products?:I_vitrin_product[],count:number}
 function Products(props:I_Products) {
     let {products,count} = props;
@@ -465,6 +492,7 @@ function Products(props:I_Products) {
     else {layout = { className: 'ofy-auto', column: list }}
     return (<RVD layout={layout} />)
 }
+//محصولات انتخاب شده ویترین من
 function SelectedProducts() {
     let { vitrin }:I_app_state = useContext(appContext);
     let { vitrinSelected } = vitrin;
@@ -477,63 +505,48 @@ function SelectedProducts() {
     let layout = { className: 'ofy-auto', column }
     return (<RVD layout={layout} />)
 }
+//قیمت محصولات و واریانت های انها
 function Price(props) {
     let {price} = props;
     price = isNaN(price) ? 0 : price;
     if (price < 500) { price = 0 }
     return <RVD 
         layout={{
-            align: 'v', className: 'v-product-card-price',gap:3,
+            align: 'v', gap:3,
             row: [
                 { show: !price, html: 'در حال تامین', className: 'v-product-card-no-price' },
-                { show: !!price, html: () => SplitNumber(price) },
+                { show: !!price, html: () => SplitNumber(price), className: 'v-product-card-price' },
                 { show: !!price, html: 'تومان', className: 'v-product-card-unit' }
             ]
         }}/>
 }
+//کارت محصول
 type I_ProductCard = {product:I_vitrin_product,loading?:boolean,renderIn?:any}
 function ProductCard(props:I_ProductCard) {
     let {vitrin,actionClass,apis,rsa}:I_app_state = useContext(appContext);
-    let {product,loading,renderIn} = props;
-    // function getSelectedVariantIds(){
-    //     let {vitrinSelected} = vitrin;
-    //     let res = vitrinSelected[product.id]
-    //     if(!res){return []}
-    //     return res.variantIds; 
-    // }
-    // function price_layout(price) {
-    //     price = isNaN(price) ? 0 : price;
-    //     if (price < 500) { price = 0 }
-    //     return {
-    //         align: 'v', className: 'v-product-card-price',gap:3,
-    //         row: [
-    //             { show: !price, html: 'در حال تامین', className: 'v-product-card-no-price' },
-    //             { show: !!price, html: () => SplitNumber(price) },
-    //             { show: !!price, html: 'تومان', className: 'v-product-card-unit' }
-    //         ]
-    //     }
-    // }
+    let {product,loading} = props;
+    //نام محصول
     function name_layout(name) {
         return { html: name, className: `v-product-card-name flex-1 align-v` }
     }
+    //عکس محصول
     function image_layout(image) {
         return { className: 'v-product-card-image', size: 72, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
     }
+    //واریانت های محصول
     function variants_layout(product:I_vitrin_product) { 
         return {
             className: 'v-product-card-variants',
             column: product.variants.map((variant)=>{
                 return variant_layout(product,variant)
             })
-            //column: [
-                //{ className: 'v-product-card-variants-label', html: 'موجود در ویترین' },
-                //{ className:'m-t-6',show:!!variantIds.length,html:<VariantLabels product={product} variantIds={variantIds}/>}
-            //]
         }
     }
+    //تغییر وضعیت محصولات
     function toggle(product,variantId){
         vitrin.updateVitrinSelected(product,variantId)
     }
+    //بخش واریانت های هر محصول
     function variant_layout(product,variant) {
         let selected = vitrin.getIsSelected(product.id,variant.id)
         let { price } = variant;
@@ -544,7 +557,6 @@ function ProductCard(props:I_ProductCard) {
                 {
                     column:[
                         {html: <VariantLabel {...vlProps}/>, className:'fs-14 m-b-12 fw-400'},
-                        // price_layout(price,'variant'),
                         {html: <Price price={price} />},
                         {size:6},
                         {html: (
@@ -572,6 +584,7 @@ function ProductCard(props:I_ProductCard) {
             ]
         }
     }
+    //بخش پیشنهاد قیمت به هر واریانت محصول در ویترین من
     function openPopup(variant:I_vitrin_variant){
         actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion variant={variant} product={product} onSubmit={(price:number)=>{
             let parameter:v_price_suggestion_payload = {variant,price};
@@ -581,6 +594,7 @@ function ProductCard(props:I_ProductCard) {
             })
         }}/>})
     }
+    //رندر هر کارت محصول
     let { image = imgph, name } = product;
     return (
         <RVD
@@ -601,81 +615,12 @@ function ProductCard(props:I_ProductCard) {
         />
     )
 }
-// type I_ProductPage = {product:I_vitrin_product}
-// function ProductPage(props:I_ProductPage){
-//     let {vitrin,apis,rsa,actionClass}:I_app_state = useContext(appContext)
-//     let {product} = props;
-//     function image_layout(image) {
-//         return { className: 'v-product-page-image', size: 144, html: <img src={image} alt='' height='100%' />, align: 'vh' }
-//     }
-//     function getSelectedVariantIds(){
-//         let {vitrinSelected} = vitrin;
-//         let res = vitrinSelected[product.id]
-//         if(!res){return []}
-//         return res.variantIds; 
-//     }
-//     function name_layout(name) {return { align:'vh',html: name, className: `v-product-card-name` }}
-//     function card_layout(variant){
-//         return {
-//             className:'v-product-page-card',
-//             column:[
-//                 {
-//                     html:<VariantLabels product={product} variantIds={[variant.id]} type='vertical' showPrice={true}/>
-//                 },
-//                 {size:6},
-//                 buttons_layout(variant)
-//             ]
-//         }
-//     }
-//     function openPopup(variant:I_vitrin_variant){
-//         actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion onSubmit={(price:number)=>{
-//             let parameter:v_price_suggestion_payload = {variant,price};
-//             apis.request({
-//                 api:'vitrin.v_price_suggestion',description:'پیشنهاد قیمت ویترین',parameter,message:{success:true},
-//                 onSuccess:()=>rsa.removeModal()
-//             })
-//         }}/>})
-//     }
-//     function buttons_layout(variant){
-//         let variantIds = getSelectedVariantIds()
-//         let selected = variantIds.indexOf(variant.id) !== -1;
-//         let text = selected?'موجود در ویترین':'افزودن'
-//         return {
-//             row: [
-//                 {html: (<button className={'v-product-page-add-button' + (selected?' selected':'')} onClick={() => vitrin.updateVitrinSelected(product,variant.id)}>{text}</button>)},
-//                 { flex: 1 },
-//                 {html: (<button className='v-product-card-price-problem' onClick={() => openPopup(variant)}>با قیمت موافق نیستم</button>)}
-//             ]
-//         }
-//     }
-//     let { image = imgph, name } = product;
-//     return (
-//         <RVD
-//             layout={{
-//                 gap:16,
-//                 column:[
-//                     {size:24},
-//                     image_layout(image),
-//                     name_layout(name),
-//                     {gap:12,column:product.variants.map((o)=>card_layout(o))}
-//                 ]
-//             }}
-//         />
-//     )
-// }
-// type I_VariantLabels = { product:I_vitrin_product, variantIds:(number|string)[],type?:'horizontal'|'vertical',showPrice?:boolean }
-// function VariantLabels(props:I_VariantLabels) {
-//     let { product, variantIds,type = 'horizontal',showPrice } = props
-//     let layout:I_RVD_layout = {align: 'v',gap:6,column: variantIds.map((variantId) => {
-//         let p:I_VariantLabel = {product,variantId,type,showPrice}
-//         return <VariantLabel {...p}/>
-//     })}
-//     return (<RVD layout={layout}/>)
-// }
+//واریانت های هر محصول
 type I_VariantLabel = {product,variantId,type,showPrice?:boolean}
 function VariantLabel(props:I_VariantLabel) {
     let { product, variantId,type = 'horizontal',showPrice } = props
     let { variants, optionTypes } = product
+    //قیمت هر واریانت
     function keyValues_layout() {
         let variant:I_vitrin_variant = variants.find((o) => o.id === variantId);
         if(!variant){
@@ -683,7 +628,7 @@ function VariantLabel(props:I_VariantLabel) {
             return false
         }
         let { keys } = variant;
-        let row:I_RVD_child[] = keys.map((key,i)=>keyValue_layout(key,i,variant))
+        let row:I_RVD_child[] = keys.map((key,i)=>options_layout(key,i,variant))
         if(showPrice){
             row.push({
                 className: 'v-product-card-option',gap:3,align:'v',
@@ -693,7 +638,8 @@ function VariantLabel(props:I_VariantLabel) {
         if(type === 'horizontal'){row = [{html:bullet()},...row]}
         return {gap:8,className: 'v-product-card-options',[type === 'horizontal'?'row':'column']:row,align:'v'}
     }
-    function keyValue_layout(key,index,variant):I_RVD_child{
+    //برند و ویژگی های هر واریانت
+    function options_layout(key,index,variant):I_RVD_child{
         let { name: optionTypeName, optionValues } = optionTypes[index];
         let optionValueName = '';
         let optionValue = optionValues.find((ov) => ov.id === key);
@@ -708,23 +654,22 @@ function VariantLabel(props:I_VariantLabel) {
             ]
         }
     }
+    //بخش قیمت هر واریانت
     function bullet():React.ReactNode{return <div className='v-product-card-options-bullet'></div>}
     function price_layout(price:number):I_RVD_child {
         price = isNaN(price) ? 0 : price;
         if (price < 500) { price = 0 }
         return {
-            align: 'v', className: 'v-product-card-price',gap:3,
+            align: 'v', gap:3,
             row: [
                 { show: !price, html: 'در حال تامین', className: 'v-product-card-no-price' },
-                { show: !!price, html: () => SplitNumber(price) },
+                { show: !!price, html: () => SplitNumber(price), className: 'v-product-card-price' },
                 { show: !!price, html: 'تومان', className: 'v-product-card-unit' }
             ]
         }
     }
     return (<RVD layout={keyValues_layout()}/>)
 }
-
-
 function ProductError(type,parameter){
     let $$ = {
         key_is_not_match_by_optionValues:()=>{
@@ -756,8 +701,7 @@ function ProductError(type,parameter){
     }
     $$[type]()   
 }
-
-
+//صفحه لندینگ ویترین
 type I_Landing = {start:()=>void}
 function Landing(props:I_Landing) {
     let { vitrin }:I_app_state = useContext(appContext), { started } = vitrin;
@@ -789,22 +733,24 @@ function Landing(props:I_Landing) {
         />
     )
 }
-
+//بخش پیشنهاد قیمت دیگر ویترین
 type I_VitrinPriceSuggestion = {product:I_vitrin_product,renderIn?:any,onSubmit:(price:number)=>void,variant:I_vitrin_variant}
 function VitrinPriceSuggestion(props:I_VitrinPriceSuggestion){
     let {onSubmit,product,variant} = props;
     let [Price,setPrice] = useState('');
     let vlProps:I_VariantLabel = {product,variantId:variant.id,type:'horizontal'}
+    //ثبت قیمت
     function submit(){
         if(!Price){return}
         onSubmit(+Price)
     }
+    //توضیحات
     function description_layout(){
         return {
             html:' ما همواره در حال بررسی قیمت ها و ارائه قیمت رقابتی در بازار آنلاین هستیم. قیمت پیشنهادی خود را وارد کنید. در اسرع وقت کارشناسان ما قیمت پیشنهادی شما رو بررسی خواهند کرد.',
             className: 'v-description-layout'
         }
-    }
+    }//اینپوت قیمت پیشنهادی
     function input_layout(){
         return {
             html:(
@@ -818,6 +764,7 @@ function VitrinPriceSuggestion(props:I_VitrinPriceSuggestion){
             )
         }
     }
+    //فانکشن ثبت قیمت پیشنهادی
     function submit_layout(){
         return {
             html:(
@@ -825,31 +772,32 @@ function VitrinPriceSuggestion(props:I_VitrinPriceSuggestion){
             )
         }
     }
+    //نام محصول
     function name_layout(name) {
         return { html: name, className: `v-product-card-name flex-1 align-v` }
     }
+    //عکس محصول
     function image_layout(image) {
         return { className: 'v-product-card-image', size: 72, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
-    }
+    }//قیمت پیشنهادی
     function price_layout(price,variant) {
         price = isNaN(price) ? 0 : price;
         if (price < 500) { price = 0 }
         return {
-            align: 'v', className: 'v-product-card-price',gap:3,
+            align: 'v', gap:3,
             row: [
                 { show: !price, html: 'در حال تامین', className: 'v-product-card-no-price' },
-                { show: !!price, html: () => SplitNumber(price) },
+                { show: !!price, html: () => SplitNumber(price), className: 'v-product-card-price' },
                 { show: !!price, html: 'تومان', className: 'v-product-card-unit' }
             ]
         }
     }
     let { image = imgph, name} = product;
     let {price} = variant
-
+    //رندر بخش پیشنهاد قیمت ویترین من
     return (<RVD 
             layout={{
                 className:'p-12',
-                // style:{backgroundColor:'white'},
                 gap:12,
                 column:[
                     {

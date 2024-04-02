@@ -198,7 +198,7 @@ function BazargahItemCard(props:I_BazargahItemCard){
     let {item} = props;
     let {name,details = [],price,image,count} = item;
     function name_layout(){return {html:name,className:'fs-14 bold m-b-12',style:{color:'#00164E',textAlign:'right'}}}
-    function details_layout(){return {gap:3,column:[...details,{key:'قیمت واحد',value:`${price} تومان`}].map((o:{key:string,value:string})=>detail_layout(o))}}
+    function details_layout(){return {gap:3,column:[...details,{key:'قیمت واحد',value:`${SplitNumber(price/10)} تومان`}].map((o:{key:string,value:string})=>detail_layout(o))}}
     function detail_layout(p:{key:string,value:string}){
         return {
             align:'v',className:'fs-10 theme-dark-font-color',gap:3,
@@ -222,7 +222,7 @@ function BazargahItemCard(props:I_BazargahItemCard){
         return {
             gap:3,align:'v',
             row:[
-                {html:<div className='fs-16 bold' style={{color:'#3B55A5'}}>{SplitNumber(price * count)}</div>},
+                {html:<div className='fs-16 bold' style={{color:'#3B55A5'}}>{SplitNumber(price * count / 10)}</div>},
                 {html:'تومان',className:'fs-12 theme-light-font-color'}
             ]
         }
@@ -306,7 +306,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
         return {
             gap:12,align:'vh',className:'p-12',
             row:[
-                detailCard_layout('دریافتی شما',SplitNumber(price),'تومان'),
+                detailCard_layout('دریافتی شما',SplitNumber(price / 10),'تومان'),
                 detailCard_layout('کالا ها',items.length,'عدد'),
                 detailCard_layout('تا محل تحویل',distanceKM,'کیلومتر'),
             ]
@@ -331,7 +331,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
                 label_layout('نکات قابل قبول سفارش'),
                 {
                     className:'theme-medium-font-color fs-12 t-a-right p-12',
-                    html:'لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد. کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد. در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.'
+                    html:'.................................................'
                 }
             ]
         }

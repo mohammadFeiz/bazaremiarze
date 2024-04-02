@@ -19,7 +19,7 @@ type I_path = {id:string,show:boolean,name:string,childs?:I_path[]}
 
 //render vitrin
 export default function Vitrin() {
-    let {apis, vitrin, actionClass,backOffice,userInfo}:I_app_state = useContext(appContext);
+    let {apis,vitrin,actionClass,backOffice,userInfo}:I_app_state = useContext(appContext);
     let [splash,setSplash] = useState<boolean>(true)
     useEffect(()=>{setTimeout(()=>setSplash(false),2500)},[])
     function start() {
@@ -52,7 +52,7 @@ function VitrinBody() {
         return {
             column: [
                 {
-                    className: 'v-header-layout',
+                    className: 'v-header-layout m-b-10',
                     column: [
                         { size: 10 },
                         { html: 'در ویترین شما'},
@@ -119,7 +119,7 @@ type I_Search_state = {
     paging:I_paging
 }
 
-//search
+//صفحه افزودن محصول به ویترین
 class Search extends Component<I_Search,I_Search_state> {
     //context
     static contextType = appContext;
@@ -238,10 +238,6 @@ class Search extends Component<I_Search,I_Search_state> {
         let props = { type: 'text', className, placeholder, before, onChange: (value) => { console.log(value); this.changeSearch(value) }, delay: 1200 }
         return { html: <AIOInput {...props} /> }
     }
-    // function categories_layout(categories,total){
-    //     let props = {rtl:true,total,categories,onChange:(taxon) => changeCategory(taxon)}
-    //     return !categories.length?false:{className: 'm-h-6',html: <TreeCategories {...props} />}
-    // }
     //گرفتن دسته بندی محصولات
     getCategoryTitle() {
         let {categoryPath} = this.state;
@@ -531,7 +527,7 @@ function ProductCard(props:I_ProductCard) {
     }
     //عکس محصول
     function image_layout(image) {
-        return { className: 'v-product-card-image', size: 72, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
+        return { className: 'v-product-card-image', size: 96, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
     }
     //واریانت های محصول
     function variants_layout(product:I_vitrin_product) { 
@@ -778,7 +774,7 @@ function VitrinPriceSuggestion(props:I_VitrinPriceSuggestion){
     }
     //عکس محصول
     function image_layout(image) {
-        return { className: 'v-product-card-image', size: 72, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
+        return { className: 'v-product-card-image', size: 96, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
     }//قیمت پیشنهادی
     function price_layout(price,variant) {
         price = isNaN(price) ? 0 : price;

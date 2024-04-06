@@ -43,9 +43,11 @@ export default function bgApis({baseUrl,helper}) {
                     }
 
                     return {
-                        status:o.status,submitDate,
+                        status:o.status,
+                        submitDate,
                         deliverDate:takenDate?AIODate().getTime({date:takenDate}):undefined,//use in status:sent
-                        code: o.code ,price: o.price,
+                        code: o.code ,
+                        price: o.price,
                         items:o.items.map((item)=>{
                             if(!item.image || typeof item.image !== 'string'){item.image = imgph}
                             if(!item.details || !Array.isArray(item.details)){item.details = []}

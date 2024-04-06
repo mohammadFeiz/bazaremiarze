@@ -24,6 +24,7 @@ export type I_bg_order = {
     isInVitrin:boolean,
     distanceKM:number,
     carierPhoneNumber?:string,
+    carierName:string,
     deliveryType?:I_deliveryType,//use in status:sending
     trackingCode?:string,//use in status:sending
     info:{name:string,lat:number,lng:number,address:string,city:string,province:string,postal:number,phone:string}
@@ -47,7 +48,7 @@ export default function Bazargah(){
     function getOrders(newTab){
         setTab(newTab)
         apis.request({
-            api:'bg.bg_orders',description:`دریافت سفارشات بازارگاه از نوع ${newTab}`,parameter:newTab,
+            api:'bg.bg_orders',description:`دریافت سفارشات بازارگاه از نوع ${newTab}`,parameter:newTab,loading:true,
             onSuccess:(orders:I_bg_order[])=>setOrders(orders)
         })
     }
@@ -61,8 +62,12 @@ export default function Bazargah(){
         }
     }
     function orderCard_layout(order:I_bg_order){
+        let loading = false;
+        if(!order){
+            loading = true
+          }
         return {
-            className:'of-visible',html:<BazargahOrderCard order={order}/>
+            className:'of-visible',html:<BazargahOrderCard loading={loading} order={order}/>
         }
     }
     // function deliveryPopup_layout(){
@@ -75,7 +80,7 @@ export default function Bazargah(){
                 column:[
                     tabs_layout(),
                     {
-                        flex:1,className:'bg-body ofy-auto p-t-0 gap-12 ofx-visible',
+                        flex:1,className:'bg-body ofy-auto hide-scroll p-t-0 gap-12 ofx-visible',
                         column:orders.map((order:I_bg_order)=>orderCard_layout(order))
                     }
                 ]
@@ -85,6 +90,7 @@ export default function Bazargah(){
 } 
 type I_BazargahOrderCard = {
     order:I_bg_order
+    loading:boolean
 }
 
 export function BazargahOrderCard(props:I_BazargahOrderCard){
@@ -111,7 +117,7 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
         }
     }
     function price_layout(){
-        return {align:'v',gap:3,row:[{html:SplitNumber(price),className:'fs-14 bold',style:{color:'#3B55A5'}},{html:'تومان',className:'fs-10 theme-light-font-color'}]}
+        return {align:'v',gap:3,row:[{html:SplitNumber(price / 10),className:'fs-14 bold',style:{color:'#3B55A5'}},{html:'تومان',className:'fs-10 theme-light-font-color'}]}
     }
     function count_layout(){
         return {html:`${items.length} کالا`,className:'fs-14 bold theme-medium-font-color'}
@@ -180,7 +186,8 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
                 className:'bg-order-card theme-box-shadow',
                 column:[
                     status_layout(),
-                    {row:[price_layout(),{flex:1},count_layout()],align:'v',size:36},
+                    {row:[price_layout()],align:'v',size:36},
+                    //{row:[price_layout(),{flex:1},count_layout()],align:'v',size:36},
                     items_layout(),
                     showVitrinText?{html:<BGVitrinText/>}:false,
                     expireDate_layout(),
@@ -367,39 +374,48 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
 type I_BGPage_PublicStatus = {order:I_bg_order}
 function BGPage_PublicStatus(props:I_BGPage_PublicStatus){
     let {backOffice}:I_app_state = useContext(appContext);
-    let {order} = props,{status,code} = order;
+    let {order} = props,
+    {status,code} = order;
     let text = {canTake:'سفارش جدید! جزئیات را بررسی کنید',takenByOther:'سفارش توسط فروشنده دیگری اخذ شده است.'}[status]
     let color = {canTake:'#0F7B6C',takenByOther:'#E03E3E'}[status]
     let total = backOffice.bazargah.forsate_akhze_sefareshe_bazargah;
     function box_layout(){
         let className = 'p-12 fs-12 bold br-12 m-12',style = {color,background:`${color}27`};
-        return {align:'v',className,style,column:[
-            text_layout(),
-            expiredDate_layout()
-        ]}
+        return {
+            align:'v',
+            className,
+            style,
+            column:[
+                text_layout(),
+                expiredDate_layout()
+            ]
+        }
     }
     function text_layout(){return {html:text}}
     function expiredDate_layout(){return {show:status === 'canTake',html:()=><BazargahExpiredDate order={order} total={total}/>}}
-    function footer_layout(){return {row:[{html:submitDate_layout()},{flex:1},code_layout()]}}
+    function footer_layout(){return {row:[{className:'p-6'},{html:submitDate_layout()},{flex:1},code_layout()]}}
     function submitDate_layout(){return <BazargahSubmitDate order={order}/>}
-    function code_layout(){return {html:code,align:'v',className:'fs-14 theme-dark-font-color'}}
-    return <RVD layout={{column:[
-        box_layout(),
-        footer_layout()
-    ]}}/>
+    function code_layout(){return {html:code,align:'v',className:'fs-14 p-12 theme-dark-font-color'}}
+    return <RVD layout={{
+        column:[
+            box_layout(),
+            footer_layout()
+        ]
+    }}/>
 }
 type I_BGPage_PrivateStatus = {order:I_bg_order,toSending:(data:I_bg_to_sending_param)=>void,toSent:(data:I_bg_to_sent_param)=>void}
 function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     let {backOffice,actionClass}:I_app_state = useContext(appContext);
     let total = backOffice.bazargah.forsate_ersale_sefareshe_bazargah;    
-    let {order,toSending,toSent} = props,{code,price,status} = order;
+    let {order,toSending,toSent} = props,
+    {code,price,status} = order;
     let index = {'shouldSend':0,'sending':1,'sent':2}[status]
     let text = {'shouldSend':'سفارش را برای خریدار ارسال کنید','sending':'مرسوله در مسیر تحویل است','sent':'مرسوله به مشتری تحویل شد'}[status];
     function details_layout(){
         let rows = [
             {key:'شماره سفارش',value:code},
             {key:'زمان ثبت سفارش',value:<BazargahSubmitDate order={order}/>},
-            {key:'مبلغ دریافتی',value:`${SplitNumber(price)} تومان`,bold:true}
+            {key:'مبلغ دریافتی',value:`${SplitNumber(price / 10)} تومان`,bold:true}
         ]
         return {
             className:'p-12',gap:3,
@@ -462,13 +478,13 @@ function BGDeliveryType(props:I_BGDeliveryType){
                         )
                     },
                     {size:6},
-                    !deliveryType?false:label_layout(deliveryType === 'post'?'شماره پیگیری مرسوله را وارد کنید':'اطلاعات را وارد کنید'),
+                    !deliveryType?false:label_layout(deliveryType === 'post'?'کد پیگیری مرسوله را وارد کنید':'اطلاعات را وارد کنید'),
                     {
                         show:deliveryType === 'post',
                         html:()=>(
                             <AIOInput 
                                 style={{border:'1px solid #ddd'}} className='m-v-12 fs-12 h-36'
-                                type='text' value={trackingCode} onChange={(trackingCode:string)=>setTrackingCode(trackingCode)} placeholder='شماره پیگیری'
+                                type='text' value={trackingCode} onChange={(trackingCode:string)=>setTrackingCode(trackingCode)} placeholder='کد پیگیری'
                             />
                         )
                     },
@@ -516,21 +532,21 @@ function BGDeliveryType(props:I_BGDeliveryType){
 type I_BGPassCode = {toSent:(data:I_bg_to_sent_param)=>void}
 function BGPassCode(props:I_BGPassCode){
     let {actionClass}:I_app_state = useContext(appContext);
-    let [passCodes,setPassCodes] = useState<any[]>([false,false,false,false])
+    let [passCodes,setPassCodes] = useState<string>('')
     let {toSent} = props;
     function submitDelivered(){
         actionClass.openPopup('bazargah-sent',{
-            render:()=><DeliveryPopup toSent={toSent} deliveryCode={`${passCodes[0]}${passCodes[1]}${passCodes[2]}${passCodes[3]}`}/>
+            render:()=><DeliveryPopup toSent={toSent} deliveryCode={passCodes}/>
         })
     }
-    function getOptions(){return new Array(11).fill(0).map((o,i:number)=>{return {text:i === 0?'':i - 1,value:i === 0?false:i - 1}})}
-    function change(v,index){setPassCodes(passCodes.map((passCode:number,i:number)=>i === index?v:passCode))}
-    function input_layout(index:number){
-        let p = {type:'list',width:36,size:36,count:1,className:'bazargah-pass-code',value:passCodes[index]}
-        return {html:<AIOInput {...p} options={getOptions()} onChange={(v:number)=>change(v,index)}/>}
-    }
-    function arrow_layout(dir:'up'|'down'){return {html:<div className={`bazargah-pass-code-arrow-${dir}`}></div>,align:'vh'}}
-    function passCode_layout(index:number){return {column:[arrow_layout('up'),input_layout(index),arrow_layout('down')]}}
+    // function getOptions(){return new Array(11).fill(0).map((o,i:number)=>{return {text:i === 0?'':i - 1,value:i === 0?false:i - 1}})}
+    // function change(v,index){setPassCodes(passCodes.map((passCode:number,i:number)=>i === index?v:passCode))}
+    // function input_layout(index:number){
+    //     let p = {type:'list',width:36,size:36,count:1,className:'bazargah-pass-code',value:passCodes[index]}
+    //     return {html:<AIOInput {...p} options={getOptions()} onChange={(v:number)=>change(v,index)}/>}
+    // }
+    // function arrow_layout(dir:'up'|'down'){return {html:<div className={`bazargah-pass-code-arrow-${dir}`}></div>,align:'vh'}}
+    // function passCode_layout(index:number){return {column:[arrow_layout('up'),input_layout(index),arrow_layout('down')]}}
     return (
         <RVD
             layout={{
@@ -550,14 +566,20 @@ function BGPassCode(props:I_BGPassCode){
                     {size:16},
                     {
                         gap:6,align:'vh',className:'dir-ltr',
-                        row:[passCode_layout(0),passCode_layout(1),passCode_layout(2),passCode_layout(3)]
+                        // row:[passCode_layout(0),passCode_layout(1),passCode_layout(2),passCode_layout(3)]
+                        html:()=>(
+                            <AIOInput 
+                                style={{border:'1px solid #ddd'}} className='m-v-12 fs-12 h-36'
+                                type='text' value={passCodes} onChange={(passCodes:string)=>setPassCodes(passCodes)} placeholder='کد تحویل'
+                            />
+                        )
                     },
                     {size:12},
                     {
                         html:(
                             <button 
                                 className='button-2' 
-                                disabled={passCodes[0] === false || passCodes[1] === false || passCodes[2] === false || passCodes[3] === false} 
+                                disabled={!passCodes} 
                                 onClick={()=>submitDelivered()}
                             >سفارش تحویل شد</button>
                         )
@@ -583,7 +605,9 @@ function BGVitrinText(){
 }
 type I_BGPage_Location = {order:I_bg_order}
 function BGPage_Location(props:I_BGPage_Location){
-    let {order} = props,{info} = order,{lat,lng,name,phone,city,province,postal,address} = info;
+    let {order} = props,
+    {info} = order,
+    {lat,lng,name,phone,city,province,postal,address} = info;
     function kv_layout(p:[key:string,value:string]){
         return {className:'p-12 p-b-0',column:[{html:p[0],className:'bold fs-12'},{html:p[1],className:'fs-12 theme-medium-font-color t-a-right'}]}
     }
@@ -596,7 +620,7 @@ function BGPage_Location(props:I_BGPage_Location){
                     {
                         html:(
                             <AIOInput 
-                                type='map' value={{lat,lng}} mapConfig={{showAddress:false}} className='w-100 h-96'
+                                type='map' value={{lat,lng}} mapConfig={{showAddress:false,draggable:false}} className='w-100 h-96'
                             />
                         )
                     },
@@ -613,7 +637,8 @@ function BGPage_Location(props:I_BGPage_Location){
 }
 type I_BGPage_SendInfo = {order:I_bg_order}
 function BGPage_SendInfo(props:I_BGPage_SendInfo){
-    let {order} = props,{deliveryType,trackingCode,carierPhoneNumber} = order;
+    let {order} = props,
+    {deliveryType,trackingCode,carierPhoneNumber} = order;
     if(!deliveryType){alert('bazargah error : order.status is sending but missing order.deliveryType')}
     //if(!trackingCode){alert('bazargah error : order.status is sending but missing order.trackingCode')}
     function kv_layout(p:[key:string,value:string]){
@@ -626,9 +651,10 @@ function BGPage_SendInfo(props:I_BGPage_SendInfo){
                 column:[
                     {html:<BGLabel text='اطلاعات ارسال سفارش'/>,className:'p-12'},
                     kv_layout(['نحوه ارسال',deliveryType]),
-                    deliveryType !== 'post'?false:kv_layout(['کد پیگیری',trackingCode || '']),
-                    deliveryType !== 'carier'?false:kv_layout(['شماره پیک',carierPhoneNumber || '']),
-                    
+                    // deliveryType !== 'post'?false:kv_layout(['کد پیگیری',trackingCode || '']),
+                    // deliveryType !== 'carier'?false:kv_layout(['شماره پیک',carierPhoneNumber || '']),
+                    deliveryType === 'post' ? kv_layout(['کد پیگیری',trackingCode || '']) : '',
+                    deliveryType === 'carier' ? kv_layout(['شماره پیک',carierPhoneNumber || '']) : '',                   
                 ]
             }}
         />
@@ -664,10 +690,11 @@ function BazargahSlider(props:I_BazargahSlider){
 type I_BazargahExpiredDate = {order:I_bg_order,total:number}
 function BazargahExpiredDate(props:I_BazargahExpiredDate){
     function getColor(percent:number){
-        if(percent < 25){return 'red'}
-        else if(percent < 50){return 'orange'}
-        else if(percent < 25){return 'yellow'}
-        else{return '#0F7B6C'}
+        // if(percent < 25){return 'red'}
+        // else if(percent < 50){return 'orange'}
+        // else if(percent < 25){return 'yellow'}
+        // else{return '#0F7B6C'}
+        return '#0F7B6C'
     }
     function getText(expiredDate:number,now:number){
         let miliseconds = expiredDate - now,text = []; 
@@ -714,7 +741,7 @@ function BazargahSubmitDate(props:I_BazargahSubmitDate){
         text = list.join(' و ') + ' پیش' 
     }
     else {text = AIODate().getDateByPattern({date:submitDate,jalali:true,pattern:'{year}/{month}/{day} {hour}:{minute}'})}
-    return (<RVD layout={{html:text,align:'v',className:'fs-10 theme-medium-font-color bold'}}/>)
+    return (<RVD layout={{html:text,align:'v',padding:'10px',className:'fs-10 theme-medium-font-color bold'}}/>)
 }
 
 type I_BGLabel = {text:string,subtext?:string}

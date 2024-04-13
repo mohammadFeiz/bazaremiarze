@@ -37,8 +37,8 @@ type I_bg_order_item = {
     name:string,
     details:{key:string,value:string}[]
 }
+//بازارگاه - تب های بازارگاه
 export type I_deliveryType = 'post' | 'carier'
-
 export type I_bg_tab = 'اطراف من' | 'سفارشات من';
 export default function Bazargah(){
     let {apis}:I_app_state = useContext(appContext);
@@ -55,7 +55,7 @@ export default function Bazargah(){
     useEffect(()=>{getOrders('اطراف من')},[])
     function tabs_layout(){
         return {
-            className:'of-visible m-b-6',
+            className:'of-visible hide-scroll m-b-6',
             html:(
                 <AIOInput value={tab} className='bazargah-tabs theme-box-shadow' type='tabs' options={tabs} optionText='option' optionValue='option' onChange={(tab:I_bg_tab)=>getOrders(tab)}/>
             )
@@ -67,7 +67,8 @@ export default function Bazargah(){
             loading = true
           }
         return {
-            className:'of-visible',html:<BazargahOrderCard loading={loading} order={order}/>
+            className:'of-visible hide-scroll',
+            html:<BazargahOrderCard loading={loading} order={order}/>
         }
     }
     // function deliveryPopup_layout(){
@@ -88,11 +89,11 @@ export default function Bazargah(){
         />
     )
 } 
+//اطراف من - کارت هر سفارش
 type I_BazargahOrderCard = {
     order:I_bg_order
     loading:boolean
 }
-
 export function BazargahOrderCard(props:I_BazargahOrderCard){
     let {backOffice,rsa}:I_app_state = useContext(appContext);
     let {order} = props;
@@ -197,17 +198,20 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
         />
     )
 }
-
+//اطراف من - کالاها و اطلاعات کالاهای هر سفارش
 type I_BazargahItemCard = {
     item:I_bg_order_item
 }
 function BazargahItemCard(props:I_BazargahItemCard){
+    debugger
     let {item} = props;
-    let {name,details = [],price,image,count} = item;
+    let {name,details,price,image,count} = item;
     function name_layout(){return {html:name,className:'fs-14 bold m-b-12',style:{color:'#00164E',textAlign:'right'}}}
-    function details_layout(){return {gap:3,column:[...details,{key:'قیمت واحد',value:`${SplitNumber(price/10)} تومان`}].map((o:{key:string,value:string})=>detail_layout(o))}}
-    function detail_layout(p:{key:string,value:string}){
+    function brand_layout(){return {gap:3,align:'v',style:{fontWeight:700},className:'fs-12 theme-dark-font-color',size:36,row:[bullet_layout(),{html: details}],}}
+    function price_layout(){return {gap:3,align:'v',size:36,column:[{key:'قیمت واحد',value:`${SplitNumber(price/10)} تومان`}].map((o:{key:string,value:string})=>style_layout(o))}}
+    function style_layout(p:{key:string,value:string}){
         return {
+            
             align:'v',className:'fs-10 theme-dark-font-color',gap:3,
             row:[bullet_layout(),{html:p.key},{html:p.value}]
         }
@@ -241,7 +245,7 @@ function BazargahItemCard(props:I_BazargahItemCard){
                 column:[
                     {
                         row:[
-                            {flex:1,column:[name_layout(),details_layout()]},
+                            {flex:1,column:[name_layout(),brand_layout(),price_layout()]},
                             image_layout()
                         ]
                     },
@@ -251,7 +255,7 @@ function BazargahItemCard(props:I_BazargahItemCard){
         />
     )
 }
-
+//اطراف من - سکشن زیر بنر وضعیت سفارش
 type I_BazargahOrderPage = {
     order:I_bg_order
 }
@@ -304,7 +308,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
     function items_layout(){
         return {
             column:[
-                {html:<BGLabel text='کالا های سفارش' subtext={`${items.length} کالا`}/>,className:'p-h-12'},
+                {html:<BGLabel text='کالاهای سفارش' subtext={`${items.length} کالا`}/>,className:'p-h-12'},
                 {column:items.map((item:I_bg_order_item)=>{return {html:<BazargahItemCard item={item}/>}})}
             ]
         }
@@ -348,7 +352,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
     return (
         <RVD
             layout={{
-                className:'bg-order-page',
+                className:'bg-order-page of-visible hide-scroll',
                 column:[
                     showVitrin?{html:<BGVitrinText/>}:false,
                     !isMine?{html:<BGPage_PublicStatus order={order}/>}:false,
@@ -371,11 +375,12 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
         />
     )
 }
+//اطراف من - جزئیات سفارش
 type I_BGPage_PublicStatus = {order:I_bg_order}
 function BGPage_PublicStatus(props:I_BGPage_PublicStatus){
     let {backOffice}:I_app_state = useContext(appContext);
     let {order} = props,
-    {status,code} = order;
+    {status,code,price} = order;
     let text = {canTake:'سفارش جدید! جزئیات را بررسی کنید',takenByOther:'سفارش توسط فروشنده دیگری اخذ شده است.'}[status]
     let color = {canTake:'#0F7B6C',takenByOther:'#E03E3E'}[status]
     let total = backOffice.bazargah.forsate_akhze_sefareshe_bazargah;
@@ -391,18 +396,41 @@ function BGPage_PublicStatus(props:I_BGPage_PublicStatus){
             ]
         }
     }
+    function details_layout(){
+        let rows = [
+            {key:'شماره سفارش',value:code},
+            {key:'زمان ثبت سفارش',value:<BazargahSubmitDate order={order}/>},
+            {key:'مبلغ دریافتی',value:`${SplitNumber(price / 10)} تومان`,bold:true}
+        ]
+        return {
+            className:'p-12',gap:3,
+            column:rows.map((p:{key:string,value:React.ReactNode,bold?:boolean})=>{
+                let {key,value,bold} = p
+                return {
+                    size:24,align:'v',
+                    row:[
+                        {html:key,className:'fs-12 theme-medium-font-color'},
+                        {flex:1},
+                        {html:value,className:`fs-12 bold theme-${bold?'link':'medium'}-font-color`}
+                    ]
+                }
+            })
+        }
+    }
     function text_layout(){return {html:text}}
     function expiredDate_layout(){return {show:status === 'canTake',html:()=><BazargahExpiredDate order={order} total={total}/>}}
-    function footer_layout(){return {row:[{className:'p-6'},{html:submitDate_layout()},{flex:1},code_layout()]}}
+    // function footer_layout(){return {row:[{className:'p-6'},{html:submitDate_layout()},{flex:1},code_layout()]}}
     function submitDate_layout(){return <BazargahSubmitDate order={order}/>}
     function code_layout(){return {html:code,align:'v',className:'fs-14 p-12 theme-dark-font-color'}}
     return <RVD layout={{
         column:[
-            box_layout(),
-            footer_layout()
+            details_layout(),
+            box_layout()
+            // footer_layout()
         ]
     }}/>
 }
+//سفارشات من -  بنر وضعیت سفارش
 type I_BGPage_PrivateStatus = {order:I_bg_order,toSending:(data:I_bg_to_sending_param)=>void,toSent:(data:I_bg_to_sent_param)=>void}
 function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     let {backOffice,actionClass}:I_app_state = useContext(appContext);
@@ -411,6 +439,11 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     {code,price,status} = order;
     let index = {'shouldSend':0,'sending':1,'sent':2}[status]
     let text = {'shouldSend':'سفارش را برای خریدار ارسال کنید','sending':'مرسوله در مسیر تحویل است','sent':'مرسوله به مشتری تحویل شد'}[status];
+    // let text,color;
+    // if(status === 'shouldSend'){text = 'سفارش را برای خریدار ارسال کنید';color = '#3B55A5';}
+    // else if(status === 'sending'){text = 'مرسوله در مسیر تحویل است';color = '#0F7B6C';}
+    // else if(status === 'sent'){text = 'مرسوله به مشتری تحویل شد';color = '#0F7B6C';}
+    
     function details_layout(){
         let rows = [
             {key:'شماره سفارش',value:code},
@@ -434,7 +467,10 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     }
     function card_layout(){
         let column:any[] = [slider_layout(),text_layout()]
-        if(['shouldSend','sending'].indexOf(status) !== -1){
+        // if(['shouldSend','sending'].indexOf(status) !== -1){
+        //     column.push({html:<BazargahExpiredDate order={order} total={total}/>})
+        // }
+        if(['sending'].indexOf(status) !== -1){
             column.push({html:<BazargahExpiredDate order={order} total={total}/>})
         }
         if(['shouldSend'].indexOf(status) !== -1){
@@ -450,7 +486,7 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     return (<RVD layout={{column:[details_layout(),card_layout()]}}/>)
 }
 type I_BGDeliveryType = {toSending:(data:I_bg_to_sending_param)=>void}
-
+//سفارشات من - انتخاب نحوه ارسال
 function BGDeliveryType(props:I_BGDeliveryType){
     let [deliveryType,setDeliveryType] = useState<I_deliveryType>();
     let [trackingCode,setTrackingCode] = useState<string>('')
@@ -529,6 +565,7 @@ function BGDeliveryType(props:I_BGDeliveryType){
         />
     )
 }
+//سفارشات من - کد تحویل
 type I_BGPassCode = {toSent:(data:I_bg_to_sent_param)=>void}
 function BGPassCode(props:I_BGPassCode){
     let {actionClass}:I_app_state = useContext(appContext);
@@ -603,6 +640,7 @@ function BGVitrinText(){
         />
     )
 }
+//سفارشات من - اطلاعات محل تحویل
 type I_BGPage_Location = {order:I_bg_order}
 function BGPage_Location(props:I_BGPage_Location){
     let {order} = props,
@@ -635,6 +673,7 @@ function BGPage_Location(props:I_BGPage_Location){
         />
     )
 }
+//سفارشات من - اطلاعات ارسال سفارش
 type I_BGPage_SendInfo = {order:I_bg_order}
 function BGPage_SendInfo(props:I_BGPage_SendInfo){
     let {order} = props,
@@ -660,6 +699,7 @@ function BGPage_SendInfo(props:I_BGPage_SendInfo){
         />
     )
 }
+//سفارشات من - اسلایدر وضعیت سفارش
 type I_BazargahSlider = {index:number}
 function BazargahSlider(props:I_BazargahSlider){
     let {index} = props;
@@ -687,6 +727,7 @@ function BazargahSlider(props:I_BazargahSlider){
         }}/>
     )
 }
+//زمان باقی مانده تا انقضا سفارشات بازارگاه
 type I_BazargahExpiredDate = {order:I_bg_order,total:number}
 function BazargahExpiredDate(props:I_BazargahExpiredDate){
     function getColor(percent:number){
@@ -727,9 +768,12 @@ function BazargahExpiredDate(props:I_BazargahExpiredDate){
     let color = getColor(percent)
     return (<RVD layout={{column:[slider_layout(percent,color),text_layout(expiredDate,color,now)]}}/>)
 }
+//زمان ثبت سفارشات بازارگاه
 type I_BazargahSubmitDate = {order:I_bg_order}
 function BazargahSubmitDate(props:I_BazargahSubmitDate){
-    let {order} = props,{submitDate} = order,text:string;
+    let {order} = props,
+    {submitDate} = order,
+    text:string;
     let delta = new Date().getTime() - submitDate;
     if(delta < 0){alert(`bazargah error : submitDate is after now!!!`); return null}
     if(delta < 72 * 60 * 60 * 1000){
@@ -760,6 +804,7 @@ function BGLabel(props:I_BGLabel){
         />
     )
 }
+//پاپ اپ ارسال سفارشات بازارگاه - سفارشات من
 type I_DeliveryPopup = {toSent:(data:I_bg_to_sent_param)=>void,deliveryCode:string}
 function DeliveryPopup(props:I_DeliveryPopup){
     let {rsa}:I_app_state = useContext(appContext);

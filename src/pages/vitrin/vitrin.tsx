@@ -52,11 +52,12 @@ function VitrinBody() {
         return {
             column: [
                 {
-                    className: 'v-header-layout m-b-10',
+                    className: 'v-header-layout m-b-5',
                     column: [
-                        { size: 10 },
-                        { html: 'در ویترین شما'},
-                        { html: `${Object.keys(vitrinSelected).length} کالا`, size: 40 },
+                        { size: 5 },
+                        { html: 'در ویترین شما',className:'fs-10 fw-400'},
+                        { html: `${Object.keys(vitrinSelected).length}`,className:'fs-24 fw-800'},
+                        { html: 'کالا',className:'fs-16 fw-400'},
                     ],
                 }
             ],
@@ -66,7 +67,7 @@ function VitrinBody() {
     function toolbar_layout() {
         let { vitrinSelected } = vitrin;
         return {
-            className: 'p-12 ofx-visible align-vh v-header-layout',
+            className: 'p-12 ofx-visible hide-scroll align-vh v-header-layout',
             row: [
                 { size: 12 },
                 {
@@ -77,7 +78,9 @@ function VitrinBody() {
                             let render = () => (<Search isFirstTime={false}/>)
                             actionClass.openPopup('vitrin-search', { render })
                             }} 
-                            className='button-2 gap-5'>
+                            className='button-2 gap-5'
+                            style={{borderRadius: 8}}   
+                            >
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 19" fill="none">
                             <path d="M9.7091 3.82729C9.7091 3.43567 9.39163 3.11819 9.00001 3.11819C8.60839 3.11819 8.29092 3.43567 8.29092 3.82729V8.79092H3.32729C2.93567 8.79092 2.61819 9.10839 2.61819 9.50001C2.61819 9.89163 2.93567 10.2091 3.32729 10.2091H8.29092V15.1727C8.29092 15.5644 8.60839 15.8818 9.00001 15.8818C9.39163 15.8818 9.7091 15.5644 9.7091 15.1727V10.2091H14.6727C15.0644 10.2091 15.3818 9.89163 15.3818 9.50001C15.3818 9.10839 15.0644 8.79092 14.6727 8.79092H9.7091V3.82729Z" fill="white"/>
                             </svg>
@@ -85,7 +88,7 @@ function VitrinBody() {
                         </button>
                         )
                 },
-                {html: <button className='button-1 m-r-8'>تاریخچه قیمت های پیشنهادی</button>}
+                {html: <button className='button-1 m-r-8' style={{borderRadius: 8}}>تاریخچه قیمت های پیشنهادی</button>}
             ]
         }
     }
@@ -94,7 +97,7 @@ function VitrinBody() {
     return (
         <RVD
             layout={{
-                className: 'theme-popup-bg ofy-auto m-b-24', flex: 1,
+                className: 'theme-popup-bg ofy-auto hide-scroll m-b-24', flex: 1,
                 column: [count_layout(), toolbar_layout(), products_layout()]
             }}
         />
@@ -219,7 +222,7 @@ class Search extends Component<I_Search,I_Search_state> {
             flex: 1,
             column: [
                 {
-                    flex: 1, className: 'ofy-auto',
+                    flex: 1, className: 'ofy-auto hide-scroll',
                     column: [
                         this.search_layout(),
                         this.categories_layout(),
@@ -485,7 +488,7 @@ function Products(props:I_Products) {
             ] 
         }
     }
-    else {layout = { className: 'ofy-auto', column: list }}
+    else {layout = { className: 'ofy-auto hide-scroll', column: list }}
     return (<RVD layout={layout} />)
 }
 //محصولات انتخاب شده ویترین من
@@ -498,7 +501,7 @@ function SelectedProducts() {
         let { product } = vitrinSelected[key];
         return { html: <ProductCard product={product} loading={loading} renderIn='my-vitrin'/> }
     })
-    let layout = { className: 'ofy-auto', column }
+    let layout = { className: 'ofy-auto hide-scroll', column }
     return (<RVD layout={layout} />)
 }
 //قیمت محصولات و واریانت های انها
@@ -705,7 +708,7 @@ function Landing(props:I_Landing) {
     return (
         <RVD
             layout={{
-                className: 'page-bg ofy-auto', style: { background: '#fff' },
+                className: 'page-bg ofy-auto hide-scroll', style: { background: '#fff' },
                 column: [
                     { html: (<img src={image_src as string} alt='' width='240' height='259' />), align: 'vh' },
                     { size: 12 },

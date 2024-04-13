@@ -32,26 +32,27 @@ export default function bgApis({baseUrl,helper}) {
             let result;
             if(response.data.isSuccess){
                 result = data.map((o)=>{
-                    let {orderDate,takenDate,deliveryType,trackingCode,delivererPhone,delivererName} = o;
+                    let {orderDate,takenDate,sendingDate,deliveryType,trackingCode,delivererPhone,delivererName} = o;
                     let submitDate = AIODate().getTime({date:orderDate})
                     
                     if(o.status === 'sending' && (!deliveryType || deliveryType === null)){
                         debugger
                     }
-                    if(o.status === 'sent' && (!takenDate || takenDate === null)){
+                    if(o.status === 'sent' && (!sendingDate || sendingDate === null)){
                         debugger
                     }
 
                     return {
                         status:o.status,
                         submitDate,
-                        deliverDate:takenDate?AIODate().getTime({date:takenDate}):undefined,//use in status:sent
+                        deliverDate:sendingDate?AIODate().getTime({date:sendingDate}):undefined,//use in status:sent
                         code: o.code ,
                         price: o.price,
                         items:o.items.map((item)=>{
+                            let details = item.details
                             if(!item.image || typeof item.image !== 'string'){item.image = imgph}
-                            if(!item.details || !Array.isArray(item.details)){item.details = []}
-                            return {count:item.count,price:item.price,image:item.image,name:item.name,details:item.details}
+                            // if(!details || !Array.isArray(details)){details = []}
+                            return {count:item.count,price:item.price,image:item.image,name:item.name,details}
                         }),
                         distanceKM:o.distance,
                         orderId:o.orderId,

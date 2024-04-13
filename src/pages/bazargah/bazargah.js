@@ -25,7 +25,6 @@ export default class Bazargah extends Component{
         setTimeout(()=>this.setState({splash:false}),2500)
     }
     openDetails(o){
-        debugger
         let {rsa} = this.context;
         rsa.addModal({
             position:'fullscreen',
@@ -994,7 +993,6 @@ class BazargahCard extends Component{
                             style={{height:32,margin:'0 12px'}} 
                             onClick={(e)=>{
                                 e.stopPropagation(); 
-                                debugger
                                 onClick()
                             }}
                         >{text}</button>

@@ -140,7 +140,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 15px;
+    /* gap: 15px; */
     background-color: #f6f6f9;
     color: #3B55A5;
     font-weight: bold;
@@ -151,9 +151,6 @@ body {
     opacity:0.8;
     font-weight: normal;
   }
-  .v-product-card-image{
-
-  }
   .v-product-card-image img{
     max-height:80px;
   }
@@ -162,7 +159,7 @@ body {
     background:none;
     border:1px solid;
     padding: 6px 16px;
-    border-radius:4px;
+    border-radius:8px;
     font-size:14px;
     font-weight:bold;
     min-width:94px;

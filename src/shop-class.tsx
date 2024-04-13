@@ -342,9 +342,8 @@ export default class ShopClass implements I_ShopClass {
         let {marketingLines,total} = await this.getCartVariants();
         let factorDetails: I_getFactorDetails_result = actionClass.getFactorDetails(marketingLines, { ...shippingOptions, CampaignId: this.CampaignId }, container);
         let { marketingdetails, DocumentTotal } = factorDetails;
-        debugger
         let { DiscountList, ClubPoints = {} } = marketingdetails;
-        let { DiscountValueUsed, DiscountPercentage, PaymentDiscountPercent, PaymentDiscountValue, PromotionValueUsed, ShowDisPer, ShowDisValue, ShowTotalBfDis } = DiscountList;
+        let { DiscountValueUsed, DiscountPercentage, PaymentDiscountPercent, PaymentDiscountValue, PromotionValueUsed, ShowDisPer, ShowDisValue, ShowTotalBfDis, showPAyDisPer, showPayDisValue } = DiscountList;
         let discounts: I_discount[] = []
         if (ShowDisPer && ShowDisValue) {
             discounts.push({ percent: ShowDisPer.toFixed(1), value: ShowDisValue, title: 'تخفیف ویژه' })
@@ -353,7 +352,7 @@ export default class ShopClass implements I_ShopClass {
             discounts.push({ value: ShowTotalBfDis - ShowDisValue, title: 'مجموع پس از تخفیف' })
         }
         if (PaymentDiscountPercent && PaymentDiscountValue) {
-            discounts.push({ percent: PaymentDiscountPercent, value: PaymentDiscountValue, title: 'تخفیف نحوه پرداخت' })
+            discounts.push({ percent: PaymentDiscountPercent.toFixed(1), value: PaymentDiscountValue, title: 'تخفیف نحوه پرداخت' })
         }
         if (DiscountValueUsed && DiscountPercentage) {
             discounts.push({ percent: DiscountPercentage, value: DiscountValueUsed, title: 'کد تخفیف' })
@@ -451,6 +450,7 @@ export default class ShopClass implements I_ShopClass {
 
     //ایجاد اطلاعات فاکتور
     getFactorItems = async (shippingOptions: I_shippingOptions, container) => {
+        debugger
         let amounts = await this.getAmounts(shippingOptions, container);
         let { total, payment, discounts, ClubPoints } = amounts;
         if (!total) { alert('missing total in ShopClass.getFactorItems') }
@@ -474,10 +474,10 @@ export default class ShopClass implements I_ShopClass {
             let text = `${percent ? `${percent}% - ` : ''}${SplitNumber(value)} ریال`
             let className = 'fs-14'
             if (title === "تخفیف ویژه") {
-                className += ' color0095DA'
+                className += ' colorFFD335'
             }
             else {
-                className += ' colorFDB913'
+                className += ' colorF75B00'
             }
             if (title === "مجموع پس از تخفیف") {
                 className += ' theme-medium-font-color'
@@ -1251,7 +1251,6 @@ function RegularPage(props: I_RegularPage) {
                                         let optionValueName = items[optionValueId];
                                         let value = selectedDic[optionType.id];
                                         if(!value){
-                                            debugger
                                             console.log(`check this:`)
                                             console.log(`selectedDic => `,selectedDic);
                                             console.log(`product => `,product);

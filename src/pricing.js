@@ -1,10 +1,10 @@
-﻿///***Version 1.1.53 ****///
-//Edited: 2024-03-07
+﻿///***Version 1.1.56 ****///
+//Edited: 2024-04-08
 
 "use strict";
 
 export default class Pricing {
-    "use strict";
+
     //dbrequest = {};
     updateInterval = 5 * 60 * 60 * 1000; // 100min
     ndbrequest = {};
@@ -321,7 +321,7 @@ export default class Pricing {
         return this.pricingData.ItemPrices;
     }
 
-        startservice(callback = ()=> {})  {
+    startservice(callback = ()=> {}) {
         let self = this;
         let result = new Promise(async function (resolve, reject) {
             let newdb = await self.CreateDatabase()
@@ -400,6 +400,9 @@ export default class Pricing {
                 break;
             case 16: //"(BasePrice-FixAmnt)*(1-(BaseDis+min(MaxDis,FixDis+QtyDis+VolDis+RowDis ))/100)":
                 res = (BasePrice - FixAmnt) * (1 - (Math.min(MaxDis, BaseDis + FixDis + QtyDis + VolDis + RowDis)) / 100);
+                break;
+            case 23: 
+                res = (BasePrice - FixAmnt) * (Math.max((1 - RowDis / 100) * (1 - FixDis / 100) * (1 - QtyDis / 100) * (1 - VolDis / 100), 1 - MaxDis / 100));
                 break;
             default:
                 break;
@@ -576,103 +579,153 @@ export default class Pricing {
         if (MD.marketingdetails.PayDueDate == null) {
             MD.marketingdetails.PayDueDate = 1;
         }
+
+        if (!MD.paymentdetails) {
+            MD.paymentdetails = {};
+        }
+        if (!MD.paymentdetails.PaymentTermCode) {
+            MD.paymentdetails.PaymentTermCode = 12;
+        }
+
+        let interestRate = 3;
+        let MaximumMonth = 4;
+        if (MD.paymentdetails?.PaymentTermCode == 10) {
+            interestRate = 4.5;
+        }
+        if (MD.paymentdetails?.PaymentTermCode == 12) {
+            interestRate = 6;
+            MaximumMonth = 6;
+        }
         switch (parseInt(MD.marketingdetails.PayDueDate)) {
             case 1:
-                MD.marketingdetails.DocumentDiscountPercent = 12;
+                //MD.marketingdetails.DocumentDiscountPercent = 12;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 0));
                 break;
             case 2:
-                MD.marketingdetails.DocumentDiscountPercent = 10.5;
+                //MD.marketingdetails.DocumentDiscountPercent = 10.5;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 0.5));
                 break;
             case 3:
-                MD.marketingdetails.DocumentDiscountPercent = 9;
+                //MD.marketingdetails.DocumentDiscountPercent = 9;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 1));
                 break;
             case 4:
-                MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                //MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 1.5));
+                break;
+            case 5:
+                //MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                MD.marketingdetails.DocumentDiscountPercent = 0;
                 break;
             case 6:
-                MD.marketingdetails.DocumentDiscountPercent = 6;
+                //MD.marketingdetails.DocumentDiscountPercent = 6;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 2));
                 break;
             case 7:
-                MD.marketingdetails.DocumentDiscountPercent = 4.5;
+                //MD.marketingdetails.DocumentDiscountPercent = 4.5;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 2.5));
                 break;
             case 8:
-                MD.marketingdetails.DocumentDiscountPercent = 3;
+                //MD.marketingdetails.DocumentDiscountPercent = 3;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 3));
                 break;
             case 9:
-                MD.marketingdetails.DocumentDiscountPercent = 1.5;
+                //MD.marketingdetails.DocumentDiscountPercent = 1.5;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 3.5));
                 break;
             case 10:
-                MD.marketingdetails.DocumentDiscountPercent = 0;
+                //MD.marketingdetails.DocumentDiscountPercent = 0;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 4));
                 break;
             case 11:
-                MD.marketingdetails.DocumentDiscountPercent = 0;
+                //MD.marketingdetails.DocumentDiscountPercent = 0;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 4.5));
                 break;
             case 12:
-                MD.marketingdetails.DocumentDiscountPercent = 0;
+                //MD.marketingdetails.DocumentDiscountPercent = 0;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 5));
                 break;
             case 13:
-                MD.marketingdetails.DocumentDiscountPercent = 0;
+                //MD.marketingdetails.DocumentDiscountPercent = 0;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 5.5));
+                break;
+            case 14:
+                //MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 6));
                 break;
             case 15:
-                MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                //MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 1.5));
                 break;
             case 16:
-                MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                //MD.marketingdetails.DocumentDiscountPercent = 7.5;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 1.5));
                 break;
             case 17:
-                MD.marketingdetails.DocumentDiscountPercent = 4.8;
+                //MD.marketingdetails.DocumentDiscountPercent = 4.8;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 72.0 / 30));
                 break;
             case 18:
-                MD.marketingdetails.DocumentDiscountPercent = 3.6;
+                //MD.marketingdetails.DocumentDiscountPercent = 3.6;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 84.0 / 30));
                 break;
             case 19:
-                MD.marketingdetails.DocumentDiscountPercent = 4.5;
+                //MD.marketingdetails.DocumentDiscountPercent = 4.5;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 75.0 / 30));
                 break;
             case 20:
-                MD.marketingdetails.DocumentDiscountPercent = 9.3;
+                //MD.marketingdetails.DocumentDiscountPercent = 9.3;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 27.0 / 30));
                 break;
             case 21:
-                MD.marketingdetails.DocumentDiscountPercent = 6.6;
+                //MD.marketingdetails.DocumentDiscountPercent = 6.6;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 54.0 / 30));
                 break;
             case 22:
-                MD.marketingdetails.DocumentDiscountPercent = 3.9;
+                //MD.marketingdetails.DocumentDiscountPercent = 3.9;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 81.0 / 30));
                 break;
             case 23:
-                MD.marketingdetails.DocumentDiscountPercent = 1.2;
+                //MD.marketingdetails.DocumentDiscountPercent = 1.2;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 108.0 / 30));
                 break;
             case 24:
-                MD.marketingdetails.DocumentDiscountPercent = 10.5;
+                //MD.marketingdetails.DocumentDiscountPercent = 10.5;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 15.0 / 30));
                 break;
             case 25:
-                MD.marketingdetails.DocumentDiscountPercent = 7.8;
+                //MD.marketingdetails.DocumentDiscountPercent = 7.8;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 42.0 / 30));
                 break;
             case 26:
-                MD.marketingdetails.DocumentDiscountPercent = 6.6;
+                //MD.marketingdetails.DocumentDiscountPercent = 6.6;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 54.0 / 30));
                 break;
             case 27:
-                MD.marketingdetails.DocumentDiscountPercent = 6.0;
+                //MD.marketingdetails.DocumentDiscountPercent = 6.0;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 60.0 / 30));
                 break;
             case 28:
-                MD.marketingdetails.DocumentDiscountPercent = 7.2;
+                //MD.marketingdetails.DocumentDiscountPercent = 7.2;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 48.0 / 30));
                 break;
             case 36:
-                MD.marketingdetails.DocumentDiscountPercent = 5.7;
+                //MD.marketingdetails.DocumentDiscountPercent = 5.7;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 63.0 / 30));
                 break;
             case 37:
                 MD.marketingdetails.DocumentDiscountPercent = 4.8;
+                MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 72.0 / 30));
                 break;
-
-            case 14:
-            case 5:
             default:
                 MD.marketingdetails.DocumentDiscountPercent = 0;
                 break;
         }
 
         /// اضافه شده برای تغییر تخفیف ماهانه از 3 به 4.5
-        if ((MD.paymentdetails?.PaymentTermCode ?? -1) == 10) {
-            MD.marketingdetails.DocumentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent * 1.5;
-        }
+        //if ((MD.paymentdetails?.PaymentTermCode ?? -1) == 10) {
+        //    MD.marketingdetails.DocumentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent * 1.5;
+        //}
 
         if (MD.marketingdetails.DiscountList == null) {
             MD.marketingdetails.DiscountList = {};
@@ -1066,7 +1119,7 @@ export default class Pricing {
                 }
             }
             if (camrule) {
-                if (camrule?.camCanHaveB1Dis ?? false) {
+                if (camrule?.camisCalcByB1 ?? false) {
                     if (camrule.priceList) {
                         if (!DocAfterB1.marketingdetails) {
                             DocAfterB1.marketingdetails = {};
@@ -1109,8 +1162,8 @@ export default class Pricing {
         if (!doc.marketingdetails.DiscountList)
             doc.marketingdetails.DiscountList = {};
         doc.marketingdetails.DiscountList.ShowCamDisValue = sumCampaign;
-        doc.marketingdetails.DiscountList.ShowPayDisValue = (doc.marketingdetails.DocumentDiscount ?? 0) * 1.09;
-        doc.marketingdetails.DiscountList.ShowPAyDisPer = (doc.marketingdetails.DocumentDiscountPercent ?? 0) * 100;
+        doc.marketingdetails.DiscountList.ShowPayDisValue = (doc.marketingdetails.DocumentDiscount ?? 0);
+        doc.marketingdetails.DiscountList.ShowPAyDisPer = (doc.marketingdetails.DocumentDiscountPercent ?? 0);
         doc.marketingdetails.DiscountList.ShowDisValue = sumdiscount;
         doc.marketingdetails.DiscountList.ShowDisPer = (sumdiscount / sumItems) * 100;
         doc.marketingdetails.DiscountList.ShowB1DisValue = sumdiscount - sumCampaign;
@@ -1452,6 +1505,9 @@ export default class Pricing {
                             // اصلاح شود
                             let newPrice = this.CalcColumns(item.lineDisRelationId, lineMD.Price, item.camCanHaveB1Dis ? lineMD.B1DisPrcnt : 0
                                 , item.lineBaseDis ?? 0, br.disQty, br.disVol ?? 0, 0, item.lineFixedValue ?? 0, Math.min(item.lineMaxDisPrcnt ?? 80, item.camMaxDisPrcnt ?? 80));
+                            if (!item.camCanHaveB1Dis ?? true) {
+                                lineMD.B1DisPrcnt = lineMD.DiscountPercent = 0;
+                            }
                             lineMD.CampaignDetails.ExDiscount = lineMD.DiscountPercent;
                             lineMD.CampaignDetails.CamDiscount = 100 - (10000 * newPrice / lineMD.Price / (100 - lineMD.DiscountPercent));
                             lineMD.CampaignDetails.ExtraDiscount = 100 - (10000 * newPrice / lineMD.Price / (100 - lineMD.DiscountPercent));
@@ -2048,6 +2104,7 @@ export default class Pricing {
     }
 
     autoCalcDoc(Doc) {
+        debugger
         let MD = Doc;// this.CaseDownPropOfDoc(Doc);
         let newdoc = this.CalculateDocumentByAll(MD, this.pricingData.ItemPrices, this.pricingData.DisRules, this.pricingData.CampRules, [this.pricingData.SlpCode]);
         return newdoc;// this.CaseUpPropOfDoc(newdoc);

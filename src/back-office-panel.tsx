@@ -1,7 +1,7 @@
-import React, { Component, createContext, useState, useEffect, useContext } from "react";
+import React, { Component, createContext, useState, useEffect, useContext, useDebugValue } from "react";
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
 import { Icon } from '@mdi/react';
-import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeftBold, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiImage, mdiPhone, mdiAccount, mdiArchive, mdiTag, mdiListBox } from '@mdi/js';
+import { mdiClose, mdiPlusThick, mdiChevronDown, mdiChevronLeft, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiImageOutline, mdiTextBoxEditOutline, mdiArrowUp, mdiArrowDown, mdiArrowLeftBold, mdiAccountSync, mdiEye, mdiCellphoneMarker, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiImage, mdiPhone, mdiAccount, mdiArchive, mdiTag, mdiListBox, mdiFormatColumns } from '@mdi/js';
 import appContext from "./app-context";
 import AIOInput,{Acardion,Tree} from './npm/aio-input/aio-input';
 import AIOStorage from 'aio-storage';
@@ -1105,31 +1105,54 @@ function FormSetting(props: I_FormSetting) {
               }
             ]
           },
+          // {          
+          //   flex:1,
+          //   show:type === 'spreeCampaigns' && (data as I_ShopProps).itemType === 'Taxon',
+          //   field:'value.taxons',
+          //   change(row,key,value){
+          //     let {rows} = this.state;
+          //     let newRows = rows.map( (o) => o.id !== row.id ? o :{...o,[key]:value})
+          //     this.setState({rows:newRows})
+          //   },
+          //   html:(
+          //     <AIOInput
+          //       type='table'
+          //       style={{fontSize:10}}
+          //       columns = {[
+          //         {title:'name',value:'row.name',input:{type:'text'}},
+          //         {title:'id',value:'row.id',input:{type:'text'},width:60},
+          //         {title:'Min',value:'row.min',input:{type:'text'},width:60},
+          //         {title:'Max',value:'row.max',input:{type:'text'},width:60}, 
+          //     ]}
+          //       onRemove={true}
+          //       onChange={(newRows)=>this.setState({rows:newRows})}
+          //       onAdd={{name:'',id:'',min:0,max:0}}
+          //     />
+          //   )
+          // },
           {
             show:type === 'spreeCampaigns' && (data as I_ShopProps).itemType === 'Taxon',
             field:'value.taxons',
             input:{
-              type:'table',style:{fontSize:10},
-              onAdd:{name:'',id:'',min:0,max:0},
+              type:'table',
+              style:{fontSize:10},
+              onAdd:{name:'', id:'', min:0, max:0},
               onRemove:true,
               header:'لیست تکزون های کمپین',
               columns:[
-                {title:'Name',value:'row.name',input:{type:'textarea',inputAttrs:{style:{resize:'vertical'}}}},
+                {title:'name',value:'row.name',input:{type:'textarea',inputAttrs:{style:{resize:'vertical'}}}},
                 {title:'id',value:'row.id',input:{type:'text'},width:60},
                 {title:'Min',value:'row.min',input:{type:'number',spin:false},width:56},
                 {title:'Max',value:'row.max',input:{type:'number',spin:false},width:56},
-                
               ]
             }
           }
-
         ]
       }}
       onChange={(obj) => onChange(obj)}
     />
   )
 }
-
 type I_ShippingOptions_tab = 'PayDueDate_options' | 'PaymentTime_options' | 'DeliveryType_options' | 'bundleData';
 function ShippingOptions() {
   let { model, setModel,apis }: I_BackOfficeContext = useContext(BackOfficeContext);
@@ -1139,7 +1162,14 @@ function ShippingOptions() {
   function getPayDueDateText({ cashPercent = 0, days = 0 }) {
     let res = []
     if (cashPercent) { res.push(`${cashPercent}% نقد`) }
-    if (days) { res.push(`%${100 - cashPercent} چک ${(days / 30).toFixed(1)} ماهه`) }
+    //if (days) { res.push(`%${100 - cashPercent} چک ${(days / 30).toFixed(0)} ماهه`) }
+    if (days) {
+      if (days % 30 === 0) {
+        res.push(`%${100 - cashPercent} چک ${(days / 30).toFixed(0)} ماهه`);
+      } else {
+        res.push(`%${100 - cashPercent} چک ${days} روزه`);
+      }
+    }
     return res.join(' - ')
   }
   function tabs_layout() {
@@ -1162,10 +1192,44 @@ function ShippingOptions() {
     if (activeTabId === 'PayDueDate_options') {
       let base = { titleAttrs: { style: { fontSize: 10 } }, justify: true };
       return [
-        { ...base, title: 'درصد نقدی', value: 'row.cashPercent', width: 70, input: { type: 'text', before: <div className='back-office-table-badge'>%</div> } },
-        { ...base, title: 'مدت چک(روز)', value: 'row.days', input: { type: 'text', before: ({ row }) => <div className='back-office-table-badge'>{`${((row.days || 0) / 30).toFixed(1)} ماهه`}</div> } },
-        { ...base, title: 'درصد تخفیف', value: 'row.discountPercent', width: 72, input: { type: 'number', spin: false, before: <div className='back-office-table-badge'>%</div> } },
-        { ...base, title: 'v', value: 'row.value', width: 60, input: { type: 'number' } },
+        { 
+          ...base, 
+          title: 'درصد نقدی', 
+          value: 'row.cashPercent', 
+          width: 70, 
+          input: { type: 'text', before: <div className='back-office-table-badge'>%</div> } 
+        },
+        { 
+          ...base, 
+          title: 'مدت چک(روز)', 
+          value: 'row.days', 
+          input: {
+            type: 'text',
+            before: ({ row }) => {
+              const days = row.days || 0;
+              return (
+                <div className='back-office-table-badge'>
+                  {days % 30 === 0 ? `${(days / 30).toFixed(0)} ماهه` : `${days} روزه`}
+                </div>
+              );
+            }
+          }
+          // input: { type: 'text', before: ({ row }) => <div className='back-office-table-badge'>{`${((row.days || 0) / 30).toFixed(1)} ماهه`}</div> } 
+        },
+        { 
+          ...base, 
+          title: 'درصد تخفیف', 
+          value: 'row.discountPercent', 
+          width: 72, 
+          input: { type: 'number', spin: false, before: <div className='back-office-table-badge'>%</div> } 
+        },
+        { 
+          ...base, 
+          title: 'v', 
+          value: 'row.value', 
+          width: 60, 
+          input: { type: 'number' } 
+        },
       ]
     }
     else {
@@ -1180,6 +1244,7 @@ function ShippingOptions() {
     else {return table_layout()}
   }
   async function fixBundleData(orgBundleData){
+    //debugger
     if(!orgBundleData){return false}
     let data;
     try{data = JSON.parse(orgBundleData)}

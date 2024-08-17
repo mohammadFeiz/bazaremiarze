@@ -24,6 +24,7 @@ export default class Sefareshe_Ersal_Shode_Baraye_Vizitor extends Component{
     }
     footer_layout(){
       let {orderNumber,onShowInHistory} = this.props;
+      console.log(this.props)
       return {
         size:48,align:'v',className:'p-h-24',
         row:[

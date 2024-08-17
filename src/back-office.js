@@ -35,7 +35,7 @@ const backOffice = {
         "cashPercent": "0",
         "days": 15,
         "_id": "ailr8775416",
-        "text": "0% نقد - %100 چک 0.5 ماهه",
+        "text": "0% نقد - %100 چک 15 روزه",
         "id": "t484909"
       },
       {
@@ -44,7 +44,7 @@ const backOffice = {
         "cashPercent": 0,
         "days": 30,
         "_id": "ailr829493",
-        "text": "%100 چک 1.0 ماهه",
+        "text": "%100 چک 1 ماهه",
         "id": "t597582"
       },
       {

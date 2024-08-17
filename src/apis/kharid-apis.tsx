@@ -19,6 +19,7 @@ type I_apiFunctions = {
   search: I_ni,
   getCategories: (ids: string[], appState?: I_app_state) => Promise<{ result: I_getCategories_return }>
   payment: I_ni,
+  pardakht: I_ni,
   getFakeProduct:()=>{result:I_product},
   getProductFullDetail: (product:I_product,appState:I_app_state)=>Promise<{result:I_product}>,
   getCart: (p: any, appState: I_app_state) => Promise<{ result: I_state_cart }>,
@@ -78,13 +79,14 @@ export default function kharidApis({ baseUrl, helper }) {
         CustomerApproved: [130, 'در حال بررسی', 'در انتظار بررسی'],//
         Registered: [190, 'در حال بررسی', 'سفارش ثبت شده'],//
         WaitingForPayment: [220, 'در انتظار پرداخت', 'در انتظار پرداخت'],//
-        AdvancedPayment: [225, 'در انتظار پرداخت', 'ثبت اولیه پرداخت'],//
+        AdvancedPayment: [225, 'در حال پردازش', 'ثبت اولیه پرداخت'],//
         PaymentConflict: [240, 'در انتظار پرداخت', 'مغایرت پرداخت'],//
         PaymentApproved: [310, 'در حال پردازش', 'تایید واحد مالی'],//
         ByDeliveryApproved: [305, 'در حال پردازش', 'تایید پای بار واحد فروش'],//
         PaymentPassed: [230, 'در حال پردازش', 'دریافت اطلاعات پرداخت'],//
         WarhousePicked: [350, 'در حال پردازش', 'عملیات انبار'],//
         PartiallyDelivered: [380, 'در حال ارسال', 'بخشی تحویل شده'],//
+        RestDeliveryPacked : [375, 'در حال ارسال', 'آماده توزیع مانده'],//
         DeliveryPacked: [370, 'در حال ارسال', 'آماده توزیع'],//
         PartiallyDeliveredPartiallyInvoiced: [460, 'در حال ارسال', 'بخشی تحویل برخی فاکتور شده'],//
         PartiallyDeliveredInvoiced: [470, 'در حال ارسال', 'بخشی فاکتور شده'],//
@@ -198,7 +200,7 @@ export default function kharidApis({ baseUrl, helper }) {
         'NotSet': 'تعیین نشده',
       }
 
-      //نحوه پرداخت
+      //نحوه تسویه
       let dic2 = {
         'ByOnlineOrder': 'اینترنتی',
         'ByOrder': 'واریز قبل ارسال',
@@ -221,9 +223,16 @@ export default function kharidApis({ baseUrl, helper }) {
         'ItemDis1402_69': 'طرح اقلامی زمستان 1402',
         'NA': 'فروش عادی',
         'HeavyItemDis1402_69': 'طرح اقلامی سنگین زمستان 1402',
+        'Last402Price' : 'کالاهای قیمت قدیم 402',
+        'Annual10y' : '10 سالگی',
+        0 : 'خرید عادی',
+        63 : 'اقلامی 403',
+        64 : 'طرح بسته تابستانی',
+        'Last402Price_ELEC': 'آخرین کالاهای قیمت قدیم 402',
+        
       }
 
-      //نحوه ارسال
+      //نحوه پرداخت
       let dic5 = {
         'Cash': 'نقد',
         'Cheque': 'چکی',
@@ -240,9 +249,9 @@ export default function kharidApis({ baseUrl, helper }) {
 
       let campain_name = dic4[result.marketingdetails.campaign];
 
-      let nahve_pardakht = dic2[result.marketingdetails.paymentTime];
+      let nahve_tasvie = dic2[result.marketingdetails.paymentTime];
 
-      let nahve_tasvie = dic5[result.marketingdetails.settleType];
+      let nahve_pardakht = dic5[result.marketingdetails.settleType];
 
       let discount;
 
@@ -268,8 +277,8 @@ export default function kharidApis({ baseUrl, helper }) {
         // basePrice: result.documentTotal + discount,
         basePrice: result.marketingdetails.discountList.showTotalBfDis,
         docDiscount: result.marketingdetails.documentDiscount,
-        //campaignName
-        campain_name,
+        //campain_name
+        campain_name: result.marketingdetails.campName,
         address: result.deliverAddress,
         phone: userInfo.landlineNumber,
         mobile: userInfo.phoneNumber,
@@ -366,6 +375,11 @@ export default function kharidApis({ baseUrl, helper }) {
       let result = Shop[shopId].payment(obj);
       return { result }
     },
+    async pardakht(obj, { Shop }) {
+      let { shopId } = obj;
+      let result = Shop[shopId].pardakht(obj);
+      return { result }
+    },
     getFakeProduct(){
       let product:I_product = {
         id:'1231',
@@ -377,6 +391,10 @@ export default function kharidApis({ baseUrl, helper }) {
         PymntDscnt:10,
         FinalPrice:200000, 
         Price:220000,
+        AppDelDate:1,
+        AppDelDsc: 'موجود',
+        NumInSale:1,
+        SalesMeasureUnit:'شعله',
         hasFullDetail:false,
         category:{shopId:'Regular',shopName:'خرید عادی'}
       }
@@ -419,6 +437,7 @@ export default function kharidApis({ baseUrl, helper }) {
       return { result: true }
     },
     async dargah({ amount, url }) {
+      debugger
       //AIOServiceShowAlert({type:'success',text:'text',subtext:'test'})
       let res = await Axios.get(`${baseUrl}/payment/request?price=${amount}&cbu=${url}`);
       if (res.data.isSuccess) {
@@ -436,6 +455,7 @@ export default function kharidApis({ baseUrl, helper }) {
       if (res.data.isSuccess) {
         window.location.href = res.data.data;
       }
+      else { return res.data.message }
     },
     async bundleData() {return { result: staticBundleData }},
     async daryafte_ettelaate_bundle(allData, { apis }) {
@@ -660,9 +680,7 @@ class Spree implements I_Spree{
       let cartInfo = this.getCartInfo(attributes.sku,shopId);
       if(!cartInfo){continue}
       let optionValues = this.getVariantOptionValues(relationships,optionTypes)
-      let images = relationships.images.data.map(({id})=>{
-        return `https://spree.burux.com${spreeIncluded.images[id].attributes.original_url}`
-      })
+      let images = relationships.images.data.map(({id})=>{return `https://spree.burux.com${spreeIncluded.images[id].attributes.original_url}`})
       let {inStock,B1Dscnt,CmpgnDscnt,PymntDscnt,FinalPrice,Price} = cartInfo; 
       let variant:I_variant = {optionValues,inStock,images,id: attributes.sku,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price}
       variants.push(variant);
@@ -676,7 +694,7 @@ class Spree implements I_Spree{
     if (!b1Result) {return false}
     let {CampaignId,PriceListNum} = Shop[shopId];
     let PayDueDate;
-    if(CampaignId === 55){debugger}
+    if(CampaignId === 54 || CampaignId === 55 || CampaignId === 61 || CampaignId === 60){debugger}
     try{
       let res = actionClass.autoGetCampaignConditionsByCardCode(CampaignId,userInfo.cardCode,b1Info.customer.groupCode)
       PayDueDate = res.PayDueDate[0]
@@ -687,12 +705,12 @@ class Spree implements I_Spree{
     let fixPrice_result:I_fixPrice_result = fixPrice_results[0];
     let {canSell,qtyRelation} = b1Result;
     //let dropShipping = qtyRelation === 4
-    let {OnHand,B1Dscnt,CmpgnDscnt,FinalPrice,Price} = fixPrice_result;
+    let {OnHand,B1Dscnt,CmpgnDscnt,FinalPrice,Price,NumInSale,SalesMeasureUnit,AppDelDate,AppDelDsc} = fixPrice_result;
     if(!OnHand || OnHand === null){OnHand = {qtyLevel:0}}  
     let {qtyLevel = 0} = OnHand;
     let inStock = !!qtyLevel && !!canSell;
     let PymntDscnt = this.getPymntDscnt(shopId);
-    return {inStock,B1Dscnt,CmpgnDscnt,PymntDscnt,FinalPrice,Price}
+    return {inStock,B1Dscnt,CmpgnDscnt,PymntDscnt,FinalPrice,Price,NumInSale,SalesMeasureUnit,AppDelDate,AppDelDsc}
   }
   getProduct = (spreeProduct:I_spreeProduct,spreeIncluded:I_spreeIncluded,category:I_product_category) => { 
     let { relationships,attributes,id } = spreeProduct,name = attributes.name;
@@ -700,8 +718,8 @@ class Spree implements I_Spree{
     let cartInfo = this.getCartInfo(sku,category.shopId);
     if(!cartInfo){return false}
     let images = relationships.images.data.map(({id})=>`https://spree.burux.com${spreeIncluded.images[id.toString()].attributes.styles[9].url}`)
-    let {inStock,B1Dscnt,CmpgnDscnt,PymntDscnt,FinalPrice,Price} = cartInfo; 
-    let product:I_product = {category,images,name,id,inStock,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price,hasFullDetail:false}
+    let {inStock,B1Dscnt,CmpgnDscnt,PymntDscnt,FinalPrice,Price,NumInSale,SalesMeasureUnit,AppDelDate,AppDelDsc} = cartInfo; 
+    let product:I_product = {category,images,name,id,inStock,B1Dscnt,PymntDscnt,CmpgnDscnt,FinalPrice,Price,hasFullDetail:false,NumInSale,SalesMeasureUnit,AppDelDate,AppDelDsc}
     return product;
   }
 }

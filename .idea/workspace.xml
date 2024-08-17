@@ -6,10 +6,36 @@
   <component name="ChangeListManager">
     <list default="true" id="aa52f775-acd0-48b7-a649-e727a845b127" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build-1.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build-2.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/actionClass.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/actionClass.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/apis/bazargah-apis.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/apis/bazargah-apis.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/apis/bg-apis.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/apis/bg-apis.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/apis/kharid-apis.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/apis/kharid-apis.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/apis/login-apis.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/apis/login-apis.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/back-office-panel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/back-office-panel.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/kharid/order-popup/order-popup.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/kharid/order-popup/order-popup.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/kharid/sefareshe-ersal-shode-baraye-vizitor/sefareshe-ersal-shode-baraye-vizitor.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/kharid/sefareshe-ersal-shode-baraye-vizitor/sefareshe-ersal-shode-baraye-vizitor.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/npm/aio-login/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/npm/aio-login/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/bazargah/bazargah.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/bazargah/bazargah.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/bazargah/bg.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/bazargah/bg.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pages/bazargah/bg.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/bazargah/bg.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/buy/buy.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/buy/buy.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/buy/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/buy/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/home/home.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/home/home.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/main/main.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/main/main.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/vitrin/vitrin.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/vitrin/vitrin.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/vitrin/vitrin.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/vitrin/vitrin.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pricing.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pricing.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/shop-class.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/shop-class.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/shop-class.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/shop-class.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/types.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/getSvg.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/getSvg.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,21 +53,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;ts&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/t.esbati/Documents/GitHub/bazaremiarze&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\t.esbati\\Documents\\GitHub\\bazaremiarze\\node_modules\\typescript\\lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "ts",
+    "last_opened_file_path": "C:/Users/t.esbati/Documents/bazarMiarze/bazaremiarze",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.standard": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.standard": "",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "prettierjs.PrettierConfiguration.Package": "C:\\Users\\t.esbati\\AppData\\Roaming\\npm\\node_modules\\prettier",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "ts.external.directory.path": "C:\\Users\\t.esbati\\Documents\\bazarMiarze\\bazaremiarze\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -52,6 +82,7 @@
       <updated>1707289458609</updated>
       <workItem from="1707289460308" duration="2888000" />
       <workItem from="1707293468400" duration="7049000" />
+      <workItem from="1716874923487" duration="2672000" />
     </task>
     <servers />
   </component>

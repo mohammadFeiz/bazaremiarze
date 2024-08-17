@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import Main from './pages/main/main.tsx';
 import PageError from './components/page-error';
 import Landing from './components/landing';
@@ -9,8 +9,10 @@ import getApiFunctions from './apis/apis.ts';
 import './App.css';
 import './theme.css';
 import Splash from './components/spalsh/splash';
+import { checkAndUpdateVersion } from './versionManager';
 import {  I_AIOService_class, I_AIOService_onCatch, I_B1Info, I_Report_parameter, I_msfReport, I_state_backOffice, I_backOffice_accessPhoneNumber, I_updateProfile, I_userInfo } from './types';
 import { I_AL_props,I_AIOLogin, I_AL_model } from './npm/aio-login/index.tsx';
+
 type I_getBaseUrl = () => string
 const getBaseUrl: I_getBaseUrl = function () {
   //return "https://retailerapp.bbeta.ir/api/v1";
@@ -20,6 +22,7 @@ const getBaseUrl: I_getBaseUrl = function () {
   else if (url.indexOf('bbeta') !== -1) { return "https://retailerapp.bbeta.ir/api/v1"; }
   else { return "https://retailerapp.bbeta.ir/api/v1"; }
 }
+
 type I_getUrlUserId = () => string | undefined;
 const getUrlUserId: I_getUrlUserId = function () {
   let userId:string;
@@ -38,6 +41,11 @@ const Report: I_Report = function (parameter) {
 }
 
 export default function App() {
+
+  useEffect(() => {
+    checkAndUpdateVersion();
+  }, []);
+
   let [baseUrl] = useState<string>(getBaseUrl());
   let [urlUserId] = useState<string>(getUrlUserId());
   
@@ -134,7 +142,11 @@ export default function App() {
       },
       registerFields: [
         ['*firstname', '*lastname'],
-        ['*storeName_text_نام فروشگاه', { input: { type: 'text',justNumber:true }, field: 'value.register.phone', label: 'شماره تلفن ثابت', validations: [['required'], ['length>', 10]] }],
+        [
+          '*storeName_text_نام فروشگاه', 
+          { input: { type: 'text',justNumber:true }, field: 'value.register.phone', label: 'شماره تلفن ثابت', validations: [['required'], ['length>', 10]] },
+        ],  
+        //['*nationalcode'],
         ['password', 'repassword'], '*location', '*address', ['*state', '*city']
       ],
       onSubmitRegister:async (model) => {
@@ -189,8 +201,22 @@ export default function App() {
     let oldUserInfo = (userInfo || {}) as I_userInfo;
     let newUserInfo: I_userInfo = { ...oldUserInfo, ...model} as I_userInfo
     try{
-      newUserInfo = {...newUserInfo,latitude:model.location.lat,longitude:model.location.lng,landlineNumber:model.phone,phoneNumber:Login.getUserId()}
+      newUserInfo = 
+      {
+        ...newUserInfo,
+        latitude:model.location.lat,
+        longitude:model.location.lng,
+        landlineNumber:model.phone,
+        phoneNumber:Login.getUserId(),
+        //nationalCode:model.nationalcode,
+        userCity:model.city,
+        userProvince:model.state,
+        firstName:model.firstname,
+        lastName:model.lastname,
+        address:model.address
+      }
       if(!newUserInfo.address){newUserInfo.address = model.location.address}
+      //if(!newUserInfo.nationalCode){newUserInfo.nationalCode = model.nationalcode}
     }
     catch{}
     let res = await apis.request({

@@ -5,6 +5,7 @@ body{
 	overscroll-behavior-y: contain;
 	text-align: center;
 }
+.widget-icon { opacity: 50%; }
 .rsa-container{
 	background:#444;
 	background-image: url(./images/logo2.png);
@@ -231,10 +232,9 @@ button{
 .colorC7E7F4{
 	color:#C7E7F4;
 }
-
-
-
-
+.color13A73A{
+	color:#13a73a;
+}
 .color107C10{
 	color:#107C10;
 }
@@ -276,7 +276,7 @@ button{
 .button-2{
 	border-radius:4px;
 	color:#fff;
-	height:42px;
+	height:38px;
 	width:100%;
 	display:flex;
 	align-items: center;
@@ -288,6 +288,62 @@ button{
 	padding:0 24px;
 	cursor: pointer;
 	user-select: none;
+}
+.button-6{
+	border-radius:8px;
+	color:#3B55A5;
+	height:32px;
+	width:100%;
+	display:flex;
+	align-items: center;
+	justify-content: center;
+	font-size:14px;
+	font-weight: 600;
+	font-family: inherit;
+	background: #DCE1FF;
+	border: 0;
+	padding:6px 8px 6px 16px;
+	cursor: pointer;
+	user-select: none;
+	gap: 8px;
+	box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.12), 0px 2px 5px 0px rgba(103, 110, 118, 0.08);
+}
+.button-7{
+    display: flex;
+	padding: 14px 32px;
+	justify-content: center;
+	align-items: center;
+	font-size:14px;
+	font-weight: 400;
+	font-family: inherit;
+	gap: 8px;
+	flex: 1 0 0;
+	color:#3B55A5;
+	height:38px;
+	width:100%;
+	background:none;
+    border:1px solid #DCE1FF;
+	border-radius:4px;
+	cursor: pointer;
+	user-select: none;
+}
+.button-8{
+	border-radius:8px;
+	color:#2BBA8F;
+	height:32px;
+	width:100%;
+	display:flex;
+	align-items: center;
+	justify-content: center;
+	font-size:14px;
+	font-weight: 600;
+	font-family: inherit;
+	background: none;
+	border: 1px solid var(--Color-system-ref-neutral-neutral90, #E1E3E0);
+	padding:6px 8px 6px 16px;
+	cursor: pointer;
+	user-select: none;
+	gap: 5px;
 }
 .button-5{
 	border-radius:24px;
@@ -345,7 +401,12 @@ button{
 	opacity:0.6;
 	cursor:not-allowed;
 }
-
+.button-6.disabled,.button-6:disabled{
+	background: #A19F9D;
+	border:2px solid #A19F9D;
+	opacity:0.6;
+	cursor:not-allowed;
+}
 .loading{
     z-index:100000000000000;
     position: absolute;
@@ -814,6 +875,7 @@ button{
     display:flex;
     align-items: center;
     justify-content: center;
+	padding: 10px;
 }
 .shipping-code-button:disabled{
     opacity:0.4;

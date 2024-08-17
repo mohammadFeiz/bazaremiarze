@@ -4,15 +4,15 @@ import AIOInput from '../../npm/aio-input/aio-input.js';
 import AIODate from 'aio-date';
 import {SplitNumber} from 'aio-utils';
 import appContext from '../../app-context.js';
-import lampsrc from './../../images/lamp.png';
+import NoSrc from './../../../images/imgph.png';
 import bgvsrc from './../../images/bgv.png';
 import { I_app_state } from '../../types.js';
 import {Icon} from '@mdi/react';
-import { mdiAlert, mdiAlertOutline, mdiInformation } from '@mdi/js';
+import { mdiAlertOutline, mdiInformation } from '@mdi/js';
 import './bg.css';
 import { I_bg_to_sending_param, I_bg_to_sent_param } from '../../apis/bg-apis.js';
-// import toTaken from '../../axios.js';
 
+//بازارگاه جدید
 export type I_bg_order = {
     status:I_bg_status,
     submitDate:number,
@@ -21,13 +21,13 @@ export type I_bg_order = {
     orderId:number,
     price:number,
     items:I_bg_order_item[],
-    isInVitrin:boolean,
+    inVitrin:boolean,
     distanceKM:number,
     carierPhoneNumber?:string,
     carierName:string,
     deliveryType?:I_deliveryType,//use in status:sending
     trackingCode?:string,//use in status:sending
-    info:{name:string,lat:number,lng:number,address:string,city:string,province:string,postal:number,phone:string}
+    info:{name:string,lat:number,lng:number,address?:string,city?:string,province?:string,postal?:number,phone?:string}
 }
 type I_bg_status = 'canTake'|'takenByOther'|'shouldSend' | 'sending' | 'sent'
 type I_bg_order_item = {
@@ -35,37 +35,132 @@ type I_bg_order_item = {
     price:number,
     image:string,
     name:string,
-    details:{key:string,value:string}[]
+    inVitrin:boolean,
+    detail:[]
+    // detail:{key:string,value:string}[]
 }
+
 //بازارگاه - تب های بازارگاه
 export type I_deliveryType = 'post' | 'carier'
 export type I_bg_tab = 'اطراف من' | 'سفارشات من';
-export default function Bazargah(){
+
+export default function Bazargah(props:I_BazargahOrderCard){
+
     let {apis}:I_app_state = useContext(appContext);
     let [tab,setTab] = useState<I_bg_tab>('اطراف من')
-    let tabs:I_bg_tab[] = ['اطراف من','سفارشات من'];
-    let [orders,setOrders] = useState<I_bg_order[]>([])
+    let tabs:I_bg_tab[] = ['اطراف من','سفارشات من']
+    //let [orders,setOrders] = useState<I_bg_order[]>([])
+    let [ordersNearby, setOrdersNearby] = useState<I_bg_order[]>([]);
+    let [ordersMyOrders, setOrdersMyOrders] = useState<I_bg_order[]>([]);
+    let [activeTab, setActiveTab] = useState<I_bg_tab>('اطراف من');
+
+    //console.log("ordersNearby :", ordersNearby.length);
+    //console.log("ordersMyOrders :", ordersMyOrders.length);
+   
+    //DataPushLayer
+    function pushToDataLayer(data: any) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(data);
+    }
+
     function getOrders(newTab){
         setTab(newTab)
         apis.request({
-            api:'bg.bg_orders',description:`دریافت سفارشات بازارگاه از نوع ${newTab}`,parameter:newTab,loading:true,
-            onSuccess:(orders:I_bg_order[])=>setOrders(orders)
+            api:'bg.bg_orders',
+            description:`دریافت سفارشات بازارگاه از نوع ${newTab}`,
+            parameter:newTab,
+            loading:true,
+            //onSuccess:(orders:I_bg_order[])=>setOrders(orders),
+            //جدا کردن سفارشات برای نمایش option after
+            onSuccess: (orders: I_bg_order[]) => {
+                if (newTab === 'اطراف من') 
+                {
+                    setOrdersNearby(orders);
+                } 
+                else if (newTab === 'سفارشات من') 
+                {
+                    setOrdersMyOrders(orders);
+                }
+            },
         })
+        // Push data to the data layer
+        pushToDataLayer({
+            event: 'page_view',
+            page_title: newTab,
+            page_url: `/bazargah/${newTab}`
+        });
+        // Update active tab
+        setActiveTab(newTab);
     }
+
+    const [loading, setLoading] = useState(true);
+    // Other state variables and useEffect calls
+
+    useEffect(() => {
+        if (!loading) {
+            return;
+        }
+     
+        const nearbyCount = ordersNearby.length;
+        const myOrdersCount = ordersMyOrders.length;
+
+        if (nearbyCount > 0 || myOrdersCount > 0) {
+            setLoading(false);
+        }
+    }, [ordersNearby, ordersMyOrders, loading]);
     useEffect(()=>{getOrders('اطراف من')},[])
-    function tabs_layout(){
+
+    function tabs_layout(){ 
+
         return {
-            className:'of-visible hide-scroll m-b-6',
+            className:'of-visible hide-scroll',
             html:(
-                <AIOInput value={tab} className='bazargah-tabs theme-box-shadow' type='tabs' options={tabs} optionText='option' optionValue='option' onChange={(tab:I_bg_tab)=>getOrders(tab)}/>
-            )
+                <AIOInput 
+                    value={tab} 
+                    className='bazargah-tabs theme-box-shadow' 
+                    type='tabs' 
+                    options={tabs}   
+                    optionText='option' 
+                    optionValue='option' 
+                    //onChange={(tab:I_bg_tab)=>getOrders(tab)}
+                    onChange={(tab:I_bg_tab)=>{
+                        getOrders(tab);
+                        // pushToDataLayer({
+                        //     event: 'page_view',
+                        //     page_title: tab,
+                        //     page_url: `/bazargah/${tab}`
+                        // });
+                    }}
+                    //optionAfter={(option)=><div className='tab-badge'>{option.orders.length}</div>}
+                    // optionAfter={(option: I_bg_tab) => {
+                    //     let count = 0;
+                    //     if (option === 'اطراف من') 
+                    //     {
+                    //         count = ordersNearby.length;
+                    //     } 
+                    //     else if (option === 'سفارشات من') 
+                    //     {
+                    //         count = ordersMyOrders.length;
+                    //     }
+                    //     const activeColor = activeTab === option ? '#2BBA8F' : 'black';
+                    //     return (
+                    //         <>
+                    //             {!loading && (
+                    //                 <div style={{borderRadius:100,backgroundColor:activeColor}} className='tab-badge'>{count}</div>
+                    //             )}
+                    //         </>
+                    //     )
+                    // }}
+                />
+            )   
         }
     }
+    
     function orderCard_layout(order:I_bg_order){
         let loading = false;
         if(!order){
             loading = true
-          }
+        }
         return {
             className:'of-visible hide-scroll',
             html:<BazargahOrderCard loading={loading} order={order}/>
@@ -80,15 +175,21 @@ export default function Bazargah(){
                 className:'page-bg',style:{width:'100%',height:'100%'},
                 column:[
                     tabs_layout(),
+                    // {
+                    //     flex:1,className:'bg-body ofy-auto hide-scroll p-t-10 gap-12 ofx-visible',
+                    //     column:orders.map((order:I_bg_order)=>orderCard_layout(order))
+                    // }
                     {
-                        flex:1,className:'bg-body ofy-auto hide-scroll p-t-0 gap-12 ofx-visible',
-                        column:orders.map((order:I_bg_order)=>orderCard_layout(order))
+                        flex: 1, 
+                        className: 'bg-body ofy-auto hide-scroll p-t-10 gap-12 ofx-visible',
+                        column: (tab === 'اطراف من' ? ordersNearby : ordersMyOrders).map((order: I_bg_order) => orderCard_layout(order))
                     }
                 ]
             }}
         />
     )
 } 
+
 //اطراف من - کارت هر سفارش
 type I_BazargahOrderCard = {
     order:I_bg_order
@@ -97,7 +198,7 @@ type I_BazargahOrderCard = {
 export function BazargahOrderCard(props:I_BazargahOrderCard){
     let {backOffice,rsa}:I_app_state = useContext(appContext);
     let {order} = props;
-    let {status,deliverDate,price,items,isInVitrin,code} = order;
+    let {status,deliverDate,price,items,code,inVitrin} = order;
     function status_layout(){
         let text,color;
         if(status === 'canTake'){text = 'سفارش جدید! جزئیات را بررسی کنید';color = '#0F7B6C';}
@@ -113,17 +214,34 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
         return {
             column:[
                 {align:'v',className:'p-h-6 p-v-3 fs-12 bold br-4',style:{color,background:`${color}27`},html:text},
-                {row:[{html:<BazargahSubmitDate order={order}/>},{flex:1},{html:code,align:'v',className:'fs-14 theme-dark-font-color'}],className:'p-h-6',align:'v',size:36}
+                {row:[
+                    {html:<BazargahSubmitDate order={order}/>,style:{color:'#8e918e'}},
+                    // {flex:1},
+                    // {html:code,align:'v',className:'fs-12',style:{color:'#8e918e'}},
+                ],
+                // className:'p-h-6',
+                // align:'h',
+                size:26}
             ]
         }
     }
     function price_layout(){
-        return {align:'v',gap:3,row:[{html:SplitNumber(price / 10),className:'fs-14 bold',style:{color:'#3B55A5'}},{html:'تومان',className:'fs-10 theme-light-font-color'}]}
+        return {
+            align:'v',
+            gap:3,
+            row:[{
+                 html:SplitNumber(price / 10),
+                 className:'fs-16 bold',
+                 style:{color:'#3B55A5'}},
+                 {html:'تومان',className:'fs-10',style:{color:'#A19F9D'}}
+                ]}
     }
     function count_layout(){
         return {html:`${items.length} کالا`,className:'fs-14 bold theme-medium-font-color'}
     }
     function openPage(){
+        // Push to data layer before opening the modal
+        pushToDataLayer(code);
         rsa.addModal({
             header:{title:'جزییات سفارش'},
             body:{
@@ -131,11 +249,35 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
             }
         })
     }
+    // DataPushLayer
+    function pushToDataLayer(code: string) {
+        let text,tabOption;
+        if(status === 'canTake'){text = 'سفارش جدید';tabOption = 'aroundMe'}
+        else if(status === 'takenByOther'){text = 'سفارش اخذ شده';tabOption = 'aroundMe'}
+        else if(status === 'shouldSend'){text = 'سفارش باید ارسال شود';tabOption = 'myOrder'}
+        else if(status === 'sending'){text = 'سفارش در مسیر تحویل';tabOption = 'myOrder'}
+        else if(status === 'sent'){text = 'مرسوله تحویل شده';tabOption = 'myOrder'}
+        else if(status === 'awaitingReview'){text = 'درحال بررسی توسط پشتیبان';tabOption = 'aroundMe'};
+        if (window.dataLayer) {
+            window.dataLayer.push({
+                event: 'page_view',
+                page_title: `${code} سفارش`,
+                page_url: `/bazargah/${tabOption}/${code}`,
+                status : text,
+                order_id: code
+            });
+        }
+    }
+    //عکس  و بزرگ نمایی میکنه در یک پاپ آپ باز میکند
     function openItemModal(image:string,name:string,details:{key:string,value:string}[],count:number){
         let render = ()=>{
-            let image_layout = {size:240,html:<img src={image} alt='' height='100%'/>,align:'vh'}
+            let image_layout = {size:240,html:<img src={image} alt='' height='100%'/>}
             let details_layout = {show:!!Array.isArray(details) && !!details.length,column:()=>details.map((o)=>popupDetail_layout(o))}
-            return (<RVD layout={{column:[image_layout,details_layout]}}/>)
+            return (<RVD layout={{
+                column:[
+                    image_layout,
+                    details_layout
+                ]}}/>)
         }
         rsa.addModal({
             position:'center',
@@ -158,16 +300,26 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
     function items_layout(){
         let images = items.map((o:I_bg_order_item)=>o.image)
         let names = items.map((o:I_bg_order_item)=>o.name)
-        let details = items.map((o:I_bg_order_item)=>o.details)
+        let details = items.map((o:I_bg_order_item)=>o.detail)
         let counts = items.map((o:I_bg_order_item)=>o.count)
         if(images.length < 5){images = [...images,'','','','','']}
         images = images.slice(0,5);
         return {
-            align:'vh',gap:6,className:'m-b-12',
+            // align:'vh',
+            gap:6,
+            className:'m-b-6',
             row:images.map((image:string,i:number)=>{
                 return {
-                    html:<><img src={image} alt='' width='100%'/><div className='bg-order-card-count'>{counts[i]}</div></>,flex:1,style:{maxWidth:80},align:'vh',attrs:{title:names[i]},
-                    onClick:()=>openItemModal(image,names[i],details[i],counts[i])
+                    html:
+                    <>
+                        <img src={image} alt='' width='100%'/>
+                        <div className='bg-order-card-count'>{counts[i]}</div>
+                    </>,
+                    flex:1,
+                    style:{maxWidth:80},
+                    align:'vh',
+                    attrs:{title:names[i]},
+                    //onClick:()=>openItemModal(image,names[i],details[i],counts[i])
                 }
             })
         }
@@ -180,14 +332,20 @@ export function BazargahOrderCard(props:I_BazargahOrderCard){
     function footer_layout(){
         return {row:[{html:(<button className='bg-button-1' onClick={()=>openPage()}>مشاهده جزییات</button>)}]}
     }
-    let showVitrinText = !!isInVitrin && status === 'canTake';
+    let showVitrinText = !!inVitrin && status === 'canTake';
     return (
         <RVD
             layout={{
                 className:'bg-order-card theme-box-shadow',
                 column:[
                     status_layout(),
-                    {row:[price_layout()],align:'v',size:36},
+                    {
+                        row:[
+                        price_layout()
+                    ],
+                        // align:'v',
+                        size:36
+                    },
                     //{row:[price_layout(),{flex:1},count_layout()],align:'v',size:36},
                     items_layout(),
                     showVitrinText?{html:<BGVitrinText/>}:false,
@@ -203,12 +361,14 @@ type I_BazargahItemCard = {
     item:I_bg_order_item
 }
 function BazargahItemCard(props:I_BazargahItemCard){
-    debugger
     let {item} = props;
-    let {name,details,price,image,count} = item;
-    function name_layout(){return {html:name,className:'fs-14 bold m-b-12',style:{color:'#00164E',textAlign:'right'}}}
-    function brand_layout(){return {gap:3,align:'v',style:{fontWeight:700},className:'fs-12 theme-dark-font-color',size:36,row:[bullet_layout(),{html: details}],}}
-    function price_layout(){return {gap:3,align:'v',size:36,column:[{key:'قیمت واحد',value:`${SplitNumber(price/10)} تومان`}].map((o:{key:string,value:string})=>style_layout(o))}}
+    let {name,price,detail,image,count,inVitrin} = item;
+    let showVitrin = inVitrin;
+    //console.log("Detail:",detail)
+    function name_layout(){return {html:name,className:'fs-14 bold',style:{color:'#00164E',textAlign:'right'}}}
+    function brand_layout(){return {gap:3,align:'v',className:'fs-12 theme-dark-font-color',size:36,row:detail}}
+    //function brand_layout(){return {gap:3,align:'v',size:36,style:{fontWeight:700},className:'fs-12 theme-dark-font-color',column:[{value:`${details}`}].map((o:{key:string,value:string})=>style_layout(o))}}
+    function price_layout(){return {gap:3,align:'v',size:26,column:[{key:'هر واحد',value:`${SplitNumber(price/10)} تومان`}].map((o:{key:string,value:string})=>style_layout(o))}}
     function style_layout(p:{key:string,value:string}){
         return {
             
@@ -219,10 +379,10 @@ function BazargahItemCard(props:I_BazargahItemCard){
     function bullet_layout(){
         return {align:'vh',html:<div className='w-6 h-6 br-100' style={{background:'#ddd'}}></div>,size:16}
     }
-    function image_layout(){return {size:72,html:<img src={image} alt='' width='100%'/>,align:'vh'}}
+    function image_layout(){return {size:72,html:<img src={image} alt='' width='100%'/>,style:{alignItems:'start'}}}
     function count_layout(){
         return {
-            gap:3,align:'v',size:36,
+            gap:3,align:'v',size:26,
             row:[
                 {html:<div className='align-vh br-100 fs-12 bold' style={{minWidth:20,color:'#405AAA',background:'#405AAA27'}}>{count}</div>},
                 {html:'عدد',className:'fs-10 theme-light-font-color'}
@@ -245,8 +405,16 @@ function BazargahItemCard(props:I_BazargahItemCard){
                 column:[
                     {
                         row:[
-                            {flex:1,column:[name_layout(),brand_layout(),price_layout()]},
-                            image_layout()
+                            {
+                            flex:1,
+                            column:[
+                                showVitrin?{html:<IsInVitrin/>}:false,
+                                name_layout(),
+                                brand_layout(),
+                                price_layout()
+                            ]
+                            },
+                            image_layout() 
                         ]
                     },
                     count_layout(),total_layout()
@@ -255,32 +423,51 @@ function BazargahItemCard(props:I_BazargahItemCard){
         />
     )
 }
-//اطراف من - سکشن زیر بنر وضعیت سفارش
+//اطراف من - جزییات هر سفارش
 type I_BazargahOrderPage = {
     order:I_bg_order
 }
 function BazargahOrderPage(props:I_BazargahOrderPage){
     let {apis,rsa}:I_app_state = useContext(appContext);
     let [order,setOrder] = useState<I_bg_order>(props.order)
-    let {isInVitrin,status,items,distanceKM,orderId,price} = order;
+    let {inVitrin,status,items,distanceKM,orderId,price} = order;
+    //console.log(order)
+    // DataPushLayer
+    function sendToDataLayer(order) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'take_order',
+            order_id: order.code,
+        });
+    }
     function toShouldSend(){
         let parameter = {order}
         apis.request({
-            api:'bg.bg_to_shouldSend',parameter,description:'اخذ سفارش بازارگاه',
-            onSuccess:()=>setOrder({...order,status:'shouldSend'})
+            api:'bg.bg_to_shouldSend',
+            parameter,
+            description:'اخذ سفارش بازارگاه',
+            //onSuccess:()=>setOrder({...order,status:'shouldSend'}),
+            onSuccess:()=>{
+                setOrder({...order,status:'shouldSend'});
+                sendToDataLayer(order); // ارسال به data layer
+            }
         })
     }
     function toSending(data:I_bg_to_sending_param){
         let parameter = {order,data}
         apis.request({
-            api:'bg.bg_to_sending',parameter,description:'ارسال سفارش بازارگاه',
+            api:'bg.bg_to_sending',
+            parameter,
+            description:'ارسال سفارش بازارگاه',
             onSuccess:()=>setOrder({...order,status:'sending'})
         })
     }
     function toSent(data:I_bg_to_sent_param){
         let parameter = {order,data}
         apis.request({
-            api:'bg.bg_to_sent',parameter,description:'تحویل سفارش بازارگاه',
+            api:'bg.bg_to_sent',
+            parameter,
+            description:'تحویل سفارش بازارگاه',
             onSuccess:()=>{
                 setOrder({...order,status:'sent'});
                 rsa.removeModal();
@@ -325,7 +512,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
     }
     function detailCard_layout(title:string,value:any,unit:string){
         return {
-            gap:6,className:'theme-box-shadow br-12',style:{background:'#fff',width:84,height:84},align:'vh',
+            gap:12,className:'theme-box-shadow br-12',style:{background:'#fff',width:106,height:84},align:'vh',
             column:[
                 {html:title,className:'fs-10 bold theme-medium-font-color'},
                 {html:value,className:'fs-16 bold theme-link-font-color'},
@@ -348,7 +535,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
         }
     }
     let isMine = ['shouldSend','sending','sent'].indexOf(status) !== -1;
-    let showVitrin = isInVitrin && status === 'canTake';
+    let showVitrin = inVitrin && status === 'canTake';
     return (
         <RVD
             layout={{
@@ -362,7 +549,7 @@ function BazargahOrderPage(props:I_BazargahOrderPage){
                     items_layout(),
                     {
                         show:status === 'canTake',
-                        style:{background:'#eee'},
+                        // style:{background:'#eee'},
                         column:[
                             detailCards_layout(),
                             button_layout(),
@@ -467,12 +654,13 @@ function BGPage_PrivateStatus(props:I_BGPage_PrivateStatus){
     }
     function card_layout(){
         let column:any[] = [slider_layout(),text_layout()]
+        //زمان باقی مانده تا انقضا
         // if(['shouldSend','sending'].indexOf(status) !== -1){
         //     column.push({html:<BazargahExpiredDate order={order} total={total}/>})
         // }
-        if(['sending'].indexOf(status) !== -1){
-            column.push({html:<BazargahExpiredDate order={order} total={total}/>})
-        }
+        // if(['sending'].indexOf(status) !== -1){
+        //     column.push({html:<BazargahExpiredDate order={order} total={total}/>})
+        // }
         if(['shouldSend'].indexOf(status) !== -1){
             column.push({html:<BGDeliveryType toSending={toSending}/>})
         }
@@ -640,12 +828,27 @@ function BGVitrinText(){
         />
     )
 }
+function IsInVitrin(){
+    return (
+        <RVD
+            layout={{
+                gap:3,align:'v',
+                style:{paddingBottom:'10px'},
+                row:[
+                    {align:'vh',html:<div className='w-6 h-6 br-100' style={{background:'#DFAB01'}}></div>,size:16},
+                    {html:'موجود در ویترین شما',className:'fs-10 bold',style:{color:'#DFAB01'}}
+                ]
+            }}
+        />
+    )
+}
 //سفارشات من - اطلاعات محل تحویل
 type I_BGPage_Location = {order:I_bg_order}
 function BGPage_Location(props:I_BGPage_Location){
     let {order} = props,
     {info} = order,
-    {lat,lng,name,phone,city,province,postal,address} = info;
+    {lat,lng,name,phone,city,postal,address} = info;
+    //console.log(info)
     function kv_layout(p:[key:string,value:string]){
         return {className:'p-12 p-b-0',column:[{html:p[0],className:'bold fs-12'},{html:p[1],className:'fs-12 theme-medium-font-color t-a-right'}]}
     }
@@ -664,9 +867,9 @@ function BGPage_Location(props:I_BGPage_Location){
                     },
                     kv_layout(['نام و نام خانوادگی تحویل گیرنده',name]),
                     kv_layout(['شماره تلفن تحویل گیرنده',phone]),
-                    kv_layout(['استان و شهر',`${city},${province}`]),
+                    kv_layout(['استان',`${city}`]),
                     kv_layout(['آدرس',address]),
-                    kv_layout(['کد پستی',postal.toString()])
+                    kv_layout(['کد پستی',postal?.toString() || ''])
                     
                 ]
             }}
@@ -738,12 +941,15 @@ function BazargahExpiredDate(props:I_BazargahExpiredDate){
         return '#0F7B6C'
     }
     function getText(expiredDate:number,now:number){
-        let miliseconds = expiredDate - now,text = []; 
-        let {day,hour,minute} = AIODate().convertMiliseconds({miliseconds,unit:'hour'});
-        if(day){text.push(`${day} روز`)} 
-        if(hour){text.push(`${hour} ساعت`)} 
-        if(minute){text.push(`${minute} دقیقه`)}
-        return text.join(' و ')
+        let miliseconds = expiredDate - now,
+        text = []; 
+        let {hour,minute} = AIODate().convertMiliseconds({miliseconds,unit:'hour'});
+        text = AIODate().convertMiliseconds({miliseconds,unit:'hour',jalali:true,pattern:'{hour}:{minute}'})
+        return text
+        // if(day){text.push(`${day} روز`)} 
+        // if(hour){text.push(`${hour} ساعت`)} 
+        // if(minute){text.push(`${minute} دقیقه`)}
+        // return text.join(' و ')
     }
     function slider_layout(percent:number,color:string){
         let props = {
@@ -757,8 +963,8 @@ function BazargahExpiredDate(props:I_BazargahExpiredDate){
     }
     function text_layout(expiredDate:number,color:string,now:number){
         let key_layout = {html:'زمان باقی مانده تا انقضا',align:'v',className:'fs-10 theme-dark-font-color'}
-        let value_layout = {html:getText(expiredDate,now),className:'fs-12 bold',style:{color}}
-        return {align:'v',size:24,row:[key_layout,{flex:1},value_layout]}
+        let value_layout = {html:getText(expiredDate,now),className:'fs-12 bold gap-3',style:{color}}
+        return {align:'v',size:14,row:[key_layout,{flex:1},value_layout]}
     }
     useEffect(()=>{setInterval(()=>setNow(new Date().getTime()),60000)},[])
     let {order,total} = props,{submitDate} = order;
@@ -781,8 +987,13 @@ function BazargahSubmitDate(props:I_BazargahSubmitDate){
         let list = [];
         if(day){list.push(`${day} روز`)}
         if(hour){list.push(`${hour} ساعت`)}
-        if(minute){list.push(`${minute} دقیقه`)}
+        if(hour === 0){list.push('1 ساعت')}
+        // if(minute){list.push(`${minute} دقیقه`)}
         text = list.join(' و ') + ' پیش' 
+    }
+    if(delta < 72 * 60 * 60 * 1000){
+        let {hour,minute} = AIODate().convertMiliseconds({miliseconds:delta,unit:'day'})
+        if(hour === 0 && minute<30){text = 'جدید'} 
     }
     else {text = AIODate().getDateByPattern({date:submitDate,jalali:true,pattern:'{year}/{month}/{day} {hour}:{minute}'})}
     return (<RVD layout={{html:text,align:'v',padding:'10px',className:'fs-10 theme-medium-font-color bold'}}/>)

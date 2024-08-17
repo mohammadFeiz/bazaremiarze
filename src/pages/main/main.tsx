@@ -18,6 +18,12 @@ type I_Main = {
   backOffice:I_state_backOffice,msfReport:I_msfReport
 }
 
+  //DataPushLayer
+  function pushToDataLayer(data: any) {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(data);
+  }
+
 export type I_Main_state = {
   mounted:boolean,
   rsa:any,
@@ -161,12 +167,18 @@ export default class Main extends Component <I_Main,I_Main_state>{
         })
       },
       fetchData:async ()=>{
-        let {vitrin} = this.state,{apis,userInfo} = this.props;
-        let started = await apis.request({api: 'vitrin.v_getStarted',loading:false,description: 'دریافت وضعیت ویترین'})
+        let {vitrin} = this.state,
+        {apis,userInfo} = this.props;
+        let started = await apis.request({api: 'vitrin.v_getStarted',
+        loading:false,
+        description: 'دریافت وضعیت ویترین'})
         vitrin.started = started;
         apis.request({
-          api: 'vitrin.v_selected',description: 'دریافت محصولات انتخاب شده ی ویترین',loading:false,
-          parameter:userInfo.cardCode,def:[],
+          api: 'vitrin.v_selected',
+          //description: 'دریافت محصولات انتخاب شده ی ویترین',
+          loading:false,
+          parameter:userInfo.cardCode,
+          def:[],
           onSuccess:async (list)=>{
             let vitrinSelected = {};
             for(let i = 0; i < list.length; i++){
@@ -180,8 +192,14 @@ export default class Main extends Component <I_Main,I_Main_state>{
       }
     }
   }
+  //عملیات هایی که در هنگام بالا امدن اولیه اپ بعد از زدن یوزر و پسورد اجرا میشوند
   async componentDidMount(){
     let {actionClass,vitrin} = this.state,{backOffice,b1Info} = this.props;
+    //DataPushLayer
+    pushToDataLayer({ 
+        event: 'user_id',
+        user_id: b1Info.customer.phone1
+    });
     actionClass.manageUrl();
     let signalR = new SignalR(()=>this.getContext())
     signalR.start();
@@ -189,9 +207,13 @@ export default class Main extends Component <I_Main,I_Main_state>{
     actionClass.getSpreeCategories();
     if (backOffice.activeManager.garanti && b1Info.customer.slpcode) { actionClass.getGuaranteeItems(); }
     if (backOffice.activeManager.bazargah) { actionClass.getBazargahOrders(); }
-    actionClass.handleMissedLocation()
+    //actionClass.handleMissedLocation()
     this.getShopState()
-    this.SetState({mounted:true})  
+    this.SetState({mounted:true})
+    // setTimeout(() => {
+    //   let {actionClass} = this.state;
+    //   actionClass.openPopup('sefaresh-pardakht-shode',false)
+    // },5000)  
   }
   async getShopState(){
     let {actionClass,isPricingStarted} = this.state;

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import RVD from "./../../../npm/react-virtual-dom/react-virtual-dom";
 import appContext from "./../../../app-context";
 import SplitNumber from "../../../npm/aio-functions/split-number";
-// import NoSrc from './../../../images/imgph.png';
+import NoSrc from './../../../images/imgph.png';
 // code:25965
 // date:"1401/11/24"
 // docStatus:"CustomerApproved"
@@ -25,6 +25,19 @@ export default class OrderPopup extends Component {
         style,
         row: [
           { size: 160, html: key + " : ", className: "fs-12" },
+          {flex:1},
+          { html: value, className: "fs-12" },
+        ],
+      };
+    }
+    getRowAdress(key, value = '-------------',show = true, style) {
+      if(value === null){value = '-------------'}
+      if(!show){return false}
+      return {
+        align: "v",
+        style,
+        row: [
+          { size: 40, html: key + " : ", className: "fs-12" },
           {flex:1},
           { html: value, className: "fs-12" },
         ],
@@ -60,6 +73,7 @@ export default class OrderPopup extends Component {
         { title: "عملیات انبار", color: "#662D91", percent: 50 },
         //در حال ارسال
         { title: "بخشی فاکتور شده", color: "#0095DA", percent: 65},
+        { title: "آماده توزیع مانده", color: "#0095DA", percent: 65},
         { title: "بخشی تحویل برخی فاکتور شده", color: "#0095DA", percent: 65},
         { title: "آماده توزیع", color: "#0095DA", percent: 65},
         { title: "بخشی تحویل شده", color: "#0095DA", percent: 65},
@@ -147,7 +161,7 @@ export default class OrderPopup extends Component {
           this.getRow("نام کمپین", details.campain_name),
           this.splitter_layout(),
           this.getRow("تلفن همراه", details.mobile),
-          this.getRow("آدرس", details.address),
+          this.getRowAdress("آدرس", details.address),
         ],
       }
     }
@@ -169,13 +183,19 @@ export default class OrderPopup extends Component {
       }
     }
 
-    //amalkardi nadare vali pakesh nmikonm shayad estefade beshe
+    //dokmeye pardakht
     dokmeye_pardakht_layout(){
       let {order} = this.state;
-      let {docStatus} = order;
+      let {translate} = order;
       let {details = {}} = order;
-      let {nahve_pardakht} = details;
-      if(docStatus !== 'WaitingForPayment' || nahve_pardakht !== 'اینترنتی'){return false}
+      let {nahve_tasvie} = details;
+      let statusDoc1 = (nahve_tasvie === 'اینترنتی' && translate === 'در انتظار بررسی')
+      let statusDoc2 = (nahve_tasvie === 'اینترنتی' && translate === 'سفارش ثبت شده')
+      let statusDoc3 = (nahve_tasvie === 'اینترنتی' && translate === 'در انتظار پرداخت')
+      //console.log(details)
+      //console.log(order)
+      // if(docStatus !== 'WaitingForPayment' || nahve_pardakht !== 'اینترنتی'){return false}
+      if(statusDoc1 || statusDoc2 || statusDoc3)
       return {
         className:'p-12',
         html:(<button className="button-2" onClick={()=>this.pardakht()}>پرداخت</button>)
@@ -225,7 +245,7 @@ export default class OrderPopup extends Component {
                   // this.factorDetails_layout(),
                   {
                     flex:1,
-                    className: "ofy-auto gap-12 m-b-12",
+                    className: "ofy-auto hide-scroll gap-12 m-b-12",
                     column:[
                       this.details_layout(),                               
                       this.getStatus(order),                 
@@ -259,6 +279,9 @@ export default class OrderPopup extends Component {
     //عکس محصول
     image_layout(){
       let {imageUrl} = this.props;
+      if (imageUrl === null){
+        return {html:<img src={NoSrc} width={'100%'} alt=''/>}
+      }
       return {html:<img src={imageUrl} width={'100%'} alt=''/>}
     }
 

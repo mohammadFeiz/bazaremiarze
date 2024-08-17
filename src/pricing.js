@@ -1,35 +1,98 @@
-﻿///***Version 1.1.56 ****///
-//Edited: 2024-04-08
+﻿///***Version 1.1.98 ****///
+//Edited: 2024-08-04
 
 "use strict";
 
 export default class Pricing {
-
     //dbrequest = {};
-    updateInterval = 5 * 60 * 60 * 1000; // 100min
+    updateInterval = 3 * 60 * 60 * 1000; // 300min
+    version = "1.1.96";
     ndbrequest = {};
     //updateTimer = setTimeout(this.refresh, this.updateInterval);
     pricingData = {
         ItemPrices: [], DisRules: [], CampRules: [], SlpCode: {}, Customer: {}
     };
+    info = { Version: null, lastupdatetime: null };
     db = {};
+    dbVersion = 5;
+    nextUpateTime = Date.now() + this.updateInterval;
+    enPayDueDate =
+        [
+            { "Name": "ByDelivery", "Value": 1, "PayDay": 0, "CashPer": 100, "CheckDay": 0 },
+            { "Name": "By15Days", "Value": 2, "PayDay": 15, "CashPer": 0, "CheckDay": 15 },
+            { "Name": "ByMonth", "Value": 3, "PayDay": 30, "CashPer": 0, "CheckDay": 30 },
+            { "Name": "By45Days", "Value": 4, "PayDay": 45, "CashPer": 0, "CheckDay": 45 },
+            { "Name": "NotSet", "Value": 5, "PayDay": 180, "CashPer": 0, "CheckDay": 180 },
+            { "Name": "By60Days", "Value": 6, "PayDay": 60, "CashPer": 0, "CheckDay": 60 },
+            { "Name": "By75Days", "Value": 7, "PayDay": 75, "CashPer": 0, "CheckDay": 75 },
+            { "Name": "By3Months", "Value": 8, "PayDay": 90, "CashPer": 0, "CheckDay": 90 },
+            { "Name": "By3_5Months", "Value": 9, "PayDay": 105, "CashPer": 0, "CheckDay": 105 },
+            { "Name": "By4Months", "Value": 10, "PayDay": 120, "CashPer": 0, "CheckDay": 120 },
+            { "Name": "By4_5Months", "Value": 11, "PayDay": 135, "CashPer": 0, "CheckDay": 135 },
+            { "Name": "By5Months", "Value": 12, "PayDay": 150, "CashPer": 0, "CheckDay": 150 },
+            { "Name": "By5_5Months", "Value": 13, "PayDay": 165, "CashPer": 0, "CheckDay": 165 },
+            { "Name": "By6Months", "Value": 14, "PayDay": 180, "CashPer": 0, "CheckDay": 180 },
+            { "Name": "Cash25_TwoMonth75", "Value": 15, "PayDay": 45, "CashPer": 25, "CheckDay": 60 },
+            { "Name": "Cash50_ThreeMonth50", "Value": 16, "PayDay": 45, "CashPer": 50, "CheckDay": 90 },
+            { "Name": "Cash20_ThreeMonth80", "Value": 17, "PayDay": 72, "CashPer": 20, "CheckDay": 90 },
+            { "Name": "Cash30_FourMonth70", "Value": 18, "PayDay": 84, "CashPer": 30, "CheckDay": 120 },
+            { "Name": "Cash50_FiveMonth50", "Value": 19, "PayDay": 75, "CashPer": 50, "CheckDay": 150 },
+            { "Name": "Cash10_OneMonth90", "Value": 20, "PayDay": 27, "CashPer": 10, "CheckDay": 30 },
+            { "Name": "Cash10_TwoMonth90", "Value": 21, "PayDay": 54, "CashPer": 10, "CheckDay": 60 },
+            { "Name": "Cash10_ThreeMonth90", "Value": 22, "PayDay": 81, "CashPer": 10, "CheckDay": 90 },
+            { "Name": "Cash10_FourMonth90", "Value": 23, "PayDay": 108, "CashPer": 10, "CheckDay": 120 },
+            { "Name": "Cash50_OneMonth50", "Value": 24, "PayDay": 15, "CashPer": 50, "CheckDay": 30 },
+            { "Name": "Cash30_TwoMonth70", "Value": 25, "PayDay": 42, "CashPer": 30, "CheckDay": 60 },
+            { "Name": "Cash40_ThreeMonth60", "Value": 26, "PayDay": 54, "CashPer": 40, "CheckDay": 90 },
+            { "Name": "Cash50_FourMonth50", "Value": 27, "PayDay": 60, "CashPer": 50, "CheckDay": 120 },
+            { "Name": "Cash20_TwoMonth80", "Value": 28, "PayDay": 48, "CashPer": 20, "CheckDay": 60 },
+            { "Name": "Golden50_OneMonth", "Value": 29, "PayDay": 15, "CashPer": 0, "CheckDay": 15 },
+            { "Name": "Golden90_OneMonth", "Value": 30, "PayDay": 15, "CashPer": 0, "CheckDay": 15 },
+            { "Name": "Golden180_OneMonth", "Value": 31, "PayDay": 15, "CashPer": 0, "CheckDay": 15 },
+            { "Name": "Golden300_OneMonth", "Value": 32, "PayDay": 15, "CashPer": 0, "CheckDay": 15 },
+            { "Name": "Golden600_OneMonth", "Value": 33, "PayDay": 15, "CashPer": 0, "CheckDay": 15 },
+            { "Name": "Golden900_40Days", "Value": 34, "PayDay": 20, "CashPer": 0, "CheckDay": 20 },
+            { "Name": "Golden1500_45Days", "Value": 35, "PayDay": 23, "CashPer": 0, "CheckDay": 22 },
+            { "Name": "Cash30_ThreeMonth70", "Value": 36, "PayDay": 63, "CashPer": 30, "CheckDay": 90 },
+            { "Name": "Cash40_FourMonth60", "Value": 37, "PayDay": 72, "CashPer": 40, "CheckDay": 120 },
+            { "Name": "POS", "Value": 38, "PayDay": 180, "CashPer": 0, "CheckDay": 180 }
+        ];
+    enAppDelDate =
+        [
+            { "Name": "نامعلوم", "Value": 0 },
+            { "Name": "تأمین مستمر", "Value": 100 },
+            { "Name": "تأمین کمتر از 3 روز", "Value": 110 },
+            { "Name": "تأمین کمتر از یک هفته", "Value": 120 },
+            { "Name": "تأمین کمتر از دو هفته", "Value": 130 },
+            { "Name": "تأمین کمتر از یک ماه", "Value": 140 },
+            { "Name": "تأمین کمتر از 45 روز", "Value": 150 },
+            { "Name": "تأمین کمتر از دو ماه", "Value": 160 },
+            { "Name": "تأمین کمتر از 75 روز", "Value": 170 },
+            { "Name": "تأمین کمتر از سه ماه", "Value": 190 },
+            { "Name": "در حال آماده سازی", "Value": 300 },
+            { "Name": "در حال بررسی تأمین", "Value": 400 },
+            { "Name": "در حال بررسی اولیه", "Value": 500 },
+            { "Name": "تأمین در حد موجودی", "Value": 900 },
+        ];
 
-    constructor(fetchURL, applicator, interval = 300 * 60 * 1000) {
+    constructor(fetchURL, applicator, interval = 180 * 60 * 1000) {
 
         this.fetchUrl = fetchURL;
-
+        let t1 = this.#GetAllowedPayDueDateFromMaxDate(120);
         this.updateInterval = interval;
         this.applicator = applicator;
     }
+
     openDataBase() {
         return new Promise(function (resolve, reject) {
 
         });
     }
+
     async CreateDatabase() {
         let self = this;
         return new Promise(function (resolve, reject) {
-            self.ndbrequest = window.indexedDB.open("BRXINTLayerCalcData");
+            self.ndbrequest = window.indexedDB.open("BRXINTLayerCalcData", self.dbVersion);
             self.ndbrequest.onerror = function (event) {
                 console.log("error: " + event.target.error);
                 reject(event.target.error);
@@ -37,7 +100,7 @@ export default class Pricing {
 
             self.ndbrequest.onsuccess = function (event) {
                 self.db = event.target.result;
-                console.log("success: " + this.db);
+                console.log("success: " + self.db);
                 resolve(self.db);
             };
 
@@ -92,29 +155,23 @@ export default class Pricing {
                     newdb.deleteObjectStore("customer");
                 }
                 let tbcustomer = newdb.createObjectStore("customer", { keyPath: 'customerid', autoIncrement: true });
-                index = tbapplicator.createIndex("cardcde_idx", "cardCode");
+                index = tbcustomer.createIndex("cardcde_idx", "cardCode");
+
+                if (newdb.objectStoreNames.contains("information")) {
+                    newdb.deleteObjectStore("information");
+                }
+                let tbinformation = newdb.createObjectStore("information", { keyPath: 'informationid', autoIncrement: true });
+                index = tbinformation.createIndex("Version_idx", "Version");
+                index = tbinformation.createIndex("LastUpdateTime_idx", "LastUpdateTime");
 
                 self.db = newdb;
                 resolve(newdb);
             };
         });
 
-        ////prefixes of implementation that we want to test
-        //window.indexedDB = window.indexedDB || window.mozIndexedDB ||
-        //    window.webkitIndexedDB || window.msIndexedDB;
-
-        ////prefixes of window.IDB objects
-        //window.IDBTransaction = window.IDBTransaction ||
-        //    window.webkitIDBTransaction || window.msIDBTransaction;
-        //window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange ||
-        //    window.msIDBKeyRange
-
-        //if (!window.indexedDB) {
-        //    window.alert("Your browser doesn't support a stable version of IndexedDB.")
-        //}
     }
 
-    forceFetchData() {
+    async forceFetchData() {
         return this.#fetchdata();
     }
 
@@ -164,7 +221,7 @@ export default class Pricing {
 
     async #fetchdata() {
         //const url = 'https://b1api.burux.com/api/BRXIntLayer/GetCalcData';
-        const data = await this.#fetchDataFromUrl(this.fetchUrl + '/' + this.applicator);
+        const data = await this.#fetchDataFromUrl(this.fetchUrl + '/' + this.applicator + ':' + this.version);
         if (data) {
             const countitem = data?.itemPrices?.length;
             const countdisrules = data?.discountRules?.length;
@@ -217,6 +274,15 @@ export default class Pricing {
                     return false;
                 }
             }
+            let updatetime = Date.now();
+            let initialData = [{
+                informationid: 1, Version: this.version, lastupdatetime: updatetime
+                , ShowLastUpateTime: new Intl.DateTimeFormat('fa-IR', { dateStyle: 'full', timeStyle: 'short' }).format(updatetime)
+                , nextUpateTime: new Intl.DateTimeFormat('fa-IR', { dateStyle: 'full', timeStyle: 'short' }).format(this.nextUpateTime)
+            }];
+            this.#addDataToTable("information", initialData, this.db);
+            this.info = initialData;
+
             return true;
         }
         return false;
@@ -305,23 +371,31 @@ export default class Pricing {
                 isDone = false;
                 return error;
             });
+        this.inforamtion = await this.#getAllDatafromTable("information", this.db)
+            .then((value) => {
+                return value;
+            }).catch(function (error) {
+                console.log(error);
+                isDone = false;
+                return error;
+            });
+        if (this.inforamtion && this.inforamtion.length > 0) {
+            this.info = this.inforamtion[0];
+        }
         return isDone;
     }
-
     get discountRules() {
         return this.pricingData.DisRules;
     }
-
     get campaignRules() {
         return this.pricingData.CampRules;
 
     }
-
     get itemPrices() {
         return this.pricingData.ItemPrices;
     }
 
-    startservice(callback = ()=> {}) {
+    startservice(callback = () => { }) {
         let self = this;
         let result = new Promise(async function (resolve, reject) {
             let newdb = await self.CreateDatabase()
@@ -333,12 +407,27 @@ export default class Pricing {
                     console.log(value);
                     return value;
                 });
-            let resfetch = await self.#fetchdata();
-            if (!resfetch) {
-                resfetch = await self.#getAllFromDataBase();
+            //let resfetch = await self.#fetchdata();
+            //let updatetime = Date.now();
+            //if (!resfetch) {
+            //    resfetch = await self.#getAllFromDataBase();
+            //    updatetime = self.inforamtion.lastupdatetime;
+            //}
+            let resfetch = await self.#getAllFromDataBase();
+            let updatetime;
+            try {
+                updatetime = self.inforamtion[0].lastupdatetime;
+            } catch (e) {
+
             }
-            self.updateTimer = setTimeout(self.refresh, self.updateInterval, self);
-            callback()
+            if (!resfetch || !updatetime) {
+                resfetch = await self.#fetchdata();
+                updatetime = Date.now();
+            }
+            let newinterval = Math.max(0, self.updateInterval - Math.max(0, Date.now() - updatetime));
+            self.nextUpateTime = Date.now() + newinterval;
+            self.updateTimer = setTimeout(self.refresh, newinterval, self);
+            callback();
             resolve(resfetch);
         });
         return result;
@@ -351,24 +440,17 @@ export default class Pricing {
             let res = await self.#getAllFromDataBase();
         }
         console.log((new Date()) + ": update finished");
-        self.updateTimer = setTimeout(self.refresh, this.updateInterval, self);
+        self.nextUpateTime = Date.now() + self.updateInterval;
+        self.updateTimer = setTimeout(self.refresh, self.updateInterval, self);
     }
 
-    stopUpdate() {
-        clearInterval(this.updateTimer);
-    }
-
-    startUpdate() {
-        this.updateTimer = setInterval(this.refresh, this.updateInterval);
-    }
-
-    isListNumExist(ListNums, ListNumtoCheck) {
-        if ((this.GetPriceFromListNum(ListNums, ListNumtoCheck)) >= 0)
+    #isListNumExist(ListNums, ListNumtoCheck) {
+        if ((this.#GetPriceFromListNum(ListNums, ListNumtoCheck)) >= 0)
             return true;
         return false;
     }
 
-    GetPriceFromListNum(listnums, listnumtocheck) {
+    #GetPriceFromListNum(listnums, listnumtocheck) {
         let index = -1;
         let price = -1;
         if ((index = listnums.indexOf(":" + listnumtocheck + ":")) >= 0) {
@@ -385,8 +467,24 @@ export default class Pricing {
         return -1;
     }
 
-    CalcColumns(expression, BasePrice, BaseDis, FixDis, QtyDis, VolDis
-        , RowDis, FixAmnt, MaxDis) {
+    #GetQtyFromOnHand(OnHand, WhsCode = "01") {
+        let index = -1;
+        let Qty = -1;
+        if ((index = OnHand.indexOf("," + WhsCode + ":")) >= 0) {
+            let secondindex = OnHand.indexOf(':', index + 2 + WhsCode.length);
+            if (secondindex < 0 || secondindex <= index) { return null; }
+            else {
+                Qty = Number(OnHand.substring(index + 2 + WhsCode.length, secondindex));
+                if (Qty > 0) {
+                    return Qty;
+                }
+            }
+        }
+        return -1;
+    }
+
+    #CalcColumns(expression, BasePrice, BaseDis, FixDis, QtyDis, VolDis
+        , RowDis, FixAmnt, MaxDis, OperDis) {
         let res = 0;
         switch (expression) {
             case 17: //"min(MaxDis,FixDis+QtyDis+VolDis+RowDis)":
@@ -396,13 +494,14 @@ export default class Pricing {
                 res = (BasePrice) * ((100 - BaseDis) * (100 - RowDis) / 10000);
                 break;
             case 22: //"(BasePrice)*((100-BaseDis)*(100-RowDis)/10000)":
-                res = (BasePrice - FixAmnt) * (Math.max((1 - BaseDis / 100) * (1 - RowDis / 100) * (1 - FixDis / 100) * (1 - QtyDis / 100) * (1 - VolDis / 100), 1 - MaxDis / 100));
+                res = (BasePrice - FixAmnt) * (Math.max((1 - BaseDis / 100) * (1 - RowDis / 100) * (1 - FixDis / 100) * (1 - QtyDis / 100) * (1 - VolDis / 100)
+                    * (1 - OperDis / 100), 1 - MaxDis / 100));
                 break;
             case 16: //"(BasePrice-FixAmnt)*(1-(BaseDis+min(MaxDis,FixDis+QtyDis+VolDis+RowDis ))/100)":
-                res = (BasePrice - FixAmnt) * (1 - (Math.min(MaxDis, BaseDis + FixDis + QtyDis + VolDis + RowDis)) / 100);
+                res = (BasePrice - FixAmnt) * (1 - (Math.min(MaxDis, BaseDis + FixDis + QtyDis + VolDis + RowDis + OperDis)) / 100);
                 break;
-            case 23: 
-                res = (BasePrice - FixAmnt) * (Math.max((1 - RowDis / 100) * (1 - FixDis / 100) * (1 - QtyDis / 100) * (1 - VolDis / 100), 1 - MaxDis / 100));
+            case 23:
+                res = (BasePrice - FixAmnt) * (Math.max((1 - RowDis / 100) * (1 - FixDis / 100) * (1 - QtyDis / 100) * (1 - VolDis / 100) * (1 - OperDis / 100), 1 - MaxDis / 100));
                 break;
             default:
                 break;
@@ -455,7 +554,7 @@ export default class Pricing {
         return result;
     }
 
-    FilllineMarketing(line) {
+    #FilllineMarketing(line) {
         if (line.Price != null && line.DiscountPercent != null && line.ItemQty != null) {
             line.Gross = parseInt(line.ItemQty * line.Price / 1.09);
             line.PriceAfterDiscount = parseInt(line.Price * (1 - line.DiscountPercent / 100) / 1.09);
@@ -467,7 +566,7 @@ export default class Pricing {
         return line;
     }
 
-    ZerolineMarketing(line) {
+    #ZerolineMarketing(line) {
         line.Discount = line.DiscountPercent = line.ItemQty = line.LineTotal = line.Price = 0;
         line.PriceAfterDiscount = line.Vat = line.SecondQty = 0;
         line.PriceAfterDiscount = line.Gross = line.PriceAfterVat = 0;
@@ -476,7 +575,7 @@ export default class Pricing {
         return line;
     }
 
-    CalculateCommission(qty, commission, docdate, paydate, settleType
+    #CalculateCommission(qty, commission, docdate, paydate, settleType
         , linetotal, slpcode, cardgroupcode, countsku) {
         if (qty == 0 || commission == 0 || slpcode < 1) {
             return null;
@@ -567,7 +666,7 @@ export default class Pricing {
         return result;
     }
 
-    CalculatePaymentDiscount(MD) {
+    #CalculatePaymentDiscount(MD) {
         if (MD.marketingdetails.SettleType == null) {
             MD.marketingdetails.SettleType = 1;
         }
@@ -584,7 +683,7 @@ export default class Pricing {
             MD.paymentdetails = {};
         }
         if (!MD.paymentdetails.PaymentTermCode) {
-            MD.paymentdetails.PaymentTermCode = 12;
+            MD.paymentdetails.PaymentTermCode = 13;
         }
 
         let interestRate = 3;
@@ -595,6 +694,10 @@ export default class Pricing {
         if (MD.paymentdetails?.PaymentTermCode == 12) {
             interestRate = 6;
             MaximumMonth = 6;
+        }
+        if (MD.paymentdetails?.PaymentTermCode == 13) {
+            interestRate = 4.5;
+            MaximumMonth = 4;
         }
         switch (parseInt(MD.marketingdetails.PayDueDate)) {
             case 1:
@@ -717,15 +820,22 @@ export default class Pricing {
                 MD.marketingdetails.DocumentDiscountPercent = 4.8;
                 MD.marketingdetails.DocumentDiscountPercent = Math.max(0, interestRate * (MaximumMonth - 72.0 / 30));
                 break;
+            case 38:
             default:
                 MD.marketingdetails.DocumentDiscountPercent = 0;
                 break;
         }
 
-        /// اضافه شده برای تغییر تخفیف ماهانه از 3 به 4.5
-        //if ((MD.paymentdetails?.PaymentTermCode ?? -1) == 10) {
-        //    MD.marketingdetails.DocumentDiscountPercent = MD.marketingdetails.DocumentDiscountPercent * 1.5;
-        //}
+        if (MD.paymentdetails?.PaymentTermCode == 13) {
+            //// مربوط به نقدی
+            if (MD.marketingdetails.PayDueDate == 1) {
+                MD.marketingdetails.DocumentDiscountPercent += 2;
+            }
+            //// مربوط به تسویه قبل از ارسال
+            if (MD.marketingdetails.PaymentTime == 1 || MD.marketingdetails.PaymentTime == 5 || MD.marketingdetails.PaymentTime == 3) {
+                MD.marketingdetails.DocumentDiscountPercent += 2;
+            }
+        }
 
         if (MD.marketingdetails.DiscountList == null) {
             MD.marketingdetails.DiscountList = {};
@@ -769,7 +879,7 @@ export default class Pricing {
         return MD;
     }
 
-    CalculatePriceDiscount(docdate, cardcode, cardgroupcode, lines,
+    #CalculatePriceDiscount(docdate, cardcode, cardgroupcode, lines,
         listnum, Items, DisRules, marketingdetails = null, SlpCodes = null) {
         if (lines == null) {
             return null;
@@ -814,11 +924,11 @@ export default class Pricing {
             res = item;
             res.Price = 0;
             if (!res.ItemCode) {
-                results.push(this.ZerolineMarketing(res));
+                results.push(this.#ZerolineMarketing(res));
                 continue;
             }
             if (!res.ItemQty) {
-                results.push(this.ZerolineMarketing(res));
+                results.push(this.#ZerolineMarketing(res));
                 continue;
             }
             let price = null;
@@ -827,7 +937,7 @@ export default class Pricing {
                 let maxprice = -1;
                 for (let itemrules of shortitem) {
                     if (itemrules.itemCode == res.ItemCode
-                        && (foundprice = this.GetPriceFromListNum(itemrules.listNums, listnum) > maxprice)) {
+                        && (foundprice = this.#GetPriceFromListNum(itemrules.listNums, listnum) > maxprice)) {
                         maxprice = foundprice;
                     }
                 }
@@ -839,7 +949,7 @@ export default class Pricing {
                 res.DiscountPercent = 0;
                 res.DiscountSrc = 'P';
                 res.PriceSrc = 'P';
-                results.push(this.FilllineMarketing(res));
+                results.push(this.#FilllineMarketing(res));
                 continue;
             }
             price = shortitem.filter((x) => x.itemCode == res.ItemCode);
@@ -867,7 +977,7 @@ export default class Pricing {
                     res.DiscountPercent = temprule.discountPercent;
                     res.DiscountSrc = 66;
                     res.PriceSrc = 66;
-                    results.push(this.FilllineMarketing(res));
+                    results.push(this.#FilllineMarketing(res));
                     continue;
                 }
             }
@@ -891,7 +1001,7 @@ export default class Pricing {
                     res.DiscountPercent = temprule.discountPercent;
                     res.FiscountSrc = 83;
                     res.PriceSrc = 83;
-                    results.push(this.FilllineMarketing(res));
+                    results.push(this.#FilllineMarketing(res));
                     continue;
                 }
             }
@@ -925,13 +1035,13 @@ export default class Pricing {
             //Finidding Price
             //Price List
             if (!havepv) {
-                let shortitem1 = shortitem.filter((x) => (x.itemCode == res.ItemCode) && this.isListNumExist(x.listNums, listnum));
+                let shortitem1 = shortitem.filter((x) => (x.itemCode == res.ItemCode) && this.#isListNumExist(x.listNums, listnum));
                 if (shortitem1.length > 0) {
                     // Price List Founded
                     let foundedMax = -1;
                     let founded = -1;
                     for (let itemrule of shortitem1) {
-                        if ((founded = this.GetPriceFromListNum(itemrule.listNums, listnum)) > foundedMax) {
+                        if ((founded = this.#GetPriceFromListNum(itemrule.listNums, listnum)) > foundedMax) {
                             foundedMax = founded;
                         }
                     }
@@ -942,7 +1052,7 @@ export default class Pricing {
                     res.DiscountPercent = null;
                     res.DiscountSrc = 78;
                     res.PriceSrc = 78;
-                    results.push(this.FilllineMarketing(res));
+                    results.push(this.#FilllineMarketing(res));
                     continue;
                 }
             }
@@ -968,7 +1078,7 @@ export default class Pricing {
                     res.DiscountPercent = temprule.discountPercent;
                     res.DiscountSrc = 68;
                     res.PriceSrc = 65;
-                    results.push(this.FilllineMarketing(res));
+                    results.push(this.#FilllineMarketing(res));
                     continue;
                 }
             }
@@ -979,7 +1089,7 @@ export default class Pricing {
                 //res.DiscountSource = enDiscountRuleType.PeriodandVolume;
                 res.DiscountSrc = 80;
                 res.PriceSrc = 80;
-                results.push(this.FilllineMarketing(res));
+                results.push(this.#FilllineMarketing(res));
                 continue;
             }
 
@@ -987,7 +1097,7 @@ export default class Pricing {
             res.DiscountPercent = 0;
             res.DiscountSrc = 90;
             res.PriceSrc = 65;
-            results.push(this.FilllineMarketing(res));
+            results.push(this.#FilllineMarketing(res));
 
         }
 
@@ -1016,7 +1126,7 @@ export default class Pricing {
                 for (let itemcom of shortitem) {
                     if (itemcom.itemCode == item.ItemCode) {
                         commission = itemcom.commission;
-                        let com = this.CalculateCommission(item.ItemQty, commission, docdate, marketingdetails.PayDueDate, marketingdetails.SettleType
+                        let com = this.#CalculateCommission(item.ItemQty, commission, docdate, marketingdetails.PayDueDate, marketingdetails.SettleType
                             , item.LineTotal, marketingdetails.SlpCode, cardgroupcode, havesku ? countsku : "");
                         if (com != null) {
                             item.LineCommission = [com];
@@ -1028,7 +1138,7 @@ export default class Pricing {
         return results;
     }
 
-    CalculateDocumentByB1(MD, Items, DisRules, SlpCodes = null) {
+    #CalculateDocumentByB1(MD, Items, DisRules, SlpCodes = null) {
         if (!MD.MarketingLines) {
             return MD;
         }
@@ -1053,7 +1163,7 @@ export default class Pricing {
             return (disrules.cardCode == MD.CardCode || disrules.cardGroupCode == MD.CardGroupCode || disrules.priceList == MD.marketingdetails.PriceList)
                 && (!disrules.validFrom || MD.DocTime >= disrules.validFrom) && (!disrules.validTo || MD.DocTime <= disrules.validTo);
         }
-        results.MarketingLines = this.CalculatePriceDiscount(MD.DocTime, MD.CardCode, MD.CardGroupCode, MD.MarketingLines
+        results.MarketingLines = this.#CalculatePriceDiscount(MD.DocTime, MD.CardCode, MD.CardGroupCode, MD.MarketingLines
             , MD.marketingdetails.PriceList, Items, shortrules, MD.marketingdetails, SlpCodes);
 
         // محاسبه جمع فاکتور
@@ -1095,10 +1205,10 @@ export default class Pricing {
                     continue;
                 }
                 line.DiscountPercent = 0;
-                this.FilllineMarketing(line);
+                this.#FilllineMarketing(line);
             }
         }
-        MD = this.CalculatePaymentDiscount(MD);
+        MD = this.#CalculatePaymentDiscount(MD);
         this.CalculateClubPoint(MD);
 
         results.marketingdetails.DocumentDiscount = results.marketingdetails.DocumentDiscountPercent * sum / 100;
@@ -1106,7 +1216,20 @@ export default class Pricing {
         return results;
     }
 
-    CalculateDocumentByAll(MD, Items, DisRules, campaignRules, SlpCodes = null) {
+    #CalculateDocumentByAll(MD, Items, DisRules, campaignRules, SlpCodes = null) {
+        if (!MD.marketingdetails) {
+            MD.marketingdetails = {};
+        }
+        if (!MD.marketingdetails.PayDueDate) {
+            MD.marketingdetails.PayDueDate = 1;
+        }
+        if (!MD.marketingdetails.PaymentTime) {
+            MD.marketingdetails.PaymentTime = 1;
+        }
+        if (!MD.marketingdetails.SettleType) {
+            MD.marketingdetails.SettleType = 1;
+        }
+
         let DocAfterB1 = MD;
         let camrule = null;
 
@@ -1126,22 +1249,27 @@ export default class Pricing {
                         }
                         DocAfterB1.marketingdetails.PriceList = camrule.priceList;
                     }
-                    DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
+                    DocAfterB1 = this.#CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
                 }
                 if (camrule?.isHaveCampaignDis ?? true) {
-                    let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, false);
-                    this.SetDocDiscountInfo(DocAfterCa);
+                    let DocAfterCa = this.#CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, false);
+                    this.#SetDocDiscountInfo(DocAfterCa);
                     return DocAfterCa;
                 }
-                this.SetDocDiscountInfo(DocAfterB1);
+                if (!DocAfterB1.CampaignDetails) {
+                    DocAfterB1.CampaignDetails = {};
+                }
+                DocAfterB1.CampaignDetails.Status = 1;
+                this.#SetDocDiscountInfo(DocAfterB1);
                 return DocAfterB1;
             }
         }
-        DocAfterB1 = this.CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
-        this.SetDocDiscountInfo(DocAfterB1);
+        DocAfterB1 = this.#CalculateDocumentByB1(MD, Items, DisRules, SlpCodes)
+        this.#SetDocDiscountInfo(DocAfterB1);
         return DocAfterB1;
     }
-    SetDocDiscountInfo(doc) {
+
+    #SetDocDiscountInfo(doc) {
         if ((doc?.MarketingLines?.length ?? -1) < 0) {
             return;
         }
@@ -1172,10 +1300,11 @@ export default class Pricing {
         doc.marketingdetails.DiscountList.ShowTotalQty = sumQty;
     }
 
-    CalculatePriceDiscountByCampaign(MD, campaignRules, KeepOthers = false) {
+    #CalculatePriceDiscountByCampaign(MD, campaignRules, KeepOthers = false) {
         if (!MD || !MD.MarketingLines || !MD.marketingdetails || !MD.marketingdetails.Campaign) {
             return MD;
         }
+
 
         if (MD.marketingdetails.PriceList == null) MD.marketingdetails.PriceList = 2;
         if (MD.CardCode == null) {
@@ -1191,9 +1320,12 @@ export default class Pricing {
         for (let item of results.MarketingLines) {
             if (item?.CampaignDetails ?? false) {
                 item.CampaignDetails.Status = -32766;
+                item.CampaignDetails.RequestedQty = item.ItemQty;
+                item.CampaignDetails.RequestedValue = item.LineTotal;
+                item.CampaignDetails.Information = "";
             }
             else {
-                item.CampaignDetails = { Status: -32766 };
+                item.CampaignDetails = { Status: -32766, RequestedQty: item.ItemQty, Information: "", RequestedValue: item.LineTotal };
             }
         };
         let ActiveCam = {};
@@ -1212,17 +1344,17 @@ export default class Pricing {
         for (let itemrules of campaignRules) {
             if ((itemrules.campaignId == (MD.marketingdetails.Campaign))
                 && (itemrules.camType == "B")
-                && this.isExistInCSV(itemrules.camCardCode, MD.CardCode)
+                && this.#isExistInCSV(itemrules.camCardCode, MD.CardCode)
                 //&& (!itemrules.camCardCode || (itemrules.camCardCode.indexOf("," + MD.CardCode + ",")) > -1)
-                && this.isExistInCSV(itemrules.camCardGroupCode, MD.CardGroupCode)
+                && this.#isExistInCSV(itemrules.camCardGroupCode, MD.CardGroupCode)
                 //&& (!itemrules.camCardGroupCode || (itemrules.camCardGroupCode.indexOf("," + MD.CardGroupCode + ",")) > -1)
                 && (!itemrules.camValidFrom || MD.DocTime >= itemrules.camValidFrom)
                 && (!itemrules.camValidTo || MD.DocTime <= itemrules.camValidTo)
-                && this.isExistInCSV(itemrules.camSettleType, MD.marketingdetails.SettleType)
+                && this.#isExistInCSV(itemrules.camSettleType, MD.marketingdetails.SettleType)
                 //&& (!itemrules.camSettleType || (itemrules.camSettleType.indexOf("," + MD.marketingdetails.SettleType + ",")) > -1)
-                && this.isExistInCSV(itemrules.camPayDue, MD.marketingdetails.PayDueDate)
+                && this.#isExistInCSV(itemrules.camPayDue, MD.marketingdetails.PayDueDate)
                 //&& (!itemrules.camPayDue || (itemrules.camPayDue.indexOf("," + MD.marketingdetails.PayDueDate + ",")) > -1)
-                && this.isExistInCSV(itemrules.camPayTime, MD.marketingdetails.PaymentTime)
+                && this.#isExistInCSV(itemrules.camPayTime, MD.marketingdetails.PaymentTime)
                 //&& (!itemrules.camPayTime || (itemrules.camPayTime.indexOf("," + MD.marketingdetails.PaymentTime + ",")) > -1)
                 && (!itemrules.camSalesChannel || (itemrules.camSalesChannel == MD.marketingdetails.SaleChannel || itemrules.camSalesChannel == 1))
             ) {
@@ -1290,20 +1422,20 @@ export default class Pricing {
                 br.camID = MD.marketingdetails.Campaign;
                 br.status = 0;
 
-
                 linenum = 0;
                 for (let line of results.MarketingLines) {
                     if (!line || (line.ItemQty ?? 0) <= 0 || !line.ItemCode) {
                         linenum++;
                         continue;
                     }
-                    if ((item.lineItemChckCond ?? 0) == 1 && this.isExistInCSV(item.lineItemCode, line.ItemCode)) {
+
+                    if ((item.lineItemChckCond ?? 0) == 1 && this.#isExistInCSV(item.lineItemCode, line.ItemCode)) {
                         line.CampaignDetails.Status = -32766;
                         line.CampaignDetails.Information = "فروش این قلم کالا در این کمپین ممنوع است:" + line.ItemCode;
-                        line.CampaignDetails.RequestedQty = line.ItemQty;
-                        line.CampaignDetails.RequestedValue = line.LineTotal;
+                        //line.CampaignDetails.RequestedQty = line.ItemQty;
+                        //line.CampaignDetails.RequestedValue = line.LineTotal;
                         results.CampaignDetails.Status |= 8;
-                        this.ZerolineMarketing(line);
+                        this.#ZerolineMarketing(line);
                         linenum++;
                         continue;
                     }
@@ -1311,13 +1443,25 @@ export default class Pricing {
                     line.CampaignDetails.CampainId = ActiveCam.campaignId;
 
                     if (!PrssdLine.indexOf(linenum) > -1 &&
-                        (this.isExistInCSV(item.lineItemCode, line.ItemCode)
+                        (this.#isExistInCSV(item.lineItemCode, line.ItemCode)
                             || item.lineItemCode == "ALLITEMS"
-                            || (item.lineItemCode == "RESTITEMS" && shortrules.every((xl) => !this.isExistInCSV(xl.lineItemCode, line.ItemCode)))
+                            || (item.lineItemCode == "RESTITEMS" && shortrules.every((xl) => !this.#isExistInCSV(xl.lineItemCode, line.ItemCode)))
                         )) {
+
                         br.isExist = true;
                         PrssdLine.push(linenum);
                         br.lines.push(linenum);
+
+                        // پیدا کردن قیمت کالا
+                        if ((item.lineBasePrice ?? 0) > 0 && (line.Price ?? 0) == 0) {
+                            line.Price = item.lineBasePrice ?? 0;
+                        }
+                        else if (line.Price == null) {
+                            line.CampaignDetails.Information = "اطلاعات قیمت کالا موجود نمی باشد.";
+                            line.CampaignDetails.Status = -32768 + 1;
+                            continue;
+                        }
+
                         // پردازش قواعد کمپین
                         // قاعده حداکثر تعداد
                         let isNoMaxCondition = false;
@@ -1327,18 +1471,18 @@ export default class Pricing {
                                 line.SecondQty = 0;
                                 line.CampaignDetails.Status = -32640;
                                 line.CampaignDetails.Information = "مقدار تقاضا شده این خط بیشتر از مقدار مجاز (" + (item.lineMaxReqQty ?? 0) + ") است. این خط حذف میشود.";
-                                line.CampaignDetails.RequestedQty = line.ItemQty;
-                                line.CampaignDetails.RequestedValue = line.LineTotal;
+                                //line.CampaignDetails.RequestedQty = line.ItemQty;
+                                //line.CampaignDetails.RequestedValue = line.LineTotal;
                                 br.maxQtyCanOrder = 0;
                                 br.isFull = true;
                                 br.status |= 8;
                                 results.CampaignDetails.Status |= 8;
-                                if (!KeepOthers ?? false) this.ZerolineMarketing(line);
+                                if (!KeepOthers ?? false) this.#ZerolineMarketing(line);
                             }
                             else if ((br.qty + line.ItemQty > item.lineMaxReqQty) && !br.isFull) {
                                 line.CampaignDetails.Status = 2;
                                 line.CampaignDetails.Information = "مقدار تقاضا شده این خط بیشتر از مقدار مجاز(" + (item.lineMaxReqQty ?? 0) + ") است. حداکثر مقدار مجاز در نظر گرفته می شود.";
-                                line.CampaignDetails.RequestedQty = line.ItemQty;
+                                //line.CampaignDetails.RequestedQty = line.ItemQty;
                                 line.SecondQty = line.SecondQty * (item.lineMaxReqQty - br.qty) / line.ItemQty;
                                 line.ItemQty = item.lineMaxReqQty - br.qty;
                                 br.maxQtyCanOrder = line.ItemQty;
@@ -1349,8 +1493,10 @@ export default class Pricing {
                             }
                             else {
                                 line.CampaignDetails.Status = 1;
-                                br.maxQtyCanOrder = item.lineMaxReqQty - br.qty + line.ItemQty;
                                 br.qty += line.ItemQty;
+                                br.maxQtyCanOrder = item.lineMaxReqQty - br.qty + line.ItemQty;
+                                //line.CampaignDetails.RequestedQty = line.ItemQty;
+                                //line.CampaignDetails.RequestedValue = line.LineTotal;
                             }
 
                         }
@@ -1363,19 +1509,19 @@ export default class Pricing {
                             if (br.value == item.lineMaxReqValue || br.isOverValue) {
                                 line.CampaignDetails.Status = -32752;
                                 line.CampaignDetails.Information = "مبلغ تقاضا شده این خط بیشتر از مبلغ مجاز (" + (item.lineMaxReqValue ?? 0) + ") است. این خط حذف میشود.";
-                                line.CampaignDetails.RequestedQty = line.ItemQty;
-                                line.CampaignDetails.RequestedValue = line.LineTotal;
+                                //line.CampaignDetails.RequestedQty = line.ItemQty;
+                                //line.CampaignDetails.RequestedValue = line.LineTotal;
                                 results.CampaignDetails.Status |= 8;
                                 br.isOverValue = true;
                                 br.maxQtyCanOrder = 0;
                                 br.status |= 8;
-                                if (!KeepOthers ?? false) this.ZerolineMarketing(line);
+                                if (!KeepOthers ?? false) this.#ZerolineMarketing(line);
                             }
                             else if ((br.value + line.LineTotal > item.lineMaxReqValue) && !br.isOverValue) {
                                 line.CampaignDetails.Status = 2;
                                 line.CampaignDetails.Information = "مبلغ تقاضا شده این خط بیشتر از مبلغ مجاز(" + (item.lineMaxReqValue ?? 0) + ") است. حداکثر مبلغ مجاز در نظر گرفته می شود.";
-                                line.CampaignDetails.RequestedQty = line.ItemQty;
-                                line.CampaignDetails.RequestedValue = line.LineTotal;
+                                //line.CampaignDetails.RequestedQty = line.ItemQty;
+                                //line.CampaignDetails.RequestedValue = line.LineTotal;
                                 results.CampaignDetails.Status |= 4;
                                 let newQty = Math.floor((item.lineMaxReqValue - br.value) / line.LineTotal * line.ItemQty);
                                 br.isOverValue = true;
@@ -1419,10 +1565,10 @@ export default class Pricing {
                                 results.MarketingLines[itemb1].CampaignDetails.Information = "";
                             }
                             results.MarketingLines[itemb1].CampaignDetails.Information += "مقدار تقاضا شده این خط کمتر از مقدار مجاز (" + (item.lineMinReqQty ?? 0) + ") است. این خط حذف می شود.";
-                            results.MarketingLines[itemb1].CampaignDetails.RequestedQty = results.MarketingLines[itemb1].ItemQty;
+                            //results.MarketingLines[itemb1].CampaignDetails.RequestedQty = results.MarketingLines[itemb1].ItemQty;
                             results.CampaignDetails.Status |= 8;
                             br.Status |= -32512;
-                            if (!KeepOthers ?? false) this.ZerolineMarketing(results.MarketingLines[itemb1]);
+                            if (!KeepOthers ?? false) this.#ZerolineMarketing(results.MarketingLines[itemb1]);
                             results.MarketingLines[itemb1].CampaignDetails.BundleRowsInfos = br;
                         }
                     }
@@ -1444,11 +1590,14 @@ export default class Pricing {
                                 results.MarketingLines[itemb1].CampaignDetails.Information = "";
                             }
                             results.MarketingLines[itemb1].CampaignDetails.Information += "مبلغ تقاضا شده این خط کمتر از مبلغ مجاز (" + (item.lineMinReqValue ?? 0) + ") است. این خط حذف می شود.";
-                            results.MarketingLines[itemb1].CampaignDetails.RequestedQty = results.MarketingLines[itemb1].ItemQty;
-                            results.MarketingLines[itemb1].CampaignDetails.RequestedValue = results.MarketingLines[itemb1].LineTotal;
+                            //results.MarketingLines[itemb1].CampaignDetails.RequestedQty = results.MarketingLines[itemb1].ItemQty;
+                            //results.MarketingLines[itemb1].CampaignDetails.RequestedValue = results.MarketingLines[itemb1].LineTotal;
+                            let MinQty = Math.ceil((item.lineMinReqValue) /
+                                (results.MarketingLines[itemb1]?.LineTotal ?? 1) * (results.MarketingLines[itemb1]?.ItemQty ?? 1));
+                            br.minQtyCanOrder = MinQty;
                             results.CampaignDetails.Status |= 8;
                             br.Status |= -32736;
-                            if (!KeepOthers ?? false) this.ZerolineMarketing(results.MarketingLines[itemb1]);
+                            if (!KeepOthers ?? false) this.#ZerolineMarketing(results.MarketingLines[itemb1]);
                             results.MarketingLines[itemb1].CampaignDetails.BundleRowsInfos = br;
                         }
                     }
@@ -1503,8 +1652,9 @@ export default class Pricing {
                             }
 
                             // اصلاح شود
-                            let newPrice = this.CalcColumns(item.lineDisRelationId, lineMD.Price, item.camCanHaveB1Dis ? lineMD.B1DisPrcnt : 0
-                                , item.lineBaseDis ?? 0, br.disQty, br.disVol ?? 0, 0, item.lineFixedValue ?? 0, Math.min(item.lineMaxDisPrcnt ?? 80, item.camMaxDisPrcnt ?? 80));
+                            let newPrice = this.#CalcColumns(item.lineDisRelationId, lineMD.Price, item.camCanHaveB1Dis ? lineMD.B1DisPrcnt : 0
+                                , item.lineBaseDis ?? 0, br.disQty, br.disVol ?? 0, 0, item.lineFixedValue ?? 0, Math.min(item.lineMaxDisPrcnt ?? 80, item.camMaxDisPrcnt ?? 80)
+                                , !(item.lineCanHaveOperDis ?? false) ? 0 : (lineMD?.OperatorDiscountPercent ?? 0));
                             if (!item.camCanHaveB1Dis ?? true) {
                                 lineMD.B1DisPrcnt = lineMD.DiscountPercent = 0;
                             }
@@ -1517,11 +1667,11 @@ export default class Pricing {
                                     lineMD.CampaignDetails.Information = "";
                                 } lineMD.CampaignDetails.Information += "مبلغ " + item.lineFixedValue + " ریال از مبلغ قلم کالا کسر شد.";
                             }
-                            results.MarketingLines[linenum] = this.FilllineMarketing(lineMD);
+                            results.MarketingLines[linenum] = this.#FilllineMarketing(lineMD);
                         }
                         else {
                             //debugger;
-                            if (!KeepOthers) this.ZerolineMarketing(lineMD);
+                            if (!KeepOthers) this.#ZerolineMarketing(lineMD);
                         }
                 }
                 bri.push(br);
@@ -1572,15 +1722,23 @@ export default class Pricing {
                     if (!line.CampaignDetails.Information) {
                         line.CampaignDetails.Information = "";
                     }
-                    line.CampaignDetails.Information += "شرط تعداد خطوط فاکتور کمپین برآورده نشده است.";
-                    line.CampaignDetails.RequestedQty = line.ItemQty;
-                    line.CampaignDetails.RequestedValue = line.LineTotal;
+                    //line.CampaignDetails.Information += "شرط تعداد خطوط فاکتور کمپین برآورده نشده است.";
+                    //if (line.ItemQty > 0) {
+                    //    line.CampaignDetails.RequestedQty = line.ItemQty;
+                    //}
+                    //if (line.LineTotal > 0) {
+                    //    line.CampaignDetails.RequestedValue = line.LineTotal;
+                    //}
                     if (!line.CampaignDetails.BundleRowsInfos)
                         line.CampaignDetails.BundleRowsInfos = {};
                     line.CampaignDetails.BundleRowsInfos.isOrdUnderReqLine = true;
-                    if (!KeepOthers ?? false) this.ZerolineMarketing(line);
+                    if (!KeepOthers ?? false) this.#ZerolineMarketing(line);
                 };
                 results.CampaignDetails.Status |= -32760;
+                if (!results.CampaignDetails.Information) {
+                    results.CampaignDetails.Information = "";
+                }
+                results.CampaignDetails.Information += "شرط تعداد خطوط فاکتور کمپین برآورده نشده است.";
                 results.CampaignDetails.BundleRowsInfos = bri;
                 results.marketingdetails.DocumentDiscountPercent = 0;
                 results.marketingdetails.DocumentDiscount = 0;
@@ -1626,13 +1784,13 @@ export default class Pricing {
                         }
                         line.CampaignDetails.Information += " مبلغ سفارش " + DocSum + " بیشتر از حداکثر مبلغ کمپین " + ActiveCam.camMaxValue + " میباشد.";
                     }
-                    line.CampaignDetails.RequestedQty = line.ItemQty;
-                    line.CampaignDetails.RequestedValue = line.LineTotal;
+                    //line.CampaignDetails.RequestedQty = line.ItemQty;
+                    //line.CampaignDetails.RequestedValue = line.LineTotal;
                     if (!line.CampaignDetails.BundleRowsInfos)
                         line.CampaignDetails.BundleRowsInfos = {};
                     line.CampaignDetails.BundleRowsInfos.isOrdUnderValue = isUnderValCond;
                     line.CampaignDetails.BundleRowsInfos.isOrdOverValue = isOverValCond;
-                    if (!KeepOthers ?? false) this.ZerolineMarketing(line);
+                    if (!KeepOthers ?? false) this.#ZerolineMarketing(line);
 
                 };
                 if (isUnderValCond) {
@@ -1666,7 +1824,7 @@ export default class Pricing {
             let Rule = ActiveCam.camDisRelationId;
             let Fixdis = ActiveCam.camBaseDiscount ? ActiveCam.camBaseDiscount : 0;
             let MaxDis = ActiveCam.camMaxDisPrcnt ? ActiveCam.camMaxDisPrcnt : 100;
-            let DocDis = this.CalcColumns(Rule, 0, 0, Fixdis, 0, VolDis, RowDis, 0, MaxDis);
+            let DocDis = this.#CalcColumns(Rule, 0, 0, Fixdis, 0, VolDis, RowDis, 0, MaxDis, 0);
 
             // محاسبه تغییرات پورسانت
             let CommissionEffect = 101;
@@ -1697,14 +1855,23 @@ export default class Pricing {
                     lineMD.CampaignDetails.ExPriceAfterVat = lineMD.PriceAfterVat;
                     lineMD.CampaignDetails.CamDiscount = 100 - (100 - DocDis) * (100 - (lineMD.CampaignDetails?.CamDiscount ?? -1)) / 100;
                     lineMD.DiscountPercent = 100 - (100 - lineMD.DiscountPercent) * (100 - DocDis) / 100;
-                    lineMD = this.FilllineMarketing(lineMD);
+                    lineMD = this.#FilllineMarketing(lineMD);
                     sum += lineMD.LineTotal ?? 0;
                     BeforeCamSum += (lineMD.Price ?? 0) * (lineMD.ItemQty ?? 0) * (100 - (lineMD.CampaignDetails?.ExDiscount ?? 0)) / 100;
                     isPassAnyLine = true;
                 }
+                else if ((lineMD.CampaignDetails?.Status ?? -1) == -32768 + 2) {
+                    //lineMD.CampaignDetails.RequestedQty = lineMD.ItemQty;
+                    if (!lineMD.CampaignDetails.Information) {
+                        lineMD.CampaignDetails.Information = "";
+                    }
+                    this.#ZerolineMarketing(lineMD);
+                    lineMD.CampaignDetails.Information += "این قلم کالا مشمول کمپین نمی باشد.";
+                    results.CampaignDetails.Status |= 8;
+                }
                 else {
-                    lineMD.CampaignDetails.RequestedQty = lineMD.ItemQty;
-                    if (!KeepOthers) this.ZerolineMarketing(lineMD);
+                    //lineMD.CampaignDetails.RequestedQty = lineMD.ItemQty;
+                    if (!KeepOthers) this.#ZerolineMarketing(lineMD);
                     if (lineMD.CampaignDetails.Status == -32766) {
                         if (!lineMD.CampaignDetails.Information) {
                             lineMD.CampaignDetails.Information = "";
@@ -1724,7 +1891,7 @@ export default class Pricing {
 
             /// آیا خطی از سفارش قابل قبول بوده است
             if (!isPassAnyLine && !(KeepOthers ?? false)) {
-                return this.ResetDocDiscount(MD);
+                return this.#ResetDocDiscount(MD);
             }
 
             let MaxCamDis = Math.round(10000 - 10000 * sum / BeforeCamSum) / 100;
@@ -1732,7 +1899,7 @@ export default class Pricing {
             results.CampaignDetails.CamDiscount = MaxCamDis;
 
             //// بررسی نحوه پرداخت
-            results = this.CalculatePaymentDiscount(results);
+            results = this.#CalculatePaymentDiscount(results);
 
             if (!results.marketingdetails.TotalCommission
                 && results.marketingdetails.TotalCommission > 0 && CommissionEffect > 0) {
@@ -1747,20 +1914,21 @@ export default class Pricing {
             return results;
         }
         if (ActiveCam.camShouldPassCam == 'Y' && !(KeepOthers ?? false)) {
-            return this.ResetDocDiscount(results);
+            return this.#ResetDocDiscount(results);
         }
 
         return results;
     }
-    ResetDocDiscount(Doc) {
+
+    #ResetDocDiscount(Doc) {
         if ((Doc.MarketingLines?.length ?? -1) > 0) {
             for (let item of Doc.MarketingLines) {
-                this.ZerolineMarketing(item);
+                this.#ZerolineMarketing(item);
                 if (!item.CampaignDetails) item.CampaignDetails = {};
                 if (!item.CampaignDetails.Status) item.CampaignDetails.Status = -32704;
                 item.CampaignDetails.Status |= -32704;
-                if (!item.CampaignDetails.Information) item.CampaignDetails.Information = "";
-                item.CampaignDetails.Information += "سفارش مشمول قواعد کمپین نمی باشد.";
+                if (!item.CampaignDetails.Information) item.CampaignDetails.Information = "سفارش مشمول قواعد کمپین نمی باشد.";
+                //item.CampaignDetails.Information += "سفارش مشمول قواعد کمپین نمی باشد.";
             }
         }
         if (!Doc.CampaignDetails) Doc.CampaignDetails = {};
@@ -1768,7 +1936,7 @@ export default class Pricing {
         Doc.CampaignDetails.Status |= -32704;
         if (!Doc.CampaignDetails.Information) Doc.CampaignDetails.Information = "";
         Doc.CampaignDetails.Information += "سفارش مشمول قواعد کمپین نمی باشد.";
-
+        Doc.DocumentTotal = 0;
         if (Doc.marketingdetails) {
             Doc.marketingdetails.DocumentDiscount = Doc.marketingdetails.DocumentDiscountPercent = 0;
         }
@@ -1777,7 +1945,8 @@ export default class Pricing {
         }
         return Doc;
     }
-    isExistInCSV(Value, Cond) {
+
+    #isExistInCSV(Value, Cond) {
         if (!Cond || Cond.toString().trim().length == 0)
             return false;
         if (!Value || Value.toString().trim().length == 0)
@@ -1893,12 +2062,12 @@ export default class Pricing {
         return Math.ceil((DocTotal + 5000000) / 250000 / 100) * 100;
     }
 
-    CalculateDocTotalFromClubPoint(ClubPoint) {
+    #CalculateDocTotalFromClubPoint(ClubPoint) {
         ClubPoint = ClubPoint > 4000 ? 4000 : ClubPoint;
         return Math.floor(ClubPoint / 100.0) * 25000000 - 5000000;
     }
 
-    GetPriceListInfo(ItemCodes, Items, DisRules, campaignRules, SlpCodes = null, CurrentDoc = null, CardCode = null
+    #GetPriceListInfo(ItemCodes, Items, DisRules, campaignRules, SlpCodes = null, CurrentDoc = null, CardCode = null
         , CardGroupCode = 100, payDueDate = 1, paymentTime = 1, settleType = 1, WhsCode = "01") {
         let result = [];
         let doctocalc = {};
@@ -1919,7 +2088,7 @@ export default class Pricing {
         if (!doctocalc.marketingdetails)
             doctocalc.marketingdetails = {};
         if (!doctocalc.MarketingLines)
-            doctocalc.MarketingLines = {};
+            doctocalc.MarketingLines = [];
         if (!doctocalc.marketingdetails.PayDueDate)
             doctocalc.marketingdetails.PayDueDate = payDueDate;
         if (!doctocalc.marketingdetails.PaymentTime)
@@ -1939,35 +2108,49 @@ export default class Pricing {
 
         //بررسی اینکه آیا نیاز به اعمال تخفیفات بی وان می باشد؟
         let isneedb1 = true;
+        let isHaveB1Dis = true;
         if (doctocalc.marketingdetails.Campaign) {
             let camrul = {};
             for (camrul of campaignRules)
                 if (camrul.campaignId == doctocalc.marketingdetails.Campaign) {
-                    isneedb1 = camrul.camCanHaveB1Dis;
+                    isneedb1 = camrul.camisCalcByB1;
+                    isHaveB1Dis = camrul.camCanHaveB1Dis;
                     break;
                 }
         }
         //debugger;
         //محاسبه تخفیف نحوه پرداخت
-        doctocalc = this.CalculatePaymentDiscount(doctocalc);
+        doctocalc = this.#CalculatePaymentDiscount(doctocalc);
         let PaymentDic = doctocalc.marketingdetails?.DocumentDiscountPercent ?? 0;
 
         //ساختن اقلام سند برای محاسبه
         let onhand = null;
         let NumInsale = 1;
         let SaleMeasureUnit = "";
+        let isDropShip = false;
+        let Xitem = {};
 
         for (let item of ItemCodes) {
             onhand = null;
+            isDropShip = false;
+            Xitem = { appDelDate: null, appDelDsc: null, paymentCr: null };
             for (let item1 of Items) {
-                if (item1.itemCode == item && item1.inventory && item1.inventory.length >= 1) {
+                if (item1.itemCode === item && item1.inventory && item1.inventory.length >= 1) {
+                    Xitem = item1;
+                    isDropShip = Xitem.isDropShip ?? false;
                     SaleMeasureUnit = item1.saleMeasureUnit ?? "";
-                    NumInsale = item1.numInSale ?? 1;
+                    NumInsale = item1.qtyinBox ?? 1;
                     for (let iteminv of item1.inventory) {
-                        if (iteminv.whsCode == doctocalc.WhsCode && iteminv.qtyLevRel) {
+                        if (iteminv.whsCode === doctocalc.WhsCode && iteminv.qtyLevRel) {
                             onhand = iteminv;
+                            break;
                         }
                     }
+                    //for (let iteminv of item1.inventory) {
+                    //    if (iteminv.whsCode == doctocalc.WhsCode && iteminv.qtyLevRel) {
+                    //        onhand = iteminv;
+                    //    }
+                    //}
                     break;
                 }
             }
@@ -1976,6 +2159,10 @@ export default class Pricing {
                 OnHand: onhand,
                 SalesMeasureUnit: SaleMeasureUnit,
                 NumInSale: NumInsale,
+                AppDelDate: Xitem?.appDelDate,
+                AppDelDsc: this.#GetInventoryText(onhand, Xitem?.appDelDate, isDropShip),
+                PaymentCr: Xitem?.paymentCr,
+                isDropShip: isDropShip,
             });
             let isfound = 0;
             for (let item1 of doctocalc.MarketingLines) {
@@ -1997,7 +2184,7 @@ export default class Pricing {
         CurrentDoc = DocAfterB1;
         // محاسبه قیمت و تخفیف در بی وان
         if (isneedb1) {
-            DocAfterB1 = this.CalculateDocumentByB1(doctocalc, Items, DisRules, SlpCodes);
+            DocAfterB1 = this.#CalculateDocumentByB1(doctocalc, Items, DisRules, SlpCodes);
 
             if (DocAfterB1 == null || DocAfterB1.MarketingLines == null) {
                 error += "خطا در محاسبه تخفیفات در بی وان";
@@ -2029,7 +2216,7 @@ export default class Pricing {
                     break;
                 }
             if (PriceListCalcState == "N") {
-                let DocAfterCa = this.CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, true);
+                let DocAfterCa = this.#CalculatePriceDiscountByCampaign(DocAfterB1, campaignRules, true);
                 CurrentDoc = DocAfterCa;
                 let lp = {};
                 for (let item of DocAfterCa.MarketingLines) {
@@ -2045,6 +2232,7 @@ export default class Pricing {
                                 lp.CmpgnDscnt = item.DiscountPercent ?? 0;
                             }
                             else {
+                                lp.B1Dscnt = item.B1DisPrcnt;
                                 lp.CmpgnDscnt = 100 - (100 - item.DiscountPercent ?? 0) / (100 - lp.B1Dscnt) * 100;
                             }
                         }
@@ -2060,7 +2248,7 @@ export default class Pricing {
         return result;
     }
 
-    CaseDownPropOfDoc(MD) {
+    #CaseDownPropOfDoc(MD) {
         let newMD = {};
         let newpropname = "";
         for (let prop in MD) {
@@ -2068,11 +2256,11 @@ export default class Pricing {
             if (Array.isArray(MD[prop])) {
                 let newarray = [];
                 for (let j of MD[prop]) {
-                    newarray.push(this.CaseDownPropOfDoc(j))
+                    newarray.push(this.#CaseDownPropOfDoc(j))
                 }
                 newMD[newpropname] = newarray;
             } else if (typeof MD[prop] == 'object') {
-                newMD[newpropname] = this.CaseDownPropOfDoc(MD[prop]);
+                newMD[newpropname] = this.#CaseDownPropOfDoc(MD[prop]);
             } else {
                 newMD[newpropname] = MD[prop];
             }
@@ -2080,7 +2268,7 @@ export default class Pricing {
         return newMD;
     }
 
-    CaseUpPropOfDoc(MD) {
+    #CaseUpPropOfDoc(MD) {
         let newMD = {};
         let newpropname = "";
         for (let prop in MD) {
@@ -2091,11 +2279,11 @@ export default class Pricing {
             if (Array.isArray(MD[prop])) {
                 let newarray = [];
                 for (let j of MD[prop]) {
-                    newarray.push(this.CaseDownPropOfDoc(j))
+                    newarray.push(this.#CaseDownPropOfDoc(j))
                 }
                 newMD[newpropname] = newarray;
             } else if (typeof MD[prop] == 'object') {
-                newMD[newpropname] = this.CaseDownPropOfDoc(MD[prop]);
+                newMD[newpropname] = this.#CaseDownPropOfDoc(MD[prop]);
             } else {
                 newMD[newpropname] = MD[prop];
             }
@@ -2103,21 +2291,84 @@ export default class Pricing {
         return newMD;
     }
 
-    autoCalcDoc(Doc) {
-        debugger
-        let MD = Doc;// this.CaseDownPropOfDoc(Doc);
-        let newdoc = this.CalculateDocumentByAll(MD, this.pricingData.ItemPrices, this.pricingData.DisRules, this.pricingData.CampRules, [this.pricingData.SlpCode]);
-        return newdoc;// this.CaseUpPropOfDoc(newdoc);
+    #GetAllowedPayDueDateFromMaxDate(MaxCheckDate) {
+        if (MaxCheckDate == -1) {
+            MaxCheckDate = 3000;
+        }
+        let response = ",";
+        for (let item of this.enPayDueDate) {
+            try {
+                if (item.PayDay <= MaxCheckDate) {
+                    response += item.Value + ",";
+                }
+            } catch (e) {
 
+            }
+        }
+        return response;
+    }
+
+    #CheckItemsConditions(Doc) {
+        if (!Doc.MarketingLines) {
+            return Doc;
+        }
+        for (let line of Doc.MarketingLines) {
+            if (!line || !line.ItemCode)
+                continue;
+            let item = this.pricingData.ItemPrices.find(x => x.itemCode == line.ItemCode);
+            if (!item || !item.paymentCr)
+                continue;
+            if (!this.#isExistInCSV(this.#GetAllowedPayDueDateFromMaxDate(item.paymentCr), Doc.marketingdetails.PayDueDate)) {
+                if (!line.CampaignDetails) {
+                    line.CampaignDetails = { Status: -24576 };
+                }
+                line.CampaignDetails.Status |= -24576;
+                if (!line.CampaignDetails.Information) {
+                    line.CampaignDetails.Information = "";
+                }
+                line.CampaignDetails.Information += "حداکثر زمان تسویه " + item.itemName + " به کد " + line.ItemCode + ", " + item.paymentCr + " روز میباشد.";
+            }
+
+        }
+    }
+
+    #GetInventoryText(OnHand, AppDelDate, isDropShip) {
+        if (OnHand) {
+            if ((OnHand.Qty ?? -1) > 0) {
+                return "موجود";
+            }
+        }
+        if ((isDropShip ?? false) && AppDelDate < 100 && AppDelDate > 130) {
+            return "قابل رزرو";
+        }
+        for (let item of this.enAppDelDate) {
+            if (item.Value == AppDelDate) {
+                return item.Name;
+            }
+        }
+
+        return "در حال تامین";
+    }
+
+
+    autoCalcDoc(Doc) {
+        if ((Doc?.marketingdetails?.PaymentTermCode ?? 13) == 12) {
+            return Doc;
+        }
+        let MD = Doc;
+        let newdoc = this.#CalculateDocumentByAll(MD, this.pricingData.ItemPrices, this.pricingData.DisRules, this.pricingData.CampRules, [this.pricingData.SlpCode]);
+        this.#CheckItemsConditions(MD);
+        return newdoc;
     }
 
     autoPriceList(ItemCodes, CurrentDoc = null, CardCode = null
         , CardGroupCode = 100, payDueDate = 1, paymentTime = 1, settleType = 1, WhsCode = "01") {
         let MD = CurrentDoc; // this.CaseDownPropOfDoc(CurrentDoc);
-        let newdoc = this.GetPriceListInfo(ItemCodes, this.pricingData.ItemPrices, this.pricingData.DisRules, this.pricingData.CampRules
+        let newdoc = this.#GetPriceListInfo(ItemCodes, this.pricingData.ItemPrices, this.pricingData.DisRules, this.pricingData.CampRules
             , [this.pricingData.SlpCode], MD, CardCode, CardGroupCode, payDueDate, paymentTime, settleType, WhsCode);
         return newdoc;// this.CaseUpPropOfDoc(newdoc);
     }
+
     autoGetCampaignConditionsByCardCode(CampaignId, CardCode, CardGroupCode) {
         let result = {
             Status: -32766,
@@ -2140,22 +2391,31 @@ export default class Pricing {
             return result;
         }
         let shortrules = [];
+        let ItemConditions = [];
+
         if (ActiveCam.camType == 'B') {
             /// این مدل قواعد شامل تعریف بسته ها، تخفیف اقلامی و تخفیف ریالی می باشد
             // ساخت لیست قواعد مربوط به مشتری یا گروه مشتری
             for (let itemrules of this.pricingData.CampRules) {
                 if ((itemrules.campaignId == CampaignId)
                     && (itemrules.camType == "B")
-                    && this.isExistInCSV(itemrules.camCardCode, CardCode)
-                    && this.isExistInCSV(itemrules.camCardGroupCode, CardGroupCode)) {
+                    && this.#isExistInCSV(itemrules.camCardCode, CardCode)
+                    && this.#isExistInCSV(itemrules.camCardGroupCode, CardGroupCode)) {
                     shortrules.push(itemrules);
+                    ItemConditions.push(
+                        {
+                            ItemCodes: itemrules.lineItemCode,
+                            MinQty: itemrules.lineMinReqQty,
+                            MaxQty: itemrules.lineMaxReqQty,
+                            MinValue: itemrules.lineMinReqValue,
+                            MaxValue: itemrules.lineMaxReqValue
+                        });
                 }
             }
             if (shortrules.length <= 0) {
                 result.Status = -32768 + 2048;
                 return result;
             }
-
             ActiveCam = shortrules[0];
             result.MaxOrderValue = ActiveCam.camMaxValue;
             result.MinOrderValue = ActiveCam.camMinValue;
@@ -2163,6 +2423,8 @@ export default class Pricing {
             result.MinLine = ActiveCam.camMinRow;
             result.StartDate = ActiveCam.camValidFrom;
             result.EndDate = ActiveCam.camValidTo;
+            result.LineConditions = ItemConditions;
+
             if (ActiveCam.camPayDue) {
                 result.PayDueDate = [];
                 for (let itemPayDue of ActiveCam.camPayDue.split(',')) {

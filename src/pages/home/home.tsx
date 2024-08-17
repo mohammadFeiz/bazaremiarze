@@ -21,7 +21,7 @@ export default function Home() {
         setCartLength(cartLength)
     }
     function billboard_layout(){
-        return { html: <Billboard renderIn='home'/>,align:'h' }
+        return { html: <Billboard onClick={onclick} renderIn='home'/>,align:'h' }
     }
     function cartAndWallet_layout(){
         return {
@@ -73,6 +73,7 @@ export default function Home() {
         }
     }
     function getContent() {
+        
         return {
             flex: 1,
             className:'page-bg',style:{width:'100%'},

@@ -5,6 +5,8 @@ import './theme.css';
 import App from './App.tsx';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
+// index.js
+window.dataLayer = window.dataLayer || [];
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
 serviceWorkerRegistration.unregister();

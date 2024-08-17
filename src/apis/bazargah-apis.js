@@ -1,8 +1,9 @@
 import Axios from "axios";
-import nosrcImage from './../images/no-src.png';
 import AIODate from './../npm/aio-date/aio-date';
-import lampsrc from './../images/lamp.png';
-import AIOStorage from 'aio-storage';
+import NoSrc from './../images/imgph.png';
+// import nosrcImage from './../images/no-src.png';
+// import lampsrc from './../images/lamp.png';
+// import AIOStorage from 'aio-storage';
 export default function bazargahApis({baseUrl,helper}) {
     return {
         async getBazargahTotalTime(type,{backOffice}) {
@@ -33,15 +34,16 @@ export default function bazargahApis({baseUrl,helper}) {
             return { result}
         },
         async bazargahItem({ order, type },{apis}) {
+            console.log(order,'order')
             let passed = await apis.request({ api: 'bazargah.isOrderTimePassed', parameter: { order, type } })
             if (passed) { return { result: false } }
             let totalTime = await apis.request({ api: 'bazargah.getBazargahTotalTime', parameter: type });
-            let bulbSrc = nosrcImage;
+            let bulbSrc = NoSrc;
             let distance = 0;
-            let orderItems = [];
+            let OrderItems = [];
             try {
                 distance = +order.distance.toFixed(2);
-                orderItems = order.orderItems.map(i => {
+                OrderItems = order.OrderItems.map(i => {
                     let src = i.imagesUrl !== null && i.imagesUrl !== undefined ? i.imagesUrl.split(",")[0] : bulbSrc;
                     let detail = [];
                     try{
@@ -73,7 +75,7 @@ export default function bazargahApis({baseUrl,helper}) {
             }
             catch {
                 distance = 0;
-                orderItems = [];
+                OrderItems = [];
             }
             let result = {
                 type,
@@ -84,12 +86,13 @@ export default function bazargahApis({baseUrl,helper}) {
                     isFinal: order.providedData !== null && order.providedData.isFinal ? order.providedData.isFinal : false,
                 },
                 "amount": order.finalAmount,
+                // "distance": +order.distance.toFixed(2),
                 distance,
                 "benefit": 110000,
                 'deliveredCode': order.deliveredCode,
                 "totalTime": totalTime,
                 "address": order.billAddress,
-                "items": orderItems,
+                "items": OrderItems,
                 "cityId": null,
                 "provinceId": null,
                 "buyerId": order.buyerId,

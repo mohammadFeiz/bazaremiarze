@@ -27,6 +27,7 @@ export type I_userInfo = {
     firstName:string,
     lastName:string,
     userName:string,
+    //nationalCode:string,
     password:string,
     storeName:string,
     address:string,
@@ -41,7 +42,7 @@ export type I_userInfo = {
 export type I_B1Info = {
     itemPrices:I_itemPrice[],//notice
     salePeople:{mobile:string},
-    customer:{ballance:number,groupName:string,slpcode:string,slpname:string,groupCode:string,purchaseState:{onlyByCash:boolean,onlyByOrder:boolean,inBlackList:boolean}}
+    customer:{ballance:number,groupName:string,phone1:string,slpcode:string,slpname:string,groupCode:string,purchaseState:{onlyByCash:boolean,onlyByOrder:boolean,inBlackList:boolean}}
 }
 export type I_itemPrice = {itemCode: any,mainSku?: any,canSell: boolean,qtyRelation:number}
 export type I_register = {
@@ -51,6 +52,7 @@ export type I_register = {
     longitude: number,
     firstName: string,
     lastName: string,
+    //nationalCode:string,
     password: string,
     storeName: string,
     address: string,
@@ -59,6 +61,7 @@ export type I_register = {
 }
 //////backOffice
 //////rsa
+//حالت های قرار گیری پاپ آپ ها
 export type I_rsa_addModal = {
     position?:'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom',
     id?:string,
@@ -89,7 +92,8 @@ export type I_rsa_addConfirm = {
     onCansel?:()=>void,
     attrs?:any
 }
-export type I_rsa_addAlert = {type:'error' | 'success',text:string,subtext?:string}
+//تایپ های الرت ها
+export type I_rsa_addAlert = {type:'error' | 'success'| 'warning' |'info',text:string,subtext?:string}
 export type I_rsa = {
     setNavId:(navId:string)=>void,
     addModal:(p:I_rsa_addModal)=>void,
@@ -192,7 +196,7 @@ export type I_backOffice_accessPhoneNumber = {
 export type I_shippingOptions = {
     PaymentTime?:number, PayDueDate?:number, DeliveryType?:number,SettleType?:number, giftCodeInfo?:any, discountCodeInfo?:any,CampaignId?:number,address?:string
 }
-export type I_marketingLine = {ItemCode:string,ItemQty:number}
+export type I_marketingLine = {ItemCode:string,ItemQty:number,boxName:string,inBox:number,unitOfMeasure:string}
 export type I_spreeCategory = { showType:'icon' | 'slider', id:string,active:boolean,billboard?:string,icon?:string,name:string }
 
 export type I_ShopProps = {
@@ -209,11 +213,13 @@ export type I_ShopProps = {
     maxCart?:number,
     maxTotal?:number,
     PriceListNum?:number,
+    LineConditions?:LineCondition[],
     taxons?:I_taxon[],
     description?:string,
     itemType:'Product' | 'Taxon' | 'Bundle' | 'Category'
 } 
 export type I_taxon = {id:string,name:string,min:number,max:number}
+export type LineCondition = {ItemCodes:string,MaxQty:number,MinQty:number,MaxValue:number,MinValue:number}
 export type I_ShopClass = {
     shopName: string,
     discountPercent?:number,
@@ -221,12 +227,14 @@ export type I_ShopClass = {
     shopId: string,
     taxons?: I_taxon[],
     maxCart?:number,
+    maxTotal?:number;
     CampaignId?:number,
     PriceListNum?: number,
     billboard?:string,
     products?: I_product,
     description?: string,
     PayDueDates?:number[],
+    LineConditions?:LineCondition[],
     icon?:string,
     itemType: 'Product' | 'Bundle' | 'Taxon' | 'Category',
     getShopItems:(p?:{taxonId?: string, productId?: string})=>Promise<any[]>,
@@ -246,6 +254,7 @@ export type I_ShopClass = {
         bundleMarketingLines:I_marketingLine_bundle[],bundleCartVariants:I_cartShop_bundle_variant[]
     }>,
     payment:(p:I_shippingOptions)=>Promise<boolean>, 
+    pardakht:(p:I_shippingOptions)=>Promise<boolean>,
     renderCartFactor:(button?:boolean)=>Promise<React.ReactNode>,
     getAmounts:I_getAmounts,getAmounts_all:I_getAmounts,getAmounts_Bundle:I_getAmounts,
     getFactorItems:(shippingOptions:I_shippingOptions,container:string)=>Promise<I_factorItem[]>
@@ -255,7 +264,7 @@ export type I_ShopClass = {
 }
 export type I_factorItem = {key:string,value:string,className?:string}
 export type I_getAmounts = (shippingOptions:I_shippingOptions, container?:string)=>Promise<I_amounts>;
-export type I_amounts = { total:number, discounts:I_discount[], payment:number, ClubPoints?: any };
+export type I_amounts = { total:number, discounts:I_discount[], payment:number, ClubPoints?: any};
 export type I_renderIn = 'product'|'shipping'|'cart'|'category' | 'slider';
 export type I_actionClass = {
     getNavItems:()=>{
@@ -310,11 +319,12 @@ export type I_actionClass = {
 export type I_factorDetailItem = { ItemCode: string, ItemQty: number }
 export type I_getFactorDetails_result = {
     MarketingLines:{CampaignDetails:any,ItemCode:string,ItemQty:number}[],
+    //CampaignDetails:{BundleRowsInfos:any,Conditions:any,Status:number}[],
     DocumentTotal:number,
     marketingdetails:{ DiscountList:any, ClubPoints:any }
 }
 export type I_fixPrice_result = {
-    ItemCode: string,SalesMeasureUnit: string,NumInSale: number,Price: number,B1Dscnt: number,FinalPrice: number,PymntDscnt: number,CmpgnDscnt: number
+    ItemCode: string,SalesMeasureUnit: string,NumInSale: number,AppDelDate: number,AppDelDsc: string,Price: number,B1Dscnt: number,FinalPrice: number,PymntDscnt: number,CmpgnDscnt: number,
     OnHand?: {whsCode?: string,qty?: number,qtyLevel?: number,qtyLevRel?: number} | null,   
 }
 export type I_changeCartProps = {shopId:string,taxonId?:string, productId:string, variantId:string,count:number,productCategory:I_product_category}
@@ -356,13 +366,16 @@ export type I_cartShop_type = 'Product' | 'Taxon' | 'Bundle'
 export type I_cartShop_Product = {products:{[productId:string]:I_cartProduct},type:'Product'}
 export type I_cartProduct = {productId:string,productCategory:I_product_category,variants:{[variantId:string]:I_cartVariant}}
 export type I_cartVariant = {
-    productCategory:I_product_category,count:number,
+    productCategory:I_product_category,
+    count:number,
+    ItemCode:number,
     variantId:string,
     productId:string,
     taxonId?:string,
     error?:string,
     minValue?:number,
-    maxValue?:number
+    maxValue?:number,
+    shopName?:string
 };
 export type I_cartShop_bundle = {
     taxons:{[taxonId:string]:I_cartShop_bundle_taxon},type:'Bundle'
@@ -402,7 +415,6 @@ export interface I_Report_parameter extends I_report {
 export type I_msfReport = (obj: I_report, p?: { userId?: string, phoneNumber?: string }) => void
 export type I_updateProfile = (loginModel: I_AL_model, mode: 'register' | 'profile' | 'location', callback?: Function)=>Promise<I_userInfo | false>
 
-
 export type I_product = {
     //مواردی که ابتدا دریافت می شود
     id:string,
@@ -412,7 +424,11 @@ export type I_product = {
     B1Dscnt:number,
     CmpgnDscnt:number,
     PymntDscnt:number,
-    FinalPrice:number, 
+    FinalPrice?:number, 
+    NumInSale:number,
+    SalesMeasureUnit:string,
+    AppDelDate:number,
+    AppDelDsc: string,
     Price:number,
     hasFullDetail:boolean,
     category:I_product_category, //اطلاعات دسته بندی محصول

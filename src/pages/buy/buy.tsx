@@ -23,6 +23,11 @@ export default function Buy() {
     }
     setSliders(sliders)
   }
+  //DataPushLayer
+  function pushToDataLayer(data: any) {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(data);
+}
   useEffect(()=>{getSliders()},[])
   function categories_layout(){
     let {spreeCategories = []} = backOffice;
@@ -36,7 +41,20 @@ export default function Buy() {
             if(o === false){return {flex:1}}
             let {name,icon,id} = o as I_spreeCategory;
             return {
-              flex:1,align:'vh',style:{maxWidth:220},gap:6,onClick:()=>Shop.Regular.openCategory(id),
+              flex:1,
+              align:'vh',
+              style:{maxWidth:220},
+              gap:6,
+              //onClick:()=>Shop.Regular.openCategory(id),
+              onClick:()=>{
+                // Data push layer call
+                pushToDataLayer({
+                  event: 'page_view',
+                  page_title: `محصولات ${name}`,
+                  page_url: `/burux_shop/category/${id}`
+                });
+                Shop.Regular.openCategory(id);
+              },
               column:[{html:<img src={icon} width='100%' alt=''/>,align:'vh'},{html:name,className:'fs-14 bold',align:'vh'}]
             }
           })
@@ -74,7 +92,7 @@ export default function Buy() {
       layout={{
         flex: 1,className: "page-bg w-100",style:{overflow:'hidden'},
         column: [
-          {className: "ofy-auto",gap:24,flex:1,column:[billboard_layout(),categories_layout(),sliders_layout()]},
+          {className: "ofy-auto hide-scroll",gap:24,flex:1,column:[billboard_layout(),categories_layout(),sliders_layout()]},
           disabled_layout()
         ]
       }}

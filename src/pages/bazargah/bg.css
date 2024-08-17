@@ -1,6 +1,9 @@
 .bg-body{
     padding:12px;
 }
+.bg-image{
+    align-items: flex-start;
+}
 .bg-order-card{
     padding:12px;
     background:#fff;

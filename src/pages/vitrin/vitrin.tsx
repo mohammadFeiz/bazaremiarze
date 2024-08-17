@@ -50,16 +50,18 @@ function VitrinBody() {
     function count_layout() {
         let { vitrinSelected = {} } = vitrin;
         return {
+            className: 'vitrin-container',
             column: [
                 {
                     className: 'v-header-layout m-b-5',
                     column: [
                         { size: 5 },
-                        { html: 'در ویترین شما',className:'fs-10 fw-400'},
-                        { html: `${Object.keys(vitrinSelected).length}`,className:'fs-24 fw-800'},
-                        { html: 'کالا',className:'fs-16 fw-400'},
-                    ],
-                }
+                        { html: 'در ویترین شما',className:'fs-12 fw-400'},
+                        { html: `${Object.keys(vitrinSelected).length}`,className:'fs-32 fw-800'},
+                        { html: 'کالا',className:'fs-10 fw-400'},
+                    ]
+                },
+                toolbar_layout()
             ],
         }
     }
@@ -88,7 +90,7 @@ function VitrinBody() {
                         </button>
                         )
                 },
-                {html: <button className='button-1 m-r-8' style={{borderRadius: 8}}>تاریخچه قیمت های پیشنهادی</button>}
+                // {html: <button className='button-1 m-r-8' style={{borderRadius: 8}}>تاریخچه قیمت های پیشنهادی</button>}
             ]
         }
     }
@@ -98,7 +100,7 @@ function VitrinBody() {
         <RVD
             layout={{
                 className: 'theme-popup-bg ofy-auto hide-scroll m-b-24', flex: 1,
-                column: [count_layout(), toolbar_layout(), products_layout()]
+                column: [count_layout(), products_layout()]
             }}
         />
     )
@@ -468,7 +470,7 @@ function getMockProducts(count) {
 function getMockVitrinSelected() {
     return vitrinMock().v_mockVitrinSelected()
 }
-//محصولات اصلی ویترین من
+//محصولات اصلی ویترین 
 type I_Products = {products?:I_vitrin_product[],count:number}
 function Products(props:I_Products) {
     let {products,count} = props;
@@ -499,7 +501,7 @@ function SelectedProducts() {
     vitrinSelected = vitrinSelected || getMockVitrinSelected();
     let column = Object.keys(vitrinSelected).map((key) => {
         let { product } = vitrinSelected[key];
-        return { html: <ProductCard product={product} loading={loading} renderIn='my-vitrin'/> }
+        return { html: <MyVitrinProductCard product={product} loading={loading} renderIn='my-vitrin'/> }
     })
     let layout = { className: 'ofy-auto hide-scroll', column }
     return (<RVD layout={layout} />)
@@ -519,8 +521,104 @@ function Price(props) {
             ]
         }}/>
 }
-//کارت محصول
 type I_ProductCard = {product:I_vitrin_product,loading?:boolean,renderIn?:any}
+//کارت محصولات ویترین من
+function MyVitrinProductCard(props:I_ProductCard) {
+    let {vitrin,actionClass,apis,rsa}:I_app_state = useContext(appContext);
+    let {product,loading} = props;
+    //نام محصول
+    function name_layout(name) {
+        return { html: name, className: `v-product-card-name flex-1 align-v` }
+    }
+    //عکس محصول
+    function image_layout(image) {
+        return { className: 'v-product-card-image', size: 96, html: <img src={image} alt='' height='100%' className='br-8' />, align: 'vh' }
+    }
+    //واریانت های محصول
+    function variants_layout(product:I_vitrin_product) { 
+        return {
+            className: 'v-product-card-variants',
+            column: product.variants.map((variant)=>{
+                return variant_layout(product,variant)
+            })
+        }
+    }
+    //تغییر وضعیت محصولات
+    function toggle(product,variantId){
+        vitrin.updateVitrinSelected(product,variantId)
+    }
+    //بخش واریانت های هر محصول
+    function variant_layout(product,variant) {
+        let selected = vitrin.getIsSelected(product.id,variant.id)
+        let { price } = variant;
+        let vlProps:I_VariantLabel = {product,variantId:variant.id,type:'horizontal'}
+        return {
+            show : !!selected,
+            className: 'v-product-card-variant align-vh',
+            row: [
+                {
+                    flex:1,
+                    column:[
+                        {html: <VariantLabel {...vlProps}/>, className:'fs-12 m-b-12 fw-400'},
+                        {html: <Price price={price} />},
+                        // {size:6},
+                        {html: (
+                            <button className='v-product-card-price-problem align-v gap-2' onClick={() => openPopup(variant)}>
+                                {/* <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M9 7C9 8.10457 8.10457 9 7 9C5.89543 9 5 8.10457 5 7C5 5.89543 5.89543 5 7 5C8.10457 5 9 5.89543 9 7ZM8 7C8 6.44772 7.55228 6 7 6C6.44772 6 6 6.44772 6 7C6 7.55228 6.44772 8 7 8C7.55228 8 8 7.55228 8 7ZM1 4.25C1 3.55964 1.55964 3 2.25 3H11.75C12.4404 3 13 3.55964 13 4.25V9.75C13 10.4404 12.4404 11 11.75 11H2.25C1.55964 11 1 10.4404 1 9.75V4.25ZM2.25 4C2.11193 4 2 4.11193 2 4.25V5H2.5C2.77614 5 3 4.77614 3 4.5V4H2.25ZM2 9.75C2 9.88807 2.11193 10 2.25 10H3V9.5C3 9.22386 2.77614 9 2.5 9H2V9.75ZM4 9.5V10H10V9.5C10 8.67157 10.6716 8 11.5 8H12V6H11.5C10.6716 6 10 5.32843 10 4.5V4H4V4.5C4 5.32843 3.32843 6 2.5 6H2V8H2.5C3.32843 8 4 8.67157 4 9.5ZM11 10H11.75C11.8881 10 12 9.88807 12 9.75V9H11.5C11.2239 9 11 9.22386 11 9.5V10ZM12 5V4.25C12 4.11193 11.8881 4 11.75 4H11V4.5C11 4.77614 11.2239 5 11.5 5H12ZM4.5 13C3.8334 13 3.26836 12.5652 3.07304 11.9637C3.21179 11.9876 3.35444 12 3.5 12H11.75C12.9926 12 14 10.9926 14 9.75V5.08535C14.5826 5.29127 15 5.84689 15 6.5V9.75C15 11.5449 13.5449 13 11.75 13H4.5Z" fill="#596066"/>
+                                </svg> */}
+                            پیشنهاد قیمت دیگر
+                            </button>
+                        )}
+                    ]
+                },
+                // {flex:1},
+                {show : !selected, html:()=> <button onClick={()=>toggle(product,variant.id)} className='v-product-card-add-button'>افزودن</button>}, 
+                {
+                    show : !!selected, 
+                    html:()=> (
+                        <button className='v-product-card-remove-button w-36 h-36' onClick={()=>toggle(product,variant.id)}>
+                            <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6.5 3H9.5C9.5 2.17157 8.82843 1.5 8 1.5C7.17157 1.5 6.5 2.17157 6.5 3ZM5.5 3C5.5 1.61929 6.61929 0.5 8 0.5C9.38071 0.5 10.5 1.61929 10.5 3H15.5C15.7761 3 16 3.22386 16 3.5C16 3.77614 15.7761 4 15.5 4H14.4456L13.2521 14.3439C13.0774 15.8576 11.7957 17 10.2719 17H5.72813C4.20431 17 2.92256 15.8576 2.7479 14.3439L1.55437 4H0.5C0.223858 4 0 3.77614 0 3.5C0 3.22386 0.223858 3 0.5 3H5.5ZM3.74131 14.2292C3.85775 15.2384 4.71225 16 5.72813 16H10.2719C11.2878 16 12.1422 15.2384 12.2587 14.2292L13.439 4H2.56101L3.74131 14.2292ZM6.5 6.5C6.77614 6.5 7 6.72386 7 7V13C7 13.2761 6.77614 13.5 6.5 13.5C6.22386 13.5 6 13.2761 6 13V7C6 6.72386 6.22386 6.5 6.5 6.5ZM10 7C10 6.72386 9.77614 6.5 9.5 6.5C9.22386 6.5 9 6.72386 9 7V13C9 13.2761 9.22386 13.5 9.5 13.5C9.77614 13.5 10 13.2761 10 13V7Z" fill="#CD3636"/>
+                            </svg>
+                        </button>
+                    )
+                }    
+            ]
+        }
+    }
+    //بخش پیشنهاد قیمت به هر واریانت محصول در ویترین من
+    function openPopup(variant:I_vitrin_variant){
+        actionClass.openPopup('vitrin-price-suggestion',{render:()=><VitrinPriceSuggestion variant={variant} product={product} onSubmit={(price:number)=>{
+            let parameter:v_price_suggestion_payload = {variant,price};
+            apis.request({
+                api:'vitrin.v_price_suggestion',description:'پیشنهاد قیمت ویترین',parameter,message:{success:true},
+                onSuccess:()=>rsa.removeModal()
+            })
+        }}/>})
+    }
+    //رندر هر کارت محصول
+    let { image = imgph, name } = product;
+    return (
+        <RVD
+            loading={loading}
+            layout={{
+                className: 'v-product-card',
+                column: [
+                    {
+                        gap:6,
+                        row: [
+                            image_layout(image),
+                            name_layout(name),
+                        ]
+                    },
+                    variants_layout(product)
+                ]
+            }}
+        />
+    )
+}
+//کارت محصول
 function ProductCard(props:I_ProductCard) {
     let {vitrin,actionClass,apis,rsa}:I_app_state = useContext(appContext);
     let {product,loading} = props;
@@ -551,24 +649,26 @@ function ProductCard(props:I_ProductCard) {
         let { price } = variant;
         let vlProps:I_VariantLabel = {product,variantId:variant.id,type:'horizontal'}
         return {
+            //show : !!selected,
             className: 'v-product-card-variant align-vh',
             row: [
                 {
+                    flex:1,
                     column:[
-                        {html: <VariantLabel {...vlProps}/>, className:'fs-14 m-b-12 fw-400'},
+                        {html: <VariantLabel {...vlProps}/>, className:'fs-12 m-b-12 fw-400'},
                         {html: <Price price={price} />},
-                        {size:6},
+                        // {size:6},
                         {html: (
                             <button className='v-product-card-price-problem align-v gap-2' onClick={() => openPopup(variant)}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                {/* <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                                 <path d="M9 7C9 8.10457 8.10457 9 7 9C5.89543 9 5 8.10457 5 7C5 5.89543 5.89543 5 7 5C8.10457 5 9 5.89543 9 7ZM8 7C8 6.44772 7.55228 6 7 6C6.44772 6 6 6.44772 6 7C6 7.55228 6.44772 8 7 8C7.55228 8 8 7.55228 8 7ZM1 4.25C1 3.55964 1.55964 3 2.25 3H11.75C12.4404 3 13 3.55964 13 4.25V9.75C13 10.4404 12.4404 11 11.75 11H2.25C1.55964 11 1 10.4404 1 9.75V4.25ZM2.25 4C2.11193 4 2 4.11193 2 4.25V5H2.5C2.77614 5 3 4.77614 3 4.5V4H2.25ZM2 9.75C2 9.88807 2.11193 10 2.25 10H3V9.5C3 9.22386 2.77614 9 2.5 9H2V9.75ZM4 9.5V10H10V9.5C10 8.67157 10.6716 8 11.5 8H12V6H11.5C10.6716 6 10 5.32843 10 4.5V4H4V4.5C4 5.32843 3.32843 6 2.5 6H2V8H2.5C3.32843 8 4 8.67157 4 9.5ZM11 10H11.75C11.8881 10 12 9.88807 12 9.75V9H11.5C11.2239 9 11 9.22386 11 9.5V10ZM12 5V4.25C12 4.11193 11.8881 4 11.75 4H11V4.5C11 4.77614 11.2239 5 11.5 5H12ZM4.5 13C3.8334 13 3.26836 12.5652 3.07304 11.9637C3.21179 11.9876 3.35444 12 3.5 12H11.75C12.9926 12 14 10.9926 14 9.75V5.08535C14.5826 5.29127 15 5.84689 15 6.5V9.75C15 11.5449 13.5449 13 11.75 13H4.5Z" fill="#596066"/>
-                                </svg>
+                                </svg> */}
                             پیشنهاد قیمت دیگر
                             </button>
                         )}
                     ]
                 },
-                {flex:1},
+                // {flex:1},
                 {show : !selected, html:()=> <button onClick={()=>toggle(product,variant.id)} className='v-product-card-add-button'>افزودن</button>}, 
                 {
                     show : !!selected, 
@@ -634,8 +734,8 @@ function VariantLabel(props:I_VariantLabel) {
                 row: [{ html:bullet() },price_layout(variant.price)]
             })
         }
-        if(type === 'horizontal'){row = [{html:bullet()},...row]}
-        return {gap:8,className: 'v-product-card-options',[type === 'horizontal'?'row':'column']:row,align:'v'}
+        // if(type === 'horizontal'){row = [{html:bullet()},...row]}
+        return {gap:4,className: 'v-product-card-options',[type === 'horizontal'?'row':'column']:row,align:'v'}
     }
     //برند و ویژگی های هر واریانت
     function options_layout(key,index,variant):I_RVD_child{
@@ -645,11 +745,11 @@ function VariantLabel(props:I_VariantLabel) {
         if(!optionValue){ProductError('key_is_not_match_by_optionValues',{product,variant,keyIndex:index})}
         else {optionValueName = optionValue.name;}
         return {
-            className: 'v-product-card-option',gap:3,align:'v',
+            className: 'v-product-card-options',gap:3,align:'v',
             row: [
-                { show:type === 'vertical',html:bullet() },
-                { html: optionTypeName + ' : ', className: 'v-product-card-variant-option-name' },
-                { html: optionValueName, className: 'v-product-card-variant-option-value' }
+                // { show:type === 'vertical',html:bullet() },
+                {html: optionTypeName + ' : ', className: 'v-product-card-variant-option-name'},
+                {html: optionValueName , className: 'v-product-card-variant-option-value' }
             ]
         }
     }

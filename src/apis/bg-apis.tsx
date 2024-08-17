@@ -1,3 +1,4 @@
+import React from 'react'
 import Axios from "axios";
 import imgph from './../images/imgph.png';
 import AIODate from 'aio-date';
@@ -26,8 +27,8 @@ export default function bgApis({baseUrl,helper}) {
     } = {
         async bg_orders(type){
             //type 'اطراف من' | 'سفارشات من'
+            //let response = await Axios.get(`${baseUrl.replace('v1','v2')}/os/getordersbazargah?aroundMe=${type === 'سفارشات من'?'false':'true'}`)
             let response = await Axios.get(`${baseUrl.replace('v1','v2')}/os/getorders?aroundMe=${type === 'سفارشات من'?'false':'true'}`)
-            // console.log(res.data.data)
             const data = response.data.data;
             let result;
             if(response.data.isSuccess){
@@ -49,12 +50,48 @@ export default function bgApis({baseUrl,helper}) {
                         code: o.code ,
                         price: o.price,
                         items:o.items.map((item)=>{
-                            let details = item.details
                             if(!item.image || typeof item.image !== 'string'){item.image = imgph}
+                            // let details = item.details                           
                             // if(!details || !Array.isArray(details)){details = []}
-                            return {count:item.count,price:item.price,image:item.image,name:item.name,details}
+                            let detail = [];
+                            let details = item.details.toString()
+                            //.split("برند").pop()
+                            //.replace('برند','')
+                            try{
+                                let startIndex = details.indexOf('#');
+                                let endIndex = details.indexOf('$');
+                                let response = details.slice(startIndex,endIndex);
+                                if(response[0] === '#' && response.length === 7){
+                                    let before = details.slice(0,startIndex);
+                                    let after = details.slice(endIndex + 1,details.length)
+                                    let color = response;
+                                    detail = [
+                                        {align:'vh',html:<div className='w-6 h-6 br-100' style={{background:'#ddd'}}></div>,size:16},
+                                        {html:before},
+                                        {html:<div className='w-12 h-12 br-3' style={{background:color}}></div>,align:'vh'},
+                                        {html:after},
+                                        
+                                    ]
+                                    
+                                }
+                                else {
+                                    detail = [
+                                        {align:'vh',html:<div className='w-6 h-6 br-100' style={{background:'#ddd'}}></div>,size:16},
+                                        {html:details}
+                                    ]
+                                }
+
+                            }
+                            catch{
+                                detail = [
+                                {align:'vh',html:<div className='w-6 h-6 br-100' style={{background:'#ddd'}}></div>,size:16},
+                                {html:details}
+                            ]}
+                            return {count:item.count,price:item.price,image:item.image,name:item.name,inVitrin:item.inVitrin,id:item.id,vendorId:item.vendorId,detail}
                         }),
                         distanceKM:o.distance,
+                        totalOrderCompleted:o.totalOrderCompleted,
+                        inVitrin:o.inVitrin,
                         orderId:o.orderId,
                         deliveryType:deliveryType?{'Peyk':'carier','Post':'post'}[deliveryType]:undefined,//use in status:sending
                         trackingCode,//use in status:sending
@@ -67,75 +104,13 @@ export default function bgApis({baseUrl,helper}) {
             else {
                 result = response.data.message
             }
-            
-                // {
-                //     status:'canTake',submitDate:new Date().getTime() - ( 15 * 60 * 60 * 1000) - (45 * 60 * 1000),
-                //     //deliverDate?:number,//use in status:sent
-                //     code:'R12321423',price:16788000,
-                //     items:[
-                //         {
-                //             count:4,price:156000,image:'https://foroozeshh.ir/uploads/35c364159798460e8c0d9fcf7b3c900f.png',name:'بست کمربندی',
-                //             details:[{key:'سایز',value:'35'}]
-                //         },
-                //         {
-                //             count:1,price:156000,image:'https://dkstatics-public.digikala.com/digikala-products/ad471d52115052c14a17dbeb99c48ea506c1bb8a_1650959811.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90',name:'اسپیکر جی بی ال',
-                //             details:[{key:'رنگ',value:'سبز ارتشی'}]
-                //         },
-                //         {
-                //             count:1,price:156000,image:'https://irananker.com/wp-content/uploads/2020/01/A8133-4-600x600.jpg',name:'کابل انکر طول 1.8 متر powerline Micro USB',
-                //         },
-                //     ],
-                //     isInVitrin:true,
-                //     distanceKM:6.4,
-                //     //deliveryType?:I_deliveryType,//use in status:sending
-                //     //trackingCode?:string,//use in status:sending
-                //     info:{name:'محمد شریف احتشامی',lat:35.699739,lng:51.338097,address:'تهران شیخ بهایی شمالی نوربخش پلاک 30 واحد 4',city:'تهران',province:'تهران',postal:1234567,phone:'02188050006'}
-                // },
-                // {
-                //     status:'takenByOther',submitDate:new Date().getTime() - ( 3 * 60 * 60 * 1000) - (10 * 60 * 1000),
-                //     //deliverDate?:number,//use in status:sent
-                //     code:'R12321423',price:16788000,
-                //     items:[
-                //         {
-                //             count:4,price:156000,image:lampsrc,name:'لامپ حبابی 12 وات',
-                //             details:[{key:'رنگ نور',value:'آفتابی'},{key:'سر پیچ',value:'E27'}]
-                //         },
-                //         {
-                //             count:4,price:156000,image:lampsrc,name:'لامپ حبابی 12 وات',
-                //             details:[{key:'رنگ نور',value:'مهتابی'},{key:'سر پیچ',value:'E27'}]
-                //         }
-                //     ],
-                //     distanceKM:6.4,
-                //     //deliveryType?:I_deliveryType,//use in status:sending
-                //     //trackingCode?:string,//use in status:sending
-                //     info:{name:'داوود عباس نژاد',lat:35.699739,lng:51.338097,address:'تهران شیخ بهایی شمالی نوربخش پلاک 30 واحد 4',city:'تهران',province:'تهران',postal:1234567,phone:'02188050006'}
-                // },
-                // {
-                //     status:'takenByOther',submitDate:new Date().getTime() - ( 1 * 60 * 60 * 1000) - (22 * 60 * 1000),
-                //     //deliverDate?:number,//use in status:sent
-                //     code:'R12321423',price:16788000,
-                //     items:[
-                //         {
-                //             count:4,price:156000,image:lampsrc,name:'لامپ حبابی 12 وات',
-                //             details:[{key:'رنگ نور',value:'آفتابی'},{key:'سر پیچ',value:'E27'}]
-                //         },
-                //         {
-                //             count:1,price:1159787,image:'https://image.torob.com/base/images/e8/bW/e8bWco3U1x-5AdDk.jpg_/0x176.jpg 1x,https://image.torob.com/base/images/e8/bW/e8bWco3U1x-5AdDk.jpg_/0x352.jpg 2x',name:'دریل چکشی رونیکس'
-                //         }
-                //     ],
-                //     distanceKM:6.4,
-                //     //deliveryType?:I_deliveryType,//use in status:sending
-                //     //trackingCode?:string,//use in status:sending
-                //     info:{name:'دانیال عنایتی',lat:35.699739,lng:51.338097,address:'تهران شیخ بهایی شمالی نوربخش پلاک 30 واحد 4',city:'تهران',province:'تهران',postal:1234567,phone:'02188050006'}
-                // }
             return {response,result}
         },
         async bg_to_shouldSend({order}){
-            debugger
             let url = `${baseUrl.replace('v1','v2')}/OS/toTaken`;
             let body = {orderId:order.orderId}
             let response = await Axios.post(url,body);
-            let result = response.data.isSuccess?true:response.data.message;
+            let result = response.data.isSuccess ? true:response.data.message;
             return {response,result}
         },
         async bg_to_sending({order,data}){

@@ -26,6 +26,7 @@ import Wallet from './popups/wallet/wallet';
 import TanzimateKifePool from './components/kife-pool/tanzimate-kife-pool/tanzimate-kife-pool';
 import {Cart} from './shop-class.tsx';
 import Sefareshe_Ersal_Shode_Baraye_Vizitor from './components/kharid/sefareshe-ersal-shode-baraye-vizitor/sefareshe-ersal-shode-baraye-vizitor';
+import Sefaresh_Pardakht_Shode from './components/kharid/sefaresh-pardakht-shode/sefaresh-pardakht-shode';
 import Home from "./pages/home/home.tsx";
 import Buy from "./pages/buy/buy.tsx";
 import Bazargah from "./pages/bazargah/bazargah";
@@ -69,8 +70,18 @@ export default class ActionClass implements I_actionClass {
     }
     getBazargahOrders = async () => {
         let {apis} = this.getProps();
-        let wait_to_get = await apis.request({ api: 'bazargah.daryafte_sefareshate_bazargah', parameter: { type: 'wait_to_get' }, loading: false, description: 'دریافت سفارشات در انتظار اخذ بازارگاه' });
-        let wait_to_send = await apis.request({ api: 'bazargah.daryafte_sefareshate_bazargah', parameter: { type: 'wait_to_send' }, loading: false, description: 'دریافت سفارشات در انتظار ارسال بازارگاه' });
+        let wait_to_get = await apis.request({ 
+            api: 'bazargah.daryafte_sefareshate_bazargah', 
+            parameter: { type: 'wait_to_get' }, 
+            loading: false, 
+            //description: 'دریافت سفارشات در انتظار اخذ بازارگاه' 
+        });
+        let wait_to_send = await apis.request({ 
+            api: 'bazargah.daryafte_sefareshate_bazargah', 
+            parameter: { type: 'wait_to_send' }, 
+            loading: false, 
+            description: 'دریافت سفارشات در انتظار ارسال بازارگاه' 
+        });
         this.SetState({bazargahOrders:{wait_to_get, wait_to_send}})
     }
     removeCartTab = (shopId:string) => {
@@ -79,19 +90,118 @@ export default class ActionClass implements I_actionClass {
         for (let prop in cart.shops) { if (prop !== shopId) { newCart.shops[prop] = cart.shops[prop] } }
         setCart(newCart)
     }
+
     getNavItems = () => {
+
         let { userInfo } = this.getProps();
         let {newBazargah,isShopReady} = this.getState();
         let icon = (path:any,spin?:boolean) => <Icon path={path} size={.9} spin={spin?0.3:undefined}/>
         let firstName = userInfo.firstName;
         let lastName = userInfo.lastName;
+
+        //DataPushLayer
+        const pushToDataLayer = (eventData) => {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push(eventData);
+        };
+
         lastName = typeof lastName !== 'string'?'':lastName;
         return [
-            { text: "ویترین", icon: () => icon(mdiStore), id: "vitrin",render:()=><Vitrin/> },
-            { text: "بازارگاه", icon: () => icon(mdiCellphoneMarker), id: "bazargah",render:()=>newBazargah?<BazargahNew/>:<Bazargah/> },
-            { text: "خانه", icon: () => getSvg('home'), id: "khane",render:()=><Home/> },
-            { text: "خرید", icon: () => icon(isShopReady?mdiShopping:mdiLoading,!isShopReady), id: "kharid",render:()=><Buy/>,disabled:!isShopReady },
-            { text: () => `${firstName} ${lastName}`, marquee: true, icon: () => icon(mdiAccountBox), id: "profile",render:()=><Profile/> },
+            { 
+                text: "ویترین", 
+                icon: () => icon(mdiStore), 
+                // icon: () => 
+                // <svg xmlns="http://www.w3.org/2000/svg" width="22" height="28" viewBox="0 0 29 28" fill="none">
+                // <path d="M23.5833 14V21C23.5833 23.5773 21.494 25.6667 18.9166 25.6667H9.58329C7.00596 25.6667 4.91663 23.5773 4.91663 21V14" stroke="#757875" stroke-width="1.75" stroke-linejoin="round"/>
+                // <path d="M19.8135 2.33325H8.68646C6.56622 2.33325 4.65958 3.78547 3.87214 6.00014L2.98783 8.48727C2.72014 9.24014 2.5351 10.0458 2.73035 10.8206C3.19275 12.6556 4.69294 13.9999 6.47222 13.9999C8.61999 13.9999 10.3611 12.0412 10.3611 9.62492C10.3611 12.0412 12.1022 13.9999 14.25 13.9999C16.3978 13.9999 18.1389 12.0412 18.1389 9.62492C18.1389 12.0412 19.88 13.9999 22.0278 13.9999C23.8071 13.9999 25.3072 12.6556 25.7696 10.8206C25.9649 10.0458 25.7799 9.24014 25.5122 8.48727L24.6279 6.00014C23.8404 3.78547 21.9338 2.33325 19.8135 2.33325Z" stroke="#757875" stroke-width="1.75" stroke-linejoin="round"/>
+                // <path d="M10.75 22.1667C10.75 20.2338 12.317 18.6667 14.25 18.6667C16.183 18.6667 17.75 20.2338 17.75 22.1667V25.6667H10.75V22.1667Z" stroke="#757875" stroke-width="1.75" stroke-linejoin="round"/>
+                // </svg>, 
+                id: "vitrin",
+                //render:()=><Vitrin/> 
+                render: () => {
+                    pushToDataLayer({
+                        event: 'page_view',
+                        page_title: 'ویترین',
+                        page_url: '/vitrin',
+                    });
+                    return <Vitrin />;
+                }
+            },
+            { 
+                text: "بازارگاه", 
+                icon: () => icon(mdiCellphoneMarker), 
+                // icon: () => 
+                // <svg xmlns="http://www.w3.org/2000/svg" width="22" height="28" viewBox="0 0 28 28" fill="none">
+                // <path fill-rule="evenodd" clip-rule="evenodd" d="M23.3313 16.5016L21.8207 14.4875C21.6757 14.2942 21.4015 14.2551 21.2082 14.4C21.0149 14.545 20.9757 14.8192 21.1207 15.0125L22.2362 16.4999H17.2051L18.3206 15.0125C18.4656 14.8192 18.4264 14.545 18.2331 14.4C18.0398 14.2551 17.7656 14.2942 17.6206 14.4875L16.11 16.5016C15.0025 16.544 14.1229 17.3638 13.9277 18.3958H25.5134C25.3183 17.3639 24.4387 16.544 23.3313 16.5016ZM24.5517 23.9713C24.3302 25.0554 23.3842 25.8333 22.2874 25.8333H17.1538C16.0569 25.8333 15.111 25.0554 14.8894 23.9713L13.9357 19.3046L13.9291 19.2708H25.5121L25.5054 19.3046L24.5517 23.9713ZM17.9706 20.7149C18.22 20.7149 18.4223 20.9172 18.4223 21.1667L18.4223 23.5C18.4223 23.7495 18.22 23.9517 17.9706 23.9517C17.7211 23.9517 17.5188 23.7495 17.5188 23.5V21.1667C17.5188 20.9172 17.7211 20.7149 17.9706 20.7149ZM21.9222 21.1667C21.9222 20.9172 21.72 20.7149 21.4705 20.7149C21.221 20.7149 21.0188 20.9172 21.0188 21.1667V23.5C21.0188 23.7495 21.221 23.9517 21.4705 23.9517C21.72 23.9517 21.9222 23.7495 21.9222 23.5L21.9222 21.1667Z" fill="#757875"/>
+                // <path fill-rule="evenodd" clip-rule="evenodd" d="M13.5195 24.867C13.3278 24.8765 13.1348 24.8814 12.9407 24.8814C6.62217 24.8814 1.5 19.7592 1.5 13.4407C1.5 7.12217 6.62217 2 12.9407 2C19.2592 2 24.3814 7.12217 24.3814 13.4407C24.3814 13.6348 24.3765 13.8277 24.367 14.0195C23.8681 13.645 23.3225 13.3293 22.7406 13.0828C22.7041 12.0654 22.5126 11.0874 22.189 10.1719H18.4332C18.5424 10.9344 18.6141 11.7292 18.6445 12.5462C18.0819 12.6243 17.5386 12.7629 17.0214 12.9551C17.0005 11.9811 16.9169 11.0474 16.7807 10.1719H9.10061C8.94197 11.1919 8.85472 12.291 8.85472 13.4407C8.85472 14.5903 8.94197 15.6894 9.10061 16.7094H12.8113C12.5494 17.2238 12.3433 17.7712 12.2009 18.3438H9.43158C9.64485 19.1858 9.91021 19.9485 10.2156 20.6102C10.9508 22.203 11.8053 23.0002 12.5647 23.1974C12.8139 23.7956 13.1358 24.3558 13.5195 24.867ZM15.6658 6.27119C14.8063 4.40911 13.7838 3.63438 12.9407 3.63438C12.0976 3.63438 11.075 4.40911 10.2156 6.27119C9.91021 6.93288 9.64485 7.69558 9.43158 8.53753H16.4498C16.2365 7.69558 15.9711 6.93288 15.6658 6.27119ZM7.75043 8.53753C8.00014 7.4485 8.33175 6.45274 8.73165 5.58629C8.94611 5.12162 9.18879 4.67779 9.45868 4.27056C7.33785 5.0763 5.56902 6.59666 4.44629 8.53753H7.75043ZM7.22034 13.4407C7.22034 12.3081 7.29945 11.2102 7.44815 10.1719H3.69238C3.33101 11.1943 3.13438 12.2945 3.13438 13.4407C3.13438 14.5868 3.33101 15.687 3.69238 16.7094H7.44815C7.29945 15.6712 7.22034 14.5732 7.22034 13.4407ZM8.73165 21.2951C8.33175 20.4286 8.00014 19.4329 7.75043 18.3438H4.44629C5.56902 20.2847 7.33785 21.8051 9.45868 22.6108C9.18879 22.2036 8.94611 21.7597 8.73165 21.2951ZM21.4351 8.53753C20.3123 6.59666 18.5435 5.0763 16.4227 4.27056C16.6926 4.67779 16.9352 5.12162 17.1497 5.58629C17.5496 6.45274 17.8812 7.4485 18.1309 8.53753H21.4351Z" fill="#757875"/>
+                // </svg>, 
+                id: "bazargah",
+                render: () => {
+                    pushToDataLayer({
+                        event: 'page_view',
+                        page_title: 'بازارگاه',
+                        page_url: '/bazargah',
+                    });
+                    return <BazargahNew />;
+                }
+                //render:()=><BazargahNew/>
+                 //render:()=>newBazargah?<BazargahNew/>:<Bazargah/> 
+            },
+            { 
+                text: "خانه", 
+                icon: () => getSvg('home'), 
+                id: "khane",
+                // render: () => {
+                //     pushToDataLayer({
+                //         event: 'page_view',
+                //         actionName: 'open-home',
+                //         actionId: 30,
+                //         tagName: 'Home'
+                //     });
+                //     return <Home />;
+                // }
+                render:()=><Home/> 
+            },
+            { 
+                text: "خرید", 
+                icon: () => icon(isShopReady?mdiShopping:mdiLoading,!isShopReady),
+                // icon: () => 
+                // <svg xmlns="http://www.w3.org/2000/svg" width="22" height="28" viewBox="0 0 28 28" fill="none">
+                // <path d="M10.5 7L10.5 8.16667C10.5 10.0997 12.067 11.6667 14 11.6667C15.933 11.6667 17.5 10.0997 17.5 8.16667V7" stroke="#757875" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                // <path d="M18.2134 3.5H9.78658C7.50533 3.5 5.55845 5.14926 5.18341 7.39947L3.23897 19.0661C2.76489 21.9106 4.95842 24.5 7.84214 24.5H20.1578C23.0416 24.5 25.2351 21.9106 24.761 19.0661L22.8166 7.39947C22.4415 5.14926 20.4946 3.5 18.2134 3.5Z" stroke="#757875" stroke-width="1.75" stroke-linejoin="round"/>
+                // </svg>,
+                id: "kharid",
+                //render:()=><Buy/>,
+                render: () => {
+                    pushToDataLayer({
+                        event: 'page_view',
+                        page_title: 'خرید از بروکس',
+                        page_url: '/burux_shop',
+                    });
+                    return <Buy />;
+                },
+                disabled:!isShopReady 
+            },
+            { 
+                text: () => `${firstName} ${lastName}`, 
+                marquee: true, 
+                icon: () => icon(mdiAccountBox), 
+                // icon: () => 
+                // <svg xmlns="http://www.w3.org/2000/svg" width="22" height="28" viewBox="0 0 28 28" fill="none">
+                // <ellipse cx="13.9999" cy="20.4166" rx="8.16667" ry="4.08333" stroke="#757875" stroke-width="1.75" stroke-linejoin="round"/>
+                // <circle cx="13.9999" cy="8.16667" r="4.66667" stroke="#757875" stroke-width="1.75" stroke-linejoin="round"/>
+                // </svg>,
+                id: "profile",
+                render: () => {
+                    pushToDataLayer({
+                        event: 'page_view',
+                        page_title: 'پروفایل',
+                        page_url: '/profile',
+                    });
+                    return <Profile />;
+                }
+                //render:()=><Profile/> 
+            },
         ]
     }
     getSideItems = () => {
@@ -127,10 +237,12 @@ export default class ActionClass implements I_actionClass {
             let { shopId, active,justActiveForAdmins,CampaignId  } = spreeCampaign;
             if (!active) { continue }
             if(!isAdmin && justActiveForAdmins){continue}
-            if(CampaignId === 54 || CampaignId === 55){
-                let {MaxOrderValue,PayDueDate,CamPayTime} = this.autoGetCampaignConditionsByCardCode(CampaignId,userInfo.cardCode,b1Info.customer.groupCode)
+           if(CampaignId === 54 || CampaignId === 55 || CampaignId === 61 || CampaignId === 60)
+           {
+                let {MaxOrderValue,PayDueDate,CamPayTime,LineConditions} = this.autoGetCampaignConditionsByCardCode(CampaignId,userInfo.cardCode,b1Info.customer.groupCode)
                 if(Array.isArray(PayDueDate) && PayDueDate.length){spreeCampaign.PayDueDates = PayDueDate.map((o)=>+o)}
                 if(Array.isArray(CamPayTime) && CamPayTime.length){spreeCampaign.PaymentTimes = CamPayTime.map((o)=>+o)}
+                if(Array.isArray(LineConditions) && LineConditions.length){spreeCampaign.LineConditions = LineConditions}
                 if(MaxOrderValue && typeof MaxOrderValue === 'number'){spreeCampaign.maxTotal = MaxOrderValue}
             }
             Shop[shopId] = new ShopClass({getAppState: () => this.getState(),config: {...spreeCampaign}})
@@ -168,10 +280,9 @@ export default class ActionClass implements I_actionClass {
         }
         else if(type === 'vitrin-price-suggestion'){
             let {render} = parameter;
-            rsa.addModal({body: {render},id: type,header: { title: 'پیشنهاد قیمت دیگر' }})
+            rsa.addModal({body: {render},position: 'bottom',id: type,header: { title: 'پیشنهاد قیمت دیگر' }})
         }
         else if (type === 'profile') {
-            debugger
             let { Login,updateProfile} = this.getProps();
             msfReport({actionName:'open profile',actionId:20,tagName:'profile',eventName:'page view'})
             let mode = parameter;
@@ -183,14 +294,22 @@ export default class ActionClass implements I_actionClass {
                 lastname:userInfo.lastName,
                 location:{lat:userInfo.latitude,lng:userInfo.longitude},
                 storeName:userInfo.storeName,
-                phone:userInfo.landlineNumber,
+                phone:userInfo.phoneNumber,
+                //nationalcode:userInfo.nationalCode,
                 address:userInfo.address,
                 city:userInfo.userCity,
                 state:userInfo.userProvince,
             }
             let fields = [];
             if(mode === 'profile'){
-                fields = [['*firstname','*lastname'],['*storeName_text_نام فروشگاه','*phone'],'*location','*address',['*state','*city']]
+                fields = [
+                    ['*firstname','*lastname'],
+                    ['*storeName_text_نام فروشگاه','*phone'],
+                    //['*nationalcode'],
+                    ['*location'] ,
+                    ['*address'],
+                    ['*state','*city']
+                ]
             }
             if(mode === 'location'){
                 fields = ['*location','*address',['*state','*city']]
@@ -270,7 +389,7 @@ export default class ActionClass implements I_actionClass {
                                 onSubmit:async ()=>{await setCart({shops:{}}); return true}
                             })
                         },className:'align-vh theme-medium-font-color'}],
-                        [<Icon path={mdiEye} size={0.7}/>,{onClick:()=>console.log(this.getState().cart),className:'align-vh theme-medium-font-color'}]
+                        //[<Icon path={mdiEye} size={0.7}/>,{onClick:()=>console.log(this.getState().cart),className:'align-vh theme-medium-font-color'}]
                     ] 
                 } 
             })
@@ -285,6 +404,19 @@ export default class ActionClass implements I_actionClass {
                             onShowInHistory={() => { removeModal('all'); this.openPopup('peygiriye-sefareshe-kharid', 'در حال بررسی'); }}
                             onClose={() => { removeModal('all'); setNavId('khane') }}
                         />
+                    )
+                }
+            })
+        }
+        else if (type === 'sefaresh-pardakht-shode') {
+            const urlParams = new URLSearchParams(window.location.search);
+            const docNum = urlParams.get('docnum');
+            debugger
+            rsa.addModal({
+                id: type,
+                body: {
+                    render: () => (
+                        <Sefaresh_Pardakht_Shode docNum={docNum} status={parameter.status} onShowInHistory={() => { removeModal('all'); this.openPopup('peygiriye-sefareshe-kharid', 'در حال بررسی'); }}/>
                     )
                 }
             })
@@ -380,17 +512,22 @@ export default class ActionClass implements I_actionClass {
         else { return navItem.text }
     }
     manageUrl = () => {
+        //debugger
         let wrl = window.location.href;
         let jsonUrl = UrlToJson(wrl)
         if (jsonUrl.status === '2') {
-            alert('خطا در پرداخت')
-            //window.location.href = wrl.slice(0,wrl.indexOf('/?status')) 
-            //window.history.pushState(window.history.state, window.title, wrl.slice(0, wrl.indexOf('/?status')));
+            setTimeout(
+                ()=>{
+                    this.openPopup('sefaresh-pardakht-shode', false)
+                },
+                200)
         }
         else if (jsonUrl.status === '3') {
-            alert('پرداخت موفق')
-            //window.location.href = wrl.slice(0,wrl.indexOf('/?status')) 
-            //window.history.pushState(window.history.state, window.title, wrl.slice(0, wrl.indexOf('/?status')));
+            setTimeout(
+                ()=>{
+                    this.openPopup('sefaresh-pardakht-shode', true)
+                },
+                200)  
         }
     }
     getInitialNavId = () => {
@@ -665,6 +802,7 @@ export default class ActionClass implements I_actionClass {
                 newCartShop.products[productId].variants[variantId] = {count:0,productCategory,variantId,productId}
             }
             newCartShop.products[productId].variants[variantId].count = count;
+            //await this.setCartLimit(newCartShop);
             cartShop = newCartShop;
         }
         if(reportAdd){this.reportAddToCart({shopId,taxonId,productId,variantId})}

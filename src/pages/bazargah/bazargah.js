@@ -12,7 +12,7 @@ import bazargahBlankSrc from './../../images/bazargah-no-order.png';
 import SplitNumber from '../../npm/aio-functions/split-number';
 import TimerGauge from '../../components/timer-gauge/timer-gauge';
 import './bazargah.css';
-
+//بازارگاه قدیم
 export default class Bazargah extends Component{
     static contextType = appContext;
     constructor(props){
@@ -509,6 +509,7 @@ class JoziateSefaresheBazargah extends Component{
         }
     }
     item_layout({src,name,detail,isFirst,isLast,isCheckable,id,count,price}){
+        console.log("Order:",detail)
         let {sendStatus} = this.state;
         let borderRadius,onClick;
         if(isFirst && isLast){borderRadius = 8} 

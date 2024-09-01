@@ -131,26 +131,25 @@ export default function Bazargah(props:I_BazargahOrderCard){
                         //     page_url: `/bazargah/${tab}`
                         // });
                     }}
-                    //optionAfter={(option)=><div className='tab-badge'>{option.orders.length}</div>}
-                    // optionAfter={(option: I_bg_tab) => {
-                    //     let count = 0;
-                    //     if (option === 'اطراف من') 
-                    //     {
-                    //         count = ordersNearby.length;
-                    //     } 
-                    //     else if (option === 'سفارشات من') 
-                    //     {
-                    //         count = ordersMyOrders.length;
-                    //     }
-                    //     const activeColor = activeTab === option ? '#2BBA8F' : 'black';
-                    //     return (
-                    //         <>
-                    //             {!loading && (
-                    //                 <div style={{borderRadius:100,backgroundColor:activeColor}} className='tab-badge'>{count}</div>
-                    //             )}
-                    //         </>
-                    //     )
-                    // }}
+                    optionAfter={(option: I_bg_tab) => {
+                        let count = 0;
+                        if (option === 'اطراف من') 
+                        {
+                            count = ordersNearby.length;
+                        } 
+                        else if (option === 'سفارشات من') 
+                        {
+                            count = ordersMyOrders.length;
+                        }
+                        const activeColor = activeTab === option ? '#2BBA8F' : 'black';
+                        return (
+                            <>
+                                {!loading && (
+                                    <div style={{borderRadius:100,backgroundColor:activeColor}} className='tab-badge'>{count}</div>
+                                )}
+                            </>
+                        )
+                    }}
                 />
             )   
         }
@@ -995,7 +994,7 @@ function BazargahSubmitDate(props:I_BazargahSubmitDate){
         let {hour,minute} = AIODate().convertMiliseconds({miliseconds:delta,unit:'day'})
         if(hour === 0 && minute<30){text = 'جدید'} 
     }
-    else {text = AIODate().getDateByPattern({date:submitDate,jalali:true,pattern:'{year}/{month}/{day} {hour}:{minute}'})}
+    else {text = AIODate().getDateByPattern({date:submitDate,jalali:true,pattern:'{year}/{month}/{day} - {hour}:{minute}'})}
     return (<RVD layout={{html:text,align:'v',padding:'10px',className:'fs-10 theme-medium-font-color bold'}}/>)
 }
 
